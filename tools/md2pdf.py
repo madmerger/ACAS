@@ -1,0 +1,73 @@
+#!/usr/bin/env python3
+"""Markdown -> HTML -> PDF (A4) converter for docs/*.md.
+
+Usage: python3 tools/md2pdf.py docs/ACAS_spec.md [docs/ACAS_spec.pdf]
+Requires: pip install markdown playwright && python3 -m playwright install chromium
+"""
+import re
+import sys
+from pathlib import Path
+
+import markdown
+from playwright.sync_api import sync_playwright
+
+CSS = """
+@page { size: A4; margin: 15mm 15mm 16mm 15mm; }
+body { font-family: "Hiragino Sans", "Noto Sans CJK JP", "Noto Sans JP", "Yu Gothic", sans-serif;
+       font-size: 9.5pt; line-height: 1.45; color: #111; }
+h1 { font-size: 16pt; margin: 0 0 6pt; }
+h2 { font-size: 12.5pt; margin: 12pt 0 5pt; border-bottom: 1px solid #888; padding-bottom: 2pt;
+     page-break-after: avoid; }
+h3 { font-size: 10.5pt; margin: 9pt 0 3pt; page-break-after: avoid; }
+p, li { margin: 2pt 0; }
+ul { padding-left: 16pt; margin: 2pt 0; }
+table { border-collapse: collapse; width: 100%; font-size: 8.3pt; margin: 4pt 0 8pt;
+        page-break-inside: auto; }
+tr { page-break-inside: avoid; }
+thead { display: table-header-group; }
+th, td { border: 1px solid #999; padding: 2pt 4pt; vertical-align: top; text-align: left;
+         word-break: break-word; }
+th { background: #eee; }
+code { font-family: "Menlo", "DejaVu Sans Mono", monospace; font-size: 8.3pt; }
+pre { font-size: 7.8pt; line-height: 1.3; background: #f5f5f5; border: 1px solid #ccc;
+      padding: 4pt; white-space: pre-wrap; page-break-inside: avoid; }
+.front { font-size: 8.5pt; color: #444; margin-bottom: 8pt; }
+"""
+
+
+def split_front_matter(text: str):
+    m = re.match(r"^---\n(.*?)\n---\n", text, re.S)
+    if not m:
+        return {}, text
+    meta = {}
+    for line in m.group(1).splitlines():
+        if ":" in line:
+            k, v = line.split(":", 1)
+            meta[k.strip()] = v.strip()
+    return meta, text[m.end():]
+
+
+def main() -> None:
+    src = Path(sys.argv[1])
+    dst = Path(sys.argv[2]) if len(sys.argv) > 2 else src.with_suffix(".pdf")
+    meta, body = split_front_matter(src.read_text(encoding="utf-8"))
+    html_body = markdown.markdown(body, extensions=["tables", "fenced_code", "toc"])
+    front = " / ".join(f"{k}: {v}" for k, v in meta.items())
+    html = (f"<html><head><meta charset='utf-8'><style>{CSS}</style></head><body>"
+            f"<div class='front'>{front}</div>{html_body}</body></html>")
+    with sync_playwright() as p:
+        browser = p.chromium.launch()
+        page = browser.new_page()
+        page.set_content(html, wait_until="load")
+        page.pdf(path=str(dst), format="A4", print_background=True,
+                 display_header_footer=True,
+                 header_template="<span></span>",
+                 footer_template="<div style='font-size:8pt;width:100%;text-align:center;'>"
+                                 "<span class='pageNumber'></span> / <span class='totalPages'></span></div>",
+                 margin={"top": "15mm", "bottom": "16mm", "left": "15mm", "right": "15mm"})
+        browser.close()
+    print(f"wrote {dst}")
+
+
+if __name__ == "__main__":
+    main()
