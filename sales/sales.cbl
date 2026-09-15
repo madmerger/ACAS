@@ -331,7 +331,7 @@
               move wsb-hh to wsd-hh
               move wsb-mm to wsd-mm
               move wsb-ss to wsd-ss
-              display "時 "    at 0355 with foreground-color 2
+              display "   "    at 0355 with foreground-color 2
               display wsd-time at 0358 with foreground-color 2.
 *>
      accept   wsa-date from date.

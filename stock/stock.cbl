@@ -370,7 +370,7 @@
               move wsb-hh to wsd-hh
               move wsb-mm to wsd-mm
               move wsb-ss to wsd-ss
-              display "時 "    at 0355 with foreground-color 2
+              display "   "    at 0355 with foreground-color 2
               display wsd-time at 0358 with foreground-color 2.
 *>
      display  "次から文字で選択 :- [ ]" at 0601 with foreground-color 2.
