@@ -302,7 +302,7 @@
               perform conv-date
               display u-date at 0370 with foreground-color 2.
 *>
-     display  "次から文字で選択 :- [ ]" at 0601 with foreground-color 2.
+     display  "次から文字で選択                       :- [ ]" at 0601 with foreground-color 2.
 *>
      display  "(A)  総勘定元帳"  at 1004 with foreground-color 2.
      display  "(B)  売上元帳"    at 1104 with foreground-color 2.
@@ -484,12 +484,12 @@
      move     1 to date-form.                                                *> default UK format
 *>
  Capture-Data.
-     display  "会社名を入力 :- [" at 1101 with foreground-color 2.
+     display  "会社名を入力           :- [" at 1101 with foreground-color 2.
      display  "]" at 1160 with foreground-color 2.
 *>
      accept   usera at 1128 with foreground-color 3 update.
 *>
-     display  "会社名を確認 (Y/N) :- [ ]"               at 1301 with foreground-color 2.
+     display  "会社名を確認 (Y/N)                       :- [ ]" at 1301 with foreground-color 2.
      move     "Y"  to  ws-reply.
      accept   ws-reply  at 1346 with foreground-color 6 update.
 *>
@@ -556,12 +556,12 @@
      move     wsmaps-ser-xx to maps-ser-xx.
      move     wsmaps-ser-nn to maps-ser-nn.
 *>
-     display  "総勘定元帳を使用 (Y/N) ? :- [ ]" at 1901 with foreground-color 2.
-     display  "仕入元帳を使用 (Y/N) ? :- [ ]" at 2001 with foreground-color 2.
-     display  "売上元帳を使用 (Y/N) ? :- [ ]" at 2101 with foreground-color 2.
-     display  "請求書発行を使用 (Y/N) ? :- [ ]" at 1941 with foreground-color 2.
-     display  "在庫管理を使用 (Y/N) ? :- [ ]" at 2041 with foreground-color 2.
-     display  "受注管理を使用 (Y/N) ? :- [ ]" at 2141 with foreground-color 2.
+     display  "総勘定元帳を使用 (Y/N) ?      :- [ ]" at 1901 with foreground-color 2.
+     display  "仕入元帳を使用 (Y/N) ?        :- [ ]" at 2001 with foreground-color 2.
+     display  "売上元帳を使用 (Y/N) ?        :- [ ]" at 2101 with foreground-color 2.
+     display  "請求書発行を使用 (Y/N) ?      :- [ ]" at 1941 with foreground-color 2.
+     display  "在庫管理を使用 (Y/N) ?        :- [ ]" at 2041 with foreground-color 2.
+     display  "受注管理を使用 (Y/N) ?        :- [ ]" at 2141 with foreground-color 2.
 *>
      accept   ws-reply at 1935 with foreground-color 6 update.
      move     function upper-case (ws-reply) to ws-reply.
@@ -603,7 +603,7 @@
      else
               move zero to Level-5
      end-if
-     display  "確認 (Y/N) :- [ ] " at 2301 with foreground-color 2.
+     display  "確認 (Y/N)           :- [ ] " at 2301 with foreground-color 2.
 *>  IRS here when sorted
      move     spaces  to  option-list.
      move     1  to  a.
