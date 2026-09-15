@@ -102,6 +102,8 @@
  working-storage section.
 *>----------------------
  77  prog-name           pic x(17)    value "Stock (3.01.19)".
+ 01  ws-LC-ALL           binary-long  value 6.
+ 01  ws-Locale-Name      pic x(8)     value z"C.UTF-8".
  77  z                   binary-char  value zero.
 *> 77  Exception-Msg       pic x(25)    value spaces.
  77  Batch-Text          pic x(28)    value spaces.
@@ -240,6 +242,7 @@
 *>
      set      ENVIRONMENT "COB_SCREEN_EXCEPTIONS" to "Y".
      set      ENVIRONMENT "COB_SCREEN_ESC" to "Y".
+     call     "setlocale" using by value ws-LC-ALL by reference ws-Locale-Name.
      perform  zz020-Get-Program-Args.
 *>
      move     function current-date to wse-date-block.

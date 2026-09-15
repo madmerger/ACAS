@@ -116,6 +116,8 @@
  working-storage section.
 *>----------------------
  77  prog-name           pic x(15)    value "ACAS (3.00.05)".
+ 01  ws-LC-ALL           binary-long   value 6.
+ 01  ws-Locale-Name      pic x(8)      value z"C.UTF-8".
  77  z                   binary-char.
  77  OS-Delimiter        pic x        value "/".     *> Preset for Linux/unix etc
  77  ACAS_BIN            pic x(512)   value spaces.  *> added
@@ -218,6 +220,7 @@
 *>
      set      ENVIRONMENT "COB_SCREEN_EXCEPTIONS" to "Y".
      set      ENVIRONMENT "COB_SCREEN_ESC" to "Y".
+     call     "setlocale" using by value ws-LC-ALL by reference ws-Locale-Name.
      move     function current-date to wse-date-block.
      perform  zz020-Get-Program-Args.
 *>
