@@ -137,7 +137,7 @@ irs ─ 1 set-up(内部) 2 irs010 3 irs020 4 irs030 5 irs040 6 irs050
 | B-19 | IRS はメニュー番号または F1〜F10 キーで機能選択。`system.dat` 不在時は自動でセットアップ画面へ | `irs.cbl:343-354,405-455` |
 | B-20 | 売掛年齢分析 (`sl120`): 経過日数 `work-1` (負残高は 1 日扱い) を <30 / <60 / <90 / それ以上の 4 区分に集計し、区分ごとの構成比 (%) を算出 | `sl120.cbl:508-530,687-691` |
 | B-21 | GL 期末 (`gl080`) Phase 5: 全勘定の `ledger-balance` を `ledger-q(current-quarter)` に保存、第 4 四半期なら `ledger-last` にも複写。`current-quarter` を 1〜4 で循環し、`scycle` は月次 (period=3) で 12、週次 (period=13) で 52 を超えたら 1 に戻す | `gl080.cbl:248-284` |
-| B-22 | 在庫期末 (`st040`): 期間合計・年度合計のクリアは各々 (N/Y) 確認、監査レポート未実行なら "You have NOT run audit reports" を警告、バックアップ確認後に `Stock-History` を初期化 | `st040.cbl:165-252` |
+| B-22 | 在庫期末 (`st040`): 期間合計・年度合計のクリアは各々 (N/Y) 確認。監査レポート未実行 (`Stk-Activity-Rep-Run = 0`) なら "You have NOT run audit reports" (エラー 045) を表示して中止。実行済みの場合のみバックアップ確認後、指定に応じて `Stock-Mthly-Running-Totals` (期間) / `Stock-History` (年度) を初期化 | `st040.cbl:165-252` |
 
 ## 6. 機能仕様詳細
 
@@ -164,7 +164,7 @@ irs ─ 1 set-up(内部) 2 irs010 3 irs020 4 irs030 5 irs040 6 irs050
 - **検証**: 種別範囲 (B-02)、PA コード存在 (SL186)、クレジット元請求 (B-04)、在庫連携時は在庫ファイル存在 (SL187〜SL191)。
 - **出力**: `invoice-file` に書込、`Next-Invoice` 加算。`SL-Stock-Link="Y"` なら `Stock-File` の在庫を更新し、監査ファイルに記録。
 - **異常系**: 書込失敗 SL180 "Err on Invoice file write"。
-- **同型機能**: `pl020` (仕入請求書) は顧客→仕入先、与信判定なし、種別体系は同一。`sl920`/`pl030` は既存請求書の修正、`sl940`/`pl040` は削除。
+- **同型機能**: `pl020` (仕入請求書) は顧客→仕入先、与信判定なし、種別は 1=Receipt / 2=Account / 3=Credit Note のみ (4 は再入力 `pl020.cbl:904-905`)。`sl920`/`pl030` は既存請求書の修正、`sl940`/`pl040` は削除。
 
 ### 6.3 S-G 売上転記 (`sl055` → `sl060`)
 - **入口**: sales G。`sl055` が請求書を抽出・分析値更新し `openitm2` に出力、続けて `sl060`。
@@ -208,7 +208,7 @@ irs ─ 1 set-up(内部) 2 irs010 3 irs020 4 irs030 5 irs040 6 irs050
 
 ### 6.10 K-E 在庫期末 (`st040`) / K-D 在庫レポート (`st030`)
 - **st040 画面**: "Stock Activity Reset"、確認 "Can I clear this ... Totals? [ ] (N/Y)"、"Can I clear End of Year Totals on Stock records [ ] (N/Y)"、"Have you made backups of your data and are you sure?  [ ] (N/Y)"。処理中 "Updating your Stock file as requested" (B-22)。
-- **st030 レポート種別**: (1) All Stock Items (2) A Range of Items (3) Items that are Understocked (4) Range of Understocked Items (5) Items, Not in Stock (6) Range of Items, Not in Stock (7) Items on Order (8) Range of Items on Order (9) Return to Main Menu。第 2 画面で期間内アクティブ品目の抽出 (`st030.cbl:397-422`)。Understocked (3/4) は `Stock-ReOrder-Pnt < Stock-Held` の品目を除外 (= `Held ≤ ReOrder-Pnt` を出力、On-Order は考慮しない)、Not in Stock (5/6) は `Held = 0`、On Order (7/8) は `On-Order ≠ 0` (`st030.cbl:951-960`)。印字フラグは `Held < ReOrder-Pnt` で "U"、`Held = 0` で "0" (`st030.cbl:988-992`)。
+- **st030 レポート種別**: (1) All Stock Items (2) A Range of Items (3) Items that are Understocked (4) Range of Understocked Items (5) Items, Not in Stock (6) Range of Items, Not in Stock (7) Items on Order (8) Range of Items on Order (9) Return to Main Menu。第 2 画面で期間内アクティブ品目の抽出 (`st030.cbl:397-422`)。Understocked (3/4) は `Stock-ReOrder-Pnt < Stock-Held` の品目を除外 (= `Held ≤ ReOrder-Pnt` を出力、On-Order は考慮しない)、Not in Stock (5/6) は `Held = 0`、On Order (7/8) は `On-Order`、`Back-Ordered`、`Order-Date`、`Order-Due` のいずれかが非ゼロ (`st030.cbl:951-964`)。印字フラグは `Held < ReOrder-Pnt` で "U"、`Held = 0` で "0" (`st030.cbl:988-992`)。
 
 ### 6.11 P-S 小切手サブシステム (`pl900`)
 - **サブメニュー**: (1) Generate payments to be made (2) Amend payments (3) Proof payments (4) Generate cheques (5) Print cheque register (6) Print remittance advices (9) Return to system menu (`pl900.cbl:137-143`)。
@@ -272,7 +272,7 @@ irs ─ 1 set-up(内部) 2 irs010 3 irs020 4 irs030 5 irs040 6 irs050
 |---|---|
 | メニュー文字と文言 | 第 2 節の英字割当と表示文言 (例 sales "(D)  Sales Transactions Input")。Stock "(2)  Stock Deductons Entry" の綴りは原文どおり保持するか要判断 |
 | サブメニュー番号 | 顧客/仕入先/在庫保守: 1 Set-up, 2 Amend, 3 Delete, 4 Print(在庫は Renumber), 5 Display, 6 Print(在庫), 9 Return |
-| 請求書種別コード | 1 Receipt / 2 Account / 3 Credit Note / 4 Pro-Forma (OTM は 5 Payment / 6 Journal-Unapplied Cash を追加) |
+| 請求書種別コード | 1 Receipt / 2 Account / 3 Credit Note / 4 Pro-Forma (4 は SL 専用。PL `pl020` は 1〜3 のみ; OTM は 5 Payment / 6 Journal-Unapplied Cash を追加) |
 | バッチ状態 | ledger 1=GL 2=PL 3=SL、status 0 Open/1 Closed、cleared 0 Waiting/1 Processed/2 Archived、99 件で分割 |
 | 仕訳規約 | SL: DR 債権/CR 売上/VAT CR、PL: DR 仕入/CR 債務/VAT DR、post-code "SL"/"PL"、IRS 既定 VAT 勘定 32 (売上) / 31 (仕入) |
 | 与信警告文言 | "Overdue Balance <<<", "Balance Exceeds Credit Limit <<<", "No Longer an Account Customer <<<", "None Zero To Abort" / "Return To Continue" |

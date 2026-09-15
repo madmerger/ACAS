@@ -49,6 +49,8 @@ def split_front_matter(text: str):
 
 
 def main() -> None:
+    if len(sys.argv) not in (2, 3) or not Path(sys.argv[1]).is_file():
+        sys.exit(f"usage: {sys.argv[0]} <input.md> [output.pdf]")
     src = Path(sys.argv[1])
     dst = Path(sys.argv[2]) if len(sys.argv) > 2 else src.with_suffix(".pdf")
     meta, body = split_front_matter(src.read_text(encoding="utf-8"))
