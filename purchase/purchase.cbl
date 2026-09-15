@@ -334,7 +334,7 @@
               move wsb-hh to wsd-hh
               move wsb-mm to wsd-mm
               move wsb-ss to wsd-ss
-              display "時 " at 0355 with foreground-color 2
+              display "   " at 0355 with foreground-color 2
               display wsd-time at 0358 with foreground-color 2.
 *>
 *> if using variable date format this needs to go?
@@ -344,7 +344,7 @@
               move wsa-yy to u-year
               move wsa-mm to u-month
               move wsa-dd to u-days
-              display "日 " at 0367 with foreground-color 2
+              display "   " at 0367 with foreground-color 2
               perform conv-date
               display u-date at 0370 with foreground-color 2.
 *>
