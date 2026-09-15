@@ -4,6 +4,7 @@
 Usage: python3 tools/md2pdf.py docs/ACAS_spec.md [docs/ACAS_spec.pdf]
 Requires: pip install markdown playwright && python3 -m playwright install chromium
 """
+import html as htmlmod
 import re
 import sys
 from pathlib import Path
@@ -52,7 +53,7 @@ def main() -> None:
     dst = Path(sys.argv[2]) if len(sys.argv) > 2 else src.with_suffix(".pdf")
     meta, body = split_front_matter(src.read_text(encoding="utf-8"))
     html_body = markdown.markdown(body, extensions=["tables", "fenced_code", "toc"])
-    front = " / ".join(f"{k}: {v}" for k, v in meta.items())
+    front = " / ".join(f"{htmlmod.escape(k)}: {htmlmod.escape(v)}" for k, v in meta.items())
     html = (f"<html><head><meta charset='utf-8'><style>{CSS}</style></head><body>"
             f"<div class='front'>{front}</div>{html_body}</body></html>")
     with sync_playwright() as p:

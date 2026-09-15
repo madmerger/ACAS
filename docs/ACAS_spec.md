@@ -20,7 +20,7 @@ ACAS は GnuCOBOL (free format `>>source free`) で書かれた中小企業向�
 | ビルド | `comp-all.sh` → 各 `comp-*.sh`。メニュー実行体は `cobc -x`、サブプログラムは `cobc -m` (動的 CALL) |
 | 環境変数 | `ACAS_LEDGERS` (GL/SL/PL/Stock データパス)、`ACAS_IRS` (IRS データパス)、`ACAS_BIN` (実行体パス)。各メニュー `zz020-Set-the-Paths` が `file-defs` に前置 |
 
-**共通アーキテクチャ** — サブプログラムは `call ws-called using ws-calling-data system-record to-day file-defs` の標準リンケージで呼ばれ、`ws-term-code > 7` を返すとメニューはシステムレコードを書き戻して終了する (`general.cbl:488-496`)。`system-record` (1024 バイト、`copybooks/wssystem.cob`) は相対ファイル `system.dat` の rrn 1 に、既定勘定 (`default-record`) は rrn 2 に、`system-record-4` は rrn 4 に保存される (`general.cbl:455-462`)。共通部品は `maps01` (パスワード/名称エンコード)、`maps04` (日付検証・変換 `dd/mm/ccyy` ⇄ binary)、`maps09` (Mod 11 チェックデジット)、`maps99` (共通エラー表示) である。
+**共通アーキテクチャ** — サブプログラムは先頭 2 引数 `ws-calling-data system-record` を共通とする 3 形式のリンケージで呼ばれる: (a) 通常形式 `... system-record to-day file-defs` (各メニュー `load00`)、(b) GL 形式 `... system-record default-record to-day file-defs` (`general.cbl:498-502` `load000`、gl020/gl050 等)、(c) SL/PL 形式 `... system-record system-record-4 to-day file-defs` (`sales.cbl:469-475` `purchase.cbl:470-474` `load000`)。各機能の形式はメニューの `load00`/`load000` 選択と呼出先 PROCEDURE DIVISION USING で照合すること。呼出先が `ws-term-code > 7` を返すとメニューは `overrewrite` に飛び、システムファイルを書き戻して終了する。`system.dat` (相対ファイル) の書戻し対象はメニューごとに異なる: general は rrn 1 (`system-record`、1024 バイト `copybooks/wssystem.cob`) / rrn 2 (`default-record`) / rrn 4 (`system-record-4`) (`general.cbl:455-462`)、sales・purchase は rrn 1 / 4 (`sales.cbl:426-431` `purchase.cbl:431-436`)、stock は rrn 1 のみ (`stock.cbl:441-443`)。共通部品は `maps01` (パスワード/名称エンコード)、`maps04` (日付検証・変換 `dd/mm/ccyy` ⇄ binary)、`maps09` (Mod 11 チェックデジット)、`maps99` (共通エラー表示) である。
 
 ## 2. 機能一覧
 
@@ -73,7 +73,7 @@ ACAS は GnuCOBOL (free format `>>source free`) で書かれた中小企業向�
 ACAS ─(A)─> general ─┬─ A gl000 (日付)      ─ E gl050 ─ F gl051 ─ G gl060
      │               ├─ B gl030  C gl020    ─ H gl070→gl071→gl072 (ws-term-code=5 で中断)
      │               ├─ I gl080  J gl090→gl090a/b  K gl120  L gl100→gl105
-     │               └─ X 終了 (system.dat rrn1/2/4 書戻し)  Z sys002
+     │               └─ X 終了 (system.dat rrn1/2/4 書戻し; sales/purchase は rrn1/4、stock は rrn1)  Z sys002
      ─(B)─> sales   ─┬─ A sl000  B sl010(1-6)  C sl020  D sl910  E sl920
      │               ├─ F sl050  G sl055→sl060  H..K sl080/085/090→095/100
      │               ├─ L sl070  M sl130  N sl140  O/P/Q sl115→sl110/190/120
@@ -104,7 +104,7 @@ irs ─ 1 set-up(内部) 2 irs010 3 irs020 4 irs030 5 irs040 6 irs050
 | irs posting (file-8) | sequential | irs-batch, post-number, code, date, dr/cr 9(5), amount, legend, irs-vat-ac-def, vat-side | IRS 転記 (SL/PL→IRS) (`fdpost-irs.cob`) |
 | analysis (file-15) | indexed / pa-code (system x + group) | pa-gl 9(6), pa-desc, pa-print | 売上/仕入分析コード→GL 勘定 (`fdanal.cob`) |
 | value.dat (file-13) | indexed / va-code | va-gl, va-t-this/last/year, va-v-this/last/year | 分析集計値 (`fdval.cob`) |
-| invoice (file-16 SL / file-26 PL) | indexed / invoice-nos 9(8)+letter+item-nos | ヘッダ: customer, date, type, ref, net/extra/carriage/vat/discount, status; 行 (最大 40): product, pa, qty, unit, discount, vat-code | 請求書 (`fdinv.cob` `wsinv.cob`) |
+| invoice (file-16 SL / file-26 PL) | indexed / SL: invoice-nos 9(8)+invoice-let x+item-nos、PL: invoice-nos 9(8)+item-nos (`purchase/fdpinv.cob:11-13`) | ヘッダ: customer, date, type, ref, net/extra/carriage/vat/discount, status; 行 (最大 40): product, pa, qty, unit, discount, vat-code | 請求書 (`fdinv.cob` `wsinv.cob` / `fdpinv.cob` `wspinv.cob`) |
 | openitm3 (file-19 SL) / openitm5 (file-29 PL) | indexed / customer x(7)+invoice | oi-type, description, net/extra/carriage/vat/discount/paid, oi-status, deduct-amt/days, hold-flag | 未消込明細 OTM (`fdoi3.cob` `wsoi.cob`) |
 | openitm2/4 (file-18/28), oisort/poisort | sequential | OTM 作業・ソート用 | 転記・レポート中間ファイル |
 | delivery (file-14), delinvno/delfolio (file-17/23) | indexed / sequential | 配送先名・住所 / 削除済請求番号 | 補助 |
@@ -132,7 +132,7 @@ irs ─ 1 set-up(内部) 2 irs010 3 irs020 4 irs030 5 irs040 6 irs050
 | B-14 | 期末 (`xl150`): 未転記の proofed 請求 (XL101 警告)、proofed 未転記入金 (XL102 エラー)、分析未実行 (XL103) を検査。月次 Paid-This-Month をゼロ化、決済済 92 日超請求を削除、四半期/年度末に削除レコードを物理削除、年度末に value.dat を初期化 | `xl150.cbl:44-58,250-253` |
 | B-15 | 在庫入庫 (`st020`): 数量 ≤ 999998、`Held + qty ≤ 999999`、符号は "-" のみ許容、結果が負なら拒否 (ST204〜ST207)、結果 0 は警告 (ST208)。単価入力後、平均法で `Stock-Cost`・`Stock-Value` を再計算し `Stock-Adds` 加算。発注残・バックオーダーが 0 になれば発注日をクリア | `st020.cbl:665-690,711-726,779,838-847` |
 | B-16 | 在庫出庫: `Held − qty < 0` は拒否、= 0 は警告、監査値変動 = `qty × Cost × −1`、`Stock-Deducts` 加算 | `st020.cbl:952-1005` |
-| B-17 | メニュー終了時 (X) に必ず system-record (rrn 1)、default-record (rrn 2)、system-record-4 (rrn 4) を書き戻す。呼出先が `ws-term-code > 7` を返した場合も同様 | `general.cbl:455-462,488-491` |
+| B-17 | メニュー終了時 (X) および呼出先が `ws-term-code > 7` を返した場合に `system.dat` を書き戻す。対象は general: rrn 1 (system-record) + rrn 2 (default-record) + rrn 4 (system-record-4)、sales / purchase: rrn 1 + rrn 4、stock: rrn 1 のみ | `general.cbl:455-462,488-491` `sales.cbl:426-431` `purchase.cbl:431-436` `stock.cbl:441-443` |
 | B-18 | 日付は `Date-Form` (1=UK dd/mm/yyyy, 2=USA, 3=Intl) で表示し、内部は `maps04` による binary 日数 (`u-bin`) で保持。無効日付は 0 | `wssystem.cob:108-111` `maps04.cbl` |
 | B-19 | IRS はメニュー番号または F1〜F10 キーで機能選択。`system.dat` 不在時は自動でセットアップ画面へ | `irs.cbl:343-354,405-455` |
 | B-20 | 売掛年齢分析 (`sl120`): 経過日数 `work-1` (負残高は 1 日扱い) を <30 / <60 / <90 / それ以上の 4 区分に集計し、区分ごとの構成比 (%) を算出 | `sl120.cbl:508-530,687-691` |
@@ -156,7 +156,7 @@ irs ─ 1 set-up(内部) 2 irs010 3 irs020 4 irs030 5 irs040 6 irs050
 ### 6.1 M-ALL / 各サブシステムメニュー
 - **入力順**: 1 文字 (`menu-reply`, 画面 06 行 44 桁) → 大文字化。
 - **検証**: `letters-upper` に無い文字は無視して再入力。"X" で終了、"Z" で `sys002`。GL の D/M は "Sorry not yet available" (`general.cbl:621`)。
-- **出力**: サブプログラムを `call`/`cancel`。戻り `ws-term-code > 7` → B-17 の書戻し後 `goback`。
+- **出力**: サブプログラムを `call`/`cancel` (リンケージ形式は 1 章の (a)〜(c))。戻り `ws-term-code > 7` → B-17 のメニュー別書戻し後 `goback`。
 - **エラー位置**: 23 行 1 桁 (`maps99` 既定。`error-line > 19` の場合は端末行数に応じて再計算 `maps99.cbl:154-158`)。
 
 ### 6.2 S-D 請求書入力 (`sl910`)
@@ -208,11 +208,11 @@ irs ─ 1 set-up(内部) 2 irs010 3 irs020 4 irs030 5 irs040 6 irs050
 
 ### 6.10 K-E 在庫期末 (`st040`) / K-D 在庫レポート (`st030`)
 - **st040 画面**: "Stock Activity Reset"、確認 "Can I clear this ... Totals? [ ] (N/Y)"、"Can I clear End of Year Totals on Stock records [ ] (N/Y)"、"Have you made backups of your data and are you sure?  [ ] (N/Y)"。処理中 "Updating your Stock file as requested" (B-22)。
-- **st030 レポート種別**: (1) All Stock Items (2) A Range of Items (3) Items that are Understocked (4) Range of Understocked Items (5) Items, Not in Stock (6) Range of Items, Not in Stock (7) Items on Order (8) Range of Items on Order (9) Return to Main Menu。第 2 画面で期間内アクティブ品目の抽出 (`st030.cbl:397-422`)。Understocked は `Stock-Held + On-Order ≤ ReOrder-Pnt` を目安とする (要確認: 抽出条件の厳密な式は `st030` 本文参照)。
+- **st030 レポート種別**: (1) All Stock Items (2) A Range of Items (3) Items that are Understocked (4) Range of Understocked Items (5) Items, Not in Stock (6) Range of Items, Not in Stock (7) Items on Order (8) Range of Items on Order (9) Return to Main Menu。第 2 画面で期間内アクティブ品目の抽出 (`st030.cbl:397-422`)。Understocked (3/4) は `Stock-ReOrder-Pnt < Stock-Held` の品目を除外 (= `Held ≤ ReOrder-Pnt` を出力、On-Order は考慮しない)、Not in Stock (5/6) は `Held = 0`、On Order (7/8) は `On-Order ≠ 0` (`st030.cbl:951-960`)。印字フラグは `Held < ReOrder-Pnt` で "U"、`Held = 0` で "0" (`st030.cbl:988-992`)。
 
 ### 6.11 P-S 小切手サブシステム (`pl900`)
 - **サブメニュー**: (1) Generate payments to be made (2) Amend payments (3) Proof payments (4) Generate cheques (5) Print cheque register (6) Print remittance advices (9) Return to system menu (`pl900.cbl:137-143`)。
-- **データ**: `pay.dat` (支払 1 件に最大 9 請求書の割当 `pay-folio`)、`cheque.dat`。支払期日は仕入先の `purch-credit` と `PL-Age-To-Pay` から算出 (要確認: `pl910` 本文)。
+- **データ**: `pay.dat` (支払 1 件に最大 9 請求書の割当 `pay-folio`)、`cheque.dat`。支払対象の抽出 (`pl910`): 画面に `age-to-pay` (システム設定) を表示し "N" 応答で上書き入力 → `to-be-paid = run-date − age-to-pay` (`pl910.cbl:234-245`)。`purch-current > 0` の仕入先について OTM5 の type 2 かつ `oi-date ≤ to-be-paid` の未払残 (net+carriage+vat+c-vat−paid) を支払に載せ、`run-date − oi-date ≤ oi-deduct-days` なら早期支払割引 `oi-deduct-amt` を控除 (`pl910.cbl:268,305-333`)。`purch-credit` は使用しない。
 
 ### 6.12 *-Z システム設定 (`sys002`)
 - 画面 "System Parameters" → "OPS Data 1" → "OPS Data 2" の順に、VAT 率 5 段階、日付形式 (B-18)、サイクル (Weekly/Fortnightly/Monthly)、ファイル方式 (0=COBOL files, 1=RDBMS。1〜5 の RDBMS 種別表示はあるが `FS-Valid-Options` は 0〜1)、単一/複数ユーザー、OS、Print Spool Name (必須 " Print Spool Name must be defined")、表示方式、Profit Centres/Branches、DB 名・ユーザー・パスワード (伏字 "************") を入力する (`sys002.cbl:769-1219`)。
@@ -298,4 +298,4 @@ irs ─ 1 set-up(内部) 2 irs010 3 irs020 4 irs030 5 irs040 6 irs050
 - 実機確認は GnuCOBOL (`cobc`) が本環境に無く未実施。全記述はソース根拠のみ。
 - DeepWiki (Ask Devin) はメニュー構成の初期仮説に用い、ソースと一致した項目のみ採用。ウィキが列挙しなかった purchase メニュー (A〜C, I〜L, P〜S, V) と general/irs メニューはソースから補完した。
 - 機能 ID はメニュー文字ベースで付与 (ソースに ID 体系なし)。IRS 内部の詳細フローは分量上、第 6.13 節の概要に留めた。
-- 6.10/6.11 の「要確認」項目は、本書の分量制約から該当プログラム本文の全読解を行っていない箇所であり、移行実装前に該当ソースで確定すること。
+- 6.10 (在庫レポート抽出条件) と 6.11 (支払期日算出) は `st030` / `pl910` 本文で確定済み。`st030.cbl:50` のコメント "Understocked test wrong - Don't ask" は履歴注記であり、現行実装 (6.10 の式) を正とする。
