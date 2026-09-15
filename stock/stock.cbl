@@ -102,6 +102,8 @@
  working-storage section.
 *>----------------------
  77  prog-name           pic x(17)    value "Stock (3.01.19)".
+ 01  ws-LC-ALL           binary-long  value 6.
+ 01  ws-Locale-Name      pic x(8)     value z"C.UTF-8".
  77  z                   binary-char  value zero.
 *> 77  Exception-Msg       pic x(25)    value spaces.
  77  Batch-Text          pic x(28)    value spaces.
@@ -131,7 +133,7 @@
  01  Linux-Backup-Script-Name   pic x(20)    value "acasbkup.sh         ".
  01  Windows-Backup-Script-Name pic x(20)    value "acasbkup.bat        ".
  01  OS2-Backup-Script-Name     pic x(20)    value "acasbkup.cmd        ".
- 01  Exit-To-System             pic x(18)    value "to Linux".
+ 01  Exit-To-System             pic x(18)    value "Linuxへ".
 *>
  01  Cbl-File-Details.
      03  Cbl-File-Size     pic x(8)  comp-x  value zero.
@@ -220,12 +222,12 @@
 *>
  01  Error-Messages.
 *> System Wide
-     03  ST001          pic x(26) value "ST001 System 1 read err = ".
-     03  ST004          pic x(59) value "ST004 Problem with opening system file. Hit return to clear".
-     03  ST006          pic x(62) value "ST006 Program Arguments limited to two and you have specified ".
-     03  ST007          pic x(35) value "ST007 Program arguments incorrect: ".
-     03  ST008          pic x(31) value "ST008 Note message & Hit return".
-     03  ST009          pic x(53) value "ST009 Environment variables not yet set up : ABORTING".
+     03  ST001          pic x(80) value "ST001 システム1読込エラー = ".
+     03  ST004          pic x(80) value "ST004 システムファイルを開けません。Enterで解除".
+     03  ST006          pic x(80) value "ST006 引数は2個までです。指定数: ".
+     03  ST007          pic x(80) value "ST007 引数が正しくありません: ".
+     03  ST008          pic x(80) value "ST008 メッセージを確認しEnter".
+     03  ST009          pic x(80) value "ST009 環境変数未設定: 中止".
 *>
  01  error-code         pic 999    value zero.
  01  to-day             pic x(10).
@@ -240,6 +242,7 @@
 *>
      set      ENVIRONMENT "COB_SCREEN_EXCEPTIONS" to "Y".
      set      ENVIRONMENT "COB_SCREEN_ESC" to "Y".
+     call     "setlocale" using by value ws-LC-ALL by reference ws-Locale-Name.
      perform  zz020-Get-Program-Args.
 *>
      move     function current-date to wse-date-block.
@@ -313,10 +316,10 @@
      end-call
      if       Return-Code not = zero
 *>          and Batch-Text (1:1) not = space
-              move "No BackUp Script in Bin/Data" to Batch-Text
+              move "バックアップなし" to Batch-Text
      else
               move 1 to Backup-Sw
-              string "Using "    delimited by size
+              string "使用 "      delimited by size
                      Script-Name delimited by space into Batch-Text
      end-if
 *>
@@ -360,29 +363,29 @@
  aa040-Display-Go.
 *>
      display  prog-name at 0301 with foreground-color 2.
-     display  "Stock Control System Menu"    at 0328 with foreground-color 2.
+     display  "在庫管理メニュー"    at 0328 with foreground-color 2.
 *>
      accept   wsb-time from time.
      if       wsb-time not = "00000000"
               move wsb-hh to wsd-hh
               move wsb-mm to wsd-mm
               move wsb-ss to wsd-ss
-              display "at "    at 0355 with foreground-color 2
+              display "   "    at 0355 with foreground-color 2
               display wsd-time at 0358 with foreground-color 2.
 *>
-     display  "Select one of the following by letter  :- [ ]" at 0601 with foreground-color 2.
+     display  "次から文字で選択                       :- [ ]" at 0601 with foreground-color 2.
 *>
-     display  "(A)  Date Entry"                  at 1004 with foreground-color 2.
-     display  "(B)  Stock Item Maintenance"      at 1104 with foreground-color 2.
-     display  "(C)  Stock Movements"             at 1204 with foreground-color 2.
-     display  "(D)  Reports"                     at 1304 with foreground-color 2.
-     display  "(E)  End of Cycle Processing"     at 1044 with foreground-color 2.
+     display  "(A)  日付入力"                  at 1004 with foreground-color 2.
+     display  "(B)  商品保守"      at 1104 with foreground-color 2.
+     display  "(C)  在庫移動"             at 1204 with foreground-color 2.
+     display  "(D)  帳票"                     at 1304 with foreground-color 2.
+     display  "(E)  期末処理"     at 1044 with foreground-color 2.
 *>     display  "(F)  Stock File Import"           at 1104 with foreground-color 2.
-     display  "(X)  Exit to "                    at 1244 with foreground-color 2.
+     display  "(X)  終了"                    at 1244 with foreground-color 2.
      display  op-display                         at 1257 with foreground-color 2.
      display  batch-text at 1249 with foreground-color 2.
-     display  "(Y)  Stock File Compression"      at 1344 with foreground-color 2.
-     display  "(Z)  System Set Up"               at 1444 with foreground-color 2.
+     display  "(Y)  在庫ファイル圧縮"      at 1344 with foreground-color 2.
+     display  "(Z)  システム設定"               at 1444 with foreground-color 2.
 *>
  aa050-Accept-Loop.
      accept   menu-reply at 0644  with foreground-color 6 auto.
@@ -505,7 +508,7 @@
      go       to load00.
 *>
  loadsr.
-     display  "Sorry not yet available" at 2327 with foreground-color 2.
+     display  "未対応です" at 2327 with foreground-color 2.
      go       to aa050-Accept-Loop.
 *>
  aa999-exit.
@@ -533,7 +536,7 @@
 *>
      display  " " at 0101 with erase eos.
      display  prog-name at 0101 with foreground-color 2.
-     display  "ACAS System Setup Routine - Level 1" at 0122 with foreground-color 2.
+     display  "ACAS セットアップ - レベル1" at 0122 with foreground-color 2.
 *>
 *> Now Open System File for Output (overwriting existing contents)
 *>
@@ -549,12 +552,12 @@
      move     1 to date-form.                                                *> default UK format
 *>
  ba010-Capture-Data.
-     display  "Enter the Company name :- [" at 1101 with foreground-color 2.
+     display  "会社名を入力           :- [" at 1101 with foreground-color 2.
      display  "]" at 1160 with foreground-color 2.
 *>
      accept   usera at 1128 with foreground-color 3 update.
 *>
-     display  "Please verify that name is correct (Y/N) :- [ ]" at 1301 with foreground-color 2.
+     display  "会社名を確認 (Y/N)                       :- [ ]" at 1301 with foreground-color 2.
      move     "Y"  to  ws-reply.
      accept   ws-reply  at 1346 with foreground-color 6 update.
 *>
@@ -620,12 +623,12 @@
      move     wsmaps-ser-xx to maps-ser-xx.
      move     wsmaps-ser-nn to maps-ser-nn.
 *>
-     display  "Using General  Ledger (Y/N) ? :- [ ]"  at 1901 with foreground-color 2.
-     display  "Using Purchase Ledger (Y/N) ? :- [ ]"  at 2001 with foreground-color 2.
-     display  "Using Sales    Ledger (Y/N) ? :- [ ]"  at 2101 with foreground-color 2.
-     display  "Using Invoicing       (Y/N) ? :- [ ]"  at 1941 with foreground-color 2.
-     display  "Using Stock Control   (Y/N) ? :- [ ]"  at 2041 with foreground-color 2.
-     display  "Using Order Entry     (Y/N) ? :- [ ]"  at 2141 with foreground-color 2.
+     display  "総勘定元帳を使用 (Y/N) ?      :- [ ]"  at 1901 with foreground-color 2.
+     display  "仕入元帳を使用 (Y/N) ?        :- [ ]"  at 2001 with foreground-color 2.
+     display  "売上元帳を使用 (Y/N) ?        :- [ ]"  at 2101 with foreground-color 2.
+     display  "請求書発行を使用 (Y/N) ?      :- [ ]"  at 1941 with foreground-color 2.
+     display  "在庫管理を使用 (Y/N) ?        :- [ ]"  at 2041 with foreground-color 2.
+     display  "受注管理を使用 (Y/N) ?        :- [ ]"  at 2141 with foreground-color 2.
 *>
      accept   ws-reply at 1935 with foreground-color 6 update.
 *>
@@ -669,35 +672,35 @@
      else
               move zero to Level-5
      end-if
-     display  "Please confirm (Y/N) :- [ ] " at 2301 with foreground-color 2.
+     display  "確認 (Y/N)           :- [ ] " at 2301 with foreground-color 2.
 *>
      move     spaces  to  option-list.
      move     1  to  a.
 *>
      if       G-L
-              string "General "      delimited by size into option-list pointer a.
+              string "総勘定 "      delimited by size into option-list pointer a.
 *>
      if       B-L  and  G-L
               string "/ "            delimited by size into option-list pointer a.
 *>
      if       B-L
-              string "Purchase "     delimited by size into option-list pointer a.
+              string "仕入 "     delimited by size into option-list pointer a.
 *>
      if       (S-L  and  G-L)
         or    (S-L  and  B-L)
               string "/ "            delimited by size into option-list pointer a.
 *>
      if       S-L
-              string "Sales "        delimited by size into option-list pointer a.
+              string "売上 "        delimited by size into option-list pointer a.
 *>
      if       S-L  and  Full-Invoicing = 1
-              string  "/ Invoicing " delimited by size into option-list pointer a.
+              string  "/ 請求 " delimited by size into option-list pointer a.
 *>
      if       Stock
-              string "/ Stock "      delimited by size into option-list pointer a.
+              string "/ 在庫 "      delimited by size into option-list pointer a.
 *>
      if       O-E
-              string "/ Order Entry" delimited by size into option-list pointer a.
+              string "/ 受注" delimited by size into option-list pointer a.
 *>
 *>  option-list now max 60 chars used
 *>

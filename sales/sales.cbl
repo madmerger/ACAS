@@ -100,6 +100,8 @@
  working-storage section.
 *>----------------------
  77  prog-name           pic x(15)    value "Sales (3.01.18)".
+ 01  ws-LC-ALL           binary-long   value 6.
+ 01  ws-Locale-Name      pic x(8)      value z"C.UTF-8".
  77  z                   binary-char.
  77  Batch-Text          pic x(28)    value spaces.
  77  Script-Name         pic x(20)    value spaces.
@@ -130,7 +132,7 @@
  01  Linux-Backup-Script-Name   pic x(20) value "acasbkup.sh".
  01  Windows-Backup-Script-Name pic x(20) value "acasbkup.bat".
  01  OS2-Backup-Script-Name     pic x(20) value "acasbkup.cmd".
- 01  Exit-To-System             pic x(18) value "to Linux".
+ 01  Exit-To-System             pic x(18) value "Linuxへ".
 *>
  01  Cbl-File-Details.
      03  Cbl-File-Size     pic x(8)  comp-x  value zero.
@@ -198,10 +200,10 @@
  01  Error-Messages.
 *> System Wide
 *>     03  SL003          pic x(28) value "SL003 Hit Return To Continue".
-     03  SL006           pic x(62) value "SL006 Program Arguments limited to two and you have specified ".
-     03  SL007           pic x(35) value "SL007 Program arguments incorrect: ".
-     03  SL008           pic x(31) value "SL008 Note message & Hit return".
-     03  SL009           pic x(53) value "SL009 Environment variables not yet set up : ABORTING".
+     03  SL006           pic x(80) value "SL006 引数は2個までです。指定数: ".
+     03  SL007           pic x(80) value "SL007 引数が正しくありません: ".
+     03  SL008           pic x(80) value "SL008 メッセージを確認しEnter".
+     03  SL009           pic x(80) value "SL009 環境変数未設定: 中止".
 *> Module specific
 *>
  01  error-code          pic 999        value zero.
@@ -216,6 +218,7 @@
 *>
      set      ENVIRONMENT "COB_SCREEN_EXCEPTIONS" to "Y".
      set      ENVIRONMENT "COB_SCREEN_ESC" to "Y".
+     call     "setlocale" using by value ws-LC-ALL by reference ws-Locale-Name.
      move     function current-date to wse-date-block.
      perform  zz020-Get-Program-Args.
 *>
@@ -270,10 +273,10 @@
      end-call
      if       Return-Code not = zero
 *>          and Batch-Text (1:1) not = space
-              move "No BackUp Script in Bin/Data" to Batch-Text
+              move "バックアップなし" to Batch-Text
      else
               move 1 to Backup-Sw
-              string "Using "    delimited by size
+              string "使用 "      delimited by size
                      Script-Name delimited by space into Batch-Text
      end-if
 *>
@@ -321,14 +324,14 @@
  Display-Go.
 *>
      display  prog-name at 0301 with foreground-color 2.
-     display  "Sales Ledger System Menu" at 0329 with foreground-color 2.
+     display  "売上元帳メニュー" at 0329 with foreground-color 2.
 *>
      accept   wsb-time from time.
      if       wsb-time not = "00000000"
               move wsb-hh to wsd-hh
               move wsb-mm to wsd-mm
               move wsb-ss to wsd-ss
-              display "at "    at 0355 with foreground-color 2
+              display "   "    at 0355 with foreground-color 2
               display wsd-time at 0358 with foreground-color 2.
 *>
      accept   wsa-date from date.
@@ -336,39 +339,39 @@
               move wsa-yy to u-year
               move wsa-mm to u-month
               move wsa-dd to u-days
-              display "on " at 0367 with foreground-color 2
+              display "   " at 0367 with foreground-color 2
               perform conv-date
               display u-date at 0370 with foreground-color 2.
 *>
-     display  "Select one of the following by letter  :- [ ]" at 0601 with foreground-color 2.
+     display  "次から文字で選択                       :- [ ]" at 0601 with foreground-color 2.
 *>
-     display  "(A)  Date Entry" At 1004 with foreground-color 2.
-     display  "(B)  Customer File Maintenance" At 1104   with foreground-color 2.
-     display  "(C)  Sales Ledger Enquiry" At 1204        with foreground-color 2.
-     display  "(D)  Sales Transactions Input" At 1304    with foreground-color 2.
-     display  "(E)  Sales Transactions Amend" At 1404    with foreground-color 2.
-     display  "(F)  Sales Transactions Proof" At 1504    with foreground-color 2.
-     display  "(G)  Sales Transactions Post" At 1604     with foreground-color 2.
-     display  "(H)  Payment Input" At 1704               with foreground-color 2.
-     display  "(I)  Payment Amend" At 1804               with foreground-color 2.
-     display  "(J)  Payment Proof" At 1904               with foreground-color 2.
-     display  "(K)  Payment Post" At 2004                with foreground-color 2.
-     display  "(L)  Set-Up Sales Analysis Codes" At 2104 with foreground-color 2.
-     display  "(M)  Sales Analysis Report" At 2204       with foreground-color 2.
-     display  "(N)  Sales Day Book" At 1044              with foreground-color 2.
-     display  "(O)  Statement Production" At 1144        with foreground-color 2.
-     display  "(P)  Dunning Letters Generation" At 1244  with foreground-color 2.
-     display  "(Q)  Aged Debtors Analysis" At 1344       with foreground-color 2.
-     display  "(R)  Alphabetical Customer List" At 1444  with foreground-color 2.
-     display  "(S)  Customer Turnover Report" At 1544    with foreground-color 2.
-     display  "(T)  Invoice Sub-System" At 1644          with foreground-color 2.
-     display  "(U)  End of Cycle Processing" At 1744     with foreground-color 2.
-     display  "(V)  Customer File Dump" At 1844          with foreground-color 2.
-     display  "(X)  Exit To " At 2044 with foreground-color 2.
+     display  "(A)  日付入力" At 1004 with foreground-color 2.
+     display  "(B)  顧客ファイル保守" At 1104   with foreground-color 2.
+     display  "(C)  売上元帳照会" At 1204        with foreground-color 2.
+     display  "(D)  売上取引入力" At 1304    with foreground-color 2.
+     display  "(E)  売上取引修正" At 1404    with foreground-color 2.
+     display  "(F)  売上取引確認" At 1504    with foreground-color 2.
+     display  "(G)  売上取引転記" At 1604     with foreground-color 2.
+     display  "(H)  支払入力" At 1704               with foreground-color 2.
+     display  "(I)  支払修正" At 1804               with foreground-color 2.
+     display  "(J)  支払確認" At 1904               with foreground-color 2.
+     display  "(K)  支払転記" At 2004                with foreground-color 2.
+     display  "(L)  売上分析コード設定" At 2104 with foreground-color 2.
+     display  "(M)  売上分析レポート" At 2204       with foreground-color 2.
+     display  "(N)  売上日計表" At 1044              with foreground-color 2.
+     display  "(O)  明細書作成" At 1144        with foreground-color 2.
+     display  "(P)  督促状作成" At 1244  with foreground-color 2.
+     display  "(Q)  滞留売掛分析" At 1344       with foreground-color 2.
+     display  "(R)  顧客名簿" At 1444  with foreground-color 2.
+     display  "(S)  顧客回転率" At 1544    with foreground-color 2.
+     display  "(T)  請求サブシステム" At 1644          with foreground-color 2.
+     display  "(U)  期末処理" At 1744     with foreground-color 2.
+     display  "(V)  顧客ファイル出力" At 1844          with foreground-color 2.
+     display  "(X)  終了" At 2044 with foreground-color 2.
      display  Op-Display At 2057 with foreground-color 2.
      display  batch-text at 2149 with foreground-color 2.
 *>     display  "(Y)  File Fix Up" At 2244  with foreground-color 2.  *> not available [25]
-     display  "(Z)  System Setup" At 2344 with foreground-color 2.
+     display  "(Z)  システム設定" At 2344 with foreground-color 2.
 *>
  accept-loop.
 *>
@@ -652,7 +655,7 @@
  loadsr.
 *>-----
 *>
-     display  "Sorry not available" at 2331 with foreground-color 2.
+     display  "利用できません" at 2331 with foreground-color 2.
      go       to accept-loop.
 *>
  main-exit.
@@ -666,13 +669,13 @@
 *>    Open Source release
 *>
      display  prog-name at 0101 with foreground-color 2 erase eos.
-     display  "ACAS System Setup Routine - Level 1" at 0122 with foreground-color 2.
+     display  "ACAS セットアップ - レベル1" at 0122 with foreground-color 2.
 *>
 *> Now Open System File for Output (overwriting existing contents)
 *>
      open     output system-file.
      if       fs-reply not = zero
-              display "Problem with opening system file. Hit return to clear"
+              display "システムファイルを開けません。Enterで解除"
                          at 1101 with foreground-color 4
               accept ws-reply at 1157
               stop run
@@ -683,12 +686,12 @@
      move     1 to date-form.                                                *> default UK format
 *>
  Capture-Data.
-     display  "Enter the Company Name :- [" at 1101 with foreground-color 2.
+     display  "会社名を入力           :- [" at 1101 with foreground-color 2.
      display  "]" at 1160 with foreground-color 2.
 *>
      accept   usera at 1128 with foreground-color 3 update.
 *>
-     display  "Please verify that name is correct (Y/N) :- [ ]" at 1301 with foreground-color 2.
+     display  "会社名を確認 (Y/N)                       :- [ ]" at 1301 with foreground-color 2.
      move     "Y"  to  ws-reply.
      accept   ws-reply  at 1346 with foreground-color 6 update.
 *>
@@ -755,12 +758,12 @@
      move     wsmaps-ser-xx to maps-ser-xx.
      move     wsmaps-ser-nn to maps-ser-nn.
 *>
-     display  "Using General  Ledger (Y/N) ? :- [ ]" at 1901 with foreground-color 2.
-     display  "Using Purchase Ledger (Y/N) ? :- [ ]" at 2001 with foreground-color 2.
-     display  "Using Sales    Ledger (Y/N) ? :- [ ]" at 2101 with foreground-color 2.
-     display  "Using Invoicing       (Y/N) ? :- [ ]" at 1941 with foreground-color 2.
-     display  "Using Stock Control   (Y/N) ? :- [ ]" at 2041 with foreground-color 2.
-     display  "Using Order Entry     (Y/N) ? :- [ ]" at 2141 with foreground-color 2.
+     display  "総勘定元帳を使用 (Y/N) ?      :- [ ]" at 1901 with foreground-color 2.
+     display  "仕入元帳を使用 (Y/N) ?        :- [ ]" at 2001 with foreground-color 2.
+     display  "売上元帳を使用 (Y/N) ?        :- [ ]" at 2101 with foreground-color 2.
+     display  "請求書発行を使用 (Y/N) ?      :- [ ]" at 1941 with foreground-color 2.
+     display  "在庫管理を使用 (Y/N) ?        :- [ ]" at 2041 with foreground-color 2.
+     display  "受注管理を使用 (Y/N) ?        :- [ ]" at 2141 with foreground-color 2.
 *>
      accept   ws-reply at 1935 with foreground-color 6 update.
      move     function upper-case (ws-reply) to ws-reply.
@@ -802,35 +805,35 @@
      else
               move zero to Level-5
      end-if
-     display  "Please confirm (Y/N) :- [ ] " at 2301 with foreground-color 2.
+     display  "確認 (Y/N)           :- [ ] " at 2301 with foreground-color 2.
 *>
      move     spaces  to  option-list.
      move     1  to  a.
 *>
      if       G-L
-              string "General " delimited by size into option-list with pointer a.
+              string "総勘定 " delimited by size into option-list with pointer a.
 *>
      if       B-L  and  G-L
               string "/ " delimited by size into option-list  with pointer a.
 *>
      if       B-L
-              string "Purchase " delimited by size into option-list with pointer a.
+              string "仕入 " delimited by size into option-list with pointer a.
 *>
      if       S-L  and  G-L
         or    S-L  and  B-L
               string "/ " delimited by size into option-list with pointer a.
 *>
      if       S-L
-              string "Sales " delimited by size into option-list with pointer a.
+              string "売上 " delimited by size into option-list with pointer a.
 *>
      if       S-L  and  full-invoicing = 1
-              string  "/ Invoicing" delimited by size into option-list with  pointer  a.
+              string  "/ 請求" delimited by size into option-list with  pointer  a.
 *>
      if       Stock
-              string "/ Stock " delimited by size into option-list pointer a.
+              string "/ 在庫 " delimited by size into option-list pointer a.
 *>
      if       O-E
-              string "/ Order Entry" delimited by size into option-list pointer a.
+              string "/ 受注" delimited by size into option-list pointer a.
 *>
 *>  option-list now max 60 chars used
 *>
