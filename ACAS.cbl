@@ -200,10 +200,10 @@
 *>
  01  Error-Messages.
 *> System Wide
-     03  SY006           pic x(62) value "SY006 Program Arguments limited to two and you have specified ".
-     03  SY007           pic x(35) value "SY007 Program arguments incorrect: ".
-     03  SY008           pic x(31) value "SY008 Note message & Hit return".
-     03  SY009           pic x(53) value "SY009 Environment variables not yet set up : ABORTING".
+     03  SY006           pic x(80) value "SY006 引数は2個までです。指定数: ".
+     03  SY007           pic x(80) value "SY007 引数が正しくありません: ".
+     03  SY008           pic x(80) value "SY008 メッセージを確認しEnter".
+     03  SY009           pic x(80) value "SY009 環境変数未設定: 中止".
 *> Module specific
 *>
  01  error-code          pic 999        value zero.
@@ -280,14 +280,14 @@
  Display-Go.
 *>
      display  prog-name at 0301 with foreground-color 2.
-     display  "ACAS System Menu" at 0333 with foreground-color 2.
+     display  "ACAS システムメニュー" at 0333 with foreground-color 2.
 *>
      accept   wsb-time from time.
      if       wsb-time not = "00000000"
               move wsb-hh to wsd-hh
               move wsb-mm to wsd-mm
               move wsb-ss to wsd-ss
-              display "at " at 0355 with foreground-color 2
+              display "時 " at 0355 with foreground-color 2
               display wsd-time at 0358 with foreground-color 2.
 *>
      accept   wsa-date from date.
@@ -295,19 +295,19 @@
               move wsa-yy to u-year
               move wsa-mm to u-month
               move wsa-dd to u-days
-              display "on " at 0367 with foreground-color 2
+              display "日 " at 0367 with foreground-color 2
               perform conv-date
               display u-date at 0370 with foreground-color 2.
 *>
-     display  "Select one of the following by letter  :- [ ]" at 0601 with foreground-color 2.
+     display  "次から文字で選択 :- [ ]" at 0601 with foreground-color 2.
 *>
-     display  "(A)  General Ledger"  at 1004 with foreground-color 2.
-     display  "(B)  Sales Ledger"    at 1104 with foreground-color 2.
-     display  "(C)  Purchase Ledger" at 1204 with foreground-color 2.
-     display  "(D)  Stock Control"   at 1304 with foreground-color 2.
-     display  "(E)  Order Entry"     at 1404 with foreground-color 2.
-     display  "(F)  Payroll"         at 1504 with foreground-color 2.
-     display  "(G)  Epos"            at 1604 with foreground-color 2.
+     display  "(A)  総勘定元帳"  at 1004 with foreground-color 2.
+     display  "(B)  売上元帳"    at 1104 with foreground-color 2.
+     display  "(C)  仕入元帳" at 1204 with foreground-color 2.
+     display  "(D)  在庫管理"   at 1304 with foreground-color 2.
+     display  "(E)  受注管理"     at 1404 with foreground-color 2.
+     display  "(F)  給与"         at 1504 with foreground-color 2.
+     display  "(G)  販売時点管理"            at 1604 with foreground-color 2.
 *>     display  "(H)  Incomplete Records" at 1044 with foreground-color 2
 *>
 *>*******************************************************************
@@ -315,8 +315,8 @@
 *>  before allowing a call to IRS but should put in place anyway
 *>*******************************************************************
 *>
-     display  "(X)  Exit To system" At 1444 with foreground-color 2.
-     display  "(Z)  System Setup" At 1644 with foreground-color 2.
+     display  "(X)  終了" At 1444 with foreground-color 2.
+     display  "(Z)  システム設定" At 1644 with foreground-color 2.
 *>
  accept-loop.
 *>
@@ -445,13 +445,13 @@
  loadsr.
 *>-----
 *>
-     display  "Sorry, not yet available" at 2331 with foreground-color 2.
+     display  "未対応です" at 2331 with foreground-color 2.
      go       to accept-loop.
 *>
  loadsr2.
 *>------
 *>
-     display  "Sorry, not available" at 2331 with foreground-color 2.
+     display  "利用できません" at 2331 with foreground-color 2.
      go       to accept-loop.
 *>
  main-exit.
@@ -464,13 +464,13 @@
 *>    Open Source release
 *>
      display  prog-name at 0101 with foreground-color 2 erase eos.
-     display  "ACAS System Setup Routine - Level 1" at 0122 with foreground-color 2.
+     display  "ACAS セットアップ - レベル1" at 0122 with foreground-color 2.
 *>
 *> Now Open System File for Output (overwriting existing contents)
 *>
      open     output system-file.
      if       fs-reply not = zero
-              display "Problem with opening system file. Hit return to quit"
+              display "システムファイルを開けません。Enterで終了"
                          at 1101 with foreground-color 4
               accept ws-reply at 1157
               stop run
@@ -481,12 +481,12 @@
      move     1 to date-form.                                                *> default UK format
 *>
  Capture-Data.
-     display  "Enter the Company Name :- [" at 1101 with foreground-color 2.
+     display  "会社名を入力 :- [" at 1101 with foreground-color 2.
      display  "]" at 1160 with foreground-color 2.
 *>
      accept   usera at 1128 with foreground-color 3 update.
 *>
-     display  "Please verify that name is correct (Y/N) :- [ ]"               at 1301 with foreground-color 2.
+     display  "会社名を確認 (Y/N) :- [ ]"               at 1301 with foreground-color 2.
      move     "Y"  to  ws-reply.
      accept   ws-reply  at 1346 with foreground-color 6 update.
 *>
@@ -553,12 +553,12 @@
      move     wsmaps-ser-xx to maps-ser-xx.
      move     wsmaps-ser-nn to maps-ser-nn.
 *>
-     display  "Using General  Ledger (Y/N) ? :- [ ]" at 1901 with foreground-color 2.
-     display  "Using Purchase Ledger (Y/N) ? :- [ ]" at 2001 with foreground-color 2.
-     display  "Using Sales    Ledger (Y/N) ? :- [ ]" at 2101 with foreground-color 2.
-     display  "Using Invoicing       (Y/N) ? :- [ ]" at 1941 with foreground-color 2.
-     display  "Using Stock Control   (Y/N) ? :- [ ]" at 2041 with foreground-color 2.
-     display  "Using Order Entry     (Y/N) ? :- [ ]" at 2141 with foreground-color 2.
+     display  "総勘定元帳を使用 (Y/N) ? :- [ ]" at 1901 with foreground-color 2.
+     display  "仕入元帳を使用 (Y/N) ? :- [ ]" at 2001 with foreground-color 2.
+     display  "売上元帳を使用 (Y/N) ? :- [ ]" at 2101 with foreground-color 2.
+     display  "請求書発行を使用 (Y/N) ? :- [ ]" at 1941 with foreground-color 2.
+     display  "在庫管理を使用 (Y/N) ? :- [ ]" at 2041 with foreground-color 2.
+     display  "受注管理を使用 (Y/N) ? :- [ ]" at 2141 with foreground-color 2.
 *>
      accept   ws-reply at 1935 with foreground-color 6 update.
      move     function upper-case (ws-reply) to ws-reply.
@@ -600,35 +600,35 @@
      else
               move zero to Level-5
      end-if
-     display  "Please confirm (Y/N) :- [ ] " at 2301 with foreground-color 2.
+     display  "確認 (Y/N) :- [ ] " at 2301 with foreground-color 2.
 *>  IRS here when sorted
      move     spaces  to  option-list.
      move     1  to  a.
 *>
      if       G-L
-              string "General " delimited by size into option-list with pointer a.
+              string "総勘定 " delimited by size into option-list with pointer a.
 *>
      if       B-L  and  G-L
               string "/ " delimited by size into option-list  with pointer a.
 *>
      if       B-L
-              string "Purchase " delimited by size into option-list with pointer a.
+              string "仕入 " delimited by size into option-list with pointer a.
 *>
      if       S-L  and  G-L
         or    S-L  and  B-L
               string "/ " delimited by size into option-list with pointer a.
 *>
      if       S-L
-              string "Sales " delimited by size into option-list with pointer a.
+              string "売上 " delimited by size into option-list with pointer a.
 *>
      if       S-L  and  full-invoicing = 1
-              string  "/ Invoicing" delimited by size into option-list with  pointer  a.
+              string  "/ 請求" delimited by size into option-list with  pointer  a.
 *>
      if       Stock
-              string "/ Stock " delimited by size into option-list pointer a.
+              string "/ 在庫 " delimited by size into option-list pointer a.
 *>
      if       O-E
-              string "/ Order Entry" delimited by size into option-list pointer a.
+              string "/ 受注" delimited by size into option-list pointer a.
 *>
 *>   if       IRS
 *>             string "/ IRS" delimited by size into option-list   pointer a.

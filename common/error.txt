@@ -1,35 +1,35 @@
-001TL00**Unauthorised Usage Aborting**
-002TA24**Sales Ledger Not Yet Set-Up**
-003WW23!!Customer Record Not Found!!
-004WR23!!Delivery Data Missing!!
-005WW23!!Customer Record Already Exists!!
-006WW23!!P.A. Code Already Exists!!
-007WW23!!P.A. Group Code Does Not Exist!!
-008WW23!!P.A. Group Code Used As Analysis Code!!
-009WW23!!P.A. Code Does Not Exist!!
-010TA23**No Proofed Sales Transactions**
-011TA23**Payments Not Proofed**
-012TA24**Purchase Ledger Not Yet Set-Up**
-013TA23** No Transactions Have Been Posted **
-014WA23** No Invoices To Proof/Post **
-015SS24Press Return To Continue
-016WW23!!Unidentified Error!!
-017TA23**Invoice File Does Not Exist**
-018WW24** Response Must Be (Y or N) **
-019TA23**Sales Transactions Not Posted**
-020WW23!!Unidentified Error!!
-021WW23!!Supplier Record Not Found!!
-022WW23!!Supplier Record Already Exists!!
-023TA23**No Proofed Purchase Transactions**
-024WW23**Payments Proofed Not Posted**
-025TA23**Purchase Transactions Not Posted**
-026TA23**Value.Dat Missing**
-027TW23**Unprinted Invoices Exist..Correct & Run Again**
-028TW05Invoices Not Posted; Payment Entry Not Allowed
-029TW23**P.A. File Does Not Exist**
-030TW05**No Payments To Correct/Proof/Post**
-031TW05**No Archive File, Aborted**
-032WR23!!Notes data missing on Delivery File!!
-033TW23!!Missing System record in System File!!
-045SS24Press Return For Menu
-099TA23??Operator Selected Abort??
+001TL00**無許可使用 中止**
+002TA24**売上元帳未設定**
+003WW23!!顧客レコードなし!!
+004WR23!!納品データなし!!
+005WW23!!顧客レコード重複!!
+006WW23!!分析コード重複!!
+007WW23!!分析グループコードなし!!
+008WW23!!分析コードに使用中!!
+009WW23!!分析コードなし!!
+010TA23**確認済み売上取引なし**
+011TA23**未確認支払あり**
+012TA24**仕入元帳未設定**
+013TA23**転記済み取引なし**
+014WA23**確認/転記請求書なし**
+015SS24Enterで続行
+016WW23!!不明なエラー!!
+017TA23**請求書ファイルなし**
+018WW24**(YまたはN)を入力**
+019TA23**未転記売上取引**
+020WW23!!不明なエラー!!
+021WW23!!仕入先レコードなし!!
+022WW23!!仕入先レコード重複!!
+023TA23**確認済み仕入取引なし**
+024WW23**確認済み支払未転記**
+025TA23**未転記仕入取引**
+026TA23**Value.Datなし**
+027TW23**未印刷請求書あり。再実行**
+028TW05請求書未転記; 支払入力不可
+029TW23**分析ファイルなし**
+030TW05**修正/確認/転記支払なし**
+031TW05**アーカイブなし。中止**
+032WR23!!納品ファイルの注記なし!!
+033TW23!!システムレコードなし!!
+045SS24Returnでメニューへ
+099TA23??操作者が中止を選択??
