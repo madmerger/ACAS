@@ -7,7 +7,7 @@
 *>
  01  File-Access.
      03  We-Error        binary-long.
-     03  Rrn             binary-long.
+     03  Rrn             binary-long unsigned.
      03  Fs-Reply        pic 99.
      03  s1              pic x.   *> not sure this is used so lets rem it out and see
 *>     05  s2              pic x.  *> rem'd out MF status
