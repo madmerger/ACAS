@@ -8,7 +8,7 @@ import unicodedata
 from pathlib import Path
 
 
-BASE_BRANCH = "devin/1789486429-gnucobol-build"
+DEFAULT_BASE = "origin/main"
 FILES = (
     "ACAS.cbl",
     "general/general.cbl",
@@ -52,10 +52,8 @@ def screen_items(text):
     return displays, accepts
 
 
-def original_file(path):
-    return subprocess.check_output(
-        ["git", "show", f"{BASE_BRANCH}:{path}"], text=True
-    )
+def original_file(base, path):
+    return subprocess.check_output(["git", "show", f"{base}:{path}"], text=True)
 
 
 def fail(message):
@@ -64,10 +62,11 @@ def fail(message):
 
 
 def main():
+    base = sys.argv[1] if len(sys.argv) > 1 else DEFAULT_BASE
     errors = 0
     for filename in FILES:
         current_displays, current_accepts = screen_items(Path(filename).read_text())
-        original_displays, _ = screen_items(original_file(filename))
+        original_displays, _ = screen_items(original_file(base, filename))
         current_boxes = [item for item in current_displays if "[" in item[3]]
         original_boxes = [item for item in original_displays if "[" in item[3]]
 
