@@ -11,6 +11,7 @@ import html as htmlmod
 import os
 import re
 import sys
+import tempfile
 from pathlib import Path
 
 import markdown
@@ -81,10 +82,12 @@ def main() -> None:
     with sync_playwright() as p:
         browser = p.chromium.launch()
         page = browser.new_page()
-        tmp = src.with_suffix(".md2pdf.html")
-        tmp.write_text(html, encoding="utf-8")
+        with tempfile.NamedTemporaryFile("w", encoding="utf-8", suffix=".md2pdf.html",
+                                         dir=src.resolve().parent, delete=False) as f:
+            f.write(html)
+            tmp = Path(f.name)
         try:
-            page.goto(tmp.resolve().as_uri(), wait_until="load")
+            page.goto(tmp.as_uri(), wait_until="load")
         finally:
             tmp.unlink()
         if mermaid_blocks:
