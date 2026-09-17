@@ -1,7 +1,7 @@
 ---
 title: ACAS (Applewood Computers Accounting System) 現行仕様書
 ref: main (7330246)
-generated: 2026-09-15
+generated: 2026-09-17
 evidence: ソースコードのみ
 ---
 
@@ -88,6 +88,80 @@ irs ─ 1 set-up(内部) 2 irs010 3 irs020 4 irs030 5 irs040 6 irs050
 
 初回起動時 (`system.dat` 無し) は各メニューが `sys002` を呼び出してパラメータ入力を強制し、`stock` は加えて `sl070` (分析コード) を呼ぶ (`stock.cbl:277`)。IRS 終了時は OS 別バックアップスクリプトが存在すれば `SYSTEM` 経由で起動する (`irs.cbl:464-478`)。
 
+### 3.1 システム構成図
+
+実行体 (メニュー) と共通部品、データファイル群の関係。矢印は「起動 (`call`)」または「読み書き」を示す。図中の根拠は 4 章の `copy "sel*.cob"` (ファイル SELECT 共通部) と各メニューの `load00`/`load000` である。
+
+```mermaid
+flowchart LR
+  ACAS[ACAS.cbl 統合メニュー]
+  ACAS -->|A| GL[general]
+  ACAS -->|B| SL[sales]
+  ACAS -->|C| PL[purchase]
+  ACAS -->|D| ST[stock]
+  ACAS -.->|H コメントアウト| IRS[irs 単独起動]
+  GL & SL & PL & ST -->|Z / 初回| SYS002[sys002]
+  SL & PL -->|U| XL150[xl150 期末]
+  SL & ST -->|L / 初回| SL070[sl070 分析コード]
+  SYS002 --> SYSDAT[(system.dat)]
+  GL --> GLF[(ledger / batch / posting)]
+  SL --> SLF[(salesled / invoice / openitm3)]
+  PL --> PLF[(purchled / pinvoice / openitm5 / pay)]
+  ST --> STF[(stockctl / staudit)]
+  IRS --> IRSF[(IRS nl / posting)]
+  SL & PL -->|自動仕訳| GLF
+  SL & PL -->|IRS 使用時| IRSF
+  SL & PL & ST --> VALF[(value / analysis)]
+```
+
+- `ACAS.cbl:395-437`: A/B/C/D で各実行体を `call`、H (irs) はコメントアウト。
+- `sales.cbl:400-401` `stock.cbl:277`: 初回起動時の `sys002` / `sl070` 呼出。
+- SL/PL → GL/IRS の連携は転記プログラム (`sl060` `sl100` `pl060` `pl950`) が `selpost.cob` (GL 用 posting) と `selpost-irs.cob` (IRS 用 posting) を SELECT していることによる (`sl060.cbl` `pl060.cbl` の `copy` 群)。
+
+### 3.2 プログラム呼出関係 (メニュー → サブプログラム)
+
+メニューは `ws-called` にプログラム名を格納して動的 `call` し、戻り値 `ws-term-code` で後続動作を決める。3 種のリンケージ形式 (1 章) の使い分けを含めた共通の呼出シーケンスを示す。
+
+```mermaid
+sequenceDiagram
+  participant U as 利用者
+  participant M as メニュー (general/sales/purchase/stock)
+  participant P as サブプログラム (ws-called)
+  participant S as system.dat
+  U->>M: 選択文字 (大文字化 → letters 検索 → go to depending on z)
+  M->>M: move "xxNNN" to ws-called / pass-value 設定
+  alt 通常形式 load00
+    M->>P: call using ws-calling-data system-record to-day file-defs
+  else GL 形式 load000 (general)
+    M->>P: call using ... system-record default-record to-day file-defs
+  else SL/PL 形式 load000 (sales/purchase)
+    M->>P: call using ... system-record system-record-4 to-day file-defs
+  end
+  P-->>M: ws-term-code
+  alt ws-term-code > 7
+    M->>S: overrewrite: rewrite rrn1 (+rrn2/4 は general、rrn4 は sales/purchase)
+    M-->>U: 終了
+  else それ以外
+    M->>M: cancel ws-called → display-menu
+  end
+```
+
+根拠: `general.cbl:485-507` (`load00`/`load000`)、`sales.cbl:456-481`、`purchase.cbl:470-474`、`stock.cbl:441-443`、書戻し `general.cbl:455-462` `sales.cbl:426-431` `purchase.cbl:431-436`。
+
+連鎖呼出 (1 メニュー選択で複数プログラムを順に呼ぶもの) は次のとおり。
+
+| メニュー選択 | 呼出順 | 継続条件 | 根拠 |
+|---|---|---|---|
+| general H | `gl070` → `gl071` → `gl072` | 各 `perform load00` 後に続行 (`ws-term-code=5` で `gl071` が中断) | `general.cbl:565-572` |
+| general C/E/F | `gl020` / `gl050` / `gl051` → `overrewrite` → `get-system-recs` | 呼出後に system.dat を書き戻して再読込 (パラメータ変更を反映) | `general.cbl:524-542` |
+| sales G | `sl055` → `sl060` | `sl055` が `ws-term-code = 0` を返した場合のみ `sl060` | `sales.cbl:528-534` |
+| sales J / K | `sl090` → `sl095` / `sl100` | J で入金入力後に `sl095` (ソート)、K で `sl100` (転記、`load000`) | `sales.cbl:546-553` |
+| sales O/P/Q | `sl115` → `sl110` / `sl190` / `sl120` | `sl115` (OTM 抽出・ソート) 後にレポート本体 (`sl120` は `load000`) | `sales.cbl:562-577` |
+| sales R | `sl165` → `sl160` | 同上 (取引先別) | `sales.cbl:578-582` |
+| sales U | `sl140` → `xl150` → (`sl130` → `xl150` 繰返し) | `xl150` が 1 を返すと `sl130` を挟んで再実行、2/3 でメニューへ | `sales.cbl:620-645` |
+| sales T | `sl900` (請求書サブメニュー) → `sl910`/`sl920`/`sl930`/`sl940`/`sl950`/`sl200` | `sl900` 内で選択 1〜8 に応じ `pass-value` を設定して `call` | `sl900.cbl:195-240` |
+| purchase S | `pl900` (支払サブメニュー) → `pl910`〜`pl960` | 選択 1〜6 | `pl900.cbl:137-173` |
+
 ## 4. データモデル
 
 ファイル名は `copybooks/wsnames.cob` の `file-0`〜`file-33` テーブルで管理され、パスは環境変数で前置される。主要ファイルを示す (件数: 31 定義)。
@@ -111,6 +185,58 @@ irs ─ 1 set-up(内部) 2 irs010 3 irs020 4 irs030 5 irs040 6 irs050
 | pay.dat (file-32), cheque.dat (file-33) | indexed / pay-supl-key+pay-nos | pay-date, cheque, sortcode, account, gross, folio(9) | PL 支払・小切手 (`fdpay.cob`) |
 | staudit (file-10) | sequential (optional) | 在庫監査トレイル | `Stk-Audit-Used=1` 時 |
 | IRS: system.dat / nl / def / post.dat / final.dat | irsub2 / irsub1 / irsub3 / irsub4 / irsub5 | nl-key = owning 9(5)+sub-nominal 9(5), nl-dr/cr, last(4); post-key 9(5), dr/cr 9(5), vat-ac-def | IRS 独立ファイル群 (`wsnl.cob` `wspost.cob`) |
+
+### 4.1 ファイル関連図 (キーによる結合)
+
+ACAS は RDB ではなく外部キー参照の制約は無いが、レコード間は以下のキー値で論理的に結合している (列名は各 `fd*.cob` / `ws*.cob`)。移行時はこの結合を FK として定義すればよい。
+
+```mermaid
+erDiagram
+  SALESLED ||--o{ SL_INVOICE : "sih-customer"
+  SALESLED ||--o{ OPENITM3 : "oi-customer"
+  SL_INVOICE ||--o{ OPENITM3 : "sih-invoice = oi-invoice"
+  SALESLED ||--o{ DELIVERY : "delivery-tag"
+  STOCKCTL ||--o{ SL_INVOICE : "sil-product (Stock-Link)"
+  PURCHLED ||--o{ PL_INVOICE : "ih-supplier"
+  PURCHLED ||--o{ OPENITM5 : "oi-customer"
+  PL_INVOICE ||--o{ OPENITM5 : "ih-invoice = oi-invoice"
+  PURCHLED ||--o{ PAY_DAT : "pay-supl-key"
+  OPENITM5 }o--o{ PAY_DAT : "pay-folio (max 9)"
+  PAY_DAT ||--o| CHEQUE_DAT : "pay-nos"
+  PURCHLED ||--o{ STOCKCTL : "Stock-Suppliers(3)"
+```
+
+売上・仕入側 (上) と GL・分析・在庫監査・IRS 側 (下)。
+
+```mermaid
+erDiagram
+  SYSTEM_DAT ||--o{ BATCH : "next-batch / scycle"
+  BATCH ||--|{ POSTING : "batch-nos + post-number"
+  LEDGER ||--o{ POSTING : "post-dr / post-cr / vat-ac"
+  ANALYSIS ||--o{ LEDGER : "pa-gl = ledger-nos"
+  ANALYSIS ||--|| VALUE_DAT : "va-code = pa-code"
+  ANALYSIS ||--o{ INVOICE_LINE : "sil-pa = pa-code"
+  STOCKCTL ||--o{ STAUDIT : "Stock-Key"
+  IRS_NL ||--o{ IRS_POSTING : "irs-post-dr / cr = nl-owning"
+```
+
+根拠: `fdsl.cob` `fdinv.cob` `fdoi3.cob` (`wsoi.cob`) `fdpl.cob` `fdpinv.cob` `fdpay.cob` `fdanal.cob` `fdval.cob` `fdbatch.cob` `fdpost.cob` `fdledger.cob` `fdstock.cob` `fdaudit.cob` `fdpost-irs.cob` `irsub1.cbl:114-124` (nl-key)。PL の OTM (`purchase/wsoi.cob`) は項目名が SL と同じ `oi-customer` で仕入先コードを保持する。GL posting は relative ファイルであり、`gl071` が batch/post 順にソートして (`gl071.cbl:72-108` `sort-trans`) `gl072` が元帳へ反映する。
+
+サブシステム間のデータ連携 (どのプログラムがどのファイルを書き、どのプログラムが読むか) は次のとおり。各プログラムの `copy "sel*.cob"` と `write`/`rewrite` 文から抽出した。
+
+| ファイル | 書き手 (write/rewrite) | 読み手 | 根拠 |
+|---|---|---|---|
+| invoice (SL) | `sl910` (新規) `sl920` (修正) `sl940` (削除) `sl055` (status 更新) | `sl055` `sl930` `sl950` `xl150` | `sl910.cbl` `sl055.cbl:320-367` |
+| openitm2 (SL 作業) | `sl055` (`write oi-header`) | `sl060` | `sl055.cbl:553` |
+| openitm3 (SL OTM) | `sl060` (請求登録) `sl080` (入金入力 `oi-type` = 取引種別) `sl100` (消込 `oi-status=1`) `xl150` (削除) | `sl910` (クレジット元確認) `sl115` `sl120` 等レポート | `sl060.cbl:499,646` `sl080.cbl:673` `sl100.cbl:287-358` |
+| salesled | `sl010` `sl960` (登録) `sl060` (残高・売上 Q) `sl100` (残高・未消込) | 全 SL | `sl060.cbl:452-497` `sl100.cbl:352` |
+| value.dat / analysis | `sl055` `sl100` `pl950` (集計) `sl070` (コード保守) `xl150` (年度末初期化) | `sl130`/`pl130` 分析レポート | `sl055.cbl:298-493` `pl950.cbl:464-474` |
+| posting / batch (GL) | `gl050` (仕訳入力) `sl060` `sl100` `pl060` `pl950` (自動仕訳) `gl072` (batch を processed) | `gl070` `gl071` `gl072` `gl080` | `gl050.cbl:255-263` `sl060.cbl:960-1013` `sl100.cbl:584-601` `pl950.cbl:588-605` `gl072.cbl:316` |
+| ledger (GL) | `gl020` (科目保守) `gl072` (`ledger-balance`) `gl080` (四半期繰越) | `gl030` `gl090` `gl120` レポート | `gl072.cbl:321` `gl080.cbl:248-284` |
+| irs posting | `sl060` `sl100` `pl060` `pl950` (`irs-vat-ac-def` 31/32) | `irs030` (`irs-post-file` を読んで `nl-dr`/`nl-cr` に加算) | `sl060.cbl:1004` `pl060.cbl:854` `irs030.cbl:1228-1307` |
+| pinvoice / openitm5 (PL) | `pl020`/`pl030`/`pl040` → `pl055` → `pl060` (OTM5 登録) `pl950` (`oi-type=5` 支払登録) | `pl910` (支払候補抽出) `pl115`・`pl120` | `pl950.cbl:354-403` `pl910.cbl:268-333` |
+| pay.dat / cheque.dat | `pl910` (生成) `pl920` (修正) `pl940` (小切手発行、`pay-record` 更新) | `pl930` (proof) `pl950` (登録) `pl960` (送金案内) | `pl910.cbl:393-405` `pl940.cbl:437-440` |
+| stockctl / staudit | `st010` (保守) `st020` (入出庫・発注、監査レコード write) `sl910` (`SL-Stock-Link=Y`) `st040` (期末初期化) | `st030` レポート `st020`(5) 監査レポート | `st020.cbl:755,848,995,1036,1280` `st040.cbl` |
 
 ## 5. 業務ルール
 
@@ -152,6 +278,158 @@ irs ─ 1 set-up(内部) 2 irs010 3 irs020 4 irs030 5 irs040 6 irs050
 | G-E, G-F, G-G, G-H, G-J〜G-L | 6.5 | P-S, P-U, P-V | 6.11 |
 | K-C | 6.6 | *-Z | 6.12 |
 | G-A/S-A/P-A/K-A, G-B/G-C, S-C/P-C, S-L〜S-N, S-R/S-S/S-V, P-M〜P-R | 6.14 (差分表) | I-1〜I-A | 6.13 |
+
+### 6.0 主要業務のシーケンス図
+
+以下 5 つの主要業務について、利用者 → プログラム → ファイルの順序を示す。各ステップの詳細・検証ルールは 6.2 以下と 5 章 (B-xx) を参照。
+
+**(1) 売上: 請求書入力から GL/IRS 転記まで (S-D → S-G)**
+
+```mermaid
+sequenceDiagram
+  actor U as 利用者
+  participant I as sl910<br/>請求書入力
+  participant INV as invoice<br/>(+stockctl/staudit)
+  participant A as sl055<br/>抽出・分析
+  participant P as sl060<br/>転記
+  participant SLD as salesled<br/>openitm3
+  participant GLP as batch/posting<br/>(GL) / irs posting
+  U->>I: 顧客・種別 (B-02)・行明細・追加料金・遅延料
+  I->>SLD: read 顧客 (与信 B-03)、OTM3 (クレジット元 B-04)
+  I->>INV: write ヘッダ+行 (status P)、Next-Invoice++
+  Note over I,INV: SL-Stock-Link=Y なら stockctl rewrite / staudit write
+  U->>A: メニュー G
+  A->>INV: read 未転記 → rewrite status Z/A、value/analysis 集計
+  A->>A: openitm2 に oi-header を write
+  A-->>P: ws-term-code = 0 なら続けて call
+  P->>SLD: rewrite 残高・売上 Q・最終請求日 (B-07)
+  P->>SLD: write OTM3 (失敗は SL136)
+  P->>GLP: write 仕訳 DR Debtors / CR Sales / VAT (B-08)、99 件で batch 分割 (B-10)
+  P-->>U: "Invoice Posting & Report" 印字
+```
+
+根拠: `sl910.cbl:1235-1236` (status P)、`sl055.cbl:298-367,551-553`、`sl060.cbl:452-499,646,894-1013`。
+
+**(2) 入金: 入力 → proof → 転記 (S-H、S-J、S-K)**
+
+```mermaid
+sequenceDiagram
+  actor U as 利用者
+  participant E as sl080<br/>入金入力
+  participant OI3 as openitm3<br/>oisort
+  participant S as sl090→sl095<br/>proof/ソート
+  participant P as sl100<br/>入金転記
+  participant SLD as salesled
+  participant GLP as batch/posting<br/>(GL / IRS)
+  U->>E: 顧客・入金額・割当先請求
+  E->>OI3: write OTM (oi-type = 取引種別)
+  U->>S: メニュー J
+  S->>OI3: read 未転記入金 → oisort へ、proof リスト印字
+  U->>P: メニュー K: "OK to Post Payment Transactions (YES/NO) ?"
+  Note over P: 未 proof は error 011 "Payments Not Proofed" で中止
+  loop OTM 種別 2/5/6 (B-11)
+    P->>OI3: rewrite 消込 (oi-approp / oi-deduct-amt)、oi-status = 1
+    P->>SLD: rewrite Sales-Current / Sales-Unapplied
+  end
+  P->>GLP: write 仕訳 post-amount = oi-paid、batch
+  P-->>U: "Cash Posting" レポート
+```
+
+根拠: `sl080.cbl:673`、`sales.cbl:546-553`、`sl100.cbl:251,278-358,584-601`。
+
+**(3) 仕入支払: 支払候補生成 → 小切手 → 登録 (P-S `pl900` 1→6)**
+
+```mermaid
+sequenceDiagram
+  actor U as 利用者
+  participant M as pl900<br/>支払サブメニュー
+  participant G as pl910<br/>支払生成
+  participant PL as purchled<br/>openitm5
+  participant PAY as pay.dat<br/>cheque.dat
+  participant C as pl940<br/>小切手生成
+  participant R as pl950<br/>レジスタ・登録
+  participant GLP as batch/posting<br/>(GL / IRS)
+  U->>M: (1)
+  M->>G: call
+  G->>U: age-to-pay 確認 (N で上書き)、to-be-paid = run-date − age-to-pay
+  G->>PL: read purch-current > 0 の仕入先、OTM5 type 2 かつ oi-date ≤ to-be-paid (早期割引控除)
+  G->>PAY: write pay-record (最大 9 folio)
+  U->>M: (2) pl920 修正 / (3) pl930 proof 印字
+  U->>M: (4)
+  M->>C: call
+  C->>PAY: pay.dat rewrite (小切手番号)、cheque.dat write
+  U->>M: (5)
+  M->>R: call
+  R->>PL: write OTM5 oi-type = 5 (支払)、rewrite 元請求の paid、value.dat 更新
+  R->>GLP: write 仕訳 + batch (IRS 時 irs posting)
+  R-->>U: "Cheque/Bacs Register" 印字、(6) pl960 で送金案内
+```
+
+根拠: `pl900.cbl:137-173`、`pl910.cbl:234-245,268-333,393-405`、`pl940.cbl:437-440`、`pl950.cbl:354-403,464-474,588-605`。
+
+**(4) GL: 仕訳入力 → 転記 (G-E → G-H)**
+
+```mermaid
+sequenceDiagram
+  actor U as 利用者
+  participant E as gl050<br/>仕訳入力
+  participant B as batch<br/>posting
+  participant C as gl070<br/>Phase 1/2 検査
+  participant S as gl071<br/>ソート
+  participant T as gl072<br/>元帳更新
+  participant L as ledger
+  U->>E: バッチ説明・既定勘定・convention DR/CR (B-12)
+  E->>B: write batch (status/cleared/proofed/posted = 0)
+  loop 仕訳
+    U->>E: 日付・DR/CR 勘定+PC・金額・摘要・VAT
+    E->>B: write posting (rrn = batch + post-number)
+  end
+  U->>C: メニュー H
+  C->>B: read 当サイクル (bcycle = scycle) の batch
+  alt Open バッチあり
+    C-->>U: Batch Status Report 表示、ws-term-code = 5 でメニューへ (B-13)
+  else 全て closed
+    C-->>S: general.cbl:565-572 で順に call
+    S->>B: posting を batch, ac, pc, post 順に sort (sort-trans)
+    S-->>T: 
+    T->>L: rewrite ledger-balance 加算
+    T->>B: rewrite batch を processed / posted 日付
+    T-->>U: 転記リスト (tot-dr / tot-cr)
+  end
+```
+
+根拠: `gl050.cbl:255-263,579-649`、`gl070.cbl:229-263`、`gl071.cbl:72-142`、`gl072.cbl:270,314-321`。
+
+**(5) 在庫: 入出庫 → 監査レポート → 期末 (K-C → K-E)**
+
+```mermaid
+sequenceDiagram
+  actor U as 利用者
+  participant M as st020<br/>在庫移動サブメニュー
+  participant STK as stockctl
+  participant AUD as staudit
+  participant R as st030<br/>レポート
+  participant Y as st040<br/>期末
+  U->>M: (1) 入庫 / (2) 出庫 / (4) 発注: 品目・数量・単価
+  M->>STK: read (13 桁キーまたは略号 7 桁)
+  Note over M: 数量・負在庫検証 (B-15/B-16)、平均法で Cost/Value 再計算
+  M->>STK: rewrite Stock-Record
+  opt Stk-Audit-Used = 1
+    M->>AUD: write Stock-Audit-Record
+  end
+  U->>M: (5) 監査レポート → Stk-Activity-Rep-Run をセット
+  U->>R: メニュー D: レポート 1、9 (Understocked / Not in Stock / On Order)
+  R->>STK: read 全件 (抽出条件は 6.10)
+  U->>Y: メニュー E
+  alt Stk-Activity-Rep-Run = 0
+    Y-->>U: "You have NOT run audit reports" (045) で中止 (B-22)
+  else 実行済
+    Y->>U: 期間 / 年度クリア確認、バックアップ確認 (N/Y)
+    Y->>STK: initialize Stock-Mthly-Running-Totals / Stock-History
+  end
+```
+
+根拠: `st020.cbl:665-726,755,838-848,952-1036,1280`、`st030.cbl:397-422,951-992`、`st040.cbl:165-252`。
 
 ### 6.1 M-ALL / 各サブシステムメニュー
 - **入力順**: 1 文字 (`menu-reply`, 画面 06 行 44 桁) → 大文字化。

@@ -3,6 +3,8 @@
 
 Usage: python3 tools/md2pdf.py docs/ACAS_spec.md [docs/ACAS_spec.pdf]
 Requires: pip install markdown playwright && python3 -m playwright install chromium
+```mermaid fenced blocks are rendered to SVG with mermaid (loaded from MERMAID_URL at
+render time; if it cannot be loaded the block is left as a code block).
 """
 import html as htmlmod
 import re
@@ -33,7 +35,22 @@ code { font-family: "Menlo", "DejaVu Sans Mono", monospace; font-size: 8.3pt; }
 pre { font-size: 7.8pt; line-height: 1.3; background: #f5f5f5; border: 1px solid #ccc;
       padding: 4pt; white-space: pre-wrap; page-break-inside: avoid; }
 .front { font-size: 8.5pt; color: #444; margin-bottom: 8pt; }
+.mermaid { text-align: center; margin: 4pt 0 8pt; page-break-inside: avoid; }
+.mermaid svg { max-width: 100%; height: auto; max-height: 190mm; }
 """
+
+MERMAID_URL = "https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js"
+MERMAID_RE = re.compile(r"^```mermaid\n(.*?)\n```$", re.S | re.M)
+
+
+def extract_mermaid(text: str):
+    blocks = []
+
+    def repl(m):
+        blocks.append(m.group(1))
+        return f"<div class='mermaid'>{htmlmod.escape(m.group(1))}</div>"
+
+    return MERMAID_RE.sub(repl, text), blocks
 
 
 def split_front_matter(text: str):
@@ -54,6 +71,7 @@ def main() -> None:
     src = Path(sys.argv[1])
     dst = Path(sys.argv[2]) if len(sys.argv) > 2 else src.with_suffix(".pdf")
     meta, body = split_front_matter(src.read_text(encoding="utf-8"))
+    body, mermaid_blocks = extract_mermaid(body)
     html_body = markdown.markdown(body, extensions=["tables", "fenced_code", "toc"])
     front = " / ".join(f"{htmlmod.escape(k)}: {htmlmod.escape(v)}" for k, v in meta.items())
     html = (f"<html><head><meta charset='utf-8'><style>{CSS}</style></head><body>"
@@ -62,6 +80,21 @@ def main() -> None:
         browser = p.chromium.launch()
         page = browser.new_page()
         page.set_content(html, wait_until="load")
+        if mermaid_blocks:
+            try:
+                page.add_script_tag(url=MERMAID_URL)
+                page.evaluate(
+                    "async () => { mermaid.initialize({startOnLoad: false, theme: 'neutral',"
+                    " fontFamily: 'Noto Sans CJK JP, sans-serif', fontSize: 15,"
+                    " sequence: {wrap: true, width: 120, messageFontSize: 16, actorFontSize: 15,"
+                    " noteFontSize: 15, messageMargin: 24, actorMargin: 24, boxMargin: 6},"
+                    " flowchart: {useMaxWidth: true, nodeSpacing: 18, rankSpacing: 28},"
+                    " er: {useMaxWidth: true, fontSize: 16, minEntityWidth: 60, entityPadding: 10}});"
+                    " await mermaid.run({querySelector: '.mermaid'}); }")
+            except Exception as e:  # noqa: BLE001 - offline fallback keeps the text
+                print(f"mermaid not rendered: {e}", file=sys.stderr)
+            n = page.evaluate("document.querySelectorAll('.mermaid svg').length")
+            print(f"mermaid diagrams rendered: {n}/{len(mermaid_blocks)}")
         page.pdf(path=str(dst), format="A4", print_background=True,
                  display_header_footer=True,
                  header_template="<span></span>",
