@@ -3,10 +3,12 @@
 
 Usage: python3 tools/md2pdf.py docs/ACAS_spec.md [docs/ACAS_spec.pdf]
 Requires: pip install markdown playwright && python3 -m playwright install chromium
-```mermaid fenced blocks are rendered to SVG with mermaid (loaded from MERMAID_URL at
-render time; if it cannot be loaded the block is left as a code block).
+```mermaid fenced blocks are rendered to SVG with mermaid, loaded from $MERMAID_JS (a local
+mermaid.min.js) or else from MERMAID_URL; if it cannot be loaded the block is left as a code block.
+Relative image paths are resolved against the input file's directory.
 """
 import html as htmlmod
+import os
 import re
 import sys
 from pathlib import Path
@@ -79,10 +81,19 @@ def main() -> None:
     with sync_playwright() as p:
         browser = p.chromium.launch()
         page = browser.new_page()
-        page.set_content(html, wait_until="load")
+        tmp = src.with_suffix(".md2pdf.html")
+        tmp.write_text(html, encoding="utf-8")
+        try:
+            page.goto(tmp.resolve().as_uri(), wait_until="load")
+        finally:
+            tmp.unlink()
         if mermaid_blocks:
             try:
-                page.add_script_tag(url=MERMAID_URL)
+                local_js = os.environ.get("MERMAID_JS")
+                if local_js:
+                    page.add_script_tag(path=local_js)
+                else:
+                    page.add_script_tag(url=MERMAID_URL)
                 page.evaluate(
                     "async () => { mermaid.initialize({startOnLoad: false, theme: 'neutral',"
                     " fontFamily: 'Noto Sans CJK JP, sans-serif', fontSize: 15,"
@@ -93,6 +104,12 @@ def main() -> None:
                     " await mermaid.run({querySelector: '.mermaid'}); }")
             except Exception as e:  # noqa: BLE001 - offline fallback keeps the text
                 print(f"mermaid not rendered: {e}", file=sys.stderr)
+            page.evaluate(
+                "() => document.querySelectorAll('.mermaid').forEach(d => {"
+                " if (d.querySelector('svg')) return;"
+                " const pre = document.createElement('pre'); const code = document.createElement('code');"
+                " code.className = 'language-mermaid'; code.textContent = d.textContent;"
+                " pre.appendChild(code); d.replaceWith(pre); })")
             n = page.evaluate("document.querySelectorAll('.mermaid svg').length")
             print(f"mermaid diagrams rendered: {n}/{len(mermaid_blocks)}")
         page.pdf(path=str(dst), format="A4", print_background=True,
