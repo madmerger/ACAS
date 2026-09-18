@@ -1,8 +1,9 @@
 # ACAS
 
 ACAS (Applewood Computers Accounting System) is a COBOL-based accounting
-application covering ledger, stock, sales, purchasing, payroll, and point-of-sale
-workflows.
+application with ledger, stock, sales, and purchasing workflows represented in
+this source distribution. The menu also references payroll and point-of-sale
+modules, but those modules are not included in the open-source distribution.
 
 ## Source layout
 
