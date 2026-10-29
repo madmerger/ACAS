@@ -18,7 +18,7 @@ sys.path.insert(0, str(HERE))
 import cobol_layout as cl  # noqa: E402
 
 DATE_FIELDS = {"stock-order-due", "del-inv-dat"}
-EXCLUDE_FIELDS = {"pass-word", "password"}
+EXCLUDE_FIELDS = {"pass-word", "password", "passwd"}
 
 # table, copybook, 01 record name, key group (None => single row id), unique alt keys, non-unique indexes, source file
 TABLES = [
@@ -138,7 +138,7 @@ def table_ddl(table, root, keygrp, uniq, idx, source, warn):
         sep = "," if i < len(defs) - 1 else ""
         body.append(f"{d.rstrip()}{sep}" + (f"  -- {c}" if c else ""))
     excluded = "\n".join(
-        f"-- excluded: {col(name)} (plaintext password; replaced by hashed credentials, see 05-ws-domain-mapping.md §3)"
+        f"-- excluded: {col(name)} (plaintext credential; replaced by hashed credentials / secret store, see 05-ws-domain-mapping.md §3)"
         for name in dict.fromkeys(ctx["excluded"])
     )
     header = f"-- {table}: {source}; COBOL {root.name} ({root.length} bytes)\n"

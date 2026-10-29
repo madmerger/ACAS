@@ -24,7 +24,7 @@
 
 | テーブル | 元ファイル | 元レコード | 列数 | PK | 子テーブル（OCCURS） |
 |---|---|---|---:|---|---|
-| `system_record` | system.dat RRN 1 | `System-Record (copybooks/wssystem.cob)` | 140 | id | `system_record_file_status` |
+| `system_record` | system.dat RRN 1 | `System-Record (copybooks/wssystem.cob)` | 139 | id | `system_record_file_status` |
 | `default_record` | system.dat RRN 2 | `Default-Record (copybooks/wsdflt.cob)` | 1 | id | `default_record_def_acs`, `default_record_def_codes`, `default_record_def_vat` |
 | `final_record` | system.dat RRN 3 | `Final-Record (copybooks/wsfinal.cob)` | 1 | id | `final_record_ar1` |
 | `system_record_4` | system.dat RRN 4 | `System-Record-4 (copybooks/wssys4.cob)` | 21 | id | - |
@@ -75,5 +75,5 @@
 ## 4. 未決事項 / Phase 1 で確定するもの
 
 - 金額以外の `PIC 9` フラグ列（`Sales-Status` 等）を `SMALLINT` のままにするか `BOOLEAN`/enum にするか — 88 レベル定義を確認して Phase 1 のエンティティで決める（DDL は `SMALLINT` のまま）。
-- `System-Record` 内のパスワード（`Pass-Word x(4)`）は移行しない（`05-ws-domain-mapping.md` §3）。DDL からも `pass_word` 列を除外する。
+- `System-Record` 内のパスワード（`Pass-Word x(4)`）は移行しない（`05-ws-domain-mapping.md` §3）。DDL からも `pass_word` 列を除外する。`RDBMS-Passwd`（DB 接続パスワード）も DDL から除外し、Java では環境変数/シークレットストアで渡す。
 - `invoice-record`（134 バイト）と `invoice-header`（137 バイト）の長さ差: FD のレコード長は最大の 137 バイトになる（コメントの「134 bytes」は古い）。移行ツールは 137 バイト単位で読む。
