@@ -1,0 +1,2857 @@
+{
+ "ACAS": {
+  "path": "ACAS.cbl",
+  "lines": 779,
+  "calls": [
+   "epos",
+   "general",
+   "irs",
+   "maps01",
+   "maps04",
+   "OE",
+   "payroll",
+   "purchase",
+   "sales",
+   "stock",
+   "sys002"
+  ],
+  "copies": [
+   "envdiv.cob",
+   "fdsys.cob",
+   "selsys.cob",
+   "wscall.cob",
+   "wsdflt.cob",
+   "wsfinal.cob",
+   "wsfnctn.cob",
+   "wsmaps01.cob",
+   "wsmaps03.cob",
+   "wsnames.cob",
+   "wssys4.cob",
+   "wstime.cob"
+  ]
+ },
+ "acas011": {
+  "path": "common/acas011.cbl",
+  "lines": 521,
+  "calls": [
+   "stockMT"
+  ],
+  "copies": [
+   "envdiv.cob",
+   "fdstock.cob",
+   "selstock.cob",
+   "wsfnctn.cob",
+   "wsnames.cob",
+   "wsstock.cob",
+   "wssystem.cob"
+  ]
+ },
+ "irsub1": {
+  "path": "common/irsub1.cbl",
+  "lines": 254,
+  "calls": [],
+  "copies": [
+   "envdiv.cob",
+   "fdwsnl.cob",
+   "fsdispfe.cob",
+   "wsfnctn.cob",
+   "wsfsrply.cob",
+   "wsnl.cob"
+  ]
+ },
+ "irsub3": {
+  "path": "common/irsub3.cbl",
+  "lines": 111,
+  "calls": [],
+  "copies": [
+   "envdiv.cob",
+   "fsdispfe.cob",
+   "wsdflt.cob",
+   "wsfnctn.cob",
+   "wsfsrply.cob"
+  ]
+ },
+ "irsub4": {
+  "path": "common/irsub4.cbl",
+  "lines": 221,
+  "calls": [],
+  "copies": [
+   "envdiv.cob",
+   "fsdispfe.cob",
+   "wsfnctn.cob",
+   "wsfsrply.cob",
+   "wspost.cob"
+  ]
+ },
+ "irsub5": {
+  "path": "common/irsub5.cbl",
+  "lines": 134,
+  "calls": [],
+  "copies": [
+   "envdiv.cob",
+   "fsdispfe.cob",
+   "wsfinal.cob",
+   "wsfnctn.cob",
+   "wsfsrply.cob"
+  ]
+ },
+ "maps01": {
+  "path": "common/maps01.cbl",
+  "lines": 198,
+  "calls": [],
+  "copies": [
+   "envdiv.cob",
+   "wsmaps01.cob"
+  ]
+ },
+ "maps04": {
+  "path": "common/maps04.cbl",
+  "lines": 176,
+  "calls": [],
+  "copies": [
+   "envdiv.cob"
+  ]
+ },
+ "maps09": {
+  "path": "common/maps09.cbl",
+  "lines": 133,
+  "calls": [],
+  "copies": [
+   "envdiv.cob",
+   "wsmaps09.cob"
+  ]
+ },
+ "maps51": {
+  "path": "common/maps51.cbl",
+  "lines": 254,
+  "calls": [],
+  "copies": [
+   "envdiv.cob",
+   "fdwsnl.cob",
+   "fsdispfe.cob",
+   "wsfnctn.cob",
+   "wsfsrply.cob",
+   "wsnl.cob"
+  ]
+ },
+ "maps99": {
+  "path": "common/maps99.cbl",
+  "lines": 182,
+  "calls": [],
+  "copies": [
+   "envdiv.cob",
+   "wscall.cob"
+  ]
+ },
+ "mapser": {
+  "path": "common/mapser.cbl",
+  "lines": 405,
+  "calls": [
+   "maps01"
+  ],
+  "copies": [
+   "envdiv.cob",
+   "fdsys.cob",
+   "selsys.cob",
+   "wsdflt.cob",
+   "wsfinal.cob",
+   "wsfnctn.cob",
+   "wsmaps01.cob",
+   "wsnames.cob",
+   "wssys4.cob"
+  ]
+ },
+ "mapserup": {
+  "path": "common/mapserup.cbl",
+  "lines": 377,
+  "calls": [
+   "maps01"
+  ],
+  "copies": [
+   "envdiv.cob",
+   "fdsys.cob",
+   "selsys.cob",
+   "wsdflt.cob",
+   "wsfinal.cob",
+   "wsfnctn.cob",
+   "wsmaps01.cob",
+   "wsnames.cob"
+  ]
+ },
+ "stockMT": {
+  "path": "common/stockMT.cbl",
+  "lines": 3478,
+  "calls": [
+   "GETInstanceStamp",
+   "HandleDB",
+   "LogIt",
+   "STOCKMTclose",
+   "STOCKMTdelete",
+   "STOCKMTgetnext",
+   "STOCKMTGetRandom",
+   "STOCKMTinit",
+   "STOCKMTstart",
+   "STOCKMTStart",
+   "STOCKMTupdate",
+   "STOCKMTwrite",
+   "TranslateFileStatus"
+  ],
+  "copies": [
+   "wsfnctn.cob"
+  ]
+ },
+ "sys002": {
+  "path": "common/sys002.cbl",
+  "lines": 2445,
+  "calls": [
+   "maps01",
+   "maps04",
+   "SYSTEM"
+  ],
+  "copies": [
+   "envdiv.cob",
+   "fdprint.cob",
+   "fdsys.cob",
+   "print-spool-command.cob",
+   "screenio.cpy",
+   "selprint.cob",
+   "selsys.cob",
+   "wscall.cob",
+   "wsdflt.cob",
+   "wsfinal.cob",
+   "wsfnctn.cob",
+   "wsmaps01.cob",
+   "wsmaps03.cob",
+   "wsnames.cob",
+   "wssys4.cob"
+  ]
+ },
+ "xl150": {
+  "path": "common/xl150.cbl",
+  "lines": 1199,
+  "calls": [
+   "maps01",
+   "maps04",
+   "maps99"
+  ],
+  "copies": [
+   "envdiv.cob",
+   "fdinv.cob",
+   "fdoi3.cob",
+   "fdoi5.cob",
+   "fdois.cob",
+   "fdpinv.cob",
+   "fdpl.cob",
+   "fdsl.cob",
+   "fdval.cob",
+   "selinv.cob",
+   "seloi3.cob",
+   "seloi5.cob",
+   "selois.cob",
+   "selpinv.cob",
+   "selpl.cob",
+   "selsl.cob",
+   "selval.cob",
+   "wscall.cob",
+   "wsfnctn.cob",
+   "wsinv.cob",
+   "wsmaps01.cob",
+   "wsmaps03.cob",
+   "wsnames.cob",
+   "wspinv.cob",
+   "wssoi.cob",
+   "wssys4.cob",
+   "wssystem.cob"
+  ]
+ },
+ "general": {
+  "path": "general/general.cbl",
+  "lines": 953,
+  "calls": [
+   "CBL_CHECK_FILE_EXIST",
+   "gl000",
+   "gl020",
+   "gl030",
+   "gl050",
+   "gl051",
+   "gl060",
+   "gl070",
+   "gl071",
+   "gl072",
+   "gl080",
+   "gl090",
+   "gl100",
+   "gl105",
+   "gl120",
+   "gl210",
+   "maps01",
+   "maps04",
+   "maps99",
+   "sys002"
+  ],
+  "copies": [
+   "envdiv.cob",
+   "fdsys.cob",
+   "selsys.cob",
+   "wscall.cob",
+   "wsdflt.cob",
+   "wsfinal.cob",
+   "wsfnctn.cob",
+   "wsmaps01.cob",
+   "wsmaps03.cob",
+   "wsnames.cob",
+   "wssys4.cob",
+   "wstime.cob"
+  ]
+ },
+ "gl000": {
+  "path": "general/gl000.cbl",
+  "lines": 264,
+  "calls": [
+   "maps01",
+   "maps04",
+   "maps99"
+  ],
+  "copies": [
+   "envdiv.cob",
+   "wscall.cob",
+   "wsfnctn.cob",
+   "wsmaps01.cob",
+   "wsmaps03.cob",
+   "wsnames.cob",
+   "wssystem.cob"
+  ]
+ },
+ "gl020": {
+  "path": "general/gl020.cbl",
+  "lines": 721,
+  "calls": [
+   "maps01",
+   "maps04"
+  ],
+  "copies": [
+   "envdiv.cob",
+   "fdledger.cob",
+   "screenio.cpy",
+   "seledger.cob",
+   "wscall.cob",
+   "wsdflt.cob",
+   "wsfnctn.cob",
+   "wsmaps01.cob",
+   "wsmaps03.cob",
+   "wsnames.cob",
+   "wssystem.cob"
+  ]
+ },
+ "gl030": {
+  "path": "general/gl030.cbl",
+  "lines": 2188,
+  "calls": [
+   "maps04",
+   "SYSTEM"
+  ],
+  "copies": [
+   "envdiv.cob",
+   "fdledger.cob",
+   "fdprint.cob",
+   "print-spool-command.cob",
+   "screenio.cpy",
+   "seledger.cob",
+   "selprint.cob",
+   "wscall.cob",
+   "wsfnctn.cob",
+   "wsmaps03.cob",
+   "wsnames.cob",
+   "wspc.cob",
+   "wssystem.cob"
+  ]
+ },
+ "gl050": {
+  "path": "general/gl050.cbl",
+  "lines": 1643,
+  "calls": [
+   "maps04"
+  ],
+  "copies": [
+   "envdiv.cob",
+   "fdbatch.cob",
+   "fdledger.cob",
+   "fdpost.cob",
+   "screenio.cpy",
+   "selbatch.cob",
+   "seledger.cob",
+   "selpost.cob",
+   "wscall.cob",
+   "wsdflt.cob",
+   "wsfnctn.cob",
+   "wsmaps03.cob",
+   "wsnames.cob",
+   "wspc.cob",
+   "wspint.cob",
+   "wssystem.cob"
+  ]
+ },
+ "gl051": {
+  "path": "general/gl051.cbl",
+  "lines": 1201,
+  "calls": [
+   "maps04",
+   "SYSTEM"
+  ],
+  "copies": [
+   "envdiv.cob",
+   "fdbatch.cob",
+   "fdledger.cob",
+   "fdpost.cob",
+   "fdprint.cob",
+   "print-spool-command.cob",
+   "screenio.cpy",
+   "selbatch.cob",
+   "seledger.cob",
+   "selpost.cob",
+   "selprint.cob",
+   "wscall.cob",
+   "wsfnctn.cob",
+   "wsmaps03.cob",
+   "wsnames.cob",
+   "wssystem.cob"
+  ]
+ },
+ "gl060": {
+  "path": "general/gl060.cbl",
+  "lines": 473,
+  "calls": [
+   "maps04",
+   "SYSTEM"
+  ],
+  "copies": [
+   "envdiv.cob",
+   "fdbatch.cob",
+   "fdprint.cob",
+   "print-spool-command-p.cob",
+   "screenio.cpy",
+   "selbatch.cob",
+   "selprint.cob",
+   "wscall.cob",
+   "wsfnctn.cob",
+   "wsmaps03.cob",
+   "wsnames.cob",
+   "wssystem.cob"
+  ]
+ },
+ "gl070": {
+  "path": "general/gl070.cbl",
+  "lines": 553,
+  "calls": [
+   "maps04"
+  ],
+  "copies": [
+   "envdiv.cob",
+   "fdbatch.cob",
+   "fdpost.cob",
+   "screenio.cpy",
+   "selbatch.cob",
+   "selpost.cob",
+   "wscall.cob",
+   "wsfnctn.cob",
+   "wsmaps03.cob",
+   "wsnames.cob",
+   "wssystem.cob"
+  ]
+ },
+ "gl071": {
+  "path": "general/gl071.cbl",
+  "lines": 147,
+  "calls": [],
+  "copies": [
+   "envdiv.cob",
+   "wscall.cob",
+   "wsnames.cob",
+   "wssystem.cob"
+  ]
+ },
+ "gl072": {
+  "path": "general/gl072.cbl",
+  "lines": 431,
+  "calls": [
+   "SYSTEM"
+  ],
+  "copies": [
+   "envdiv.cob",
+   "fdbatch.cob",
+   "fdledger.cob",
+   "fdprint.cob",
+   "print-spool-command.cob",
+   "screenio.cpy",
+   "selbatch.cob",
+   "seledger.cob",
+   "selprint.cob",
+   "wscall.cob",
+   "wsfnctn.cob",
+   "wsnames.cob",
+   "wssystem.cob"
+  ]
+ },
+ "gl080": {
+  "path": "general/gl080.cbl",
+  "lines": 640,
+  "calls": [],
+  "copies": [
+   "FileStat-Msgs.cpy",
+   "envdiv.cob",
+   "fdbatch.cob",
+   "fdledger.cob",
+   "fdpost.cob",
+   "screenio.cpy",
+   "selbatch.cob",
+   "seledger.cob",
+   "selpost.cob",
+   "wscall.cob",
+   "wsfnctn.cob",
+   "wsnames.cob",
+   "wssystem.cob"
+  ]
+ },
+ "gl090": {
+  "path": "general/gl090.cbl",
+  "lines": 184,
+  "calls": [
+   "gl090a",
+   "gl090b"
+  ],
+  "copies": [
+   "envdiv.cob",
+   "wscall.cob",
+   "wsnames.cob",
+   "wssystem.cob"
+  ]
+ },
+ "gl090a": {
+  "path": "general/gl090a.cbl",
+  "lines": 584,
+  "calls": [
+   "SYSTEM"
+  ],
+  "copies": [
+   "envdiv.cob",
+   "fdledger.cob",
+   "fdprint.cob",
+   "print-spool-command.cob",
+   "seledger.cob",
+   "selprint.cob",
+   "wscall.cob",
+   "wsfnctn.cob",
+   "wsnames.cob",
+   "wssystem.cob"
+  ]
+ },
+ "gl090b": {
+  "path": "general/gl090b.cbl",
+  "lines": 376,
+  "calls": [
+   "SYSTEM"
+  ],
+  "copies": [
+   "envdiv.cob",
+   "fdledger.cob",
+   "fdprint.cob",
+   "print-spool-command.cob",
+   "seledger.cob",
+   "selprint.cob",
+   "wscall.cob",
+   "wsfnctn.cob",
+   "wsnames.cob",
+   "wssystem.cob"
+  ]
+ },
+ "gl100": {
+  "path": "general/gl100.cbl",
+  "lines": 250,
+  "calls": [],
+  "copies": [
+   "envdiv.cob",
+   "wscall.cob",
+   "wsfnctn.cob",
+   "wsnames.cob",
+   "wssystem.cob"
+  ]
+ },
+ "gl105": {
+  "path": "general/gl105.cbl",
+  "lines": 521,
+  "calls": [
+   "SYSTEM"
+  ],
+  "copies": [
+   "envdiv.cob",
+   "fdledger.cob",
+   "fdprint.cob",
+   "print-spool-command.cob",
+   "seledger.cob",
+   "selprint.cob",
+   "wscall.cob",
+   "wsfnctn.cob",
+   "wsnames.cob",
+   "wssystem.cob"
+  ]
+ },
+ "gl120": {
+  "path": "general/gl120.cbl",
+  "lines": 744,
+  "calls": [
+   "maps04",
+   "SYSTEM"
+  ],
+  "copies": [
+   "envdiv.cob",
+   "fdledger.cob",
+   "fdprint.cob",
+   "print-spool-command.cob",
+   "seledger.cob",
+   "selprint.cob",
+   "wscall.cob",
+   "wsfnctn.cob",
+   "wsmaps03.cob",
+   "wsnames.cob",
+   "wssystem.cob"
+  ]
+ },
+ "irs010": {
+  "path": "incomplete_records_system/RW-programs/irs010.cbl",
+  "lines": 1188,
+  "calls": [
+   "CBL_CHECK_FILE_EXIST",
+   "irsub1",
+   "SYSTEM"
+  ],
+  "copies": [
+   "envdiv.cob",
+   "of",
+   "print-spool-command-p.cob",
+   "screenio.cpy",
+   "wsfnctn.cob",
+   "wsnl.cob",
+   "wssystem.cob"
+  ]
+ },
+ "irs020": {
+  "path": "incomplete_records_system/RW-programs/irs020.cbl",
+  "lines": 850,
+  "calls": [
+   "irsub1",
+   "irsub3",
+   "irsub5",
+   "SYSTEM"
+  ],
+  "copies": [
+   "envdiv.cob",
+   "print-spool-command-p.cob",
+   "screenio.cpy",
+   "wsdflt.cob",
+   "wsfinal.cob",
+   "wsfnctn.cob",
+   "wsnl.cob",
+   "wssystem.cob"
+  ]
+ },
+ "irs040": {
+  "path": "incomplete_records_system/RW-programs/irs040.cbl",
+  "lines": 577,
+  "calls": [
+   "irsub1",
+   "SYSTEM"
+  ],
+  "copies": [
+   "envdiv.cob",
+   "print-spool-command-p.cob",
+   "wsfnctn.cob",
+   "wsnl.cob",
+   "wssystem.cob"
+  ]
+ },
+ "irs050-rw": {
+  "path": "incomplete_records_system/RW-programs/irs050-rw.cbl",
+  "lines": 1334,
+  "calls": [
+   "irs055",
+   "irsub1",
+   "irsub3",
+   "irsubp",
+   "SYSTEM"
+  ],
+  "copies": [
+   "envdiv.cob",
+   "print-spool-command-p.cob",
+   "screenio.cpy",
+   "wsdflt.cob",
+   "wsfnctn.cob",
+   "wsnl.cob",
+   "wspost.cob",
+   "wssystem.cob"
+  ]
+ },
+ "irs090": {
+  "path": "incomplete_records_system/RW-programs/irs090.cbl",
+  "lines": 406,
+  "calls": [
+   "SYSTEM"
+  ],
+  "copies": [
+   "envdiv.cob",
+   "fdwsnl.cob",
+   "print-spool-command.cob",
+   "wsfnctn.cob",
+   "wssystem.cob"
+  ]
+ },
+ "irs090Rep": {
+  "path": "incomplete_records_system/RW-programs/irs090Rep.cbl",
+  "lines": 519,
+  "calls": [
+   "SYSTEM"
+  ],
+  "copies": []
+ },
+ "irs": {
+  "path": "incomplete_records_system/irs.cbl",
+  "lines": 708,
+  "calls": [
+   "CBL_CHECK_FILE_EXIST",
+   "irs010",
+   "irs020",
+   "irs030",
+   "irs040",
+   "irs050",
+   "irs060",
+   "irs065",
+   "irs070",
+   "irs080",
+   "irs085",
+   "irs090",
+   "irsub2",
+   "maps04",
+   "SYSTEM"
+  ],
+  "copies": [
+   "envdiv.cob",
+   "screenio.cpy",
+   "wsfnctn.cob",
+   "wssystem.cob"
+  ]
+ },
+ "incomplete_records_system/irs010.cbl": {
+  "path": "incomplete_records_system/irs010.cbl",
+  "lines": 1196,
+  "calls": [
+   "CBL_CHECK_FILE_EXIST",
+   "irsub1",
+   "SYSTEM"
+  ],
+  "copies": [
+   "envdiv.cob",
+   "of",
+   "print-spool-command-p.cob",
+   "screenio.cpy",
+   "wsfnctn.cob",
+   "wsnl.cob",
+   "wssystem.cob"
+  ]
+ },
+ "incomplete_records_system/irs020.cbl": {
+  "path": "incomplete_records_system/irs020.cbl",
+  "lines": 853,
+  "calls": [
+   "irsub1",
+   "irsub3",
+   "irsub5",
+   "SYSTEM"
+  ],
+  "copies": [
+   "envdiv.cob",
+   "print-spool-command-p.cob",
+   "screenio.cpy",
+   "wsdflt.cob",
+   "wsfinal.cob",
+   "wsfnctn.cob",
+   "wsnl.cob",
+   "wssystem.cob"
+  ]
+ },
+ "irs030": {
+  "path": "incomplete_records_system/irs030.cbl",
+  "lines": 1390,
+  "calls": [
+   "irsub1",
+   "irsub2",
+   "irsub3",
+   "irsub4"
+  ],
+  "copies": [
+   "envdiv.cob",
+   "fdpost-irs.cob",
+   "screenio.cpy",
+   "selpost-irs.cob",
+   "wsdflt.cob",
+   "wsfnctn.cob",
+   "wsnl.cob",
+   "wspost.cob",
+   "wssystem.cob"
+  ]
+ },
+ "incomplete_records_system/irs040.cbl": {
+  "path": "incomplete_records_system/irs040.cbl",
+  "lines": 555,
+  "calls": [
+   "irsub1",
+   "SYSTEM"
+  ],
+  "copies": [
+   "envdiv.cob",
+   "print-spool-command-p.cob",
+   "wsfnctn.cob",
+   "wsnl.cob",
+   "wssystem.cob"
+  ]
+ },
+ "irs050": {
+  "path": "incomplete_records_system/irs050.cbl",
+  "lines": 1283,
+  "calls": [
+   "irs055",
+   "irsub1",
+   "irsub3",
+   "irsubp",
+   "SYSTEM"
+  ],
+  "copies": [
+   "envdiv.cob",
+   "print-spool-command-p.cob",
+   "screenio.cpy",
+   "wsdflt.cob",
+   "wsfnctn.cob",
+   "wsnl.cob",
+   "wspost.cob",
+   "wssystem.cob"
+  ]
+ },
+ "irs055": {
+  "path": "incomplete_records_system/irs055.cbl",
+  "lines": 165,
+  "calls": [],
+  "copies": [
+   "envdiv.cob",
+   "wsfnctn.cob",
+   "wspost.cob",
+   "wssystem.cob"
+  ]
+ },
+ "irs060": {
+  "path": "incomplete_records_system/irs060.cbl",
+  "lines": 1468,
+  "calls": [
+   "C$JUSTIFY",
+   "irsub3",
+   "irsub4",
+   "SYSTEM"
+  ],
+  "copies": [
+   "envdiv.cob",
+   "fdwsnl.cob",
+   "print-spool-command-p.cob",
+   "wsdflt.cob",
+   "wsfinal.cob",
+   "wsfnctn.cob",
+   "wsnl.cob",
+   "wspost.cob",
+   "wssystem.cob"
+  ]
+ },
+ "irs065": {
+  "path": "incomplete_records_system/irs065.cbl",
+  "lines": 148,
+  "calls": [],
+  "copies": [
+   "envdiv.cob",
+   "fdwsnl.cob",
+   "wsfnctn.cob",
+   "wssystem.cob"
+  ]
+ },
+ "irs070": {
+  "path": "incomplete_records_system/irs070.cbl",
+  "lines": 717,
+  "calls": [
+   "irs055",
+   "irsub1",
+   "irsub2",
+   "irsub3",
+   "irsub4",
+   "irsubp"
+  ],
+  "copies": [
+   "envdiv.cob",
+   "screenio.cpy",
+   "wsdflt.cob",
+   "wsfnctn.cob",
+   "wsnl.cob",
+   "wspost.cob",
+   "wssystem.cob"
+  ]
+ },
+ "irs080": {
+  "path": "incomplete_records_system/irs080.cbl",
+  "lines": 308,
+  "calls": [
+   "irsub1",
+   "irsub3",
+   "irsub4"
+  ],
+  "copies": [
+   "envdiv.cob",
+   "wsdflt.cob",
+   "wsfnctn.cob",
+   "wsnl.cob",
+   "wspost.cob",
+   "wssystem.cob"
+  ]
+ },
+ "irs085": {
+  "path": "incomplete_records_system/irs085.cbl",
+  "lines": 161,
+  "calls": [
+   "irsub3"
+  ],
+  "copies": [
+   "envdiv.cob",
+   "wsdflt.cob",
+   "wsfnctn.cob",
+   "wspost.cob",
+   "wssystem.cob"
+  ]
+ },
+ "incomplete_records_system/irs090.cbl": {
+  "path": "incomplete_records_system/irs090.cbl",
+  "lines": 409,
+  "calls": [
+   "SYSTEM"
+  ],
+  "copies": [
+   "envdiv.cob",
+   "fdwsnl.cob",
+   "print-spool-command.cob",
+   "wsfnctn.cob",
+   "wssystem.cob"
+  ]
+ },
+ "incomplete_records_system/irsub1.cbl": {
+  "path": "incomplete_records_system/irsub1.cbl",
+  "lines": 269,
+  "calls": [],
+  "copies": [
+   "envdiv.cob",
+   "fdwsnl.cob",
+   "fsdispfe.cob",
+   "wsfnctn.cob",
+   "wsfsrply.cob",
+   "wsnl.cob"
+  ]
+ },
+ "irsub2": {
+  "path": "incomplete_records_system/irsub2.cbl",
+  "lines": 125,
+  "calls": [],
+  "copies": [
+   "envdiv.cob",
+   "fsdispfe.cob",
+   "wsfnctn.cob",
+   "wssystem.cob"
+  ]
+ },
+ "incomplete_records_system/irsub3.cbl": {
+  "path": "incomplete_records_system/irsub3.cbl",
+  "lines": 111,
+  "calls": [],
+  "copies": [
+   "envdiv.cob",
+   "fsdispfe.cob",
+   "wsdflt.cob",
+   "wsfnctn.cob",
+   "wsfsrply.cob"
+  ]
+ },
+ "incomplete_records_system/irsub4.cbl": {
+  "path": "incomplete_records_system/irsub4.cbl",
+  "lines": 221,
+  "calls": [],
+  "copies": [
+   "envdiv.cob",
+   "fsdispfe.cob",
+   "wsfnctn.cob",
+   "wsfsrply.cob",
+   "wspost.cob"
+  ]
+ },
+ "incomplete_records_system/irsub5.cbl": {
+  "path": "incomplete_records_system/irsub5.cbl",
+  "lines": 134,
+  "calls": [],
+  "copies": [
+   "envdiv.cob",
+   "fsdispfe.cob",
+   "wsfinal.cob",
+   "wsfnctn.cob",
+   "wsfsrply.cob"
+  ]
+ },
+ "irsubp": {
+  "path": "incomplete_records_system/irsubp.cbl",
+  "lines": 151,
+  "calls": [],
+  "copies": [
+   "envdiv.cob",
+   "fsdispfe.cob",
+   "wsfnctn.cob",
+   "wsfsrply.cob",
+   "wspost.cob"
+  ]
+ },
+ "pl000": {
+  "path": "purchase/pl000.cbl",
+  "lines": 270,
+  "calls": [
+   "maps01",
+   "maps04",
+   "maps99"
+  ],
+  "copies": [
+   "envdiv.cob",
+   "wscall.cob",
+   "wsfnctn.cob",
+   "wsmaps01.cob",
+   "wsmaps03.cob",
+   "wsnames.cob",
+   "wssystem.cob"
+  ]
+ },
+ "pl010": {
+  "path": "purchase/pl010.cbl",
+  "lines": 1527,
+  "calls": [
+   "maps04",
+   "maps09",
+   "maps99",
+   "SYSTEM"
+  ],
+  "copies": [
+   "FileStat-Msgs.cpy",
+   "envdiv.cob",
+   "fddel.cob",
+   "fdpl.cob",
+   "fdprint.cob",
+   "print-spool-command.cob",
+   "screenio.cpy",
+   "seldel.cob",
+   "selpl.cob",
+   "selprint.cob",
+   "wscall.cob",
+   "wsfnctn.cob",
+   "wsmaps03.cob",
+   "wsmaps09.cob",
+   "wsnames.cob",
+   "wssystem.cob"
+  ]
+ },
+ "pl015": {
+  "path": "purchase/pl015.cbl",
+  "lines": 914,
+  "calls": [
+   "maps04",
+   "maps99",
+   "SYSTEM"
+  ],
+  "copies": [
+   "envdiv.cob",
+   "fdoi5.cob",
+   "fdpinv2.cob",
+   "fdpl.cob",
+   "print-spool-command-p.cob",
+   "screenio.cpy",
+   "seloi5.cob",
+   "selpinv.cob",
+   "selpl.cob",
+   "selprint.cob",
+   "wscall.cob",
+   "wsfnctn.cob",
+   "wsmaps03.cob",
+   "wsnames.cob",
+   "wsoi.cob",
+   "wssystem.cob"
+  ]
+ },
+ "pl020": {
+  "path": "purchase/pl020.cbl",
+  "lines": 1192,
+  "calls": [
+   "maps04",
+   "maps99",
+   "pl025"
+  ],
+  "copies": [
+   "FileStat-Msgs.cpy",
+   "envdiv.cob",
+   "fdanal.cob",
+   "fdpdnos.cob",
+   "fdpinv.cob",
+   "fdpl.cob",
+   "screenio.cpy",
+   "selanal.cob",
+   "selpdnos.cob",
+   "selpinv.cob",
+   "selpl.cob",
+   "wscall.cob",
+   "wsfnctn.cob",
+   "wsmaps03.cob",
+   "wsnames.cob",
+   "wspinv.cob",
+   "wssystem.cob"
+  ]
+ },
+ "pl025": {
+  "path": "purchase/pl025.cbl",
+  "lines": 375,
+  "calls": [
+   "maps09",
+   "maps99"
+  ],
+  "copies": [
+   "envdiv.cob",
+   "fddel.cob",
+   "fdpl.cob",
+   "screenio.cpy",
+   "seldel.cob",
+   "selpl.cob",
+   "wscall.cob",
+   "wsfnctn.cob",
+   "wsmaps09.cob",
+   "wsnames.cob",
+   "wssystem.cob"
+  ]
+ },
+ "pl030": {
+  "path": "purchase/pl030.cbl",
+  "lines": 1129,
+  "calls": [
+   "maps04",
+   "maps99"
+  ],
+  "copies": [
+   "FileStat-Msgs.cpy",
+   "envdiv.cob",
+   "fdanal.cob",
+   "fdpinv.cob",
+   "fdpl.cob",
+   "screenio.cpy",
+   "selanal.cob",
+   "selpinv.cob",
+   "selpl.cob",
+   "wscall.cob",
+   "wsfnctn.cob",
+   "wsmaps03.cob",
+   "wsnames.cob",
+   "wspinv.cob",
+   "wssystem.cob"
+  ]
+ },
+ "pl040": {
+  "path": "purchase/pl040.cbl",
+  "lines": 393,
+  "calls": [
+   "maps04",
+   "maps99"
+  ],
+  "copies": [
+   "envdiv.cob",
+   "fdpdnos.cob",
+   "fdpinv.cob",
+   "fdpl.cob",
+   "selpdnos.cob",
+   "selpinv.cob",
+   "selpl.cob",
+   "wscall.cob",
+   "wsfnctn.cob",
+   "wsmaps03.cob",
+   "wsnames.cob",
+   "wspinv.cob",
+   "wssystem.cob"
+  ]
+ },
+ "pl050": {
+  "path": "purchase/pl050.cbl",
+  "lines": 598,
+  "calls": [
+   "maps04",
+   "SYSTEM"
+  ],
+  "copies": [
+   "envdiv.cob",
+   "fdpinv.cob",
+   "fdpl.cob",
+   "fdprint.cob",
+   "print-spool-command.cob",
+   "selpinv.cob",
+   "selpl.cob",
+   "selprint.cob",
+   "wscall.cob",
+   "wsfnctn.cob",
+   "wsmaps03.cob",
+   "wsnames.cob",
+   "wspinv.cob",
+   "wssystem.cob"
+  ]
+ },
+ "pl055": {
+  "path": "purchase/pl055.cbl",
+  "lines": 485,
+  "calls": [
+   "maps99"
+  ],
+  "copies": [
+   "envdiv.cob",
+   "fdanal.cob",
+   "fdoi4.cob",
+   "fdpinv2.cob",
+   "fdval.cob",
+   "selanal.cob",
+   "seloi4.cob",
+   "selpinv.cob",
+   "selval.cob",
+   "wscall.cob",
+   "wsfnctn.cob",
+   "wsnames.cob",
+   "wsoi.cob",
+   "wssys4.cob",
+   "wssystem.cob"
+  ]
+ },
+ "pl060": {
+  "path": "purchase/pl060.cbl",
+  "lines": 1007,
+  "calls": [
+   "maps04",
+   "SYSTEM"
+  ],
+  "copies": [
+   "FileStat-Msgs.cpy",
+   "envdiv.cob",
+   "fdbatch.cob",
+   "fdoi4.cob",
+   "fdoi5.cob",
+   "fdpl.cob",
+   "fdpost-irs.cob",
+   "fdpost.cob",
+   "fdprint.cob",
+   "print-spool-command.cob",
+   "selbatch.cob",
+   "seloi4.cob",
+   "seloi5.cob",
+   "selpl.cob",
+   "selpost-irs.cob",
+   "selpost.cob",
+   "selprint.cob",
+   "wscall.cob",
+   "wsfnctn.cob",
+   "wsmaps03.cob",
+   "wsnames.cob",
+   "wsoi.cob",
+   "wssoi.cob",
+   "wssys4.cob",
+   "wssystem.cob"
+  ]
+ },
+ "pl070": {
+  "path": "purchase/pl070.cbl",
+  "lines": 782,
+  "calls": [
+   "SYSTEM"
+  ],
+  "copies": [
+   "envdiv.cob",
+   "fdanal.cob",
+   "fdprint.cob",
+   "fdval.cob",
+   "print-spool-command-p.cob",
+   "selanal.cob",
+   "selprint.cob",
+   "selval.cob",
+   "wscall.cob",
+   "wsfnctn.cob",
+   "wsnames.cob",
+   "wssystem.cob"
+  ]
+ },
+ "pl080": {
+  "path": "purchase/pl080.cbl",
+  "lines": 774,
+  "calls": [
+   "maps04",
+   "maps99"
+  ],
+  "copies": [
+   "envdiv.cob",
+   "fdoi5.cob",
+   "fdpl.cob",
+   "screenio.cpy",
+   "seloi5.cob",
+   "selpl.cob",
+   "wscall.cob",
+   "wsfnctn.cob",
+   "wsmaps03.cob",
+   "wsnames.cob",
+   "wsoi.cob",
+   "wssystem.cob"
+  ]
+ },
+ "pl085": {
+  "path": "purchase/pl085.cbl",
+  "lines": 614,
+  "calls": [
+   "maps04",
+   "maps99"
+  ],
+  "copies": [
+   "envdiv.cob",
+   "fdoi5.cob",
+   "fdpl.cob",
+   "seloi5.cob",
+   "selpl.cob",
+   "wscall.cob",
+   "wsfnctn.cob",
+   "wsmaps03.cob",
+   "wsnames.cob",
+   "wsoi.cob",
+   "wssystem.cob"
+  ]
+ },
+ "pl090": {
+  "path": "purchase/pl090.cbl",
+  "lines": 184,
+  "calls": [
+   "maps99"
+  ],
+  "copies": [
+   "envdiv.cob",
+   "fdoi5.cob",
+   "fdois.cob",
+   "seloi5.cob",
+   "selois.cob",
+   "wscall.cob",
+   "wsfnctn.cob",
+   "wsnames.cob",
+   "wssystem.cob"
+  ]
+ },
+ "pl095": {
+  "path": "purchase/pl095.cbl",
+  "lines": 523,
+  "calls": [
+   "maps04",
+   "SYSTEM"
+  ],
+  "copies": [
+   "envdiv.cob",
+   "fdois.cob",
+   "fdpl.cob",
+   "fdprint.cob",
+   "print-spool-command.cob",
+   "selois.cob",
+   "selpl.cob",
+   "selprint.cob",
+   "wscall.cob",
+   "wsfnctn.cob",
+   "wsmaps03.cob",
+   "wsnames.cob",
+   "wsoi.cob",
+   "wssystem.cob"
+  ]
+ },
+ "pl100": {
+  "path": "purchase/pl100.cbl",
+  "lines": 732,
+  "calls": [
+   "maps04",
+   "maps99",
+   "SYSTEM"
+  ],
+  "copies": [
+   "FileStat-Msgs.cpy",
+   "envdiv.cob",
+   "fdbatch.cob",
+   "fdoi5.cob",
+   "fdpl.cob",
+   "fdpost-irs.cob",
+   "fdpost.cob",
+   "fdprint.cob",
+   "fdval.cob",
+   "print-spool-command.cob",
+   "selbatch.cob",
+   "seloi5.cob",
+   "selpl.cob",
+   "selpost-irs.cob",
+   "selpost.cob",
+   "selprint.cob",
+   "selval.cob",
+   "wscall.cob",
+   "wsfnctn.cob",
+   "wsmaps03.cob",
+   "wsnames.cob",
+   "wsoi.cob",
+   "wssys4.cob",
+   "wssystem.cob"
+  ]
+ },
+ "pl115": {
+  "path": "purchase/pl115.cbl",
+  "lines": 164,
+  "calls": [
+   "maps99"
+  ],
+  "copies": [
+   "envdiv.cob",
+   "fdoi5.cob",
+   "fdois.cob",
+   "seloi5.cob",
+   "selois.cob",
+   "wscall.cob",
+   "wsfnctn.cob",
+   "wsnames.cob",
+   "wssystem.cob"
+  ]
+ },
+ "pl120": {
+  "path": "purchase/pl120.cbl",
+  "lines": 1076,
+  "calls": [
+   "maps04",
+   "maps99",
+   "SYSTEM"
+  ],
+  "copies": [
+   "envdiv.cob",
+   "fdois.cob",
+   "fdpl.cob",
+   "print-spool-command.cob",
+   "screenio.cpy",
+   "selois.cob",
+   "selpl.cob",
+   "selprint.cob",
+   "wscall.cob",
+   "wsfnctn.cob",
+   "wsmaps03.cob",
+   "wsnames.cob",
+   "wsoi.cob",
+   "wssys4.cob",
+   "wssystem.cob"
+  ]
+ },
+ "pl130": {
+  "path": "purchase/pl130.cbl",
+  "lines": 409,
+  "calls": [
+   "maps04",
+   "SYSTEM"
+  ],
+  "copies": [
+   "FileStat-Msgs.cpy",
+   "envdiv.cob",
+   "fdprint.cob",
+   "fdval.cob",
+   "print-spool-command.cob",
+   "selprint.cob",
+   "selval.cob",
+   "wscall.cob",
+   "wsfnctn.cob",
+   "wsmaps03.cob",
+   "wsnames.cob",
+   "wssystem.cob"
+  ]
+ },
+ "pl140": {
+  "path": "purchase/pl140.cbl",
+  "lines": 444,
+  "calls": [
+   "maps04",
+   "SYSTEM"
+  ],
+  "copies": [
+   "envdiv.cob",
+   "fdpinv.cob",
+   "fdpl.cob",
+   "print-spool-command.cob",
+   "selpinv.cob",
+   "selpl.cob",
+   "selprint.cob",
+   "wscall.cob",
+   "wsfnctn.cob",
+   "wsmaps03.cob",
+   "wsnames.cob",
+   "wspinv.cob",
+   "wssystem.cob"
+  ]
+ },
+ "pl160": {
+  "path": "purchase/pl160.cbl",
+  "lines": 708,
+  "calls": [
+   "maps04",
+   "SYSTEM"
+  ],
+  "copies": [
+   "envdiv.cob",
+   "fdpl.cob",
+   "fdprint.cob",
+   "print-spool-command.cob",
+   "screenio.cpy",
+   "selpl.cob",
+   "selprint.cob",
+   "wscall.cob",
+   "wsfnctn.cob",
+   "wsmaps03.cob",
+   "wsnames.cob",
+   "wssystem.cob"
+  ]
+ },
+ "pl165": {
+  "path": "purchase/pl165.cbl",
+  "lines": 161,
+  "calls": [],
+  "copies": [
+   "envdiv.cob",
+   "fdpl.cob",
+   "selpl.cob",
+   "wscall.cob",
+   "wsfnctn.cob",
+   "wsnames.cob",
+   "wssystem.cob"
+  ]
+ },
+ "pl170": {
+  "path": "purchase/pl170.cbl",
+  "lines": 612,
+  "calls": [
+   "maps04",
+   "SYSTEM"
+  ],
+  "copies": [
+   "envdiv.cob",
+   "fdpl.cob",
+   "fdprint.cob",
+   "print-spool-command.cob",
+   "screenio.cpy",
+   "selpl.cob",
+   "selprint.cob",
+   "wscall.cob",
+   "wsfnctn.cob",
+   "wsmaps03.cob",
+   "wsnames.cob",
+   "wssystem.cob"
+  ]
+ },
+ "pl180": {
+  "path": "purchase/pl180.cbl",
+  "lines": 209,
+  "calls": [
+   "pl020",
+   "pl030",
+   "pl040",
+   "pl050"
+  ],
+  "copies": [
+   "envdiv.cob",
+   "wscall.cob",
+   "wsfnctn.cob",
+   "wssystem.cob"
+  ]
+ },
+ "pl190": {
+  "path": "purchase/pl190.cbl",
+  "lines": 730,
+  "calls": [
+   "maps04",
+   "SYSTEM"
+  ],
+  "copies": [
+   "envdiv.cob",
+   "fdpl.cob",
+   "print-spool-command.cob",
+   "screenio.cpy",
+   "selpl.cob",
+   "selprint.cob",
+   "wscall.cob",
+   "wsfnctn.cob",
+   "wsmaps03.cob",
+   "wsnames.cob",
+   "wssystem.cob"
+  ]
+ },
+ "pl900": {
+  "path": "purchase/pl900.cbl",
+  "lines": 220,
+  "calls": [
+   "maps04",
+   "pl910",
+   "pl920",
+   "pl930",
+   "pl940",
+   "pl950",
+   "pl960"
+  ],
+  "copies": [
+   "envdiv.cob",
+   "wscall.cob",
+   "wsmaps03.cob",
+   "wsnames.cob",
+   "wssystem.cob"
+  ]
+ },
+ "pl910": {
+  "path": "purchase/pl910.cbl",
+  "lines": 568,
+  "calls": [
+   "maps04",
+   "SYSTEM"
+  ],
+  "copies": [
+   "envdiv.cob",
+   "fdoi5.cob",
+   "fdpay.cob",
+   "fdpl.cob",
+   "fdprint.cob",
+   "print-spool-command.cob",
+   "seloi5.cob",
+   "selpay.cob",
+   "selpl.cob",
+   "selprint.cob",
+   "wscall.cob",
+   "wsfnctn.cob",
+   "wsmaps03.cob",
+   "wsnames.cob",
+   "wsoi.cob",
+   "wssystem.cob"
+  ]
+ },
+ "pl920": {
+  "path": "purchase/pl920.cbl",
+  "lines": 290,
+  "calls": [],
+  "copies": [
+   "envdiv.cob",
+   "fdpay.cob",
+   "fdpl.cob",
+   "selpay.cob",
+   "selpl.cob",
+   "wscall.cob",
+   "wsfnctn.cob",
+   "wsmaps03.cob",
+   "wsnames.cob",
+   "wsoi.cob",
+   "wssystem.cob"
+  ]
+ },
+ "pl930": {
+  "path": "purchase/pl930.cbl",
+  "lines": 428,
+  "calls": [
+   "maps04",
+   "SYSTEM"
+  ],
+  "copies": [
+   "envdiv.cob",
+   "fdpay.cob",
+   "fdpl.cob",
+   "fdprint.cob",
+   "print-spool-command.cob",
+   "selpay.cob",
+   "selpl.cob",
+   "selprint.cob",
+   "wscall.cob",
+   "wsfnctn.cob",
+   "wsmaps03.cob",
+   "wsnames.cob",
+   "wsoi.cob",
+   "wssystem.cob"
+  ]
+ },
+ "pl940": {
+  "path": "purchase/pl940.cbl",
+  "lines": 559,
+  "calls": [
+   "maps04"
+  ],
+  "copies": [
+   "envdiv.cob",
+   "fdpay.cob",
+   "fdpl.cob",
+   "selpay.cob",
+   "selpl.cob",
+   "wscall.cob",
+   "wsfnctn.cob",
+   "wsmaps03.cob",
+   "wsnames.cob",
+   "wsoi.cob",
+   "wssystem.cob"
+  ]
+ },
+ "pl950": {
+  "path": "purchase/pl950.cbl",
+  "lines": 738,
+  "calls": [
+   "maps04",
+   "SYSTEM"
+  ],
+  "copies": [
+   "FileStat-Msgs.cpy",
+   "envdiv.cob",
+   "fdbatch.cob",
+   "fdoi5.cob",
+   "fdpay.cob",
+   "fdpl.cob",
+   "fdpost-irs.cob",
+   "fdpost.cob",
+   "fdprint.cob",
+   "fdval.cob",
+   "print-spool-command-p.cob",
+   "selbatch.cob",
+   "seloi5.cob",
+   "selpay.cob",
+   "selpl.cob",
+   "selpost-irs.cob",
+   "selpost.cob",
+   "selprint.cob",
+   "selval.cob",
+   "wscall.cob",
+   "wsfnctn.cob",
+   "wsmaps03.cob",
+   "wsnames.cob",
+   "wsoi.cob",
+   "wssystem.cob"
+  ]
+ },
+ "pl960": {
+  "path": "purchase/pl960.cbl",
+  "lines": 280,
+  "calls": [
+   "SYSTEM"
+  ],
+  "copies": [
+   "envdiv.cob",
+   "fdprint.cob",
+   "print-spool-command.cob",
+   "selprint.cob",
+   "wscall.cob",
+   "wsfnctn.cob",
+   "wsnames.cob",
+   "wssystem.cob"
+  ]
+ },
+ "purchase": {
+  "path": "purchase/purchase.cbl",
+  "lines": 1007,
+  "calls": [
+   "CBL_CHECK_FILE_EXIST",
+   "maps01",
+   "maps04",
+   "maps99",
+   "pl000",
+   "pl010",
+   "pl015",
+   "pl020",
+   "pl030",
+   "pl040",
+   "pl050",
+   "pl055",
+   "pl060",
+   "pl070",
+   "pl080",
+   "pl085",
+   "pl090",
+   "pl095",
+   "pl100",
+   "pl115",
+   "pl120",
+   "pl130",
+   "pl140",
+   "pl160",
+   "pl165",
+   "pl170",
+   "pl180",
+   "pl190",
+   "pl900",
+   "sys002",
+   "SYSTEM",
+   "xl150"
+  ],
+  "copies": [
+   "envdiv.cob",
+   "fdsys.cob",
+   "selsys.cob",
+   "wscall.cob",
+   "wsdflt.cob",
+   "wsfinal.cob",
+   "wsfnctn.cob",
+   "wsmaps01.cob",
+   "wsmaps03.cob",
+   "wsnames.cob",
+   "wssys4.cob",
+   "wstime.cob"
+  ]
+ },
+ "sales": {
+  "path": "sales/sales.cbl",
+  "lines": 985,
+  "calls": [
+   "CBL_CHECK_FILE_EXIST",
+   "maps01",
+   "maps04",
+   "maps99",
+   "sl000",
+   "sl010",
+   "sl020",
+   "sl050",
+   "sl055",
+   "sl060",
+   "sl070",
+   "sl080",
+   "sl085",
+   "sl090",
+   "sl095",
+   "sl100",
+   "sl110",
+   "sl115",
+   "sl120",
+   "sl130",
+   "sl140",
+   "sl160",
+   "sl165",
+   "sl170",
+   "sl180",
+   "sl190",
+   "sl900",
+   "sl910",
+   "sl920",
+   "sys002",
+   "SYSTEM",
+   "xl150"
+  ],
+  "copies": [
+   "envdiv.cob",
+   "fdsys.cob",
+   "selsys.cob",
+   "wscall.cob",
+   "wsdflt.cob",
+   "wsfinal.cob",
+   "wsfnctn.cob",
+   "wsmaps01.cob",
+   "wsmaps03.cob",
+   "wsnames.cob",
+   "wssys4.cob",
+   "wstime.cob"
+  ]
+ },
+ "sl000": {
+  "path": "sales/sl000.cbl",
+  "lines": 266,
+  "calls": [
+   "maps01",
+   "maps04",
+   "maps99"
+  ],
+  "copies": [
+   "envdiv.cob",
+   "wscall.cob",
+   "wsfnctn.cob",
+   "wsmaps01.cob",
+   "wsmaps03.cob",
+   "wsnames.cob",
+   "wssystem.cob"
+  ]
+ },
+ "sl010": {
+  "path": "sales/sl010.cbl",
+  "lines": 1885,
+  "calls": [
+   "maps04",
+   "maps09",
+   "maps99",
+   "SYSTEM"
+  ],
+  "copies": [
+   "FileStat-Msgs.cpy",
+   "envdiv.cob",
+   "fddel.cob",
+   "fdprint.cob",
+   "fdsl.cob",
+   "print-spool-command.cob",
+   "screenio.cpy",
+   "seldel.cob",
+   "selprint.cob",
+   "selsl.cob",
+   "wscall.cob",
+   "wsfnctn.cob",
+   "wsmaps03.cob",
+   "wsmaps09.cob",
+   "wsnames.cob",
+   "wssystem.cob"
+  ]
+ },
+ "sl020": {
+  "path": "sales/sl020.cbl",
+  "lines": 923,
+  "calls": [
+   "maps04",
+   "maps99",
+   "SYSTEM"
+  ],
+  "copies": [
+   "envdiv.cob",
+   "fdinv2.cob",
+   "fdoi3.cob",
+   "fdsl.cob",
+   "print-spool-command-p.cob",
+   "screenio.cpy",
+   "selinv.cob",
+   "seloi3.cob",
+   "selprint.cob",
+   "selsl.cob",
+   "wscall.cob",
+   "wsfnctn.cob",
+   "wsmaps03.cob",
+   "wsnames.cob",
+   "wsoi.cob",
+   "wssystem.cob"
+  ]
+ },
+ "sl050": {
+  "path": "sales/sl050.cbl",
+  "lines": 739,
+  "calls": [
+   "maps04",
+   "SYSTEM"
+  ],
+  "copies": [
+   "envdiv.cob",
+   "fdinv.cob",
+   "fdprint.cob",
+   "fdsl.cob",
+   "print-spool-command.cob",
+   "selinv.cob",
+   "selprint.cob",
+   "selsl.cob",
+   "wscall.cob",
+   "wsfnctn.cob",
+   "wsinv.cob",
+   "wsmaps03.cob",
+   "wsnames.cob",
+   "wssystem.cob"
+  ]
+ },
+ "sl055": {
+  "path": "sales/sl055.cbl",
+  "lines": 587,
+  "calls": [
+   "maps99",
+   "sl070"
+  ],
+  "copies": [
+   "FileStat-Msgs.cpy",
+   "envdiv.cob",
+   "fdanal.cob",
+   "fdinv2.cob",
+   "fdoi2.cob",
+   "fdval.cob",
+   "selanal.cob",
+   "selinv.cob",
+   "seloi2.cob",
+   "selval.cob",
+   "wscall.cob",
+   "wsfnctn.cob",
+   "wsnames.cob",
+   "wsoi.cob",
+   "wssys4.cob",
+   "wssystem.cob"
+  ]
+ },
+ "sl060": {
+  "path": "sales/sl060.cbl",
+  "lines": 1158,
+  "calls": [
+   "maps04",
+   "SYSTEM"
+  ],
+  "copies": [
+   "FileStat-Msgs.cpy",
+   "envdiv.cob",
+   "fdbatch.cob",
+   "fdoi2.cob",
+   "fdoi3.cob",
+   "fdpost-irs.cob",
+   "fdpost.cob",
+   "fdprint.cob",
+   "fdsl.cob",
+   "fdval.cob",
+   "print-spool-command.cob",
+   "selbatch.cob",
+   "seloi2.cob",
+   "seloi3.cob",
+   "selpost-irs.cob",
+   "selpost.cob",
+   "selprint.cob",
+   "selsl.cob",
+   "selval.cob",
+   "wscall.cob",
+   "wsfnctn.cob",
+   "wsmaps03.cob",
+   "wsnames.cob",
+   "wsoi.cob",
+   "wssoi.cob",
+   "wssys4.cob",
+   "wssystem.cob"
+  ]
+ },
+ "sl070": {
+  "path": "sales/sl070.cbl",
+  "lines": 768,
+  "calls": [
+   "SYSTEM"
+  ],
+  "copies": [
+   "envdiv.cob",
+   "fdanal.cob",
+   "fdprint.cob",
+   "fdval.cob",
+   "print-spool-command-p.cob",
+   "selanal.cob",
+   "selprint.cob",
+   "selval.cob",
+   "wscall.cob",
+   "wsfnctn.cob",
+   "wsnames.cob",
+   "wssystem.cob"
+  ]
+ },
+ "sl080": {
+  "path": "sales/sl080.cbl",
+  "lines": 803,
+  "calls": [
+   "maps04",
+   "maps99"
+  ],
+  "copies": [
+   "envdiv.cob",
+   "fdoi3.cob",
+   "fdsl.cob",
+   "screenio.cpy",
+   "seloi3.cob",
+   "selsl.cob",
+   "wscall.cob",
+   "wsfnctn.cob",
+   "wsmaps03.cob",
+   "wsnames.cob",
+   "wsoi.cob",
+   "wssystem.cob"
+  ]
+ },
+ "sl085": {
+  "path": "sales/sl085.cbl",
+  "lines": 628,
+  "calls": [
+   "maps04",
+   "maps99"
+  ],
+  "copies": [
+   "envdiv.cob",
+   "fdoi3.cob",
+   "fdsl.cob",
+   "seloi3.cob",
+   "selsl.cob",
+   "wscall.cob",
+   "wsfnctn.cob",
+   "wsmaps03.cob",
+   "wsnames.cob",
+   "wsoi.cob",
+   "wssystem.cob"
+  ]
+ },
+ "sl090": {
+  "path": "sales/sl090.cbl",
+  "lines": 202,
+  "calls": [
+   "maps99"
+  ],
+  "copies": [
+   "envdiv.cob",
+   "fdoi3.cob",
+   "fdois.cob",
+   "seloi3.cob",
+   "selois.cob",
+   "wscall.cob",
+   "wsfnctn.cob",
+   "wsnames.cob",
+   "wssystem.cob"
+  ]
+ },
+ "sl095": {
+  "path": "sales/sl095.cbl",
+  "lines": 528,
+  "calls": [
+   "maps04",
+   "SYSTEM"
+  ],
+  "copies": [
+   "envdiv.cob",
+   "fdois.cob",
+   "fdprint.cob",
+   "fdsl.cob",
+   "print-spool-command.cob",
+   "selois.cob",
+   "selprint.cob",
+   "selsl.cob",
+   "wscall.cob",
+   "wsfnctn.cob",
+   "wsmaps03.cob",
+   "wsnames.cob",
+   "wsoi.cob",
+   "wssystem.cob"
+  ]
+ },
+ "sl100": {
+  "path": "sales/sl100.cbl",
+  "lines": 734,
+  "calls": [
+   "maps04",
+   "maps99",
+   "SYSTEM"
+  ],
+  "copies": [
+   "FileStat-Msgs.cpy",
+   "envdiv.cob",
+   "fdbatch.cob",
+   "fdoi3.cob",
+   "fdpost-irs.cob",
+   "fdpost.cob",
+   "fdprint.cob",
+   "fdsl.cob",
+   "fdval.cob",
+   "print-spool-command.cob",
+   "selbatch.cob",
+   "seloi3.cob",
+   "selpost-irs.cob",
+   "selpost.cob",
+   "selprint.cob",
+   "selsl.cob",
+   "selval.cob",
+   "wscall.cob",
+   "wsfnctn.cob",
+   "wsmaps03.cob",
+   "wsnames.cob",
+   "wsoi.cob",
+   "wssys4.cob",
+   "wssystem.cob"
+  ]
+ },
+ "sl110": {
+  "path": "sales/sl110.cbl",
+  "lines": 861,
+  "calls": [
+   "maps04",
+   "maps99",
+   "SYSTEM"
+  ],
+  "copies": [
+   "envdiv.cob",
+   "fdois.cob",
+   "fdprint.cob",
+   "fdsl.cob",
+   "print-spool-command.cob",
+   "selois.cob",
+   "selprint.cob",
+   "selsl.cob",
+   "wscall.cob",
+   "wsfnctn.cob",
+   "wsmaps03.cob",
+   "wsnames.cob",
+   "wsoi.cob",
+   "wssystem.cob"
+  ]
+ },
+ "sl115": {
+  "path": "sales/sl115.cbl",
+  "lines": 162,
+  "calls": [
+   "maps99"
+  ],
+  "copies": [
+   "envdiv.cob",
+   "fdoi3.cob",
+   "fdois.cob",
+   "seloi3.cob",
+   "selois.cob",
+   "wscall.cob",
+   "wsfnctn.cob",
+   "wsnames.cob",
+   "wssystem.cob"
+  ]
+ },
+ "sl120": {
+  "path": "sales/sl120.cbl",
+  "lines": 1052,
+  "calls": [
+   "maps04",
+   "maps99",
+   "SYSTEM"
+  ],
+  "copies": [
+   "FileStat-Msgs.cpy",
+   "envdiv.cob",
+   "fdois.cob",
+   "fdprint.cob",
+   "fdsl.cob",
+   "print-spool-command.cob",
+   "screenio.cpy",
+   "selois.cob",
+   "selprint.cob",
+   "selsl.cob",
+   "wscall.cob",
+   "wsfnctn.cob",
+   "wsmaps03.cob",
+   "wsnames.cob",
+   "wsoi.cob",
+   "wssys4.cob",
+   "wssystem.cob"
+  ]
+ },
+ "sl130": {
+  "path": "sales/sl130.cbl",
+  "lines": 412,
+  "calls": [
+   "maps04",
+   "SYSTEM"
+  ],
+  "copies": [
+   "FileStat-Msgs.cpy",
+   "envdiv.cob",
+   "fdval.cob",
+   "print-spool-command.cob",
+   "selprint.cob",
+   "selval.cob",
+   "wscall.cob",
+   "wsfnctn.cob",
+   "wsmaps03.cob",
+   "wsnames.cob",
+   "wssystem.cob"
+  ]
+ },
+ "sl140": {
+  "path": "sales/sl140.cbl",
+  "lines": 463,
+  "calls": [
+   "maps04",
+   "SYSTEM"
+  ],
+  "copies": [
+   "envdiv.cob",
+   "fdinv.cob",
+   "fdsl.cob",
+   "print-spool-command.cob",
+   "selinv.cob",
+   "selprint.cob",
+   "selsl.cob",
+   "wscall.cob",
+   "wsfnctn.cob",
+   "wsinv.cob",
+   "wsmaps03.cob",
+   "wsnames.cob",
+   "wssystem.cob"
+  ]
+ },
+ "sl160": {
+  "path": "sales/sl160.cbl",
+  "lines": 797,
+  "calls": [
+   "maps04",
+   "SYSTEM"
+  ],
+  "copies": [
+   "envdiv.cob",
+   "fddel.cob",
+   "fdprint.cob",
+   "fdsl.cob",
+   "print-spool-command.cob",
+   "screenio.cpy",
+   "seldel.cob",
+   "selprint.cob",
+   "selsl.cob",
+   "wscall.cob",
+   "wsfnctn.cob",
+   "wsmaps03.cob",
+   "wsmaps09.cob",
+   "wsnames.cob",
+   "wssystem.cob"
+  ]
+ },
+ "sl165": {
+  "path": "sales/sl165.cbl",
+  "lines": 151,
+  "calls": [],
+  "copies": [
+   "envdiv.cob",
+   "fdsl.cob",
+   "selsl.cob",
+   "wscall.cob",
+   "wsfnctn.cob",
+   "wsnames.cob",
+   "wssystem.cob"
+  ]
+ },
+ "sl170": {
+  "path": "sales/sl170.cbl",
+  "lines": 796,
+  "calls": [
+   "maps04",
+   "SYSTEM"
+  ],
+  "copies": [
+   "envdiv.cob",
+   "fdsl.cob",
+   "print-spool-command.cob",
+   "screenio.cpy",
+   "selprint.cob",
+   "selsl.cob",
+   "wscall.cob",
+   "wsfnctn.cob",
+   "wsmaps03.cob",
+   "wsnames.cob",
+   "wssystem.cob"
+  ]
+ },
+ "sl180": {
+  "path": "sales/sl180.cbl",
+  "lines": 623,
+  "calls": [
+   "maps04",
+   "SYSTEM"
+  ],
+  "copies": [
+   "envdiv.cob",
+   "fdsl.cob",
+   "print-spool-command.cob",
+   "screenio.cpy",
+   "selprint.cob",
+   "selsl.cob",
+   "wscall.cob",
+   "wsfnctn.cob",
+   "wsmaps03.cob",
+   "wsnames.cob",
+   "wssystem.cob"
+  ]
+ },
+ "sl190": {
+  "path": "sales/sl190.cbl",
+  "lines": 661,
+  "calls": [
+   "maps04",
+   "maps99"
+  ],
+  "copies": [
+   "fdoi3.cob",
+   "fdsl.cob",
+   "seloi3.cob",
+   "selsl.cob",
+   "wscall.cob",
+   "wsfnctn.cob",
+   "wsmaps03.cob",
+   "wsnames.cob",
+   "wsoi.cob",
+   "wssystem.cob"
+  ]
+ },
+ "sl200": {
+  "path": "sales/sl200.cbl",
+  "lines": 288,
+  "calls": [
+   "maps04",
+   "SYSTEM"
+  ],
+  "copies": [
+   "envdiv.cob",
+   "fddnos.cob",
+   "fdprint.cob",
+   "print-spool-command-p.cob",
+   "seldnos.cob",
+   "selprint.cob",
+   "wscall.cob",
+   "wsfnctn.cob",
+   "wsmaps03.cob",
+   "wsnames.cob",
+   "wssystem.cob"
+  ]
+ },
+ "sl900": {
+  "path": "sales/sl900.cbl",
+  "lines": 419,
+  "calls": [
+   "sl200",
+   "sl910",
+   "sl920",
+   "sl930",
+   "sl940",
+   "sl950"
+  ],
+  "copies": [
+   "envdiv.cob",
+   "wscall.cob",
+   "wsfnctn.cob",
+   "wsmaps03.cob",
+   "wsnames.cob",
+   "wssystem.cob"
+  ]
+ },
+ "sl910": {
+  "path": "sales/sl910.cbl",
+  "lines": 2049,
+  "calls": [
+   "maps04",
+   "maps99",
+   "sl070",
+   "sl930",
+   "sl960"
+  ],
+  "copies": [
+   "FileStat-Msgs.cpy",
+   "envdiv.cob",
+   "fdanal.cob",
+   "fdaudit.cob",
+   "fddel.cob",
+   "fddnos.cob",
+   "fdinv.cob",
+   "fdoi3.cob",
+   "fdsl.cob",
+   "fdstock.cob",
+   "screenio.cpy",
+   "selanal.cob",
+   "selaud.cob",
+   "seldel.cob",
+   "seldnos.cob",
+   "selinv.cob",
+   "seloi3.cob",
+   "selsl.cob",
+   "selstock.cob",
+   "wscall.cob",
+   "wsfnctn.cob",
+   "wsinv.cob",
+   "wsmaps03.cob",
+   "wsnames.cob",
+   "wsoi.cob",
+   "wssystem.cob"
+  ]
+ },
+ "sl920": {
+  "path": "sales/sl920.cbl",
+  "lines": 2113,
+  "calls": [
+   "maps04",
+   "maps99",
+   "sl070"
+  ],
+  "copies": [
+   "FileStat-Msgs.cpy",
+   "envdiv.cob",
+   "fdanal.cob",
+   "fdaudit.cob",
+   "fddel.cob",
+   "fdinv.cob",
+   "fdsl.cob",
+   "fdstock.cob",
+   "screenio.cpy",
+   "selanal.cob",
+   "selaud.cob",
+   "seldel.cob",
+   "selinv.cob",
+   "selsl.cob",
+   "selstock.cob",
+   "wscall.cob",
+   "wsfnctn.cob",
+   "wsinv.cob",
+   "wsmaps03.cob",
+   "wsnames.cob",
+   "wssystem.cob"
+  ]
+ },
+ "sl930": {
+  "path": "sales/sl930.cbl",
+  "lines": 996,
+  "calls": [
+   "maps04",
+   "maps99",
+   "SYSTEM"
+  ],
+  "copies": [
+   "envdiv.cob",
+   "fddel.cob",
+   "fdinv.cob",
+   "fdsl.cob",
+   "print-spool-command-p-dispatch.cob",
+   "seldel.cob",
+   "selinv.cob",
+   "selprint.cob",
+   "selsl.cob",
+   "wscall.cob",
+   "wsfnctn.cob",
+   "wsinv.cob",
+   "wsmaps03.cob",
+   "wsnames.cob",
+   "wssystem.cob"
+  ]
+ },
+ "sl940": {
+  "path": "sales/sl940.cbl",
+  "lines": 431,
+  "calls": [
+   "maps04",
+   "maps99"
+  ],
+  "copies": [
+   "envdiv.cob",
+   "fddel.cob",
+   "fddnos.cob",
+   "fdinv.cob",
+   "fdsl.cob",
+   "seldel.cob",
+   "seldnos.cob",
+   "selinv.cob",
+   "selsl.cob",
+   "wscall.cob",
+   "wsfnctn.cob",
+   "wsinv.cob",
+   "wsmaps03.cob",
+   "wsnames.cob",
+   "wssystem.cob"
+  ]
+ },
+ "sl950": {
+  "path": "sales/sl950.cbl",
+  "lines": 833,
+  "calls": [
+   "maps04",
+   "maps99",
+   "SYSTEM"
+  ],
+  "copies": [
+   "envdiv.cob",
+   "fddel.cob",
+   "fdinv.cob",
+   "fdsl.cob",
+   "fdstock.cob",
+   "print-spool-command-p-dispatch.cob",
+   "seldel.cob",
+   "selinv.cob",
+   "selprint.cob",
+   "selsl.cob",
+   "selstock.cob",
+   "wscall.cob",
+   "wsfnctn.cob",
+   "wsinv.cob",
+   "wsmaps03.cob",
+   "wsnames.cob",
+   "wssystem.cob"
+  ]
+ },
+ "sl960": {
+  "path": "sales/sl960.cbl",
+  "lines": 480,
+  "calls": [
+   "maps09",
+   "maps99"
+  ],
+  "copies": [
+   "envdiv.cob",
+   "fddel.cob",
+   "fdsl.cob",
+   "screenio.cpy",
+   "seldel.cob",
+   "selsl.cob",
+   "wscall.cob",
+   "wsfnctn.cob",
+   "wsmaps09.cob",
+   "wsnames.cob",
+   "wssystem.cob"
+  ]
+ },
+ "st010": {
+  "path": "stock/RW-Programs/st010.cbl",
+  "lines": 1943,
+  "calls": [
+   "maps04",
+   "maps09",
+   "maps99",
+   "pl010",
+   "sl070",
+   "SYSTEM"
+  ],
+  "copies": [
+   "envdiv.cob",
+   "fdanal.cob",
+   "fdpl.cob",
+   "fdstock.cob",
+   "print-spool-command.cob",
+   "screenio.cpy",
+   "selanal.cob",
+   "selpl.cob",
+   "selprint.cob",
+   "selstock.cob",
+   "wscall.cob",
+   "wsfnctn.cob",
+   "wsmaps03.cob",
+   "wsmaps09.cob",
+   "wsnames.cob",
+   "wssystem.cob"
+  ]
+ },
+ "st010.original": {
+  "path": "stock/RW-Programs/st010.original.cbl",
+  "lines": 1944,
+  "calls": [
+   "maps04",
+   "maps09",
+   "maps99",
+   "pl010",
+   "sl070",
+   "SYSTEM"
+  ],
+  "copies": [
+   "envdiv.cob",
+   "fdanal.cob",
+   "fdpl.cob",
+   "fdstock.cob",
+   "print-spool-command.cob",
+   "screenio.cpy",
+   "selanal.cob",
+   "selpl.cob",
+   "selprint.cob",
+   "selstock.cob",
+   "wscall.cob",
+   "wsfnctn.cob",
+   "wsmaps03.cob",
+   "wsmaps09.cob",
+   "wsnames.cob",
+   "wssystem.cob"
+  ]
+ },
+ "st010Rep": {
+  "path": "stock/RW-Programs/st010Rep.cbl",
+  "lines": 2652,
+  "calls": [
+   "maps04",
+   "maps09",
+   "maps99",
+   "pl010",
+   "sl070",
+   "SYSTEM"
+  ],
+  "copies": []
+ },
+ "acasconvert1": {
+  "path": "stock/acasconvert1.cbl",
+  "lines": 284,
+  "calls": [],
+  "copies": [
+   "fdsys.cob",
+   "selsys.cob"
+  ]
+ },
+ "st000": {
+  "path": "stock/st000.cbl",
+  "lines": 264,
+  "calls": [
+   "maps01",
+   "maps04",
+   "maps99"
+  ],
+  "copies": [
+   "envdiv.cob",
+   "wscall.cob",
+   "wsfnctn.cob",
+   "wsmaps01.cob",
+   "wsmaps03.cob",
+   "wsnames.cob",
+   "wssystem.cob"
+  ]
+ },
+ "stock/st010.cbl": {
+  "path": "stock/st010.cbl",
+  "lines": 1853,
+  "calls": [
+   "maps04",
+   "maps09",
+   "maps99",
+   "pl010",
+   "sl070",
+   "SYSTEM"
+  ],
+  "copies": [
+   "envdiv.cob",
+   "fdanal.cob",
+   "fdpl.cob",
+   "fdprint.cob",
+   "fdstock.cob",
+   "print-spool-command.cob",
+   "screenio.cpy",
+   "selanal.cob",
+   "selpl.cob",
+   "selprint.cob",
+   "selstock.cob",
+   "wscall.cob",
+   "wsfnctn.cob",
+   "wsmaps03.cob",
+   "wsmaps09.cob",
+   "wsnames.cob",
+   "wssystem.cob"
+  ]
+ },
+ "st020": {
+  "path": "stock/st020.cbl",
+  "lines": 1977,
+  "calls": [
+   "maps04",
+   "maps99",
+   "SYSTEM"
+  ],
+  "copies": [
+   "envdiv.cob",
+   "fdaudit.cob",
+   "fdprint.cob",
+   "fdstock.cob",
+   "print-spool-command.cob",
+   "screenio.cpy",
+   "selaud.cob",
+   "selprint.cob",
+   "selstock.cob",
+   "wscall.cob",
+   "wsfnctn.cob",
+   "wsmaps03.cob",
+   "wsmaps09.cob",
+   "wsnames.cob",
+   "wssystem.cob"
+  ]
+ },
+ "st030": {
+  "path": "stock/st030.cbl",
+  "lines": 1773,
+  "calls": [
+   "maps04",
+   "maps99",
+   "SYSTEM"
+  ],
+  "copies": [
+   "envdiv.cob",
+   "fdprint.cob",
+   "fdstock.cob",
+   "print-spool-command.cob",
+   "screenio.cpy",
+   "selprint.cob",
+   "selstock.cob",
+   "wscall.cob",
+   "wsfnctn.cob",
+   "wsmaps03.cob",
+   "wsmaps09.cob",
+   "wsnames.cob",
+   "wssystem.cob"
+  ]
+ },
+ "st040": {
+  "path": "stock/st040.cbl",
+  "lines": 294,
+  "calls": [
+   "maps99"
+  ],
+  "copies": [
+   "envdiv.cob",
+   "fdstock.cob",
+   "selstock.cob",
+   "wscall.cob",
+   "wsfnctn.cob",
+   "wsnames.cob",
+   "wssystem.cob"
+  ]
+ },
+ "st050": {
+  "path": "stock/st050.cbl",
+  "lines": 398,
+  "calls": [
+   "maps99"
+  ],
+  "copies": [
+   "FileStat-Msgs.cpy",
+   "envdiv.cob",
+   "fdstock.cob",
+   "selstock.cob",
+   "wscall.cob",
+   "wsfnctn.cob",
+   "wsnames.cob",
+   "wssystem.cob"
+  ]
+ },
+ "st060": {
+  "path": "stock/st060.cbl",
+  "lines": 680,
+  "calls": [
+   "maps04",
+   "sl070"
+  ],
+  "copies": [
+   "FileStat-Msgs.cpy",
+   "envdiv.cob",
+   "fdstock.cob",
+   "selstock.cob",
+   "wscall.cob",
+   "wsfnctn.cob",
+   "wsmaps03.cob",
+   "wsnames.cob",
+   "wsstock.cob",
+   "wssystem.cob"
+  ]
+ },
+ "stock": {
+  "path": "stock/stock.cbl",
+  "lines": 798,
+  "calls": [
+   "CBL_CHECK_FILE_EXIST",
+   "maps01",
+   "maps04",
+   "maps99",
+   "sl070",
+   "st000",
+   "st010",
+   "st020",
+   "st030",
+   "st040",
+   "st050",
+   "st060",
+   "sys002",
+   "SYSTEM"
+  ],
+  "copies": [
+   "envdiv.cob",
+   "fdsys.cob",
+   "selsys.cob",
+   "wscall.cob",
+   "wsdflt.cob",
+   "wsfinal.cob",
+   "wsfnctn.cob",
+   "wsmaps01.cob",
+   "wsmaps03.cob",
+   "wsnames.cob",
+   "wssys4.cob",
+   "wstime.cob"
+  ]
+ }
+}
