@@ -184,17 +184,19 @@
   "calls": [
    "GETInstanceStamp",
    "HandleDB",
+   "LoadHVs",
    "LogIt",
    "STOCKMTclose",
    "STOCKMTdelete",
    "STOCKMTgetnext",
    "STOCKMTGetRandom",
    "STOCKMTinit",
-   "STOCKMTstart",
    "STOCKMTStart",
+   "STOCKMTstart",
    "STOCKMTupdate",
    "STOCKMTwrite",
-   "TranslateFileStatus"
+   "TranslateFileStatus",
+   "UnLoadHVs"
   ],
   "copies": [
    "wsfnctn.cob"

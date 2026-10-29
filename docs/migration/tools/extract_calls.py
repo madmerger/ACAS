@@ -12,9 +12,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[3]
 EXCLUDE_DIRS = {"experimental-stuff"}
 
-RE_CALL_LIT = re.compile(r'\bcall\s+"([^"]+)"', re.I)
+RE_CALL_LIT = re.compile(r"""\bcall\s+(["'])([^"']+)\1""", re.I)
 RE_CALL_VAR = re.compile(r'\bcall\s+([a-z][a-z0-9-]*)', re.I)
-RE_MOVE_LIT = re.compile(r'\bmove\s+"([^"]+)"\s+to\s+([a-z][a-z0-9-]*(?:[ \t]+[a-z][a-z0-9-]*)*)', re.I)
+RE_MOVE_LIT = re.compile(r"""\bmove\s+(["'])([^"']+)\1\s+to\s+([a-z][a-z0-9-]*(?:[ \t]+[a-z][a-z0-9-]*)*)""", re.I)
 COBOL_WORDS = {"if", "else", "end-if", "move", "perform", "go", "to", "call", "display", "accept", "when", "not"}
 RE_COPY = re.compile(r'\bcopy\s+"?([a-z0-9._-]+)"?', re.I)
 
@@ -34,11 +34,11 @@ def analyse(path: Path):
     joined = "\n".join(code)
     call_vars = {m.group(1).lower() for m in RE_CALL_VAR.finditer(joined)
                  if m.group(1).lower() not in {"using"}}
-    calls = set(m.group(1) for m in RE_CALL_LIT.finditer(joined))
+    calls = set(m.group(2) for m in RE_CALL_LIT.finditer(joined))
     for m in RE_MOVE_LIT.finditer(joined):
-        lit = m.group(1)
+        lit = m.group(2)
         targets = set()
-        for t in m.group(2).split():
+        for t in m.group(3).split():
             if t.lower() in COBOL_WORDS:
                 break
             targets.add(t.lower())

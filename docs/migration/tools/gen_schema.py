@@ -17,6 +17,9 @@ ROOT = HERE.parents[2]
 sys.path.insert(0, str(HERE))
 import cobol_layout as cl  # noqa: E402
 
+DATE_FIELDS = {"stock-order-due", "del-inv-dat"}
+EXCLUDE_FIELDS = {"pass-word", "password"}
+
 # table, copybook, 01 record name, key group (None => single row id), unique alt keys, non-unique indexes, source file
 TABLES = [
     ("system_record", "copybooks/wssystem.cob", "System-Record", None, [], [], "system.dat RRN 1"),
@@ -35,12 +38,14 @@ TABLES = [
     ("analysis_code", "copybooks/fdanal.cob", "analysis-record", "pa-code", [], [], "analysis.dat"),
     ("sl_invoice_header", "sales/fdinv2.cob", "invoice-header", ["ih-invoice", "ih-letter", "ih-test"], [], [], "invoice.dat (item-nos = 0)"),
     ("sl_invoice_line", "sales/fdinv2.cob", "invoice-line", ["il-invoice", "il-letter", "il-line"], [], [], "invoice.dat (item-nos 1..40)"),
-    ("sl_open_item", "sales/wsoi.cob", "oi-header", "oi-key", [], [], "openitm3.dat (+ openitm2.dat before posting)"),
+    ("sl_open_item", "sales/wsoi.cob", "oi-header", "oi-key", [], [], "openitm3.dat"),
+    ("sl_open_item_staging", "sales/wsoi.cob", "oi-header", None, [], [], "openitm2.dat (sequential, before posting)"),
     ("sl_deleted_invoice_no", "sales/fddnos.cob", "del-inv-nos-record", None, [], [], "delinvno.dat (sequential, surrogate id)"),
     ("pl_supplier", "copybooks/fdpl.cob", "Purch-Record", "Purch-Key", [], [], "purchled.dat"),
     ("pl_invoice_header", "purchase/fdpinv2.cob", "invoice-header", ["ih-invoice", "ih-test"], [], [], "pinvoice.dat (item-nos = 0)"),
     ("pl_invoice_line", "purchase/fdpinv2.cob", "invoice-line", ["il-invoice", "il-line"], [], [], "pinvoice.dat (item-nos 1..)"),
-    ("pl_open_item", "purchase/wsoi.cob", "oi-header", "oi-key", [], [], "openitm5.dat (+ openitm4.dat before posting)"),
+    ("pl_open_item", "purchase/wsoi.cob", "oi-header", ["oi-nos", "oi-check", "oi-invoice"], [], [], "openitm5.dat"),
+    ("pl_open_item_staging", "purchase/wsoi.cob", "oi-header", None, [], [], "openitm4.dat (sequential, before posting)"),
     ("pl_deleted_folio_no", "purchase/fdpdnos.cob", "del-inv-nos-record", None, [], [], "delfolio.dat (sequential, surrogate id)"),
     ("pl_payment", "purchase/fdpay.cob", "pay-record", "pay-key", [], [], "pay.dat"),
     ("irs_nominal", "incomplete_records_system/wsnl.cob", "nl-record", "nl-key", [], [], "acnts.dat"),
@@ -61,15 +66,27 @@ def col(name):
 def sqltype(it):
     _, _, sql, _ = cl.type_map(it)
     usage = (it.usage or "").upper()
-    if "date" in it.name.lower() and (usage == "BINARY-LONG" or (it.pic and usage.startswith("COMP") and "V" not in it.pic.upper() and usage != "COMP-3")):
+    name = it.name.lower()
+    if (name in DATE_FIELDS or "date" in name) and (
+        usage == "BINARY-LONG" or (it.pic and usage.startswith("COMP") and "V" not in it.pic.upper() and usage != "COMP-3")
+    ):
         return "DATE", "COBOL integer date (FUNCTION DATE-OF-INTEGER)"
     return sql, ""
 
 
+def excluded_field(name):
+    lowered = name.lower()
+    return any(field in lowered for field in EXCLUDE_FIELDS)
+
+
 def leaves(it, out, ctx):
     """Collect (column, item) of non-filler leaves, stopping at OCCURS (returned separately)."""
+    ctx.setdefault("excluded", [])
     for c in it.children if it.children else []:
         if c.redefines or c.name.lower() == "filler" and not c.children:
+            continue
+        if excluded_field(c.name):
+            ctx["excluded"].append(c.name)
             continue
         if c.occurs > 1:
             ctx["child"].append(c)
@@ -92,7 +109,7 @@ def find(it, name):
 
 
 def table_ddl(table, root, keygrp, uniq, idx, source, warn):
-    ctx = {"child": []}
+    ctx = {"child": [], "excluded": []}
     cols = leaves(root, [], ctx)
     seen, colsdef = set(), []
     for c in cols:
@@ -120,7 +137,14 @@ def table_ddl(table, root, keygrp, uniq, idx, source, warn):
     for i, (d, c) in enumerate(zip(defs, cmts)):
         sep = "," if i < len(defs) - 1 else ""
         body.append(f"{d.rstrip()}{sep}" + (f"  -- {c}" if c else ""))
-    out = f"-- {table}: {source}; COBOL {root.name} ({root.length} bytes)\nCREATE TABLE {table} (\n" + "\n".join(body) + "\n);\n"
+    excluded = "\n".join(
+        f"-- excluded: {col(name)} (plaintext password; replaced by hashed credentials, see 05-ws-domain-mapping.md §3)"
+        for name in dict.fromkeys(ctx["excluded"])
+    )
+    header = f"-- {table}: {source}; COBOL {root.name} ({root.length} bytes)\n"
+    if excluded:
+        header += excluded + "\n"
+    out = header + f"CREATE TABLE {table} (\n" + "\n".join(body) + "\n);\n"
     for u in uniq:
         k = find(root, u)
         cs = [col(x.name) for x in (leaves(k, [], {"child": []}) if k.children else [k])]

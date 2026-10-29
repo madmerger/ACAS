@@ -1,6 +1,6 @@
 # 03. RDB スキーマ設計
 
-- DDL: [`schema/acas-schema.sql`](schema/acas-schema.sql)（PostgreSQL 方言、`tools/gen_schema.py` で `02-file-layouts.md` と同じレイアウト解析結果から生成。SQLite で構文検証済み、41 テーブル）。
+- DDL: [`schema/acas-schema.sql`](schema/acas-schema.sql)（PostgreSQL 方言、`tools/gen_schema.py` で `02-file-layouts.md` と同じレイアウト解析結果から生成。SQLite で構文検証済み、43 テーブル）。
 - Phase 1 ではこの DDL を Flyway の `V1__init.sql` の初版とし、JPA エンティティを対応させる（H2/PostgreSQL で起動検証）。
 
 ## 1. 変換ルール
@@ -12,7 +12,7 @@
 | RELATIVE ファイル | 業務キーがあればそれを PK（`posting.dat` → `(batch, post_number)`）。`system.dat` は RRN 1–4 の別レコードを **4 つの単一行テーブル**に分割 | RRN は物理位置であり業務上の意味を持たない |
 | SEQUENTIAL ファイル | サロゲートキー `id`（ファイル内の出現順を保持） | `staudit.dat`、`postings2irs.dat`、削除番号ファイル |
 | 1 ファイルに複数レコード型（ヘッダ/明細） | **テーブルを分割** | `invoice.dat` は `item-nos = 0` がヘッダ、1–40 が明細 → `sl_invoice_header` / `sl_invoice_line` |
-| 同一レイアウトで状態だけ違うファイル | 1 テーブル（移行時にファイル由来を区別） | `openitm2.dat`（転記前）と `openitm3.dat`（転記済）は同じ `oi-header` |
+| 同一レイアウトで状態だけ違うファイル | 別テーブル（転記前 = `*_open_item_staging`、サロゲート id。転記処理で staging → 本表へ移す） | `openitm2.dat`/`openitm4.dat`（転記前、順次）と `openitm3.dat`/`openitm5.dat`（転記済、索引）は同じ `oi-header` だがキー空間を共有しないため |
 | OCCURS | 子テーブル（親 PK + `seq_no`、FK 付き） | `pay-record` の支払明細 ×9 → `pl_payment_line` |
 | REDEFINES | 主定義のみ列化 | 別ビュー（例: 四半期売上の配列ビュー）は Java の getter で導出 |
 | FILLER | 列化しない | |
@@ -24,7 +24,7 @@
 
 | テーブル | 元ファイル | 元レコード | 列数 | PK | 子テーブル（OCCURS） |
 |---|---|---|---:|---|---|
-| `system_record` | system.dat RRN 1 | `System-Record (copybooks/wssystem.cob)` | 141 | id | `system_record_file_status` |
+| `system_record` | system.dat RRN 1 | `System-Record (copybooks/wssystem.cob)` | 140 | id | `system_record_file_status` |
 | `default_record` | system.dat RRN 2 | `Default-Record (copybooks/wsdflt.cob)` | 1 | id | `default_record_def_acs`, `default_record_def_codes`, `default_record_def_vat` |
 | `final_record` | system.dat RRN 3 | `Final-Record (copybooks/wsfinal.cob)` | 1 | id | `final_record_ar1` |
 | `system_record_4` | system.dat RRN 4 | `System-Record-4 (copybooks/wssys4.cob)` | 21 | id | - |
@@ -40,16 +40,18 @@
 | `analysis_code` | analysis.dat | `analysis-record (copybooks/fdanal.cob)` | 6 | pa_system, pa_first, pa_second | - |
 | `sl_invoice_header` | invoice.dat (item-nos = 0) | `invoice-header (sales/fdinv2.cob)` | 32 | ih_invoice, ih_letter, ih_test | - |
 | `sl_invoice_line` | invoice.dat (item-nos 1..40) | `invoice-line (sales/fdinv2.cob)` | 14 | il_invoice, il_letter, il_line | - |
-| `sl_open_item` | openitm3.dat (+ openitm2.dat before posting) | `oi-header (sales/wsoi.cob)` | 27 | oi_nos, oi_check, oi_invoice | - |
+| `sl_open_item` | openitm3.dat | `oi-header (sales/wsoi.cob)` | 27 | oi_nos, oi_check, oi_invoice | - |
+| `sl_open_item_staging` | openitm2.dat (sequential, before posting) | `oi-header (sales/wsoi.cob)` | 28 | id | - |
 | `sl_deleted_invoice_no` | delinvno.dat (sequential, surrogate id) | `del-inv-nos-record (sales/fddnos.cob)` | 4 | id | - |
 | `pl_supplier` | purchled.dat | `Purch-Record (copybooks/fdpl.cob)` | 30 | purch_key | - |
 | `pl_invoice_header` | pinvoice.dat (item-nos = 0) | `invoice-header (purchase/fdpinv2.cob)` | 25 | ih_invoice, ih_test | - |
 | `pl_invoice_line` | pinvoice.dat (item-nos 1..) | `invoice-line (purchase/fdpinv2.cob)` | 13 | il_invoice, il_line | - |
-| `pl_open_item` | openitm5.dat (+ openitm4.dat before posting) | `oi-header (purchase/wsoi.cob)` | 28 | oi_nos, oi_check | - |
+| `pl_open_item` | openitm5.dat | `oi-header (purchase/wsoi.cob)` | 28 | oi_nos, oi_check, oi_invoice | - |
+| `pl_open_item_staging` | openitm4.dat (sequential, before posting) | `oi-header (purchase/wsoi.cob)` | 29 | id | - |
 | `pl_deleted_folio_no` | delfolio.dat (sequential, surrogate id) | `del-inv-nos-record (purchase/fdpdnos.cob)` | 4 | id | - |
 | `pl_payment` | pay.dat | `pay-record (purchase/fdpay.cob)` | 8 | pay_supl_key, pay_nos | `pl_payment_line` |
 | `irs_nominal` | acnts.dat | `nl-record (incomplete_records_system/wsnl.cob)` | 7 | nl_owning, nl_sub_nominal | `irs_nominal_nl_dr_last`, `irs_nominal_nl_cr_last` |
-| `irs_system` | IRS system.dat | `system-record (incomplete_records_system/wssystem.cob)` | 28 | id | - |
+| `irs_system` | IRS system.dat | `system-record (incomplete_records_system/wssystem.cob)` | 27 | id | - |
 | `irs_default` | dflt.dat | `default-record (incomplete_records_system/wsdflt.cob)` | 1 | id | `irs_default_def_acs`, `irs_default_def_codes`, `irs_default_def_vat` |
 | `irs_posting` | post.dat | `posting-record (incomplete_records_system/wspost.cob)` | 10 | post_key | - |
 | `irs_final` | final.dat | `Final-Record (incomplete_records_system/wsfinal.cob)` | 54 | id | - |
@@ -73,5 +75,5 @@
 ## 4. 未決事項 / Phase 1 で確定するもの
 
 - 金額以外の `PIC 9` フラグ列（`Sales-Status` 等）を `SMALLINT` のままにするか `BOOLEAN`/enum にするか — 88 レベル定義を確認して Phase 1 のエンティティで決める（DDL は `SMALLINT` のまま）。
-- `System-Record` 内のパスワード（`Pass-Word x(4)`）は移行しない（`05-ws-domain-mapping.md` §3）。
+- `System-Record` 内のパスワード（`Pass-Word x(4)`）は移行しない（`05-ws-domain-mapping.md` §3）。DDL からも `pass_word` 列を除外する。
 - `invoice-record`（134 バイト）と `invoice-header`（137 バイト）の長さ差: FD のレコード長は最大の 137 バイトになる（コメントの「134 bytes」は古い）。移行ツールは 137 バイト単位で読む。

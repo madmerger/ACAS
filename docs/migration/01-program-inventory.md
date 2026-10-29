@@ -203,7 +203,7 @@ flowchart LR
 | `common/maps99.cbl` | 182 | 5 | -- |  |  |
 | `common/mapser.cbl` | 405 | 0 | -- | selsys | `maps01` |
 | `common/mapserup.cbl` | 377 | 1 | -- | selsys | `maps01` |
-| `common/stockMT.cbl` | 3478 | 69 | -- |  | `GETInstanceStamp`⚠, `HandleDB`⚠, `LogIt`⚠, `STOCKMTclose`⚠, `STOCKMTdelete`⚠, `STOCKMTgetnext`⚠, `STOCKMTGetRandom`⚠, `STOCKMTinit`⚠, `STOCKMTstart`⚠, `STOCKMTStart`⚠, `STOCKMTupdate`⚠, `STOCKMTwrite`⚠, `TranslateFileStatus`⚠ |
+| `common/stockMT.cbl` | 3478 | 69 | -- |  | `GETInstanceStamp`⚠, `HandleDB`⚠, `LoadHVs`⚠, `LogIt`⚠, `STOCKMTclose`⚠, `STOCKMTdelete`⚠, `STOCKMTgetnext`⚠, `STOCKMTGetRandom`⚠, `STOCKMTinit`⚠, `STOCKMTStart`⚠, `STOCKMTstart`⚠, `STOCKMTupdate`⚠, `STOCKMTwrite`⚠, `TranslateFileStatus`⚠, `UnLoadHVs`⚠ |
 | `common/sys002.cbl` | 2445 | 38 | SP | selprint, selsys | `maps01`, `maps04`, *SYSTEM* |
 | `common/xl150.cbl` | 1199 | 61 | -- | selinv, seloi3, seloi5, selois, selpinv, selpl, selsl, selval | `maps01`, `maps04`, `maps99` |
 
