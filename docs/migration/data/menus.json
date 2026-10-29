@@ -1,0 +1,1064 @@
+{
+ "ACAS.cbl": {
+  "labels": {
+   "A": "General Ledger",
+   "B": "Sales Ledger",
+   "C": "Purchase Ledger",
+   "D": "Stock Control",
+   "E": "Order Entry",
+   "F": "Payroll",
+   "G": "Epos",
+   "X": "Exit To system",
+   "Z": "System Setup"
+  },
+  "dispatch": [
+   {
+    "key": "A",
+    "label": "General Ledger",
+    "paragraph": "load01",
+    "programs": [
+     "general"
+    ]
+   },
+   {
+    "key": "B",
+    "label": "Sales Ledger",
+    "paragraph": "load02",
+    "programs": [
+     "sales"
+    ]
+   },
+   {
+    "key": "C",
+    "label": "Purchase Ledger",
+    "paragraph": "load03",
+    "programs": [
+     "purchase"
+    ]
+   },
+   {
+    "key": "D",
+    "label": "Stock Control",
+    "paragraph": "load04",
+    "programs": [
+     "stock"
+    ]
+   },
+   {
+    "key": "E",
+    "label": "Order Entry",
+    "paragraph": "loadsr2",
+    "programs": []
+   },
+   {
+    "key": "F",
+    "label": "Payroll",
+    "paragraph": "loadsr2",
+    "programs": []
+   },
+   {
+    "key": "G",
+    "label": "Epos",
+    "paragraph": "loadsr2",
+    "programs": []
+   },
+   {
+    "key": "H",
+    "label": "",
+    "paragraph": "loadsr",
+    "programs": []
+   },
+   {
+    "key": "I",
+    "label": "",
+    "paragraph": "loaderror",
+    "programs": []
+   },
+   {
+    "key": "J",
+    "label": "",
+    "paragraph": "loaderror",
+    "programs": []
+   },
+   {
+    "key": "K",
+    "label": "",
+    "paragraph": "loaderror",
+    "programs": []
+   },
+   {
+    "key": "L",
+    "label": "",
+    "paragraph": "loaderror",
+    "programs": []
+   },
+   {
+    "key": "M",
+    "label": "",
+    "paragraph": "loaderror",
+    "programs": []
+   },
+   {
+    "key": "N",
+    "label": "",
+    "paragraph": "loaderror",
+    "programs": []
+   },
+   {
+    "key": "O",
+    "label": "",
+    "paragraph": "loaderror",
+    "programs": []
+   },
+   {
+    "key": "P",
+    "label": "",
+    "paragraph": "loaderror",
+    "programs": []
+   },
+   {
+    "key": "Q",
+    "label": "",
+    "paragraph": "loaderror",
+    "programs": []
+   },
+   {
+    "key": "R",
+    "label": "",
+    "paragraph": "loaderror",
+    "programs": []
+   },
+   {
+    "key": "S",
+    "label": "",
+    "paragraph": "loaderror",
+    "programs": []
+   },
+   {
+    "key": "T",
+    "label": "",
+    "paragraph": "loaderror",
+    "programs": []
+   },
+   {
+    "key": "U",
+    "label": "",
+    "paragraph": "loaderror",
+    "programs": []
+   },
+   {
+    "key": "V",
+    "label": "",
+    "paragraph": "loaderror",
+    "programs": []
+   },
+   {
+    "key": "W",
+    "label": "",
+    "paragraph": "load23",
+    "programs": []
+   },
+   {
+    "key": "X",
+    "label": "Exit To system",
+    "paragraph": "loaderror",
+    "programs": []
+   },
+   {
+    "key": "Y",
+    "label": "",
+    "paragraph": "loadsr",
+    "programs": []
+   },
+   {
+    "key": "Z",
+    "label": "System Setup",
+    "paragraph": "call-system-setup",
+    "programs": [
+     "sys002"
+    ]
+   }
+  ]
+ },
+ "sales/sales.cbl": {
+  "labels": {
+   "A": "Date Entry",
+   "B": "Customer File Maintenance",
+   "C": "Sales Ledger Enquiry",
+   "D": "Sales Transactions Input",
+   "E": "Sales Transactions Amend",
+   "F": "Sales Transactions Proof",
+   "G": "Sales Transactions Post",
+   "H": "Payment Input",
+   "I": "Payment Amend",
+   "J": "Payment Proof",
+   "K": "Payment Post",
+   "L": "Set-Up Sales Analysis Codes",
+   "M": "Sales Analysis Report",
+   "N": "Sales Day Book",
+   "O": "Statement Production",
+   "P": "Dunning Letters Generation",
+   "Q": "Aged Debtors Analysis",
+   "R": "Alphabetical Customer List",
+   "S": "Customer Turnover Report",
+   "T": "Invoice Sub-System",
+   "U": "End of Cycle Processing",
+   "V": "Customer File Dump",
+   "X": "Exit To",
+   "Z": "System Setup"
+  },
+  "dispatch": [
+   {
+    "key": "A",
+    "label": "Date Entry",
+    "paragraph": "load01",
+    "programs": [
+     "sl000"
+    ]
+   },
+   {
+    "key": "B",
+    "label": "Customer File Maintenance",
+    "paragraph": "load02",
+    "programs": [
+     "sl010"
+    ]
+   },
+   {
+    "key": "C",
+    "label": "Sales Ledger Enquiry",
+    "paragraph": "load03",
+    "programs": [
+     "sl020"
+    ]
+   },
+   {
+    "key": "D",
+    "label": "Sales Transactions Input",
+    "paragraph": "load04",
+    "programs": [
+     "sl910"
+    ]
+   },
+   {
+    "key": "E",
+    "label": "Sales Transactions Amend",
+    "paragraph": "load05",
+    "programs": [
+     "sl920"
+    ]
+   },
+   {
+    "key": "F",
+    "label": "Sales Transactions Proof",
+    "paragraph": "load06",
+    "programs": [
+     "sl050"
+    ]
+   },
+   {
+    "key": "G",
+    "label": "Sales Transactions Post",
+    "paragraph": "load07",
+    "programs": [
+     "sl055",
+     "sl060"
+    ]
+   },
+   {
+    "key": "H",
+    "label": "Payment Input",
+    "paragraph": "load08",
+    "programs": [
+     "sl080"
+    ]
+   },
+   {
+    "key": "I",
+    "label": "Payment Amend",
+    "paragraph": "load09",
+    "programs": [
+     "sl085"
+    ]
+   },
+   {
+    "key": "J",
+    "label": "Payment Proof",
+    "paragraph": "load10",
+    "programs": [
+     "sl090",
+     "sl095"
+    ]
+   },
+   {
+    "key": "K",
+    "label": "Payment Post",
+    "paragraph": "load11",
+    "programs": [
+     "sl100"
+    ]
+   },
+   {
+    "key": "L",
+    "label": "Set-Up Sales Analysis Codes",
+    "paragraph": "load12",
+    "programs": [
+     "sl070"
+    ]
+   },
+   {
+    "key": "M",
+    "label": "Sales Analysis Report",
+    "paragraph": "load13",
+    "programs": [
+     "sl130"
+    ]
+   },
+   {
+    "key": "N",
+    "label": "Sales Day Book",
+    "paragraph": "load14",
+    "programs": [
+     "sl140"
+    ]
+   },
+   {
+    "key": "O",
+    "label": "Statement Production",
+    "paragraph": "load15",
+    "programs": [
+     "sl115",
+     "sl110"
+    ]
+   },
+   {
+    "key": "P",
+    "label": "Dunning Letters Generation",
+    "paragraph": "load16",
+    "programs": [
+     "sl115",
+     "sl190"
+    ]
+   },
+   {
+    "key": "Q",
+    "label": "Aged Debtors Analysis",
+    "paragraph": "load17",
+    "programs": [
+     "sl115",
+     "sl120"
+    ]
+   },
+   {
+    "key": "R",
+    "label": "Alphabetical Customer List",
+    "paragraph": "load18",
+    "programs": [
+     "sl165",
+     "sl160"
+    ]
+   },
+   {
+    "key": "S",
+    "label": "Customer Turnover Report",
+    "paragraph": "load19",
+    "programs": [
+     "sl180"
+    ]
+   },
+   {
+    "key": "T",
+    "label": "Invoice Sub-System",
+    "paragraph": "load20",
+    "programs": [
+     "sl900"
+    ]
+   },
+   {
+    "key": "U",
+    "label": "End of Cycle Processing",
+    "paragraph": "load21",
+    "programs": [
+     "sl140",
+     "xl150",
+     "sl130"
+    ]
+   },
+   {
+    "key": "V",
+    "label": "Customer File Dump",
+    "paragraph": "load22",
+    "programs": [
+     "sl170"
+    ]
+   },
+   {
+    "key": "W",
+    "label": "",
+    "paragraph": "loader",
+    "programs": []
+   },
+   {
+    "key": "X",
+    "label": "Exit To",
+    "paragraph": "loader",
+    "programs": []
+   },
+   {
+    "key": "Y",
+    "label": "",
+    "paragraph": "loadsr",
+    "programs": []
+   },
+   {
+    "key": "Z",
+    "label": "System Setup",
+    "paragraph": "call-system-setup",
+    "programs": [
+     "sys002"
+    ]
+   }
+  ]
+ },
+ "purchase/purchase.cbl": {
+  "labels": {
+   "A": "Date Entry",
+   "B": "Supplier File Maintenance",
+   "C": "Purchase Ledger Enquiry",
+   "D": "Purchase Transactions Input",
+   "E": "Purchase Transactions Amend",
+   "F": "Purchase Transactions Delete",
+   "G": "Purchase Transactions Proof",
+   "H": "Purchase Transactions Post",
+   "I": "Payment Input",
+   "J": "Payment Amend",
+   "K": "Payment Proof",
+   "L": "Payment Post",
+   "M": "Set-Up Purchase Analysis Codes",
+   "N": "Purchase Analysis Report",
+   "O": "Purchase Day Book",
+   "P": "Aged Creditors Report",
+   "Q": "Alphabetical Supplier List",
+   "R": "Supplier Turnover Report",
+   "S": "Cheque  Sub-System",
+   "T": "End Of Cycle Processing",
+   "U": "Invoice Parameter Amend",
+   "V": "Supplier File Dump",
+   "X": "Exit to",
+   "Z": "System Set Up"
+  },
+  "dispatch": [
+   {
+    "key": "A",
+    "label": "Date Entry",
+    "paragraph": "load01",
+    "programs": [
+     "pl000"
+    ]
+   },
+   {
+    "key": "B",
+    "label": "Supplier File Maintenance",
+    "paragraph": "load02",
+    "programs": [
+     "pl010"
+    ]
+   },
+   {
+    "key": "C",
+    "label": "Purchase Ledger Enquiry",
+    "paragraph": "load03",
+    "programs": [
+     "pl015"
+    ]
+   },
+   {
+    "key": "D",
+    "label": "Purchase Transactions Input",
+    "paragraph": "load04",
+    "programs": [
+     "pl020"
+    ]
+   },
+   {
+    "key": "E",
+    "label": "Purchase Transactions Amend",
+    "paragraph": "load05",
+    "programs": [
+     "pl030"
+    ]
+   },
+   {
+    "key": "F",
+    "label": "Purchase Transactions Delete",
+    "paragraph": "load06",
+    "programs": [
+     "pl040"
+    ]
+   },
+   {
+    "key": "G",
+    "label": "Purchase Transactions Proof",
+    "paragraph": "load07",
+    "programs": [
+     "pl050"
+    ]
+   },
+   {
+    "key": "H",
+    "label": "Purchase Transactions Post",
+    "paragraph": "load08",
+    "programs": [
+     "pl055",
+     "pl060"
+    ]
+   },
+   {
+    "key": "I",
+    "label": "Payment Input",
+    "paragraph": "load09",
+    "programs": [
+     "pl080"
+    ]
+   },
+   {
+    "key": "J",
+    "label": "Payment Amend",
+    "paragraph": "load10",
+    "programs": [
+     "pl085"
+    ]
+   },
+   {
+    "key": "K",
+    "label": "Payment Proof",
+    "paragraph": "load11",
+    "programs": [
+     "pl090",
+     "pl095"
+    ]
+   },
+   {
+    "key": "L",
+    "label": "Payment Post",
+    "paragraph": "load12",
+    "programs": [
+     "pl100"
+    ]
+   },
+   {
+    "key": "M",
+    "label": "Set-Up Purchase Analysis Codes",
+    "paragraph": "load13",
+    "programs": [
+     "pl070"
+    ]
+   },
+   {
+    "key": "N",
+    "label": "Purchase Analysis Report",
+    "paragraph": "load14",
+    "programs": [
+     "pl130"
+    ]
+   },
+   {
+    "key": "O",
+    "label": "Purchase Day Book",
+    "paragraph": "load15",
+    "programs": [
+     "pl140"
+    ]
+   },
+   {
+    "key": "P",
+    "label": "Aged Creditors Report",
+    "paragraph": "load16",
+    "programs": [
+     "pl165",
+     "pl115",
+     "pl120"
+    ]
+   },
+   {
+    "key": "Q",
+    "label": "Alphabetical Supplier List",
+    "paragraph": "load17",
+    "programs": [
+     "pl165",
+     "pl160"
+    ]
+   },
+   {
+    "key": "R",
+    "label": "Supplier Turnover Report",
+    "paragraph": "load18",
+    "programs": [
+     "pl170"
+    ]
+   },
+   {
+    "key": "S",
+    "label": "Cheque  Sub-System",
+    "paragraph": "load19",
+    "programs": [
+     "pl900"
+    ]
+   },
+   {
+    "key": "T",
+    "label": "End Of Cycle Processing",
+    "paragraph": "load20",
+    "programs": [
+     "pl140",
+     "xl150",
+     "pl130"
+    ]
+   },
+   {
+    "key": "U",
+    "label": "Invoice Parameter Amend",
+    "paragraph": "load21",
+    "programs": [
+     "pl180"
+    ]
+   },
+   {
+    "key": "V",
+    "label": "Supplier File Dump",
+    "paragraph": "load22",
+    "programs": [
+     "pl190"
+    ]
+   },
+   {
+    "key": "W",
+    "label": "",
+    "paragraph": "loadre",
+    "programs": []
+   },
+   {
+    "key": "X",
+    "label": "Exit to",
+    "paragraph": "loadre",
+    "programs": []
+   },
+   {
+    "key": "Y",
+    "label": "",
+    "paragraph": "loadsr",
+    "programs": []
+   },
+   {
+    "key": "Z",
+    "label": "System Set Up",
+    "paragraph": "call-system-setup",
+    "programs": [
+     "sys002"
+    ]
+   }
+  ]
+ },
+ "stock/stock.cbl": {
+  "labels": {
+   "A": "Date Entry",
+   "B": "Stock Item Maintenance",
+   "C": "Stock Movements",
+   "D": "Reports",
+   "E": "End of Cycle Processing",
+   "X": "Exit to",
+   "Y": "Stock File Compression",
+   "Z": "System Set Up"
+  },
+  "dispatch": [
+   {
+    "key": "A",
+    "label": "Date Entry",
+    "paragraph": "load01",
+    "programs": [
+     "st000"
+    ]
+   },
+   {
+    "key": "B",
+    "label": "Stock Item Maintenance",
+    "paragraph": "load02",
+    "programs": [
+     "st010"
+    ]
+   },
+   {
+    "key": "C",
+    "label": "Stock Movements",
+    "paragraph": "load03",
+    "programs": [
+     "st020"
+    ]
+   },
+   {
+    "key": "D",
+    "label": "Reports",
+    "paragraph": "load04",
+    "programs": [
+     "st030"
+    ]
+   },
+   {
+    "key": "E",
+    "label": "End of Cycle Processing",
+    "paragraph": "load05",
+    "programs": [
+     "st040"
+    ]
+   },
+   {
+    "key": "F",
+    "label": "",
+    "paragraph": "loader",
+    "programs": []
+   },
+   {
+    "key": "G",
+    "label": "",
+    "paragraph": "loader",
+    "programs": []
+   },
+   {
+    "key": "H",
+    "label": "",
+    "paragraph": "loader",
+    "programs": []
+   },
+   {
+    "key": "I",
+    "label": "",
+    "paragraph": "loader",
+    "programs": []
+   },
+   {
+    "key": "J",
+    "label": "",
+    "paragraph": "loader",
+    "programs": []
+   },
+   {
+    "key": "K",
+    "label": "",
+    "paragraph": "loader",
+    "programs": []
+   },
+   {
+    "key": "L",
+    "label": "",
+    "paragraph": "loader",
+    "programs": []
+   },
+   {
+    "key": "M",
+    "label": "",
+    "paragraph": "loader",
+    "programs": []
+   },
+   {
+    "key": "N",
+    "label": "",
+    "paragraph": "loader",
+    "programs": []
+   },
+   {
+    "key": "O",
+    "label": "",
+    "paragraph": "loader",
+    "programs": []
+   },
+   {
+    "key": "P",
+    "label": "",
+    "paragraph": "loader",
+    "programs": []
+   },
+   {
+    "key": "Q",
+    "label": "",
+    "paragraph": "loader",
+    "programs": []
+   },
+   {
+    "key": "R",
+    "label": "",
+    "paragraph": "loader",
+    "programs": []
+   },
+   {
+    "key": "S",
+    "label": "",
+    "paragraph": "loader",
+    "programs": []
+   },
+   {
+    "key": "T",
+    "label": "",
+    "paragraph": "loader",
+    "programs": []
+   },
+   {
+    "key": "U",
+    "label": "",
+    "paragraph": "loader",
+    "programs": []
+   },
+   {
+    "key": "V",
+    "label": "",
+    "paragraph": "loader",
+    "programs": []
+   },
+   {
+    "key": "W",
+    "label": "",
+    "paragraph": "loader",
+    "programs": []
+   },
+   {
+    "key": "X",
+    "label": "Exit to",
+    "paragraph": "aa070-OverRewrite",
+    "programs": []
+   },
+   {
+    "key": "Y",
+    "label": "Stock File Compression",
+    "paragraph": "load25",
+    "programs": [
+     "st050"
+    ]
+   },
+   {
+    "key": "Z",
+    "label": "System Set Up",
+    "paragraph": "aa060-Call-System-Setup",
+    "programs": [
+     "sys002"
+    ]
+   }
+  ]
+ },
+ "general/general.cbl": {
+  "labels": {
+   "A": "Date Entry",
+   "B": "Chart Of Accounts",
+   "C": "Default Account Maintenance",
+   "E": "Enter Transactions",
+   "F": "Proof/Modify Transactions",
+   "G": "Batch Status Report",
+   "H": "Transaction Posting",
+   "I": "End Of Cycle Processing",
+   "J": "Print Trial Balance",
+   "K": "Print P&L and Balance Sheet",
+   "L": "Print Ledgers",
+   "X": "Exit to",
+   "Z": "System Set Up"
+  },
+  "dispatch": [
+   {
+    "key": "A",
+    "label": "Date Entry",
+    "paragraph": "load01",
+    "programs": [
+     "gl000"
+    ]
+   },
+   {
+    "key": "B",
+    "label": "Chart Of Accounts",
+    "paragraph": "load02",
+    "programs": [
+     "gl030"
+    ]
+   },
+   {
+    "key": "C",
+    "label": "Default Account Maintenance",
+    "paragraph": "load03",
+    "programs": [
+     "gl020"
+    ]
+   },
+   {
+    "key": "D",
+    "label": "",
+    "paragraph": "loadsr",
+    "programs": []
+   },
+   {
+    "key": "E",
+    "label": "Enter Transactions",
+    "paragraph": "load05",
+    "programs": [
+     "gl050"
+    ]
+   },
+   {
+    "key": "F",
+    "label": "Proof/Modify Transactions",
+    "paragraph": "load06",
+    "programs": [
+     "gl051"
+    ]
+   },
+   {
+    "key": "G",
+    "label": "Batch Status Report",
+    "paragraph": "load07",
+    "programs": [
+     "gl060"
+    ]
+   },
+   {
+    "key": "H",
+    "label": "Transaction Posting",
+    "paragraph": "load08",
+    "programs": [
+     "gl070",
+     "gl071",
+     "gl072"
+    ]
+   },
+   {
+    "key": "I",
+    "label": "End Of Cycle Processing",
+    "paragraph": "load09",
+    "programs": [
+     "gl080"
+    ]
+   },
+   {
+    "key": "J",
+    "label": "Print Trial Balance",
+    "paragraph": "load10",
+    "programs": [
+     "gl090"
+    ]
+   },
+   {
+    "key": "K",
+    "label": "Print P&L and Balance Sheet",
+    "paragraph": "load11",
+    "programs": [
+     "gl120"
+    ]
+   },
+   {
+    "key": "L",
+    "label": "Print Ledgers",
+    "paragraph": "load12",
+    "programs": [
+     "gl100",
+     "gl105"
+    ]
+   },
+   {
+    "key": "M",
+    "label": "",
+    "paragraph": "loader",
+    "programs": []
+   },
+   {
+    "key": "N",
+    "label": "",
+    "paragraph": "loader",
+    "programs": []
+   },
+   {
+    "key": "O",
+    "label": "",
+    "paragraph": "loader",
+    "programs": []
+   },
+   {
+    "key": "P",
+    "label": "",
+    "paragraph": "loader",
+    "programs": []
+   },
+   {
+    "key": "Q",
+    "label": "",
+    "paragraph": "loader",
+    "programs": []
+   },
+   {
+    "key": "R",
+    "label": "",
+    "paragraph": "loader",
+    "programs": []
+   },
+   {
+    "key": "S",
+    "label": "",
+    "paragraph": "loader",
+    "programs": []
+   },
+   {
+    "key": "T",
+    "label": "",
+    "paragraph": "loader",
+    "programs": []
+   },
+   {
+    "key": "U",
+    "label": "",
+    "paragraph": "loader",
+    "programs": []
+   },
+   {
+    "key": "V",
+    "label": "",
+    "paragraph": "loader",
+    "programs": []
+   },
+   {
+    "key": "W",
+    "label": "",
+    "paragraph": "loader",
+    "programs": []
+   },
+   {
+    "key": "X",
+    "label": "Exit to",
+    "paragraph": "loader",
+    "programs": []
+   },
+   {
+    "key": "Y",
+    "label": "",
+    "paragraph": "loadsr",
+    "programs": []
+   },
+   {
+    "key": "Z",
+    "label": "System Set Up",
+    "paragraph": "call-system-setup",
+    "programs": [
+     "sys002"
+    ]
+   }
+  ]
+ },
+ "incomplete_records_system/irs.cbl": {
+  "labels": {
+   "1": "System Set-Up & Maintenance",
+   "2": "Accounts Set-Up & Maintenance",
+   "3": "Default A/Cs Set-Up & Maintenance",
+   "4": "Posting",
+   "5": "Trial Balance",
+   "6": "Audit Trail",
+   "7": "Accounts Production",
+   "8": "Posting Amendments",
+   "9": "Analysis Report",
+   "A": "Nominal File Fix up",
+   "X": "Exit"
+  },
+  "dispatch": []
+ }
+}
