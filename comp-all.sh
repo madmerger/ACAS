@@ -4,7 +4,7 @@
 ####
 # and this to set up cobcpy
 export COBCPY=../copybooks
-export COB_COPY_DIR==../copybooks
+export COB_COPY_DIR=../copybooks
 # comp top level as might be wanted
 cobc -x -I copybooks ACAS.cbl
 # now compile all sub-systems ...
