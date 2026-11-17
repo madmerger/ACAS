@@ -1,0 +1,32 @@
+name: Legacy oracle
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  oracle:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install GnuCOBOL (native ISAM backend)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gnucobol
+          cobc -V
+          cobc -info
+      - name: Install oracle dependencies
+        run: python3 -m pip install -r tools/oracle/requirements.txt
+      - name: Build, seed, drive terminal, export and compare
+        run: python3 tools/oracle/runner.py --compare
+      - name: Converter tests
+        run: python3 -m pytest -q tools/oracle/tests
+      - name: Upload results, terminal transcripts and build logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: legacy-oracle-results
+          path: tools/oracle/results/
