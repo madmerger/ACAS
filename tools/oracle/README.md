@@ -52,7 +52,11 @@ and shell commands are not accepted from cases.
 
 After terminal exit the adapter reads the real files using COBOL `READ NEXT`:
 the COBOL runtime handles BDB indexes, binary numbers and packed decimals.
-It exports delimited text, then Python produces JSON. Analysis records include
+It exports fixed-width text, then Python produces JSON. Analysis rows are
+`A` + ledger(1) + code(2) + GL(6) + description(24) + print reference(3);
+supplier rows are `P` + code(7) + name(30). Trailing padding may be omitted
+by line-sequential output; delimiters such as `|` and `\` remain literal.
+Analysis records include
 all fields; suppliers currently export the code/name projection only, not
 balances or all purchase-ledger fields. Other files/modules are not yet
 decoded. Add a copybook-based exporter before adding cases that touch them.

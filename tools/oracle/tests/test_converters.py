@@ -9,9 +9,9 @@ from runner import HERE, load, seed
 
 
 def test_data_records():
-    result = data_records("A|S|a |000000|Sales group|\n"
-                          "A|P|a1|200100|Purchase materials|MAT\n"
-                          "P|SUP0001|Oracle Supplier\n")
+    result = data_records(f"ASa 000000{'Sales group':24}\n"
+                          f"APa1200100{'Purchase materials':24}MAT\n"
+                          "PSUP0001Oracle Supplier\n")
     assert result["analysis"] == [
         dict(ledger="S", code="a", gl=0, description="Sales group", print=""),
         dict(ledger="P", code="a1", gl=200100, description="Purchase materials", print="MAT")]
@@ -22,11 +22,20 @@ def test_empty_data():
     assert data_records("") == {"analysis": [], "suppliers": []}
 
 
-@pytest.mark.parametrize("content", ["bad", "A|S|a1|oops|name|X", "A|X|a1|000001|name|X",
-                                     "P|key", "A|S|a1|000001|name|X|extra"])
+@pytest.mark.parametrize("content", ["bad", "ASa1oops!!name", "AXa1000001name",
+                                     "Pkey", "ASa1000001" + "x" * 28])
 def test_invalid_data(content):
     with pytest.raises(ValueError):
         data_records(content)
+
+
+def test_screen_enterable_delimiters_in_export():
+    description = "Goods | services \\"
+    result = data_records(f"ASa1000001{description:24}|\\|\n"
+                          f"PSUP0001{description}\n")
+    assert result["analysis"][0]["description"] == description
+    assert result["analysis"][0]["print"] == "|\\|"
+    assert result["suppliers"][0]["name"] == description
 
 
 def test_report():

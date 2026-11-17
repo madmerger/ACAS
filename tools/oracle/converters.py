@@ -6,16 +6,17 @@ import re
 def data_records(content):
     result = {"analysis": [], "suppliers": []}
     for line in content.splitlines():
-        fields = line.rstrip().split("|")
-        if fields[0] == "A" and len(fields) == 6:
-            _, ledger, code, gl, description, reference = fields
+        if line.startswith("A") and 10 <= len(line) <= 37:
+            record = line.ljust(37)
+            ledger, code, gl = record[1], record[2:4], record[4:10]
+            description, reference = record[10:34].rstrip(), record[34:37].rstrip()
             if ledger not in ("P", "S") or not re.fullmatch(r"\d{6}", gl):
                 raise ValueError(f"Invalid analysis record: {line!r}")
             result["analysis"].append(dict(ledger=ledger, code=code.rstrip(),
                                            gl=int(gl), description=description,
                                            print=reference))
-        elif fields[0] == "P" and len(fields) == 3:
-            result["suppliers"].append(dict(code=fields[1].rstrip(), name=fields[2]))
+        elif line.startswith("P") and 8 <= len(line) <= 38:
+            result["suppliers"].append(dict(code=line[1:8].rstrip(), name=line[8:].rstrip()))
         else:
             raise ValueError(f"Unknown bridge record: {line!r}")
     return result

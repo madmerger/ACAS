@@ -110,8 +110,7 @@ dump-data.
           perform check-status
           move spaces to dump-line
           move pa-gl to gl-text
-          string "A|" pa-system "|" pa-group "|" gl-text "|"
-            function trim(pa-desc) "|" function trim(pa-print)
+          string "A" pa-system pa-group gl-text pa-desc pa-print
             into dump-line
           end-string
           write dump-line
@@ -127,7 +126,7 @@ dump-data.
         not at end
           perform check-status
           move spaces to dump-line
-          string "P|" purch-key "|" function trim(purch-name)
+          string "P" purch-key purch-name
             into dump-line
           end-string
           write dump-line
