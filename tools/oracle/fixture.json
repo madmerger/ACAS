@@ -1,0 +1,9 @@
+{
+  "suppliers": [{"code": "SUP0001", "name": "Oracle Supplier"}],
+  "analysis": [
+    {"ledger": "P", "code": "a ", "gl": 0, "description": "Purchase group", "print": ""},
+    {"ledger": "P", "code": "a1", "gl": 200100, "description": "Purchase materials", "print": "MAT"},
+    {"ledger": "S", "code": "a ", "gl": 0, "description": "Sales group", "print": ""},
+    {"ledger": "S", "code": "a1", "gl": 100100, "description": "Sales goods", "print": "GDS"}
+  ]
+}

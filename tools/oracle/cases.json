@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "cases": [{
+    "id": "SL-ANALYSIS-001",
+    "description": "Create a sales analysis group, then print all P/S codes",
+    "program": "sl070",
+    "menu_path": ["Sales", "L", "1", "4"],
+    "input": {"ledger": "S", "code": "b", "gl": 0, "description": "Oracle service", "print": "SVC"},
+    "steps": [
+      {"expect": "Return to system menu", "send": "1"},
+      {"expect": "<K> = Deleted", "send": "b\r0\rOracle service\rSVC\rS\r\r"},
+      {"expect": "Return to system menu", "send": "4"},
+      {"expect": "Return to system menu", "send": "9", "capture": "final-menu"}
+    ],
+    "outputs": {"data": ["analysis", "suppliers"], "reports": ["prt-1"]}
+  }]
+}
