@@ -1,0 +1,9 @@
+*.log
+*.o
+*.so
+/ACAS
+/general/general
+/incomplete_records_system/irs
+/purchase/purchase
+/sales/sales
+/stock/stock
