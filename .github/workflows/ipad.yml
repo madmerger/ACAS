@@ -1,0 +1,42 @@
+name: iPad
+
+on:
+  pull_request:
+    paths:
+      - "ipad/**"
+      - ".github/workflows/ipad.yml"
+  push:
+    branches: [main]
+    paths:
+      - "ipad/**"
+      - ".github/workflows/ipad.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+      - name: Select an available iPad simulator
+        run: |
+          IPAD_UDID=$(xcrun simctl list devices available -j | python3 -c '
+          import json, sys
+          devices = json.load(sys.stdin)["devices"]
+          ipads = [device["udid"] for runtime, group in devices.items()
+                   if "iOS" in runtime for device in group
+                   if device["name"].startswith("iPad") and device["isAvailable"]]
+          if not ipads:
+              sys.exit("No available iPad simulator found")
+          print(ipads[0])
+          ')
+          echo "IPAD_UDID=$IPAD_UDID" >> "$GITHUB_ENV"
+      - name: Test
+        run: >-
+          xcodebuild test -project ipad/ACAS.xcodeproj -scheme ACAS
+          -destination "platform=iOS Simulator,id=$IPAD_UDID"
+          CODE_SIGNING_ALLOWED=NO
