@@ -60,12 +60,14 @@ ID は本計画内の通し番号。「依存」の PR がマージ済みなら�
 | J-5 | 認証・利用者 | Spring Security、利用者テーブル、ハッシュ化、Web セッション / API JWT、ログイン試行制限 | J-2 |
 | J-6 | Web シェル | Thymeleaf レイアウト、ログイン画面、`ACAS.cbl` のメインメニュー（A–D, Z）と各サブメニューの枠（未実装項目は非表示）、日本語メッセージ | J-5 |
 | J-7 | OpenAPI 公開 | springdoc で `/api/v1` 仕様を生成し、`api/openapi.yaml` を CI で差分検証 | J-5 |
-| M-1 | ISAM→RDB 移行ツール: 共通・GL | `tools/isam2rdb`（Java CLI、J-3 の codec を使用）で `system.dat`・`ledger`・`batch`・`posting` を移行。往復テスト | J-2, J-3 |
+| M-1 | ISAM→RDB 移行ツール: 共通・GL | `tools/isam2rdb`（Java CLI、J-3 の codec を使用）で `system.dat`・`ledger`・`batch`・`posting`・`archive.dat`（GL 元帳印刷の履歴）を移行。往復テスト | J-2, J-3 |
 | M-2 | 同: SL | `salesled`・`invoice`・`openitm2/3`・`delinvno`・`value`/`analysis`/`delivery` | M-1 |
 | M-3 | 同: PL | `purchled`・`pinvoice`・`openitm4/5`・`delfolio`・`pay` | M-1 |
-| M-4 | 同: 在庫・IRS | `stockctl`・`staudit`・IRS 5 ファイル | M-1 |
+| M-4 | 同: 在庫・IRS | `stockctl`・`staudit`・IRS 5 ファイル・`postings2irs.dat`（SL/PL から IRS への未取込転記） | M-1 |
 
 M-2 / M-3 / M-4 は並列可。J-3 は J-2 と並列可。
+
+切替ではレガシーへの書込みを停止し、`postings2irs.dat` の未取込レコードを M-4 で未処理キューとして保存する。IR-2 が切替後に一度だけ取り込み、移行時には元帳へ転記しない。ファイル識別子とレコード位置による一意な移行 ID・処理済み状態を保持し、移行再実行・取込再試行による二重計上を防ぐ。件数・金額を移行前後および取込後に照合し、差異があれば切替を止める。元ファイルは照合完了まで保全する。
 
 ### Wave 2 — iPad 基盤（Wave 1 と並列で開始可）
 
