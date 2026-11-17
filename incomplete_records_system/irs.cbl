@@ -196,35 +196,35 @@
          88  Linux                    value 6.
 *>
  01  resulta             pic 99       value zero.
-     88  Success                      value '00'.
-     88  Success_Duplicate            value '02'.
-     88  Success_Incomplete           value '04'.
-     88  Success_Optional             value '05'.
-     88  Success_No_Unit              value '07'.
-     88  End_of_File                  value '10'.
-     88  Out_of_Key_Range             value '14'.
-     88  Key_Invalid                  value '21'.
-     88  Key_Exists                   value '22'.
-     88  Key_Not_Exists               value '23'.
-     88  Permanent_Error              value '30'.
-     88  Inconsistent_Filename        value '31'.
-     88  Boundary_Violation           value '34'.
-     88  Not_Exists                   value '35'.
-     88  Permission_Denied            value '37'.
-     88  Closed_with_Lock             value '38'.
-     88  Conflict_Attribute           value '39'.
-     88  Already_Open                 value '41'.
-     88  Not_Open                     value '42'.
-     88  Read_not_Done                value '43'.
-     88  Record_Overflow              value '44'.
-     88  Read_Error                   value '46'.
-     88  Input_Denied                 value '47'.
-     88  Output_Denied                value '48'.
-     88  I_O_Denied                   value '49'.
-     88  Record_Locked                value '51'.
-     88  I_O_Linage                   value '57'.
-     88  File_Sharing                 value '61'.
-     88  Not_Available                value '91'.
+     88  Success                      value 00.
+     88  Success_Duplicate            value 02.
+     88  Success_Incomplete           value 04.
+     88  Success_Optional             value 05.
+     88  Success_No_Unit              value 07.
+     88  End_of_File                  value 10.
+     88  Out_of_Key_Range             value 14.
+     88  Key_Invalid                  value 21.
+     88  Key_Exists                   value 22.
+     88  Key_Not_Exists               value 23.
+     88  Permanent_Error              value 30.
+     88  Inconsistent_Filename        value 31.
+     88  Boundary_Violation           value 34.
+     88  Not_Exists                   value 35.
+     88  Permission_Denied            value 37.
+     88  Closed_with_Lock             value 38.
+     88  Conflict_Attribute           value 39.
+     88  Already_Open                 value 41.
+     88  Not_Open                     value 42.
+     88  Read_not_Done                value 43.
+     88  Record_Overflow              value 44.
+     88  Read_Error                   value 46.
+     88  Input_Denied                 value 47.
+     88  Output_Denied                value 48.
+     88  I_O_Denied                   value 49.
+     88  Record_Locked                value 51.
+     88  I_O_Linage                   value 57.
+     88  File_Sharing                 value 61.
+     88  Not_Available                value 91.
 *>
  screen section.
 *>-------------
