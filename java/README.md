@@ -19,6 +19,6 @@ java -jar acas-app/target/acas-app-*.jar       # starts on port 8080 (override w
 curl localhost:8080/actuator/health            # {"status":"UP",...}
 ```
 
-Endpoints: `/actuator/health`, `/actuator/health/liveness`, `/actuator/health/readiness`, `/actuator/info`.
+Endpoints: `/actuator/health`, `/actuator/health/liveness`, `/actuator/health/readiness`. No other actuator endpoint is exposed.
 
 CI: `.github/workflows/java.yml` runs `./mvnw verify`, then starts the jar and checks the health endpoint. It runs only when `java/**` or the workflow changes.

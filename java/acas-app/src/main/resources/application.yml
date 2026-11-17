@@ -9,16 +9,8 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info
+        include: health
   endpoint:
     health:
       probes:
         enabled: true
-  info:
-    env:
-      enabled: true
-
-info:
-  app:
-    name: ACAS
-    description: Applewood Computers Accounting System

@@ -33,10 +33,8 @@ class HealthEndpointTest {
     }
 
     @Test
-    void infoNamesTheApplication() {
-        ResponseEntity<String> response = rest.getForEntity("/actuator/info", String.class);
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).contains("\"name\":\"ACAS\"");
+    void infoIsNotExposed() {
+        assertThat(rest.getForEntity("/actuator/info", String.class).getStatusCode())
+                .isEqualTo(HttpStatus.NOT_FOUND);
     }
 }
