@@ -150,7 +150,7 @@ public class Sl010 extends SlProgram {
         d2402 = " "; d24CheckShown = false; d24Digit = " ";
         d2403 = "]";
         if (menuReply != 4) {
-            display(1, 1, PROG_NAME);
+            show(1, 1, PROG_NAME);
             wsLocalDate = fromUk(toDay());
             show(1, 71, wsLocalDate, 2);
         }

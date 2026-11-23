@@ -28,8 +28,8 @@ public class Sales extends SlProgram {
             toDay = Acas_convert(Maps04.toDate(sys.longv("run-date")));
             toDay(toDay);
             if (sys.intv("level-3") != 1) {
-                ctx.shared.put("error-code", 1); call("maps99");
-                ctx.shared.put("error-code", 15); call("maps99");
+                maps99(1);
+                maps99(15);
                 return;
             }
             ctx.shared.put("ws-process-func", 0); ctx.shared.put("ws-sub-function", 0);
@@ -95,7 +95,7 @@ public class Sales extends SlProgram {
             display(24, 24, " Applewood Computers", 3);
             show(1, 1, sys.str("usera"));
             show(1, 71, convDate(toDay));
-            display(3, 1, PROG_NAME);
+            show(3, 1, PROG_NAME);
             display(3, 29, "Sales Ledger System Menu");
             display(3, 55, "at ");
             show(3, 58, timeNow(), 2);

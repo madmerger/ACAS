@@ -203,7 +203,7 @@ public class Sl070 extends SlProgram {
 
     private void displayHeading() {
         clearScreen();
-        display(1, 1, PROG_NAME);
+        show(1, 1, PROG_NAME);
         show(1, 71, fromUk(toDay()), 2);
         switch (menuReply) {
             case 0 -> { display(1, 20, "Product Analysis File Set-Up & Maintenance"); display(4, 34, "Function  Menu"); }

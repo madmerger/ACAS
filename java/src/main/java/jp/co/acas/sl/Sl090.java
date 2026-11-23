@@ -15,7 +15,7 @@ public class Sl090 extends SlProgram {
     public void run(Object... args) {
         Rec sys = sys();
         eraseEos(1, 1);
-        display(1, 1, PROG_NAME);
+        show(1, 1, PROG_NAME);
         // レコード長検査（OTM3 と整列レコードはともに 114 バイトで、レガシーでも不一致にならない）は省略。
         if (sys.intv("s-flag-p") == 0) { maps99(30); maps99(15); return; }
         sys.set("oi-3-flag", "Y");

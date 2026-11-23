@@ -35,7 +35,7 @@ public class Sl095 extends SlProgram {
         sys.set("oi-3-flag", "Y");
         sys.setNum("s-flag-p", 2);
         eraseEos(1, 1);
-        display(1, 1, PROG_NAME);
+        show(1, 1, PROG_NAME);
         display(1, 32, "Payment Proof Report");
         show(2, 71, fromUk(toDay()), 2);
         display(12, 1, "Printing..... Please Wait");

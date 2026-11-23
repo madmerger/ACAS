@@ -43,7 +43,7 @@ public class Sl950 extends SlProgram {
         print = new Prt(ctx, "prt-3");
         setupCompanyDetails();
         clearScreen();
-        display(1, 1, PROG_NAME);
+        show(1, 1, PROG_NAME);
         display(1, 26, "Delivery / Picking Note Print");
         show(1, 71, fromUk(toDay()), 2);
         stockFile.open(CobFile.Mode.INPUT);

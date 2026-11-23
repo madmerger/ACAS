@@ -19,7 +19,7 @@ public class Sl940 extends SlProgram {
         term().exceptionsEnabled = true; term().escEnabled = true;
         if (sys.intv("file-status", 16) != 1) { maps99(17); maps99(15); return; }
         clearScreen();
-        display(1, 1, PROG_NAME);
+        show(1, 1, PROG_NAME);
         display(1, 31, "Invoicing Data Deletion");
         show(1, 71, fromUk(toDay()), 2);
         sales = salesRec(); deliv = deliveryRec();

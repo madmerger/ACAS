@@ -23,7 +23,7 @@ public class Sl900 extends SlProgram {
         while (true) {
             boolean notInvoicing = sys.intv("invoicer") == 9;
             clearScreen();
-            display(1, 1, PROG_NAME);
+            show(1, 1, PROG_NAME);
             display(1, 34, "Invoicing Menu");
             show(1, 71, wsDate, 2);
             display(5, 1, "Select one of the following by number :- [ ]");
@@ -77,7 +77,7 @@ public class Sl900 extends SlProgram {
     private void fixedData() {
         boolean gl = sys.intv("level-1") == 1;
         clearScreen();
-        display(1, 1, PROG_NAME);
+        show(1, 1, PROG_NAME);
         display(1, 31, "Invoicing Fixed Data");
         show(1, 71, wsDate, 2);
         display(5, 11, "Next Invoice");

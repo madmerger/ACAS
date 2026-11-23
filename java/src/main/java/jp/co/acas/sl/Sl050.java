@@ -34,7 +34,7 @@ public class Sl050 extends SlProgram {
         sys = sys();
         for (BigDecimal[] t : tot) java.util.Arrays.fill(t, BigDecimal.ZERO);
         clearScreen();
-        display(1, 1, PROG_NAME);
+        show(1, 1, PROG_NAME);
         display(1, 32, "Invoice Proof Report");
         show(1, 71, fromUk(toDay()), 2);
         if (sys.intv("file-status", 16) == 0) {

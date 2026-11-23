@@ -59,7 +59,7 @@ public class Sl060 extends SlProgram {
         sys = sys();
         term().exceptionsEnabled = true; term().escEnabled = true;
         clearScreen();
-        display(1, 1, PROG_NAME);
+        show(1, 1, PROG_NAME);
         display(1, 31, "Invoice Posting & Report");
         show(1, 71, fromUk(toDay()), 2);
         while (true) {

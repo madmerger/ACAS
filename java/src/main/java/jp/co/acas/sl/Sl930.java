@@ -43,7 +43,7 @@ public class Sl930 extends SlProgram {
         wsDate = fromUk(toDay());
         setupCompanyDetails();
         clearScreen();
-        display(1, 1, PROG_NAME);
+        show(1, 1, PROG_NAME);
         display(1, 34, "Invoice Printing");
         show(1, 71, wsDate, 2);
         invFile.open(CobFile.Mode.IO);

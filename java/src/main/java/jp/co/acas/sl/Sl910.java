@@ -551,7 +551,7 @@ public class Sl910 extends SlProgram {
         details:
         while (true) {
             clearScreen();
-            display(1, 1, PROG_NAME);
+            show(1, 1, PROG_NAME);
             display(1, 32, "Invoicing Data Entry");
             wsDate = fromUk(toDay());
             show(1, 71, wsDate, 2);

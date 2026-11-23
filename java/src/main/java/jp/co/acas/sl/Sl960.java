@@ -53,7 +53,7 @@ public class Sl960 extends SlProgram {
             .value(23, 61, "* <Q> = Quit      *")
             .value(24, 61, "*******************");
         clearScreen();
-        display(1, 1, PROG_NAME);
+        show(1, 1, PROG_NAME);
         salesFile.open(CobFile.Mode.IO);
         delivFile.open(CobFile.Mode.IO);
         if (!delivFile.status.equals("00")) {

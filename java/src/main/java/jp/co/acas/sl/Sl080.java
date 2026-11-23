@@ -66,7 +66,7 @@ public class Sl080 extends SlProgram {
 
     private void displayHeads() {
         eraseEos(1, 1);
-        display(1, 1, PROG_NAME);
+        show(1, 1, PROG_NAME);
         display(1, 33, "Payment Data Entry");
         show(1, 71, fromUk(toDay), 2);
     }

@@ -602,7 +602,7 @@ public class Sl920 extends SlProgram {
     // ---- header ----
     private void invoiceDetails() {
         clearScreen();
-        display(1, 1, PROG_NAME);
+        show(1, 1, PROG_NAME);
         display(1, 32, "Invoicing Data Amend");
         wsDate = fromUk(toDay());
         show(1, 71, wsDate, 2);

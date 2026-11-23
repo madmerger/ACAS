@@ -34,7 +34,7 @@ public class Sl055 extends SlProgram {
             if (sys.intv("file-status", 15) != 1) { maps99(29); maps99(15); return; }
         }
         clearScreen();
-        display(1, 1, PROG_NAME);
+        show(1, 1, PROG_NAME);
         display(12, 1, "Invoice Post Extract");
         show(1, 71, fromUk(toDay()), 2);
         display(12, 1, "Working...........Please Wait");

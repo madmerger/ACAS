@@ -15,7 +15,7 @@ public class Sl000 extends SlProgram {
         clearScreen();
         display(1, 1, "Client -");
         show(1, 10, sys().str("usera"));
-        display(3, 1, PROG_NAME);
+        show(3, 1, PROG_NAME);
         display(3, 28, "Sales Ledger  Start Of Day");
         showMapsSer(2);
         display(3, 60, "at ");

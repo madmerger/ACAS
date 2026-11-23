@@ -53,7 +53,7 @@ public class Sl020 extends SlProgram {
 
     private void main001() {
         clearScreen();
-        display(1, 1, PROG_NAME);
+        show(1, 1, PROG_NAME);
         display(1, 31, "Sales Ledger Enquiry");
         show(1, 71, fromUk(toDay()), 2);
     }

@@ -67,6 +67,13 @@ def mask_os_output(want, got):
         for side in (want, got):
             for r, c in cells:
                 if r < len(side) and c < len(side[r]): side[r] = side[r][:c] + " " + side[r][c + 1:]
+    # nohup が起動対象スクリプトを見つけられないときの通知（環境依存）も同じく OS 出力として外す
+    for i, line in enumerate(list(want)):
+        col = line.find("nohup: failed to run command")
+        if col < 0: continue
+        n += 1
+        for side in (want, got):
+            if i < len(side): side[i] = side[i][:col]
     if n:
         want, got = ["\n".join(l.rstrip() for l in x).rstrip("\n").split("\n") for x in (want, got)]
     return want, got, n

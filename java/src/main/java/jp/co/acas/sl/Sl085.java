@@ -58,7 +58,7 @@ public class Sl085 extends SlProgram {
 
     private void displayHeads() {
         eraseEos(1, 1);
-        display(2, 2, PROG_NAME);
+        show(2, 2, PROG_NAME);
         display(2, 33, "Payment Data Amend");
         show(2, 71, fromUk(toDay()), 2);
     }

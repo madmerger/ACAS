@@ -29,7 +29,7 @@ public class Sl100 extends SlProgram {
         term().exceptionsEnabled = true; term().escEnabled = true;
         if (sys.intv("s-flag-p") != 2) { maps99(11); maps99(15); return; }
         eraseEos(1, 1);
-        display(1, 1, PROG_NAME);
+        show(1, 1, PROG_NAME);
         display(1, 36, "Cash Posting");
         show(1, 71, fromUk(toDay()), 2);
         while (true) {
