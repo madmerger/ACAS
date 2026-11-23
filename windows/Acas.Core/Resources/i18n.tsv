@@ -259,3 +259,23 @@ Account      <----Detail   Level----><-------Level  4-------><-------Level  3---
                Debit        Credit      Debit       CRedit      Debit       Credit      Debit       Credit      Debit       Credit  	               借方         貸方        借方        貸方        借方        貸方        借方        貸方        借方        貸方    
 GL106 Ledger File Does Not Exist	GL106 元帳ファイルが存在しません
 GL012 Hit return to continue	GL012 Enterで続行
+P&L and Balance Sheet	損益計算書・貸借対照表
+Enter P&L Date  (space to abort) - [	損益計算日 (空白で中止)          - [
+Ok to continue ? (Y/N)	続行しますか ? (Y/N)
+GL012 Hit Return to Quit	GL012 Enterで終了
+Ledger Print - Sort	元帳印刷 - ソート
+Profit & Loss Account    For the period to 	損益計算書               対象期間末日      
+Balance Sheet  as at  	貸借対照表  基準日    
+<--------This  Year-------->	<----------当  期---------->
+<--------Last  Year-------->	<----------前  期---------->
+Sales Income	売上収益
+Direct Costs	直接原価
+Sundry Income	雑収入
+Indirect Costs	間接費
+Fixed Assets	固定資産
+Current Assets	流動資産
+Current Liabilities	流動負債
+Shareholders Funds	株主資本
+Gross Profit	売上総利益
+Net Profit  	純利益      
+Net Current Value	正味流動資産

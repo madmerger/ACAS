@@ -22,6 +22,7 @@ public static partial class Launcher
     public static async Task RunAcas(Ctx c)
     {
         var t = c.Crt;
+        bool keep = false;
         try
         {
         openSystem:
@@ -77,14 +78,14 @@ public static partial class Launcher
                 }
             }
         }
-        catch (StopRun) { }
-        await EndOfProgram(c);
+        catch (StopRun e) { keep = e.KeepScreen; }
+        await EndOfProgram(c, keep);
     }
 
     /// <summary>GnuCOBOL ランタイムの終了待ち画面。</summary>
-    public static async Task EndOfProgram(Ctx c)
+    public static async Task EndOfProgram(Ctx c, bool keep = false)
     {
-        c.Crt.Clear();
+        if (!keep) c.Crt.Clear();
         c.Crt.D("end of program, please press a key to exit", 0201, fg: 7);
         await c.Crt.Keys.Read();
     }
