@@ -14,6 +14,18 @@ public class LocalDatabasePathTests
         Assert.Throws<ArgumentException>(() => LocalDatabasePath.Resolve(path));
     }
 
+    [Theory]
+    [InlineData(@"\\example.invalid\SHARE~1\acas.db")]
+    [InlineData("//example.invalid/SHARE~1/acas.db")]
+    [InlineData(@"\/example.invalid/SHARE~1/acas.db")]
+    [InlineData(@"\\?\UNC\example.invalid\share\acas.db")]
+    [InlineData(@"\??\UNC\example.invalid\share\acas.db")]
+    public void 共有形式はパスを正規化する前に拒否する(string path)
+    {
+        var error = Assert.Throws<ArgumentException>(() => LocalDatabasePath.Resolve(path + '\0'));
+        Assert.Equal("データベースにはローカルドライブ上のパスを指定してください。", error.Message);
+    }
+
     [Fact]
     public void ローカルファイルへのパスを受け付ける()
     {
