@@ -26,7 +26,6 @@ struct SalesDunningView: View {
             do {
                 date = try SalesDunning(workspace.context).prepare()
                 ready = true
-                workspace.completed("sales-dunning")
             } catch SalesDunning.Error.missingOpenItems {
                 failure = "sales.period.openItemsMissing"
                 workspace.completed("sales-dunning")
@@ -41,6 +40,7 @@ struct SalesDunningView: View {
             try SalesDunning(workspace.context).confirmDate(date)
         } catch SalesDunning.Error.dateNotAccepted {
             failure = "sales.dunning.dateNotAccepted"
+            workspace.completed("sales-dunning")
         } catch {
             failure = "sales.dunning.failed"
         }
