@@ -125,6 +125,7 @@ public sealed class GeneralLedger(Db database)
         var management = Layouts.Ledger.New();
         management.SetN("nos", 999999);
         management.SetN("pc", 99);
+        management.Set("place", "0");
         Array.Clear(management.B, 16, 24);
         database.Write(LedgerFile, "99999999", management.B);
     }

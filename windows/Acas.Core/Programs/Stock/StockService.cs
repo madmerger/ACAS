@@ -280,12 +280,18 @@ public sealed class StockService
 
     public string? Create(Rec item)
     {
-        if (!_db.Exists(StockFile)) _db.Create(StockFile);
         if (item.St("Stock-Key").Length == 0) return StockMessages.ST114;
         if (item.St("Stock-Abrev-Key").Length == 0) return StockMessages.ST102;
         if (ReadKey(item.St("Stock-Key")) != null) return StockMessages.ST116;
         if (item.St("Stock-Abrev-Key").Length > 0 && ReadAbrev(item.St("Stock-Abrev-Key")) != null) return StockMessages.ST113;
+        bool newFile = !_db.Exists(StockFile);
         _db.Write(StockFile, item.S("Stock-Key"), item.B);
+        if (newFile)
+        {
+            System.Set("Stock-Control", "Y");
+            System.SetN("File-Status-11", 1);
+            SaveSystem();
+        }
         return null;
     }
 

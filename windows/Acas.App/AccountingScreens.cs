@@ -44,6 +44,7 @@ internal sealed partial class AccountingScreens(Db database)
             new("MenuCompanyParameters", "会社・期間設定", Open: () => Settings()),
             new("MenuOperatingParameters", "運用環境設定", Open: () => OperatingSettings()),
             new("MenuGeneralLedgerParameters", "総勘定元帳の設定", Open: () => GeneralLedgerSettings()),
+            new("MenuSubledgerParameters", "補助台帳の設定", Open: SubledgerSettingsMenu),
             new("MenuSettingsReport", "設定内容の印刷", Open: SettingsReportMenu)
         ], Open: SettingsMenu),
         new("MenuOrders", "受注管理", Open: () => Unavailable("受注管理")),
@@ -97,6 +98,7 @@ internal sealed partial class AccountingScreens(Db database)
             new TextField("PostalCode", "郵便番号", contact.PostCode, 12),
             new TextField("Country", "国", contact.Country, 24),
             new TextField("TaxRegistration", "税登録番号", contact.TaxRegistration, 11),
+            Toggle("PrintTaxNumber", "税登録番号を印刷", draft?.PrintTaxNumber ?? system.St("SL-VAT-Printed") == "Y"),
             new DateField("PeriodStart", "期首日", draft?.Start ?? SystemSettings.Date(system, "Start-Date")),
             new DateField("PeriodEnd", "期末日", draft?.End ?? SystemSettings.Date(system, "End-Date")),
             new TextField("CurrentCycle", "現在の会計期間", (draft?.Cycle ?? system.I("Cyclea")).ToString(), 2),
@@ -105,17 +107,27 @@ internal sealed partial class AccountingScreens(Db database)
             new ChoiceField("DateFormat", "保存データの日付順",
                 [new("1", "日・月・年"), new("2", "月・日・年"), new("3", "年・月・日")],
                 (draft?.DateFormat ?? Math.Clamp(system.I("Date-Form"), 1, 3)).ToString()),
+            new TextField("CurrentQuarter", "現在の四半期", (draft?.Quarter ?? system.I("Current-Quarter")).ToString(), 1),
+            .. Enumerable.Range(1, 5).Select(i => new TextField($"VatRate{i}", $"税率{i}",
+                (draft?.TaxRates?[i - 1] ?? system.N($"Vat-Rate-{i}")).ToString("0.00", System.Globalization.CultureInfo.InvariantCulture), 5)),
             Toggle("SalesStockLink", "売掛と在庫の連携", draft?.SalesStockLink ?? system.S("SL-Stock-Link") == "Y")
         ], "確認へ", values =>
         {
             if (values.Date("PeriodStart") is not { } start || values.Date("PeriodEnd") is not { } end ||
                 !Number(values.Text("CurrentCycle"), out int cycle) || !Number(values.Text("CyclePeriod"), out int period) ||
-                !Number(values.Text("PageLines"), out int lines) || !Number(values.Choice("DateFormat"), out int format))
+                !Number(values.Text("PageLines"), out int lines) || !Number(values.Choice("DateFormat"), out int format) ||
+                !Number(values.Text("CurrentQuarter"), out int quarter))
                 return Settings(draft, "日付と数値の入力内容を確認してください。");
+            var rates = new decimal[5];
+            for (int i = 0; i < rates.Length; i++)
+                if (!decimal.TryParse(values.Text($"VatRate{i + 1}"), System.Globalization.NumberStyles.AllowDecimalPoint,
+                    System.Globalization.CultureInfo.InvariantCulture, out rates[i]))
+                    return Settings(draft, "税率の入力内容を確認してください。");
             var parameters = new CompanyParameters(values.Text("ParameterName"), start, end,
                 cycle, period, lines, format, Enabled(values, "SalesStockLink"),
                 new(values.Text("Address1"), values.Text("Address2"), values.Text("Address3"), values.Text("Address4"),
-                    values.Text("PostalCode"), values.Text("Country"), values.Text("TaxRegistration")));
+                    values.Text("PostalCode"), values.Text("Country"), values.Text("TaxRegistration")))
+                { Quarter = quarter, TaxRates = rates, PrintTaxNumber = Enabled(values, "PrintTaxNumber") };
             if (lines < 29) return Settings(parameters with { PageLines = 48 }, "帳票の行数は２９以上を指定してください。");
             return new ConfirmationScreen("会社・期間設定", "入力した設定を保存しますか。", "保存",
                 () => _settings.SaveParameters(parameters) ? new InformationScreen("会社・期間設定", "設定を保存しました。") :

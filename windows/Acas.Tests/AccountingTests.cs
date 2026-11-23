@@ -57,7 +57,11 @@ public class AccountingTests
         using var db = new Db();
         var settings = new SystemSettings(db);
         Assert.True(settings.Initialize(Company, Start));
-        Assert.True(settings.SaveParameters(Parameters with { Contact = new("Address", "", "", "", "1234567", "Country", "123") }));
+        Assert.True(settings.SaveParameters(Parameters with
+        {
+            Contact = new("Address", "", "", "", "1234567", "Country", "123"),
+            Quarter = 1, TaxRates = [20m, 5m, 0m, 0m, 0m]
+        }));
         Assert.True(settings.SaveOperatingParameters(new(1, 6, 1, "Primary", "Ledger", "")));
         Assert.Equal("Primary", settings.ReadOperatingParameters()!.Queue3);
         var body = settings.PrintSettings();
@@ -65,6 +69,11 @@ public class AccountingTests
         Assert.Contains("住所1　Address", body);
         Assert.Contains("共通の印刷先　Primary", body);
         Assert.Contains("総勘定元帳の印刷先　Ledger", body);
+        Assert.Contains("買掛住所区切り　" + settings.Read()!.St("PL-Delim"), body);
+        Assert.Contains("売掛入金勘定　" + settings.Read()!.I("SL-Pay-Ac").ToString("000000"), body);
+        Assert.Contains("在庫監査番号　00000000", body);
+        Assert.Contains("四半期　1", body);
+        Assert.Contains("税率1　20.00", body);
         Assert.DoesNotContain("ABCD", body);
         Assert.DoesNotContain(settings.Read()!.S("Pass-Word"), body);
         Assert.Equal(body, Assert.Single(db.Spool()).Body);

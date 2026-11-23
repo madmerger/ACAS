@@ -24,19 +24,69 @@ public sealed record GroupOnePlan(string LegacyScreen, IReadOnlyList<ScreenActio
         {
             string[] setup = Input(1), company = Input(2), operating = Input(4), queues = Input(5);
             return [
-                Tree("MenuCompanySetup"), Check("CompanyName"), Text("CompanyName", setup[0]), Text("PeriodPassword", "AAAA"),
-                Choice("EnableGeneral", setup[1]), Choice("EnableSales", setup[2]), Choice("EnablePurchasing", setup[3]),
-                Choice("EnableInvoicing", setup[4]), Choice("EnableOrders", setup[5]), Choice("EnableStock", setup[6]), Submit, Confirm,
+                Tree("MenuCompanySetup"), Check("CompanyName"), Text("CompanyName", setup[0]),
+                Text("PeriodPassword", scenario.Id == "SYS-001" ? "PASS" : "AAAA"),
+                Choice("EnableGeneral", setup[scenario.Id == "SYS-001" ? 2 : 1]),
+                Choice("EnableSales", setup[scenario.Id == "SYS-001" ? 4 : 2]), Choice("EnablePurchasing", setup[3]),
+                Choice("EnableInvoicing", setup[scenario.Id == "SYS-001" ? 5 : 4]),
+                Choice("EnableOrders", setup[scenario.Id == "SYS-001" ? 7 : 5]), Choice("EnableStock", setup[6]), Submit, Confirm,
                 Check("ParameterName"), Text("Address1", company[0]), Text("PostalCode", company[4]),
                 Text("Country", company[5]), DateText("PeriodStart", company[7]), DateText("PeriodEnd", company[8]),
                 Text("PageLines", company[9].TrimStart('0')), Text("CurrentCycle", company[15]), Text("TaxRegistration", company[16]),
-                Text("CyclePeriod", company[20]), Choice("SalesStockLink", company[17]), Submit, Confirm,
+                Text("CyclePeriod", company[20]), Choice("SalesStockLink", company[17]),
+                .. (scenario.Id == "SYS-001" ? new[] { Text("CurrentQuarter", company[18]), Text("VatRate1", company[10]),
+                    Text("VatRate2", company[12]), Text("VatRate3", company[14]), Text("VatRate4", company[11]),
+                    Text("VatRate5", company[13]), Choice("PrintTaxNumber", company[17]) } : []),
+                Submit, Confirm,
                 Tree("MenuOperatingParameters"), Check("OperatingSystem"), Choice("SystemHost", operating[0]),
                 Choice("OperatingSystem", operating[1]), Choice("DataCapture", operating[2]), Submit,
                 Check("Queue1"), Text("Queue1", queues[0]), Text("Queue2", queues[1]), Text("Queue3", queues[2]),
-                Submit, Confirm, Tree("MenuSettingsReport"), Menu("CreateSettingsReport"), Check("Confirmation"),
+                Submit, Confirm,
+                .. (scenario.Id == "SYS-001" ? new[] { Tree("MenuGeneralLedgerParameters"),
+                    Choice("LedgerMinimumValidation", Input(7)[5]), Choice("LedgerAutomaticTax", Input(7)[9]),
+                    Choice("LedgerUseIncompleteRecords", Input(7)[11]), Submit, Confirm } : []),
+                .. (scenario.Id == "SYS-001" ? ApplySubledgerSetup() : []),
+                Tree("MenuSettingsReport"), Menu("CreateSettingsReport"), Check("Confirmation"),
                 .. (scenario.Id == "SYS-001" ? new[] { Confirm, Check("ReportDocument") } : new[] { Cancel })
             ];
+        }
+
+        IEnumerable<ScreenAction> ApplySubledgerSetup()
+        {
+            ScreenAction Set(string field, string value) => Text("Subledger-" + field, value);
+            ScreenAction Select(string field, string value) => Choice("Subledger-" + field, value);
+            string[] sales = Input(9), headings = Input(11), purchase = Input(13), stock = Input(15);
+
+            yield return Tree("MenuSubledgerParameters");
+            yield return Menu("ConfigureReceivables");
+            foreach (var (field, index) in new[] { ("SL-Dunning", 0), ("SL-Charges", 1), ("SL-Own-Nos", 8), ("SL-Stock-Link", 11) })
+                yield return Select(field, sales[index]);
+            foreach (var (field, index) in new[] { ("SL-Credit", 2), ("SL-Disc", 3), ("SL-Min", 4), ("SL-Max", 5),
+                ("SL-Limit", 6), ("SL-Delim", 7), ("SL-Late-Per", 9), ("First-Sl-Batch", 10), ("SL-Pay-Ac", 12),
+                ("SL-Sales-Ac", 13), ("S-Debtors", 14) })
+                yield return Set(field, sales[index]);
+            for (int i = 0; i < 4; i++)
+                yield return Select("SL-Comp-Head-" + new[] { "Inv", "Stat", "Lets", "Pick" }[i], headings[i]);
+            yield return Submit;
+            yield return Confirm;
+
+            yield return Tree("MenuSubledgerParameters");
+            yield return Menu("ConfigurePayables");
+            yield return Select("PL-Stock-Link", purchase[1]);
+            foreach (var (field, index) in new[] { ("PL-Delim", 0), ("BL-Next-Batch", 2), ("BL-Pay-Ac", 3),
+                ("BL-Purch-Ac", 4), ("P-Creditors", 5) })
+                yield return Set(field, purchase[index]);
+            yield return Submit;
+            yield return Confirm;
+
+            yield return Tree("MenuSubledgerParameters");
+            yield return Menu("ConfigureInventory");
+            string[] options = ["Stk-Debug", "Stk-Manu-Used", "Stk-OE-Used", "Stk-Audit-Used", "Stk-Mov-Audit",
+                "Stk-Period-Cur", "Stk-Period-dat", "Stk-Averaging", "Stk-Activity-Rep-Run"];
+            for (int i = 0; i < options.Length; i++) yield return Select(options[i], stock[i]);
+            yield return Set("Stk-Audit-No", stock[9]);
+            yield return Submit;
+            yield return Confirm;
         }
 
         IEnumerable<ScreenAction> BusinessSetup()
@@ -77,13 +127,16 @@ public sealed record GroupOnePlan(string LegacyScreen, IReadOnlyList<ScreenActio
                 yield return Text("SalesNewCustomerCode", Input(index)[0]);
                 yield return Text("SalesCustomerName", customer[0]);
                 yield return Text("SalesCustomerAddress1", Input(correctedAddress)[1]);
+                string[] salesSetup = Input(9);
+                yield return Choice("SalesCustomerLateCharges", (customer.Length > 20 ? customer[12] : salesSetup[1]) is "Y" or "1" ? "1" : "0");
+                yield return Choice("SalesCustomerDunning", (customer.Length > 20 ? customer[14] : salesSetup[0]) is "Y" or "1" ? "1" : "0");
+                yield return Text("SalesCustomerCreditLimit", customer.Length > 20 ? customer[20] : salesSetup[6]);
                 if (index == 39) yield return Text("SalesCustomerAddress2", customer[2]);
                 if (customer.Length > 12)
                 {
                     yield return Text("SalesCustomerPhone", customer[8]);
                     yield return Text("SalesCustomerEmail", customer[11]);
                     yield return Text("SalesCustomerCreditDays", customer[16]);
-                    yield return Text("SalesCustomerCreditLimit", customer[20]);
                 }
                 yield return Submit;
                 yield return Confirm;
@@ -118,10 +171,12 @@ public sealed record GroupOnePlan(string LegacyScreen, IReadOnlyList<ScreenActio
                 yield return Text("StockAbrev", Input(index + 1)[0]);
                 yield return Text("StockDesc", item[0]);
                 yield return Text("StockLocation", item[1]);
-                yield return Text("StockReorderPoint", item[8]);
-                yield return Text("StockStdReorder", item[10]);
+                yield return Text("StockHeld", item[5]);
+                yield return Text("StockReorderPoint", item[7]);
+                yield return Text("StockStdReorder", item[9]);
                 yield return Text("StockRetail", Input(index + 3)[0].TrimStart('0'));
                 yield return Text("StockCost", Input(index + 4)[0].TrimStart('0'));
+                yield return Text("StockValue", Input(index + 5)[0].TrimStart('0'));
                 yield return Submit;
                 yield return Check("Confirmation|を登録しました");
                 yield return Cancel;

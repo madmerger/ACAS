@@ -84,6 +84,14 @@ public sealed partial class PurchaseLedger(Db database)
         record.SetN("notes", hasNotes ? 1 : 0);
         if (!(create ? database.Write(SupplierFile, key, record.B) : database.Rewrite(SupplierFile, key, record.B)))
             return false;
+        if (create && new SystemSettings(database).Read() is { } system && system.S("Purchase-Ledger") != "Y")
+        {
+            database.Create(DeliveryFile);
+            system.Set("Purchase-Ledger", "Y");
+            system.SetN("File-Status-14", 1);
+            system.SetN("File-Status-22", 1);
+            database.Put(SystemSettings.SystemFile, "00000001", system.B);
+        }
         if (hasNotes)
         {
             var note = NoteLayout.New();

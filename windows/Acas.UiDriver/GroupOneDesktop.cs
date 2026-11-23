@@ -128,7 +128,13 @@ internal sealed partial class Desktop
             "DefaultAccountTax" or "JournalTemporaryTax" => Array.IndexOf(new[] { "I", "O", "N" }, value),
             "JournalSide" => Array.IndexOf(new[] { "CR", "DR" }, value),
             "SalesStockLink" or "EnableGeneral" or "EnableSales" or "EnablePurchasing" or "EnableInvoicing" or
-                "EnableOrders" or "EnableStock" => Array.IndexOf(new[] { "Y", "N" }, value),
+                "EnableOrders" or "EnableStock" or "PrintTaxNumber" or "LedgerMinimumValidation" or "LedgerAutomaticTax" or
+                "LedgerUseIncompleteRecords" => Array.IndexOf(new[] { "Y", "N" }, value),
+            "SalesCustomerLateCharges" or "SalesCustomerDunning" => Array.IndexOf(new[] { "1", "0" }, value),
+            "Subledger-Stk-Period-Cur" when value.Length == 1 => "MQW".IndexOf(value[0]),
+            "Subledger-Stk-Period-dat" when value.Length == 1 => "YMQ".IndexOf(value[0]),
+            _ when id.StartsWith("Subledger-", StringComparison.Ordinal) && value.Length == 1 =>
+                value[0] is '1' or 'Y' ? 0 : value[0] is '0' or 'N' ? 1 : -1,
             "SystemHost" or "DataCapture" when int.TryParse(value, out int zeroBased) => zeroBased,
             "OperatingSystem" when int.TryParse(value, out int oneBased) => oneBased - 1,
             _ => -1

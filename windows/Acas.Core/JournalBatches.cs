@@ -162,20 +162,25 @@ public sealed partial class JournalBatches(Db database)
         {
             if (++page > 1) report.Append('\f');
             report.AppendLine($"バッチ状況帳票　{page}ページ");
-            report.AppendLine($"会計期間　{system.I("Cyclea"):00}");
-            report.AppendLine("台帳　バッチ　状態　最終処理日　件数　照合用総額　照合用税額　実績総額　実績税額");
-            lines = 3;
+            report.AppendLine($"会計期間　{system.I("Cyclea"),2}　{LedgerReports.LegacyDate(system, SystemSettings.Date(system, "Run-Date"))}");
+            report.AppendLine("台帳　バッチ　状態　最終処理日　　　　　　　　バッチ照合");
+            report.AppendLine("　　　　　　　　　　　　　　　　　　　　　　 件数　総額　税額");
+            lines = 4;
         }
         BeginPage();
         foreach (var row in Current())
         {
             if (lines >= Math.Max(29, system.I("Page-Lines"))) BeginPage();
-            report.AppendLine(FormattableString.Invariant($"{LedgerName(row.Ledger)}　{row.Number:00000}　{StatusName(row)}　{row.Activity:yyyy年M月d日}　{row.Items:00}　{row.InputGross:0.00}　{row.InputTax:0.00}　{row.ActualGross:0.00}　{row.ActualTax:0.00}"));
-            lines++;
+            report.AppendLine();
+            report.AppendLine(FormattableString.Invariant($"{LedgerName(row.Ledger),-8}{row.Number,5}  {StatusName(row),-11}{LedgerReports.LegacyDate(system, row.Activity),-14}{"入力",-9}{row.Items,2}    {row.InputGross,12:0.00} {Tax(row.InputTax),12}"));
+            report.AppendLine(FormattableString.Invariant($"{new string(' ', 40)}{"実績",-9}{row.Items,2}    {row.ActualGross,12:0.00} {Tax(row.ActualTax),12}"));
+            lines += 3;
         }
         string body = report.ToString();
         database.AddSpool("バッチ状況帳票", body);
         return body;
+
+        static string Tax(decimal amount) => amount == 0 ? "" : LedgerReports.Money(amount);
     }
 
     public static string LedgerName(int ledger) => ledger switch { 1 => "総勘定", 2 => "買掛", 3 => "売掛", _ => "" };

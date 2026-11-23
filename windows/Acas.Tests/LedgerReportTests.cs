@@ -17,8 +17,8 @@ public class LedgerReportTests
 
         var body = new LedgerReports(db).PrintChart();
         Assert.NotNull(body);
-        Assert.Contains("3000.00　00　第1階層　Revenue", body);
-        Assert.Contains("3000.01　00　明細　Sales", body);
+        Assert.Matches(@"(?m)^  1 +3000\.00 +直接収益 +Revenue\r?$", body);
+        Assert.Matches(@"(?m)^ {27}3000\.01 +Sales\r?$", body);
         Assert.DoesNotContain("Sentinel", body);
         Assert.Equal(body, Assert.Single(db.Spool()).Body);
     }
@@ -30,7 +30,9 @@ public class LedgerReportTests
         var batches = new JournalBatches(db);
 
         Assert.Contains("仕訳がありません", batches.PrintTransactions());
-        Assert.Contains("バッチ状況帳票", batches.PrintStatus());
+        var status = batches.PrintStatus();
+        Assert.Contains("バッチ状況帳票", status);
+        Assert.Contains("01/04/2025", status);
         Assert.Equal(2, db.Spool().Count);
     }
 
@@ -47,14 +49,23 @@ public class LedgerReportTests
         var reports = new LedgerReports(db);
         var detailed = reports.TrialBalance(false);
         Assert.NotNull(detailed);
-        Assert.Contains("Sales　0.00　120.00　0.00　70.00　-31.00　-22.00", detailed);
-        Assert.Contains("合計　120.00　120.00　70.00　70.00", detailed);
+        string sales = detailed.Split('\n').Single(line => line.StartsWith("3000.01", StringComparison.Ordinal));
+        Assert.Equal("", sales[50..62].Trim());
+        Assert.Equal("120.00", sales[62..73].Trim());
+        Assert.Equal("", sales[77..89].Trim());
+        Assert.Equal("70.00", sales[89..100].Trim());
+        Assert.Equal("31.00CR", sales[104..117].Trim());
+        Assert.Equal("22.00CR", sales[119..132].Trim());
+        Assert.Matches(@"合計 +120\.00 +120\.00 +70\.00 +70\.00", detailed);
         Assert.DoesNotContain("Sentinel", detailed);
         var structured = reports.TrialBalance(true);
         Assert.NotNull(structured);
         Assert.Contains("部門別試算表", structured);
-        Assert.Contains("3000.00　第1階層　0.00　120.00", structured);
-        Assert.Contains("合計　120.00　120.00", structured);
+        Assert.Matches(@"(?m)^3000\.00 +120\.00 *\r?$", structured);
+        Assert.Matches(@"合計 +120\.00 +120\.00", structured);
+        var salesRows = structured.Split('\n').Where(line => line.StartsWith("    3000.01", StringComparison.Ordinal)).ToArray();
+        Assert.Equal(2, salesRows.Length);
+        Assert.DoesNotContain("120.00", salesRows[1]);
         Assert.Equal(2, db.Spool().Count);
     }
 
