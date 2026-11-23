@@ -24,7 +24,16 @@ public final class KeyQueue: @unchecked Sendable {
 
     /// 文字列を 1 文字ずつ送る。"\r"=Enter, "\t"=Tab, ESC=0x1b。
     public func send(text: String) {
-        for ch in text {
+        // 端末のエスケープシーケンス (ESC O x / ESC [ x) はカーソルキーとして送る
+        let seq: [Character: Key] = ["A": .up, "B": .down, "C": .right, "D": .left, "H": .home, "F": .end]
+        let chars = Array(text)
+        var i = 0
+        while i < chars.count {
+            let ch = chars[i]
+            i += 1
+            if ch == "\u{1b}", i + 1 < chars.count, chars[i] == "O" || chars[i] == "[", let k = seq[chars[i + 1]] {
+                send(k); i += 2; continue
+            }
             switch ch {
             case "\r", "\n": send(.enter)
             case "\t": send(.tab)
