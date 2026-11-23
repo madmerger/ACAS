@@ -6,6 +6,13 @@ namespace Acas.App;
 
 public partial class App : Application
 {
+    protected override void OnSessionEnding(SessionEndingCancelEventArgs e)
+    {
+        base.OnSessionEnding(e);
+        if (!e.Cancel && MainWindow is MainWindow window && !window.TryCloseSubsystems())
+            e.Cancel = true;
+    }
+
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);

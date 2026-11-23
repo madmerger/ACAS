@@ -17,6 +17,7 @@ namespace Acas.App;
 public partial class MainWindow : Window
 {
     private readonly Db _database;
+    private readonly List<ISubsystemScreens> _subsystems = [];
 
     public MainWindow(string? database = null)
     {
@@ -29,22 +30,19 @@ public partial class MainWindow : Window
         TrackTemplateIds(Navigation);
         TrackTemplateIds(ScreenContent);
 
-        var subsystems = new List<ISubsystemScreens>();
-        foreach (var item in SubsystemScreens.Load(typeof(MainWindow).Assembly, _database, subsystems.Add)
+        foreach (var item in SubsystemScreens.Load(typeof(MainWindow).Assembly, _database, _subsystems.Add)
             .Append(new NavigationItem("MenuReports", "帳票", Open: OpenReports)))
             Navigation.Items.Add(CreateMenuItem(item));
         ShowScreen(new InformationScreen("業務メニュー", "左側のメニューから操作を選択してください。"));
         Closing += (_, e) =>
         {
-            foreach (var subsystem in subsystems)
-                if (!subsystem.TryClose())
-                {
-                    e.Cancel = true;
-                    MessageBox.Show(this, "元帳の終了状態を保存できませんでした。", "会計管理");
-                    break;
-                }
+            if (TryCloseSubsystems()) return;
+            e.Cancel = true;
+            MessageBox.Show(this, "元帳の終了状態を保存できませんでした。", "会計管理");
         };
     }
+
+    internal bool TryCloseSubsystems() => _subsystems.All(subsystem => subsystem.TryClose());
 
     private static T Identify<T>(T control, string id, string? name = null) where T : FrameworkElement
     {
