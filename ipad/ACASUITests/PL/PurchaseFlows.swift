@@ -281,6 +281,49 @@ final class PurchaseFlows: XCTestCase {
         XCTAssertFalse(app.descendants(matching: .any)["pl.report.preview"].firstMatch.exists)
     }
 
+    func testSupplierListingFiltersByRegistrationDate() throws {
+        let app = try launch("PL-413", smokeID: "仕入先一覧帳票の登録日指定") { fixture in
+            let seed = try XCTUnwrap(Data(base64Encoded: try XCTUnwrap(fixture["seed"] as? String)))
+            var snapshot = try XCTUnwrap(JSONSerialization.jsonObject(with: seed) as? [String: Any])
+            var files = try XCTUnwrap(snapshot["files"] as? [String: Any])
+            let path = "ledgers/acas/purchled.dat"
+            var indexed = try XCTUnwrap(files[path] as? [String: Any])
+            var records = try XCTUnwrap(indexed["records"] as? [[String]])
+            let key = "SUPP026".utf8.map { String(format: "%02x", $0) }.joined()
+            let index = try XCTUnwrap(records.firstIndex { $0[0] == key })
+            let bytes = records[index][1]
+            let dateOffset = 226 * 2
+            records[index][1] = String(bytes.prefix(dateOffset)) + "01000000" + String(bytes.dropFirst(dateOffset + 8))
+            indexed["records"] = records
+            files[path] = indexed
+            snapshot["files"] = files
+            fixture["seed"] = try JSONSerialization.data(withJSONObject: snapshot).base64EncodedString()
+        }
+        tap(app, "pl.report.supplier_listing", scrolling: true)
+        tap(app, "pl.report.created")
+        tap(app, "一致")
+        let dateToggle = app.switches["登録日を入力"]
+        let date = app.descendants(matching: .any)["pl.report.created.date"].firstMatch
+        XCTAssertTrue(dateToggle.waitForExistence(timeout: 5))
+        XCTAssertFalse(date.exists)
+        dateToggle.coordinate(withNormalizedOffset: CGVector(dx: 0.97, dy: 0.5)).tap()
+        XCTAssertEqual(dateToggle.value as? String, "1")
+        XCTAssertTrue(date.waitForExistence(timeout: 5))
+        tap(app, "pl.report.generate", scrolling: true)
+        tap(app, "pl.report.preview", scrolling: true)
+        let preview = app.scrollViews["pl.report.preview.lines"]
+        func line(_ text: String) -> XCUIElement {
+            preview.staticTexts.containing(NSPredicate(format: "label CONTAINS %@", text)).firstMatch
+        }
+        XCTAssertTrue(line("Entry Date").waitForExistence(timeout: 5))
+        XCTAssertTrue(line("SUPP018").exists)
+        XCTAssertFalse(line("SUPP026").exists)
+        let attachment = XCTAttachment(screenshot: app.screenshot())
+        attachment.name = "PL010・登録日指定の帳票"
+        attachment.lifetime = .keepAlways
+        add(attachment)
+    }
+
     func testSupplierReportPreviewSplitsJapaneseTextAcrossPages() throws {
         let japaneseName = "日本語仕入先"
         let app = try launch("PL-413", smokeID: "複数ページの仕入先帳票") { fixture in

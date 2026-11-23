@@ -86,6 +86,7 @@ struct PurchaseReportView: View {
                                 }
                                 if mode != .listing || useCreationDate {
                                     DatePicker(plString("purchase.report.date"), selection: $date, displayedComponents: .date)
+                                        .accessibilityIdentifier("pl.report.created.date")
                                 }
                             }
                         }
