@@ -2,6 +2,7 @@ package jp.co.acas.web;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.HttpServletRequest;
 import jp.co.acas.core.Ctx;
 import jp.co.acas.core.Messages;
 import jp.co.acas.core.Store;
@@ -34,20 +35,24 @@ public class TerminalController {
             "F8", "F9", "F10", "F11", "F12");
 
     @PostMapping("/sessions")
-    public Map<String, Object> start(@RequestParam(defaultValue = "acas") String app) {
+    public Map<String, Object> start(@RequestParam(defaultValue = "acas") String app, HttpServletRequest request) {
+        String owner = request.getSession().getId();
         String id;
-        try { id = sessions.start(app); } catch (IllegalArgumentException e) { throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage()); }
-        Map<String, Object> m = sessions.get(id).term.webSnapshot();
+        try { id = sessions.start(app, owner); } catch (IllegalArgumentException e) { throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage()); }
+        Map<String, Object> m = sessions.get(id, owner).term.webSnapshot();
         m.put("id", id);
         return m;
     }
     @GetMapping("/sessions/{id}")
-    public Map<String, Object> screen(@PathVariable String id) { return ctx(id).term.webSnapshot(); }
+    public Map<String, Object> screen(@PathVariable String id, HttpServletRequest request) {
+        return ctx(id, sessionOwner(request)).term.webSnapshot();
+    }
 
     /** キー入力。keys の各要素は 1 文字、または ENTER/ESC/TAB/BACKTAB/UP/DOWN/LEFT/RIGHT/HOME/END/PGUP/PGDN/BACKSPACE/DELETE/F1..F12。 */
     @PostMapping(value = "/sessions/{id}/keys", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public Map<String, Object> keys(@PathVariable String id, InputStream requestBody) throws IOException {
-        Ctx c = ctx(id);
+    public Map<String, Object> keys(@PathVariable String id, HttpServletRequest request, InputStream requestBody)
+            throws IOException {
+        Ctx c = ctx(id, sessionOwner(request));
         byte[] data = requestBody.readNBytes(MAX_KEYS_BODY_BYTES + 1);
         if (data.length > MAX_KEYS_BODY_BYTES) {
             throw new ResponseStatusException(HttpStatus.PAYLOAD_TOO_LARGE, "入力本文が大きすぎます");
@@ -70,17 +75,24 @@ public class TerminalController {
                 || key.length() == 1 && key.charAt(0) >= ' ' && key.charAt(0) <= '~');
     }
     @DeleteMapping("/sessions/{id}")
-    public void close(@PathVariable String id) { sessions.close(id); }
+    public void close(@PathVariable String id, HttpServletRequest request) {
+        sessions.close(id, sessionOwner(request));
+    }
 
     @GetMapping("/csrf")
-    public Map<String, String> csrf(jakarta.servlet.http.HttpServletRequest request) {
+    public Map<String, String> csrf(HttpServletRequest request) {
         var token = (org.springframework.security.web.csrf.CsrfToken)
             request.getAttribute(org.springframework.security.web.csrf.CsrfToken.class.getName());
         return token == null ? Map.of() : Map.of(token.getHeaderName(), token.getToken());
     }
 
-    private Ctx ctx(String id) {
-        try { return sessions.get(id); } catch (IllegalArgumentException e) { throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage()); }
+    private static String sessionOwner(HttpServletRequest request) {
+        var session = request.getSession(false);
+        return session == null ? null : session.getId();
+    }
+
+    private Ctx ctx(String id, String owner) {
+        try { return sessions.get(id, owner); } catch (IllegalArgumentException e) { throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage()); }
     }
 
     // ---------- 帳票 ----------
