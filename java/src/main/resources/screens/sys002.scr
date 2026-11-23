@@ -1,0 +1,371 @@
+ screen section.
+*>=============
+*>
+*> All encryption sub-systems removed, ditto all high security code
+*>
+ 01  banner        foreground-color 2.
+     03  pic x(16) from prog-name                  line  1 col  1.
+     03  value "S y s t e m   S e t - U p"         line  1 col 28.
+     03  from line-1-date  pic x(10)               line  1 col 71.
+     03  value "++++++++++"                        line  3 col  1.
+     03  value "+Screen "                          line  4 col  1.
+     03  screen-nos       pic 9                    line  4 col  9.
+     03                   pic x value "+"          line  4 col 10.
+     03  value "++++++++++"                        line  5 col  1.
+*>
+ 01  user-data       foreground-color 2.
+     03          value "Name"                      line  7 col  1.
+     03          value "- {"                               col  9.
+     03  from usera       pic x(32)                        col 12.
+     03          value "}"                                 col 44.
+     03          value "Address - ["               line  8 col  1.
+     03  using address-1  pic x(24)                        col 12.
+     03          value "]"                                 col 36.
+     03          value "["                         line  9 col 11.
+     03  using address-2  pic x(24)                        col 12.
+     03          value "]"                                 col 36.
+     03          value "["                         line 10 col 11.
+     03  using address-3  pic x(24)                        col 12.
+     03          value "]"                                 col 36.
+     03          value "["                         line 11 col 11.
+     03  using address-4  pic x(24)                        col 12.
+     03          value "]"                                 col 36.
+     03          value "Post Code ["               line 12 col  1.
+     03  using Post-Code  pic x(12)                        col 12.
+     03          value "]"                                 col 24.
+     03          value "Country - ["               line 13 col  1.
+     03  using Country    pic x(24)                        col 12.
+     03          value "]"                                 col 36.
+     03          value "Date Format   "            line 14 col  1.
+     03          value "- ["                               col 15.
+     03  using Date-Form  pic 9                            col 18.
+     03          value "]"                                 col 19.
+     03          value "  (1 = UK, 2 = USA, 3 = Intl)"     col 20.
+     03          value "Period :  Start Date - ["  line 15 col  1.
+     03  using p-start    pic x(10)                        col 25.
+     03          value "]"                                 col 35.
+     03          value "End   Date - ["            line 16 col 11.
+     03  using p-end      pic x(10)                        col 25.
+     03          value "]"                                 col 35.
+     03          value "System Print Lines   -"    line 17 col  1.
+     03          value "["                                 col 24.
+     03  using Page-Lines pic 999                          col 25.
+     03          value "]"                                 col 28.
+     03          value "  (for Laser = 048)"               col 30.
+     03          value "Vat Rates : (1)"           line 18 col  1.
+     03          value "- ["                               col 22.
+     03  using vat-rate-1 pic 99.99                        col 25.
+     03          value "]"                                 col 30.
+     03          value "Local Tax : (4)"                   col 40.
+     03          value "- ["                               col 57.
+     03  using vat-rate-4 pic 99.99                        col 60.
+     03          value "]"                                 col 65.
+     03          value "(2)"                       line 19 col 13.
+     03          value "- ["                               col 22.
+     03  using vat-rate-2 pic 99.99                        col 25.
+     03          value "]"                                 col 30.
+     03          value "Local Tax : (5)"                   col 40.
+     03          value "- ["                               col 57.
+     03  using vat-rate-5 pic 99.99                        col 60.
+     03          value "]"                                 col 65.
+     03          value "(3)"                       line 20 col 13.
+     03          value "- ["                               col 22.
+     03  using vat-rate-3 pic 99.99                        col 25.
+     03          value "]"                                 col 30.
+     03          value "Current Cycle"                     col 40.
+     03          value "- ["                               col 58.
+     03  using cyclea     pic 99                           col 61.
+     03          value "]"                                 col 63.
+     03          value "VAT Reg no - ["            line 21 col  1.
+     03  using VAT-Reg-Number  pic x(11)                   col 15.
+     03          value "]"                                 col 26.
+     03          value " Printed ["                        col 27.
+     03  using SL-VAT-Printed                              col 37.
+     03          value "]"                                 col 38.
+     03          value "Current Quarter"           line 21 col 40.
+     03          value "- ["                               col 58.
+     03  using current-quarter pic 99                      col 61.
+     03          value "]"                                 col 63.
+     03          value "Pass-Word"                 line 22 col  1.
+     03          value "- ["                               col 20.
+     03  using s-pass-word pic x(4)                        col 23.
+     03          value "]"                                 col 27.
+     03          value "Cycle Period"                      col 40.
+     03          value "- ["                               col 58.
+     03  using period     pic 99                           col 61.
+     03          value "]"                                 col 63.
+     03          value "Data File Handling"        line 23 col  1.
+     03          value "- ["                               col 22.
+     03  using File-System-Used pic 9                      col 25.
+     03          value "]"                                 col 26.
+     03          value "(Range 0/1)"                       col 28.
+*>     03          value "(Range 0/5)"                       col 28.  *> NOT IN USE
+     03          value "Dual file type Flag"               col 40.
+     03          value "- ["                               col 61.
+     03  using File-Duplicates-In-Use pic 9                col 64.
+     03          value "]"                                 col 65.
+     03          value "(Range 0 / 1)"                     col 67.
+*>
+ 01  verify-screen   foreground-color 2.
+     03         value "**************************" line 11 col 54.
+     03          value "*"                         line 12 col 54.
+     03          value "*"                                 col 79.
+     03          value "*"                         line 13 col 54.
+     03  verify-message  pic x(24)                         col 55.
+     03          value "*"                                 col 79.
+     03          value "*"                         line 14 col 54.
+     03          value "*"                                 col 79.
+     03          value "* OK to file (Y/N) - ["    line 15 col 54.
+     03          value "] *"                               col 77.
+     03          value "*"                         line 16 col 54.
+     03          value "                        "          col 55.
+     03          value "*"                                 col 79.
+     03         value "**************************" line 17 col 54.
+*>
+ 01  ops-data       foreground-color 2.
+     03          value "Single/Multi-User - ["     line 17 col 02.
+     03  using host      pic 9                     line 17 col 23.
+     03          value "]  (0=Single, 1=Multi)"    line 17 col 24.
+     03          value "Operating System "         line 19 col 02.
+     03          value "- ["                       line 19 col 20.
+     03  using op-system  pic 9                    line 19 col 23.
+     03          value "]"                         line 19 col 24.
+     03          value "(1=Dos, 2=Windows," &
+          " 3=Mac, 4=OS/2, 5=Unix, 6=Linux)"       line 19 col 27.
+     03          value "Data capture System "      line 21 col 02.
+     03          value "- ["                               col 22.
+     03  using Data-Capture-Used  pic 9                    col 25.
+     03          value "] 0=Std, 1=GUI, 2=Widget"          col 26.
+*>
+ 01  ops-data-2     foreground-color 2.
+     03        value "Cups Print Spooler name 1 - [" line 21 col 02.
+     03  using Print-Spool-Name  pic x(48)                 col 31.
+     03        value "]"                                   col 79.
+     03        value "Cups Print Spooler name 2 - [" line 22 col 02.
+     03  using Print-Spool-Name2 pic x(48)                 col 31.
+     03        value "]"                                   col 79.
+     03        value "Cups Print Spooler name 3 - [" line 23 col 02.
+     03  using Print-Spool-Name3 pic x(48)                 col 31.
+     03        value "]"                                   col 79.
+*>
+ 01  ops-data-3     foreground-color 2.
+     03          value "RDB Schema name - ["       line 7 col 02.
+     03  using RDBMS-DB-Name   pic x(12)                  col 21.
+     03          value "] (ACASDB)"                       col 33.
+     03          value "DB Username - ["           line 8 col 02.
+     03  using RDBMS-User      pic x(12)                  col 17.
+     03          value "]"                                col 29.
+     03          value "DB User Password - ["      line 9 col 02.
+     03  using New-RDBMS-Passwd pic x(12) secure          col 22.
+     03          value "] "                               col 34.
+*>
+ 01  gl-data   foreground-color 2.
+     03        value "Profit Centres/Branches - [" line  7 col  1.
+     03  using p-c       pic x                     line  7 col 28.
+     03          value "]"                         line  7 col 29.
+     03          value "  (P, B, space)"           line  7 col 30.
+     03          value "P.C./Branches Level"       line  8 col  1.
+     03          value "- ["                       line  8 col 25.
+     03  using p-c-level pic x                     line  8 col 28.
+     03          value "]"                         line  8 col 29.
+     03          value "  (R=Revenue, Space)"      line  8 col 30.
+     03        value "P.C./Branches Grouped ? - [" line  9 col  1.
+     03  using p-c-grouped  pic x                  line  9 col 28.
+     03          value "]"                         line  9 col 29.
+     03          value "  (Y=Grouped or Space)"    line  9 col 30.
+     03          value "Comparatives ?"            line 10 col  1.
+     03          value "- ["                       line 10 col 25.
+     03  using comps     pic x                     line 10 col 28.
+     03          value "]"                         line 10 col 29.
+     03          value "  (Y=Yes or Space)"        line 10 col 30.
+     03          value "Ledger Name Index ?"       line 11 col  1.
+     03          value "- ["                       line 11 col 25.
+     03  using ledger-2nd-index pic x              line 11 col 28.
+     03          value "]"                         line 11 col 29.
+     03          value "  (Y=Yes or Space)"        line 11 col 30.
+     03          value "Minimum Validation ?"      line 12 col  1.
+     03          value "- ["                       line 12 col 25.
+     03  using m-v       pic x                     line 12 col 28.
+     03          value "]"                         line 12 col 29.
+     03          value "  (Y=Yes or Space)"        line 12 col 30.
+     03          value "Archiving ?"               line 13 col  1.
+     03          value "- ["                       line 13 col 25.
+     03  using arch      pic x                     line 13 col 28.
+     03          value "]"                         line 13 col 29.
+     03          value "  (Y=Yes or Space)"        line 13 col 30.
+     03          value "Sales Range"               line 14 col  1.
+     03          value "- ["                       line 14 col 25.
+     03  using sales-range pic 9                   line 14 col 28.
+     03          value "]"                         line 14 col 29.
+     03          value "Purchase Range"            line 15 col  1.
+     03          value "- ["                       line 15 col 25.
+     03  using purchase-range pic 9                line 15 col 28.
+     03          value "]"                         line 15 col 29.
+     03        value "Automatic VAT Posting ? - [" line 16 col  1.
+     03  using vat       pic x                             col 28.
+     03          value "]"                                 col 29.
+     03          value "  (Y=Yes or Space)"                col 30.
+     03          value "Next Batch Number"         line 17 col  1.
+     03          value "- ["                       line 17 col 21.
+     03  using num-6 pic 9(5)                      line 17 col 24.
+     03          value "]"                         line 17 col 29.
+     03        value "Use IRS instead of GL ? - [" line 18 col  1.
+     03  using irs-instead                                 col 28.
+     03          value "]"                                 col 29.
+     03          value "  (Y=Yes or N=No)"                 col 30.
+*>
+ 01  pl-data   foreground-color 2.
+     03          value "Delimiter"                 line 14 col  1.
+     03          value "- ["                       line 14 col 15.
+     03  using PL-Delim pic x                      line 14 col 18.
+     03          value "]"                         line 14 col 19.
+     03          value "Purch/Stock Link  ["       line 15 col  1.
+     03  using PL-Stock-Link pic x                         col 20.
+     03          value "]"                                 col 21.
+     03          value "Next Batch Number ["       line 17 col  1.
+     03  using BL-Next-Batch  pic 9(5)             line 17 col 20.
+     03          value "]"                         line 17 col 25.
+     03         value "Pay Account       ["        line 18 col  1.
+     03  using BL-Pay-Ac      pic 9(6)                     col 20.
+     03          value "]"                                 col 26.
+     03         value "Ledger Account    ["        line 19 col  1.
+     03  using BL-Purch-Ac    pic 9(6)                     col 20.
+     03          value "]"                                 col 26.
+     03         value "Creditor Account  ["        line 20 col  1.
+     03  using P-Creditors      pic 9(6)                   col 20.
+     03          value "]"                                 col 26.
+*>
+ 01  sl-data   foreground-color 2.
+     03          value "Late Letters"              line  7 col  1.
+     03          value "- ["                       line  7 col 15.
+     03  using sl-dunning pic 9                    line  7 col 18.
+     03          value "]"                         line  7 col 19.
+     03          value "  (1 = Yes or 0)"          line  7 col 20.
+     03          value "Late Charges"              line  8 col  1.
+     03          value "- ["                       line  8 col 15.
+     03  using sl-charges pic 9                    line  8 col 18.
+     03          value "]"                         line  8 col 19.
+     03          value "  (1 = Yes or 0)"          line  8 col 20.
+     03          value "Credit Period - ["         line  9 col  1.
+     03  using sl-credit pic 99                    line  9 col 18.
+     03          value "]"                         line  9 col 20.
+     03          value "Discount"                  line 10 col 1.
+     03          value "- ["                       line 10 col 15.
+     03  using sl-disc pic 99.99                   line 10 col 18.
+     03          value "]"                         line 10 col 23.
+     03          value "Min Late Bal"              line 11 col  1.
+     03          value "- ["                       line 11 col 15.
+     03  using sl-min pic 9(4)                     line 11 col 18.
+     03          value "]"                         line 11 col 22.
+     03          value "Max Late Charge ["         line 12 col  1.
+     03  using sl-max pic 9(4)                     line 12 col 18.
+     03          value "]"                         line 12 col 22.
+     03          value "Credit Limit"              line 13 col  1.
+     03          value "- ["                       line 13 col 15.
+     03  using sl-limit pic 9(7)                   line 13 col 18.
+     03          value "]"                         line 13 col 25.
+     03          value "Delimiter"                 line 14 col  1.
+     03          value "- ["                       line 14 col 15.
+     03  using sl-delim pic x                      line 14 col 18.
+     03          value "]"                         line 14 col 19.
+     03          value "  (Address lines)"         line 14 col 20.
+     03          value "Own Inv. Nos"              line 15 col  1.
+     03          value "- ["                       line 15 col 15.
+     03  using sl-own-nos pic x                    line 15 col 18.
+     03          value "]"                         line 15 col 19.
+     03          value "Late Charge % - ["         line 16 col  1.
+     03  using sl-late-per pic 9.99                line 16 col 18.
+     03          value "]"                         line 16 col 22.
+     03          value "Next Batch Number ["       line 17 col  1.
+     03  using first-sl-batch pic 9(5)             line 17 col 20.
+     03          value "]"                         line 17 col 25.
+     03          value "Sales/Stock Link  ["       line 18 col  1.
+     03  using SL-Stock-Link pic x                         col 20.
+     03          value "]"                                 col 21.
+     03          value "Pay Account    -  ["       line 19 col  1.
+     03  using SL-Pay-Ac      pic 9(6)                     col 20.
+     03          value "]"                                 col 26.
+     03          value "Ledger Account -  ["       line 20 col  1.
+     03  using SL-Sales-Ac    pic 9(6)                     col 20.
+     03          value "]"                                 col 26.
+     03          value "Debtors Account - ["       line 21 col  1.
+     03  using S-Debtors      pic 9(6)                     col 20.
+     03          value "]"                                 col 26.
+*>
+ 01  SL-Data-2   foreground-color 2.
+     03  value "Select what report types, company details will be printed to"
+                                                   line  7 col 01.
+     03  value "    Invoices   - ["                line  8 col 01.
+     03  using SL-Comp-Head-Inv   pic x                    col 19.
+     03  value "]"                                         col 20.
+     03  value "    Statements - ["                line  9 col 01.
+     03  using SL-Comp-Head-Stat  pic x                    col 19.
+     03  value "]"                                         col 20.
+     03  value "  Late Letters - ["                line 10 col 01.
+     03  using SL-Comp-Head-Lets  pic x                    col 19.
+     03  value "]"                                         col 20.
+     03  value "Delivery Notes - ["                line 11 col 01.
+     03  using SL-Comp-Head-Pick  pic x                    col 19.
+     03  value "]"                                         col 20.
+*>
+ 01  stock-data   foreground-color 2.
+     03          value "Debugging     "            line  7 col  1.
+     03          value "- ["                               col 15.
+     03  using stk-debug      pic 9                        col 18.
+     03          value "]"                                 col 19.
+     03          value "  (1 = Yes or 0)"                  col 20.
+     03          value "Bomp/Wip used "            line  9 col  1.
+     03          value "- ["                               col 15.
+     03  using stk-Manu-Used  pic 9                        col 18.
+     03          value "]"                                 col 19.
+     03          value "  (1 = Yes or 0)"                  col 20.
+     03          value "Order Entry   "            line 10 col  1.
+     03          value "- ["                               col 15.
+     03  using stk-OE-Used    pic 9                        col 18.
+     03          value "]"                                 col 19.
+     03          value "  (1 = Yes or 0)"                  col 20.
+     03          value "Audit Used    "            line 11 col  1.
+     03          value "- ["                               col 15.
+     03  using stk-Audit-Used pic 9                        col 18.
+     03          value "]"                                 col 19.
+     03          value "  (1 = Yes or 0)"                  col 20.
+     03          value "Audit Movement"            line 12 col  1.
+     03          value "- ["                               col 15.
+     03  using stk-Mov-Audit  pic 9                        col 18.
+     03          value "]"                                 col 19.
+     03          value "  (1 = Yes or 0)"                  col 20.
+     03          value "Current Period"            line 13 col  1.
+     03          value "- ["                               col 15.
+     03  using stk-Period-Cur pic x                        col 18.
+     03          value "]"                                 col 19.
+     03   value "  (W=Weekly, M=Monthly, Q=Quarterly)"     col 20.
+     03          value "To Date Period"            line 14 col  1.
+     03          value "- ["                               col 15.
+     03  using stk-Period-Dat pic x                        col 18.
+     03          value "]"                                 col 19.
+     03   value "  (M=Monthly, Q=Quarterly, Y=Yearly)"     col 20.
+     03          value "Ave Valuation"             line 15 col  1.
+     03          value "- ["                               col 15.
+     03  using stk-Averaging  pic 9                        col 18.
+     03          value "]"                                 col 19.
+     03          value "  (1 = Yes or 0)"                  col 20.
+*>     03          value "Lines per Page"            line 16 col  1.
+*>     03          value "- ["                               col 15.
+*>     03  using Stk-Page-Lines pic 999                      col 18.
+*>     03          value "]"                                 col 21.
+*>     03          value "  (for Laser = 048)"               col 22.
+     03          value "Next 2, See Manual First"  line 17 col  1.
+     03          value "Activity Rep "             line 18 col  1.
+     03          value "- ["                               col 15.
+     03  using Stk-Activity-Rep-Run pic 9                  col 18.
+     03          value "]"                                 col 19.
+     03          value "  (0 = No or 1) leave as 0"        col 20.
+     03          value "Audit Number "             line 19 col  1.
+     03          value "- ["                               col 15.
+     03  using Stk-Audit-No pic 999                        col 18.
+     03          value "]"                                 col 21.
+     03   value "  (if 1st time = 0, else leave as is)"    col 23.
+*>
+ procedure division using ws-calling-data dummy-file-defs.
+*>=======================================================
+*>

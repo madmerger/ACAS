@@ -1,0 +1,53 @@
+.calc {
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: 16px;
+  width: min(100%, 1056px);
+  margin: auto;
+  padding: 20px;
+}
+
+.calc-header { padding-block: 14px; }
+.calc-intro { grid-column: 1 / -1; margin: 0; color: #405670; }
+.calc fieldset {
+  min-width: 0;
+  margin: 0;
+  padding: 12px 16px 16px;
+  border: 1px solid #47586a;
+  border-radius: 8px;
+  background: #fff;
+}
+.calc legend { padding-inline: 6px; font-weight: bold; }
+.calc-fields { display: flex; flex-wrap: wrap; align-items: end; gap: 10px; }
+.calc label { display: grid; gap: 4px; flex: 1 1 8em; font-size: 0.9rem; }
+.calc input, .calc button {
+  box-sizing: border-box;
+  min-height: 38px;
+  padding: 6px 10px;
+  border: 1px solid #667a90;
+  border-radius: 4px;
+  font: inherit;
+}
+.calc input { width: 100%; min-width: 0; background: #fff; color: inherit; }
+.calc button { background: #2d6cdf; color: #fff; cursor: pointer; }
+.calc button:disabled { opacity: 0.7; cursor: wait; }
+.calc :focus-visible { outline: 2px solid #a5ceff; outline-offset: 2px; }
+.calc output {
+  display: block;
+  box-sizing: border-box;
+  min-height: 42px;
+  margin-top: 10px;
+  padding: 9px 10px;
+  border-radius: 4px;
+  background: #10151c;
+  color: #adf0cc;
+  overflow-wrap: anywhere;
+}
+.calc output:empty::before { content: "結果はここに表示されます"; color: #bccbdd; }
+.calc output[data-error] { color: #ffb4af; }
+
+@media (max-width: 680px) {
+  .calc { grid-template-columns: minmax(0, 1fr); padding: 12px; }
+}
