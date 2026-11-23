@@ -1,0 +1,21 @@
+/* stock.cbl — 在庫管理メニュー (日本語) */
+"st.client" = "会社   -";
+"st.st001" = "ST001 システム1 読込エラー";
+"st.menu_title" = "在庫管理メニュー";
+"st.item_a" = "(A)  日付入力";
+"st.item_b" = "(B)  在庫品目マスタ保守";
+"st.item_c" = "(C)  入出庫処理";
+"st.item_d" = "(D)  帳票";
+"st.item_e" = "(E)  期間締め処理";
+"st.item_x" = "(X)  終了    ";
+"st.item_y" = "(Y)  在庫ファイル圧縮";
+"st.item_z" = "(Z)  システム設定";
+"st.using" = "使用: ";
+"st.no_backup_script" = "バックアップスクリプトなし";
+"st.enter_company" = "会社名を入力           :- [";
+/* st000.cbl */
+"st000.title" = "在庫管理 - 業務開始";
+"st000.enter_date_uk" = "本日の日付を入力 dd/mm/yyyy     - [          ]";
+"st000.enter_date_usa" = "本日の日付を入力 mm/dd/yyyy     - [          ]";
+"st000.enter_date_intl" = "本日の日付を入力 yyyy/mm/dd     - [          ]";
+"st000.st005" = "ST005 日付不正";

@@ -1,0 +1,21 @@
+/* stock.cbl — 在庫管理メニュー (英語 = レガシー原文) */
+"st.client" = "Client -";
+"st.st001" = "ST001 System 1 read err = ";
+"st.menu_title" = "Stock Control System Menu";
+"st.item_a" = "(A)  Date Entry";
+"st.item_b" = "(B)  Stock Item Maintenance";
+"st.item_c" = "(C)  Stock Movements";
+"st.item_d" = "(D)  Reports";
+"st.item_e" = "(E)  End of Cycle Processing";
+"st.item_x" = "(X)  Exit to ";
+"st.item_y" = "(Y)  Stock File Compression";
+"st.item_z" = "(Z)  System Set Up";
+"st.using" = "Using ";
+"st.no_backup_script" = "No BackUp Script in Bin/Data";
+"st.enter_company" = "Enter the Company name :- [";
+/* st000.cbl */
+"st000.title" = "Stock Control - Start Of Day";
+"st000.enter_date_uk" = "Enter todays date as dd/mm/yyyy - [          ]";
+"st000.enter_date_usa" = "Enter todays date as mm/dd/yyyy - [          ]";
+"st000.enter_date_intl" = "Enter todays date as yyyy/mm/dd - [          ]";
+"st000.st005" = "ST005 Invalid Date";
