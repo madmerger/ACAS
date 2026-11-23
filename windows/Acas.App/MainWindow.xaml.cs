@@ -330,7 +330,16 @@ public partial class MainWindow : Window
         }));
         DockPanel.SetDock(buttons, Dock.Top);
         panel.Children.Add(buttons);
-        panel.Children.Add(Identify(new FlowDocumentScrollViewer { Document = Document(), IsToolBarVisible = false }, "ReportDocument", report.Title));
+        panel.Children.Add(Identify(new TextBox
+        {
+            Text = report.Body.Replace("\f", Environment.NewLine + Environment.NewLine),
+            FontFamily = new FontFamily("ＭＳ ゴシック"),
+            FontSize = 14,
+            IsReadOnly = true,
+            TextWrapping = TextWrapping.NoWrap,
+            HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
+            VerticalScrollBarVisibility = ScrollBarVisibility.Auto
+        }, "ReportDocument", report.Title));
         return panel;
     }
 }

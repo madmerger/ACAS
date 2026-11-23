@@ -60,7 +60,7 @@ internal sealed class SalesScreens : ISubsystemScreens
 - ナビゲーションは `MenuItem`／`MenuScreen`（WPF の `TreeView`／`ListBox`）。レガシーの階層・項目番号を保ちます。
 - 入力は `FormScreen` と `TextField`／`DateField`／`ChoiceField`（ラベル付き `TextBox`／`DatePicker`／`ComboBox`）。`FormValues` から値を取り、検証後に業務処理を呼び出します。
 - 一覧は `TableScreen`／`TableRow`（`DataGrid`）。日付や金額を表示文字列と異なる型で並べ替えるときは `SortValues` を渡します。行から詳細を開くときは `TableRow.Open` を用います。
-- 確認は `ConfirmationScreen`（ダイアログ）。帳票は `ReportScreen`（`FlowDocumentScrollViewer`、保存・印刷付き）。再表示する帳票は `Db.AddSpool` で保存します。
+- 確認は `ConfirmationScreen`（ダイアログ）。帳票は `ReportScreen`（横スクロール可能な読み取り専用プレビュー、保存・印刷付き）。再表示する帳票は `Db.AddSpool` で保存します。
 - WebView、80×24端末の描画、行列座標からの変換表示は禁止です。座標・入力キーの記録は比較資料にとどめます。
 
 ## 自動操作 ID と日本語表示
