@@ -134,7 +134,7 @@ public sealed class StockScreenModel(Db db, Func<DateTime> clock)
         r.Set("Stock-Services-Flag", v.Choice("StockServices") == "Y" ? "Y" : "N");
         if (!StockService.TryAmount(v.Text("StockRetail"), 2, out var retail) || !StockService.TryAmount(v.Text("StockCost"), 4, out var cost))
             return StockMessages.InvalidAmount;
-        if (!StockService.TryAmount(v.Text("StockValue"), 2, out var value)) return StockMessages.InvalidAmount;
+        if (!StockService.TryAmount(v.Text("StockValue"), 2, out var value, 1_000_000_000m)) return StockMessages.InvalidAmount;
         if (!StockService.TryQuantity(v.Text("StockHeld"), out var held, out var negativeHeld, out var heldError) || negativeHeld)
             return heldError ?? StockMessages.ST207;
         if (!StockService.TryQuantity(v.Text("StockReorderPoint"), out var rp, out var neg1, out var e1) || neg1) return e1 ?? StockMessages.ST207;

@@ -104,14 +104,14 @@ public sealed class StockService
         return true;
     }
 
-    public static bool TryAmount(string text, int dec, out decimal value)
+    public static bool TryAmount(string text, int dec, out decimal value, decimal limit = 10_000_000m)
     {
         value = 0;
         string t = text.Trim().Replace(",", "");
         if (t.Length == 0) return true;
         if (!decimal.TryParse(t, global::System.Globalization.NumberStyles.AllowDecimalPoint, global::System.Globalization.CultureInfo.InvariantCulture, out value)) return false;
         value = Cob.Trunc(value, dec);
-        return value < 10_000_000m;
+        return value < limit;
     }
 
     public MovementResult Addition(Rec item, decimal qty, bool reverse, decimal price, MovementKind kind = MovementKind.Addition)
