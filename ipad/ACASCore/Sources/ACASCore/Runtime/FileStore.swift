@@ -8,6 +8,11 @@ public final class FileStore: @unchecked Sendable {
         public let message: String
     }
 
+    public enum SeedError: Swift.Error, Equatable {
+        case indexedFileNotInserted(String)
+        case indexedRecordNotInserted(file: String, key: String)
+    }
+
     private var db: OpaquePointer?
     private let lock = NSRecursiveLock()
     private static let transient = unsafeBitCast(-1, to: sqlite3_destructor_type.self)
@@ -85,7 +90,19 @@ public final class FileStore: @unchecked Sendable {
 
     /// 索引ファイルを (無ければ) 作成
     public func createIndexed(_ file: String) {
-        _ = run("INSERT OR IGNORE INTO files(name, kind, data) VALUES(?, 'indexed', NULL)", [file]) { sqlite3_step($0) }
+        _ = try? insertIndexedFile(file)
+    }
+
+    private func insertIndexedFile(_ file: String) throws -> Bool {
+        try insertRow("INSERT OR IGNORE INTO files(name, kind, data) VALUES(?, 'indexed', NULL)", [file])
+    }
+
+    private func insertRow(_ sql: String, _ binds: [Any?]) throws -> Bool {
+        try withStatement(sql, binds) {
+            let result = sqlite3_step($0)
+            guard result == SQLITE_DONE else { throw databaseError(result) }
+            return sqlite3_changes(db) == 1
+        }
     }
 
     public func deleteFile(_ file: String) {
@@ -131,10 +148,16 @@ public final class FileStore: @unchecked Sendable {
     /// 追加。重複キーなら false (FILE STATUS 22)
     @discardableResult
     public func write(_ file: String, key: [UInt8], data: [UInt8]) -> Bool {
-        createIndexed(file)
-        return run("INSERT OR IGNORE INTO records(file, key, data) VALUES(?,?,?)", [file, key, data]) {
-            sqlite3_step($0) == SQLITE_DONE && sqlite3_changes(self.db) == 1
+        do {
+            _ = try insertIndexedFile(file)
+            return try insertIndexedRecord(file, key: key, data: data)
+        } catch {
+            return false
         }
+    }
+
+    private func insertIndexedRecord(_ file: String, key: [UInt8], data: [UInt8]) throws -> Bool {
+        try insertRow("INSERT OR IGNORE INTO records(file, key, data) VALUES(?,?,?)", [file, key, data])
     }
 
     /// 更新。無ければ false (FILE STATUS 23)
@@ -195,9 +218,11 @@ public final class FileStore: @unchecked Sendable {
                 if f["type"] as? String == "indexed" {
                     // GnuCOBOL の副キー索引 (.1 .2) は主ファイルから導出するため保持しない
                     if name.hasSuffix(".1") || name.hasSuffix(".2") { continue }
-                    createIndexed(name)
+                    guard try insertIndexedFile(name) else { throw SeedError.indexedFileNotInserted(name) }
                     for pair in (f["records"] as? [[String]] ?? []) where pair.count == 2 {
-                        write(name, key: Self.bytes(hex: pair[0]), data: Self.bytes(hex: pair[1]))
+                        guard try insertIndexedRecord(name, key: Self.bytes(hex: pair[0]), data: Self.bytes(hex: pair[1])) else {
+                            throw SeedError.indexedRecordNotInserted(file: name, key: pair[0])
+                        }
                     }
                 } else {
                     try writeRaw(name, Self.bytes(hex: f["hex"] as? String ?? ""))
