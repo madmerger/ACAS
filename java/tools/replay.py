@@ -50,6 +50,28 @@ def norm_screen(s):
     return lines
 
 
+OS_OUTPUT = "nohup: appending output to 'nohup.out'"
+
+
+def mask_os_output(want, got):
+    """レガシー画面に写り込んだ OS の端末出力を比較対象から外す。戻り値は (want, got, マスクした出力の数)。
+    在庫メニュー等の終了（X）でバックアップスクリプトを `nohup ... &` で起動すると、nohup 自身の通知
+    「nohup: appending output to 'nohup.out'」がカーソル位置から端末へ直接書かれる（80 桁で折り返す）。
+    これはアプリケーションの画面出力ではなく移行対象外なので、その文字が上書きした桁だけを両側で空白にする。"""
+    want, got, n = list(want), list(got), 0
+    for i, line in enumerate(list(want)):
+        col = line.find("nohup: appending output to")
+        if col < 0: continue
+        n += 1
+        cells = [(i, c) for c in range(col, 80)] + [(i + 1, c) for c in range(col + len(OS_OUTPUT) - 80)]
+        for side in (want, got):
+            for r, c in cells:
+                if r < len(side) and c < len(side[r]): side[r] = side[r][:c] + " " + side[r][c + 1:]
+    if n:
+        want, got = ["\n".join(l.rstrip() for l in x).rstrip("\n").split("\n") for x in (want, got)]
+    return want, got, n
+
+
 def snap_diff(before, after):
     out = []
     for f in sorted(set(before) | set(after)):
@@ -63,7 +85,7 @@ def snap_diff(before, after):
 
 def norm_report(text):
     """帳票の正規化。実行環境のディレクトリを印字する行（Path to IRS / Ledgers）の値欄は環境依存のためマスクする。"""
-    lines = norm_screen(text.replace("\f", ""))
+    lines = [re.sub(r"\b\d\d:\d\d\b", "HH:MM", l) for l in norm_screen(text.replace("\f", ""))]  # 見出しの印刷時刻（時:分）もマスク
     return [l[:27] + "<PATH>".ljust(43) + l[70:] if l.startswith("          Path to ") else l for l in lines]
 
 
@@ -82,7 +104,7 @@ def run_case(api, evid, case, verbose=False):
     api.call("POST", "/api/test/reset?baseline=" + case["baseline"])
     before = api.call("GET", "/api/test/snapshot")
     sid = api.call("POST", "/api/sessions?app=" + runner["app"] + ("&irsPath=" + runner["irs_path"] if runner.get("irs_path") else ""))["id"]
-    mism, detail, missing_expect = [], [], []
+    mism, detail, missing_expect, os_masked = [], [], [], 0
     for i, step in enumerate(runner["steps"]):
         keys = to_keys(step.get("text", "")) + ([step["key"]] if "key" in step else [])
         api.call("POST", f"/api/sessions/{sid}/keys", {"keys": keys})
@@ -93,6 +115,9 @@ def run_case(api, evid, case, verbose=False):
         if i < len(screens):
             p = evid / screens[i]
             want = norm_screen(p.read_text(errors="replace")) if p.exists() else None
+            if want is not None:
+                want, got, n = mask_os_output(want, got)
+                os_masked += n
             if want is not None and want != got:
                 mism.append(i)
                 if len(detail) < 3:
@@ -145,6 +170,7 @@ def run_case(api, evid, case, verbose=False):
     if any(not r["match"] for r in reps): problems.append("帳票相違 " + ",".join(r["file"] for r in reps if not r["match"]))
     res["verdict"] = "不一致" if problems else "一致"
     res["reason"] = "; ".join(problems) if problems else f"画面 {len(screens)}・レコード差分 {rec.get('legacy_changes', 0)} 件・帳票 {len(reps)} 件がレガシー実測と一致"
+    if os_masked: res["reason"] += f"（OS 出力行は比較対象外: {os_masked} 箇所）"
     if problems: res["detail"] = detail
     return res
 

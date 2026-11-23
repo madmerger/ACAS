@@ -22,6 +22,8 @@ public final class CobFile {
     private boolean cursorPending;  // START 直後: 次の READ NEXT は cursor 自身を返す
     private int altInUse = -1; private List<Map.Entry<byte[], byte[]>> altList; private int altPos;
     private long seq;
+    /** FD の宣言レコード長（索引ファイルを Rec から定義した場合のみ。0 は不明）。 */
+    private int recLen;
     /** 相対ファイルの RELATIVE KEY（rrn）。 */
     public long rrn;
 
@@ -29,7 +31,11 @@ public final class CobFile {
         this.store = store; this.name = name; this.org = org; this.keyOff = keyOff; this.keyLen = keyLen;
     }
     public static CobFile indexed(Store s, String name, int keyOff, int keyLen) { return new CobFile(s, name, Org.INDEXED, keyOff, keyLen); }
-    public static CobFile indexed(Store s, String name, Rec r, String keyField) { return indexed(s, name, r.offset(keyField), r.size(keyField)); }
+    public static CobFile indexed(Store s, String name, Rec r, String keyField) {
+        CobFile f = indexed(s, name, r.offset(keyField), r.size(keyField));
+        f.recLen = r.bytes().length;
+        return f;
+    }
     public static CobFile relative(Store s, String name) { return new CobFile(s, name, Org.RELATIVE, 0, 0); }
     public static CobFile sequential(Store s, String name) { return new CobFile(s, name, Org.SEQUENTIAL, 0, 0); }
     public static CobFile lineSequential(Store s, String name) { return new CobFile(s, name, Org.LINE_SEQUENTIAL, 0, 0); }
@@ -50,13 +56,15 @@ public final class CobFile {
     public String open(Mode m, boolean optional) {
         if (open) return status = "41";
         boolean ex = store.exists(name);
-        // レガシーのデータファイルが FD と属性不一致で開けない状態（FILE STATUS 39）の再現。
-        // 証跡ベースラインの analysis.dat が該当し、印ファイル <name>.cobc39 で表す。OPEN OUTPUT で作り直すと解消する。
-        String conflict = name + ".cobc39";
-        if (m != Mode.OUTPUT && ex && store.exists(conflict)) return status = "39";
+        // GnuCOBOL（BDB）の索引ファイルは、実ファイルのレコードが FD の宣言より長いと OPEN が FILE STATUS 39 になる。
+        // 例: 在庫側から呼ばれた sl070 が analysis.dat へ value-record（66 バイト）を書いた後、36 バイト定義で開く場合。
+        if (m != Mode.OUTPUT && ex && org == Org.INDEXED && recLen > 0) {
+            var first = store.next(name, null, false);
+            if (first != null && first.getValue().length > recLen) return status = "39";
+        }
         status = "00";
         switch (m) {
-            case OUTPUT -> { store.create(name); if (store.exists(conflict)) store.deleteFile(conflict); }
+            case OUTPUT -> store.create(name);
             case INPUT -> { if (!ex) return status = optional ? "05" : "35"; }
             default -> { if (!ex) { if (!optional) return status = "35"; store.create(name); status = "05"; } }
         }
