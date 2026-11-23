@@ -16,13 +16,18 @@ class WebSecurity {
     @Bean
     SecurityFilterChain access(HttpSecurity http,
             @Value("${acas.test-api:false}") boolean testing,
-            @Value("${server.address}") String address) throws Exception {
+            @Value("${server.address}") String address,
+            @Value("${server.ssl.enabled:false}") boolean tls) throws Exception {
+        boolean loopback = address.equals("127.0.0.1") || address.equals("::1");
         if (testing) {
-            if (!address.equals("127.0.0.1") && !address.equals("::1")) {
+            if (!loopback) {
                 throw new IllegalStateException("同一性検証用 API はループバックでのみ利用できます");
             }
             http.authorizeHttpRequests(auth -> auth.anyRequest().permitAll()).csrf(AbstractHttpConfigurer::disable);
         } else {
+            if (!loopback && !tls) {
+                throw new IllegalStateException("ループバック以外で待ち受ける場合は TLS を設定してください");
+            }
             http.authorizeHttpRequests(auth -> auth.anyRequest().authenticated())
                 .httpBasic(Customizer.withDefaults());
         }
