@@ -12,6 +12,7 @@ import java.math.BigDecimal;
 public class Pl015 extends PlBase {
     static final String PROG_NAME = "PL015 (3.01.07)";
     static final String L6 = " Number       Date       Description          Invoiced        Paid     Balance";
+    static final String[] FIXED_DESC = {"Goods -", "CN.Re Inv -", "Journal Payment", "Payment", "Receipt", ">> Screen Overflow <<"};
     static final String L20 = "Total Outstanding          Current           30             60            90+";
     private static final Layout WORK = Layout.ofSource("""
              01  work-record.
@@ -176,7 +177,15 @@ public class Pl015 extends PlBase {
                 // end-statement: display line-7-19 (Screen-Start:Screen-End) at 0801
                 int from = screenStart - 1, to = Math.min(8000, from + screenEnd);
                 int line = 8;
-                for (int p = from; p < to && line <= 24; p += 80, line++) show(line, 1, all.substring(p, Math.min(to, p + 80)), 2);
+                for (int p = from; p < to && line <= 24; p += 80, line++) {
+                    String row = all.substring(p, Math.min(to, p + 80));
+                    show(line, 1, row, 2);
+                    // 明細の固定文言（種別）は対応表で日本語化する
+                    if (row.length() >= 44) {
+                        String d = row.substring(22, 44);
+                        for (String fx : FIXED_DESC) if (d.startsWith(fx)) { display(line, 23, fx); break; }
+                    }
+                }
                 b += bodyLines;
                 if (a > b) {
                     screenStart += screenSize;

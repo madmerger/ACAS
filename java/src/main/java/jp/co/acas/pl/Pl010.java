@@ -129,6 +129,7 @@ public class Pl010 extends PlBase {
         display(11, 25, "]");
         display(12, 1, "Supplier Note: [");
         show(12, 17, pad(notes1, 48), 2);
+        if (notes1.equals("Record Not Found")) display(12, 17, notes1);
         display(12, 65, "]");
         display(13, 16, "[");
         show(13, 17, pad(notes2, 48), 2);
