@@ -173,8 +173,8 @@ public struct SalesInvoices {
     public func save(_ draft: Draft, replacing existing: Number? = nil, confirmingUnknownCreditTarget: Bool = false) throws -> Invoice {
         var system = try settings()
         let customer = draft.customer.uppercased()
-        guard customer.utf8.count == 7, let account = SalesProofRecords.salesFile(context.store).read(key: customer),
-              account.int("sales-status") == 1 else { throw Error.missingCustomer }
+        guard customer.utf8.count == 7,
+              let account = SalesProofRecords.salesFile(context.store).read(key: customer) else { throw Error.missingCustomer }
         let day = context.calendar.dateComponents([.year, .month, .day], from: draft.date)
         guard let y = day.year, let m = day.month, let d = day.day, Maps04.validYMD(y, m, d),
               (1...40).contains(draft.lines.count), (0...99_999_999).contains(draft.creditedInvoice) else {
