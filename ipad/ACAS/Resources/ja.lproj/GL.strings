@@ -52,6 +52,7 @@
 "gl.batch-error.text" = "摘要の文字数と使用文字を確認してください";
 "gl.batch-error.capacity" = "登録可能なバッチ番号または明細数を超えました";
 "gl.batch-error.storage" = "バッチを保存できませんでした";
+"gl.report.share" = "帳票原本を共有";
 "gl.batch-default-branch" = "既定勘定の拠点・部門コード";
 "gl.batch-tax" = "バッチの予定税額";
 "gl.batch-line-tax" = "明細の税額";

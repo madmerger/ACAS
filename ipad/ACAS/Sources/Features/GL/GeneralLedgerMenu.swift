@@ -90,6 +90,7 @@ private struct LedgerAccountsMenu: View {
     @State private var accounts: [LedgerAccount] = []
     @State private var selected: LedgerAccount?
     @State private var reportStatus: String?
+    @State private var reportBytes: [UInt8]?
 
     var body: some View {
         List {
@@ -122,6 +123,7 @@ private struct LedgerAccountsMenu: View {
             if let reportStatus {
                 Text(reportStatus).accessibilityIdentifier("gl.accounts.print.result")
             }
+            if let reportBytes { LedgerReportShare(bytes: reportBytes) }
         }
         .navigationTitle(ledgerText("accounts"))
         .onAppear {
@@ -133,8 +135,10 @@ private struct LedgerAccountsMenu: View {
     private func reload() { accounts = ChartOfAccounts(workspace.context).accounts }
 
     private func printReport() {
+        reportBytes = nil
         do {
             try ChartOfAccountsReport(workspace.context).generate()
+            reportBytes = workspace.context.store.readRaw(ChartOfAccountsReport.path)
             reportStatus = ledgerText("account-printed")
             workspace.completed("gl-chart-print")
         } catch {

@@ -5,6 +5,7 @@ struct LedgerPostingForm: View {
     let workspace: Workspace
     @State private var confirm = false
     @State private var status: String?
+    @State private var reportBytes: [UInt8]?
 
     var body: some View {
         Form {
@@ -15,6 +16,7 @@ struct LedgerPostingForm: View {
                 if let status {
                     Text(status).accessibilityIdentifier("gl.posting.result")
                 }
+                if let reportBytes { LedgerReportShare(bytes: reportBytes) }
             }
         }
         .navigationTitle(ledgerText("posting"))
@@ -25,8 +27,12 @@ struct LedgerPostingForm: View {
     }
 
     private func post() {
+        reportBytes = nil
         do {
             let result = try LedgerPosting(workspace.context).postCurrentCycle()
+            if result.batches > 0 {
+                reportBytes = workspace.context.store.readRaw(CompanySetup.reportPath)
+            }
             status = ledgerText(result.batches == 0 ? "posting.empty" : "posting.ready")
         } catch LedgerPosting.Error.openBatches {
             status = ledgerText("posting.open-batch")
