@@ -8,7 +8,7 @@ public static class SalesReportValues
     private const string Wide = "　";
     private const string Money = @"-?\d[\d,]*\.\d{2}(?:CR)?";
 
-    public static string? Difference(string legacy, string localized)
+    public static string? Difference(string legacy, string localized, Func<string, bool>? acceptsPrintTime = null)
     {
         string[][] expected;
         string[][] actual;
@@ -23,6 +23,14 @@ public static class SalesReportValues
             {
                 expected = LegacyInvoice(legacy).ToArray();
                 actual = LocalizedInvoice(localized).ToArray();
+                if (acceptsPrintTime is not null)
+                {
+                    var expectedDate = expected.Single(row => row[0] == "日付");
+                    var actualDate = actual.Single(row => row[0] == "日付");
+                    if (!acceptsPrintTime(actualDate[2]))
+                        return "帳票の印刷時刻が実画面の印刷操作時刻と一致しません。";
+                    actualDate[2] = expectedDate[2];
+                }
             }
             else if (legacy.Contains("Product Analysis Codes", StringComparison.Ordinal))
             {

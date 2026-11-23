@@ -17,7 +17,7 @@ internal sealed partial class Desktop : IDisposable
     private readonly string _databasePath;
     public Window Window { get; }
 
-    public Desktop(string executable, bool audit = false, string? baseline = null)
+    public Desktop(string executable, bool audit = false, string? baseline = null, Action<Db>? prepare = null)
     {
         if (!File.Exists(executable)) throw new FileNotFoundException("アプリが見つかりません。", executable);
         _folder = Directory.CreateTempSubdirectory("acas-ui-").FullName;
@@ -30,6 +30,7 @@ internal sealed partial class Desktop : IDisposable
                 {
                     if (audit) SeedAudit(db);
                     else db.LoadBaseline(baseline!);
+                    prepare?.Invoke(db);
                 }
                 SqliteConnection.ClearAllPools();
             }

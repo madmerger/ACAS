@@ -8,6 +8,7 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\Acas.Verify\Acas.Verify.csproj" />
+    <ProjectReference Include="..\Acas.Verify.Sales\Acas.Verify.Sales.csproj" />
     <PackageReference Include="FlaUI.UIA3" Version="5.0.0" />
   </ItemGroup>
 </Project>
