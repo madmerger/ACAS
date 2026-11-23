@@ -1,0 +1,35 @@
+version: 2
+updates:
+  - package-ecosystem: maven
+    directory: /java
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    labels: [dependencies]
+    commit-message:
+      prefix: deps(maven)
+    groups:
+      maven-minor-patch:
+        update-types: [minor, patch]
+  - package-ecosystem: pip
+    directory: /tools/oracle
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    labels: [dependencies]
+    commit-message:
+      prefix: deps(pip)
+    groups:
+      pip-minor-patch:
+        update-types: [minor, patch]
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    labels: [dependencies]
+    commit-message:
+      prefix: deps(actions)
+    groups:
+      actions-minor-patch:
+        update-types: [minor, patch]

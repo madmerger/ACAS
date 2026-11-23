@@ -1,0 +1,52 @@
+name: Security and runtime maintenance
+
+on:
+  schedule:
+    - cron: '23 3 * * 1'
+  workflow_dispatch:
+  pull_request:
+    branches: [main]
+    paths: ['java/**', 'ipad/**', 'tools/oracle/**', '.github/**']
+  push:
+    branches: [main]
+    paths: ['java/**', 'ipad/**', 'tools/oracle/**', '.github/**']
+
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+
+jobs:
+  scan-inputs:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      present: ${{ steps.sources.outputs.present }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - id: sources
+        name: Detect dependency sources (stacks may not be merged yet)
+        run: echo "present=${{ hashFiles('**/pom.xml', '**/requirements*.txt', '**/Package.resolved', '**/Package.swift', '**/package-lock.json', '**/yarn.lock', '**/poetry.lock', '**/uv.lock') != '' }}" >> "$GITHUB_OUTPUT"
+  vulnerabilities:
+    needs: scan-inputs
+    if: needs.scan-inputs.outputs.present == 'true'
+    uses: google/osv-scanner-action/.github/workflows/osv-scanner-reusable.yml@8018483926dd235b3013d8c88023e644b9f8e09e # v2.3.3
+    with:
+      scan-args: |-
+        --recursive
+        ./
+      upload-sarif: true
+      fail-on-vuln: true
+  runtime-currency:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Check runtime support
+        run: python3 .github/scripts/check-runtimes.py
