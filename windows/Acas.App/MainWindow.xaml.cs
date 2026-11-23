@@ -159,6 +159,11 @@ public partial class MainWindow : Window
                     readers.Add(field.Id, () => textBox.Text);
                     control = textBox;
                     break;
+                case PasswordField password:
+                    var passwordBox = new PasswordBox { MaxLength = password.MaxLength };
+                    readers.Add(field.Id, () => passwordBox.Password);
+                    control = passwordBox;
+                    break;
                 case DateField date:
                     var datePicker = new DatePicker { SelectedDate = date.Value, SelectedDateFormat = DatePickerFormat.Short };
                     readers.Add(field.Id, () => datePicker.SelectedDate);
