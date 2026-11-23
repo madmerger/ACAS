@@ -9,17 +9,9 @@ extension StockService {
         try store.transaction {
             guard store.exists(path) else { return }
             let audit = directory + "staudit.dat"
-            if let settingBytes = settings.read(1) {
-                var system = Record(SystemLayout.layout, bytes: settingBytes)
-                if system.int("stk-audit-used") == 1 {
-                    if !store.exists(audit) { try store.writeRaw(audit, []) }
-                    var statuses = system.raw("file-statuses")
-                    if statuses[9] != 0x31 {
-                        statuses[9] = 0x31
-                        system.setRaw("file-statuses", statuses)
-                        try settings.write(1, system.bytes)
-                    }
-                }
+            if let settingBytes = settings.read(1), Record(SystemLayout.layout, bytes: settingBytes).int("stk-audit-used") == 1,
+               !store.exists(audit) {
+                try store.writeRaw(audit, [])
             }
             try store.writeRaw(movementReportPath, [])
         }
