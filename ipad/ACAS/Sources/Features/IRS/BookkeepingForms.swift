@@ -199,6 +199,55 @@ struct BookkeepingDefaultForm: View {
     }
 }
 
+struct BookkeepingStatementSettingsForm: View {
+    let workspace: Workspace
+    @State private var settings: BookkeepingService.StatementSettings
+    @State private var account: String
+    @State private var message = ""
+
+    init(workspace: Workspace) {
+        self.workspace = workspace
+        let settings = BookkeepingService(workspace.context).statementSettings
+        _settings = State(initialValue: settings)
+        _account = State(initialValue: String(settings.appropriationAccount))
+    }
+
+    var body: some View {
+        Form {
+            Button(irsText("action.save"), action: save)
+                .accessibilityIdentifier("irs.saveStatementSettings")
+            if !message.isEmpty { Text(message).accessibilityIdentifier("irs.statementSettingsResult") }
+            rows(0..<14, title: "statement.profitAndLoss")
+            rows(14..<26, title: "statement.balanceSheet")
+            TextField(irsText("statement.appropriation"), text: $account).keyboardType(.numberPad)
+        }
+        .navigationTitle(irsText("defaults.statementSettings"))
+    }
+
+    private func save() {
+        guard let value = Int(account) else { message = irsText("error.accountCode"); return }
+        settings.appropriationAccount = value
+        do {
+            try BookkeepingService(workspace.context).saveStatementSettings(settings)
+            message = irsText("result.statementSettingsSaved")
+            workspace.completed("irs.statementSettings")
+        } catch { message = bookkeepingError(error) }
+    }
+
+    private func rows(_ indices: Range<Int>, title: String) -> some View {
+        Section(irsText(title)) {
+            ForEach(indices, id: \.self) { index in
+                HStack {
+                    Text(verbatim: String(UnicodeScalar(65 + index)!)).monospaced()
+                    TextField(irsText("statement.heading"), text: $settings.headings[index])
+                        .accessibilityIdentifier("irs.statementHeading.\(index)")
+                    TextField(irsText("statement.sign"), text: $settings.signs[index]).frame(width: 80)
+                }
+            }
+        }
+    }
+}
+
 struct BookkeepingPostingForm: View {
     let workspace: Workspace
     @State private var slot = 1

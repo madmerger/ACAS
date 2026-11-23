@@ -48,7 +48,7 @@ struct BookkeepingMenu: View {
             link(irsText("defaults.print"), "defaultPrint") {
                 report(.defaults, workflow: "irs.defaultPrint") { defaultTable(irsText("defaults.print")) }
             }
-            link(irsText("defaults.statementSettings"), "statementSettings") { defaultTable(irsText("defaults.statementSettings")) }
+            link(irsText("defaults.statementSettings"), "statementSettings") { BookkeepingStatementSettingsForm(workspace: workspace) }
         }
         .navigationTitle(irsText("menu.defaults"))
     }

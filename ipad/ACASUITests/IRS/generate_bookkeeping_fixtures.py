@@ -232,6 +232,32 @@ def reach_fixture(evidence, case):
     }
 
 
+def statement_settings_fixture(evidence):
+    run = Path("runs/IRS-214-linux-confirmed")
+    result = read_json(evidence_path(evidence, run / "result.json"))
+    path = "ledgers/irs/final.dat"
+    if result["error"] or set(result["changed"]) != {path} or result["deleted"]:
+        raise ValueError("IRS-214: 決算書設定保存後の実測が必要です")
+    with evidence_path(evidence, run / "terminal.cast").open(encoding="utf-8") as recording:
+        timestamp = json.loads(recording.readline())["timestamp"]
+    before = json.loads(base64.b64decode(snapshot_seed(evidence, run)))
+    before["files"]["ledgers/irs/acnts.dat"] = seeded_accounts(evidence, run)
+    raw = {}
+    for name in ("system.dat", "dflt.dat"):
+        key = "ledgers/irs/" + name
+        raw[key] = evidence_path(evidence, run / "before-files" / key).read_bytes().hex()
+        before["files"][key] = {"type": "raw", "hex": raw[key]}
+    data = evidence_path(evidence, run / "files" / path).read_bytes()
+    heading = data[:24].rstrip(b" \n").decode("shift_jis")
+    if not heading or data != heading.encode("shift_jis") + b"\n":
+        raise ValueError("IRS-214: 見出しのみを設定した実測が必要です")
+    return {
+        "id": "IRS-214", "title": "決算書の見出しを保存する", "workflow": "irs.statementSettings",
+        "dateSeconds": timestamp, "seed": base64.b64encode(json.dumps(before, separators=(",", ":")).encode()).decode(),
+        "changes": [], "reports": {**raw, path: data.hex()}, "input": {"heading": heading},
+    }
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("evidence", type=Path)
@@ -284,6 +310,8 @@ def main():
     save(args.output / "IRS-222.json", exit_fixture(evidence, cases["IRS-222"]))
     save(args.output / "IRS-090.json", setup_fixture(evidence, cases["IRS-090"]))
     save(args.output / "IRS-091.json", initial_accounts_fixture(evidence, cases["IRS-091"]))
+    if (evidence / "runs/IRS-214-linux-confirmed").is_dir():
+        save(args.output / "IRS-214.json", statement_settings_fixture(evidence))
     print(f"簡易記帳の実画面用データ {4 + len(REACH_CASES) + len(REPORT_CASES) + len(MISSING_POSTING_CASES)} 件")
 
 

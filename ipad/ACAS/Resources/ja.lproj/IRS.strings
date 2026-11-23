@@ -26,6 +26,12 @@
 "bookkeeping.defaults.outputTax" = "売上付加価値税";
 "bookkeeping.defaults.print" = "既定勘定印刷";
 "bookkeeping.defaults.statementSettings" = "決算書設定";
+"bookkeeping.statement.profitAndLoss" = "損益計算書";
+"bookkeeping.statement.balanceSheet" = "貸借対照表";
+"bookkeeping.statement.appropriation" = "損益処分勘定";
+"bookkeeping.statement.heading" = "見出し";
+"bookkeeping.statement.sign" = "符号";
+"bookkeeping.result.statementSettingsSaved" = "決算書設定を保存しました。";
 "bookkeeping.error.accountCode" = "科目番号を確認してください。";
 "bookkeeping.error.duplicateAccount" = "この勘定科目は既に登録されています。";
 "bookkeeping.error.invalid" = "入力内容を確認してください。";

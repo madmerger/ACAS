@@ -84,6 +84,25 @@ final class BookkeepingFlows: XCTestCase {
     }
 
     @MainActor
+    func testSaveIRS214() throws {
+        let id = "IRS-214"
+        guard let url = Bundle(for: Self.self).url(forResource: id, withExtension: "json", subdirectory: "fixtures")
+        else { throw XCTSkip("決算書設定保存後のレガシー実測証跡が必要です。") }
+        struct Fixture: Decodable {
+            struct Input: Decodable { let heading: String }
+            let input: Input
+        }
+        let heading = try JSONDecoder().decode(Fixture.self, from: Data(contentsOf: url)).input.heading
+        try verifyReach(id, path: ["defaults", "statementSettings"]) { app in
+            enter(app, "irs.statementHeading.0", heading)
+            tap(app, "irs.saveStatementSettings")
+            let result = app.staticTexts["irs.statementSettingsResult"]
+            XCTAssertTrue(result.waitForExistence(timeout: 5))
+            XCTAssertEqual(result.label, "決算書設定を保存しました。")
+        }
+    }
+
+    @MainActor
     func testReachIRS221() throws { try verifyRecalculate("IRS-221") }
 
     @MainActor
