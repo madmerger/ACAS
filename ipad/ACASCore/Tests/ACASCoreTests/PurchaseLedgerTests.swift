@@ -257,6 +257,34 @@ final class PurchaseLedgerTests: XCTestCase {
         XCTAssertEqual(ledger.store.readRaw(ledger.base + "delfolio.dat"), [])
     }
 
+    func testReusedFolioRemainsAvailableAfterConfigurationWriteFailure() throws {
+        try withDiskLedger { ledger, db in
+            var value = PurchaseLedger.Transaction(date: ledger.processingDate)
+            value.supplier = try addSupplier(ledger)
+            value.lines[0].code = "a1"
+            value.lines[0].net = 100
+            let folio = try ledger.saveTransaction(value)
+            try ledger.removeTransaction(number: folio)
+            let path = ledger.base + "delfolio.dat"
+            let deleted = try XCTUnwrap(ledger.store.readRaw(path))
+            let before = EvidenceComparison.snapshot(ledger.store)
+            let sql = "CREATE TRIGGER reject_system BEFORE UPDATE ON files WHEN NEW.name = '\(ledger.base)system.dat' BEGIN SELECT RAISE(ABORT, 'blocked'); END"
+            XCTAssertEqual(sqlite3_exec(db, sql, nil, nil, nil), SQLITE_OK)
+
+            XCTAssertThrowsError(try ledger.saveTransaction(value)) { error in
+                XCTAssertEqual((error as? FileStore.DatabaseError)?.code, SQLITE_CONSTRAINT)
+            }
+            XCTAssertTrue(EvidenceComparison.diff(before: before, after: EvidenceComparison.snapshot(ledger.store)).isEmpty)
+            XCTAssertEqual(ledger.store.readRaw(path), deleted)
+            XCTAssertTrue(ledger.transactions().isEmpty)
+
+            XCTAssertEqual(sqlite3_exec(db, "DROP TRIGGER reject_system", nil, nil, nil), SQLITE_OK)
+            XCTAssertEqual(try ledger.saveTransaction(value), folio)
+            XCTAssertEqual(ledger.transactions().map(\.id), [folio])
+            XCTAssertEqual(ledger.store.readRaw(path), [])
+        }
+    }
+
     func testSupplierLifecyclePreservesFixedWidthRecord() throws {
         let ledger = try makeLedger()
         let code = try addSupplier(ledger)
