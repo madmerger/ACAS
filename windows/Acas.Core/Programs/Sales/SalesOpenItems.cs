@@ -14,6 +14,8 @@ public sealed partial class SalesLedger
 {
     public const string OpenItemFile = Prefix + "openitm3.dat";
     private const string ValueFile = Prefix + "value.dat";
+    private int cyclePasswordFailures;
+    private long cyclePasswordRetryAfter;
     private static readonly Layout OpenItemLayout = new Layout()
         .X("customer", 7).BLong("number").BLong("date").Comp("batchNumber", 5).Comp("batchItem", 3).N9("type", 1).X("description", 25)
         .X("held", 1).X("unapplied", 1).C3("pc", 7, 2).C3("net", 7, 2).C3("extra", 7, 2)
@@ -158,7 +160,18 @@ public sealed partial class SalesLedger
             throw new SalesRuleException("分析または入金処理が完了していません。");
         if (!allowUnposted && (sys.I("S-Flag-I") == 1 || sys.I("P-Flag-I") == 1))
             throw new SalesRuleException("未転記の請求書があります。");
-        if (!CheckCyclePassword(password)) throw new SalesRuleException("期間締めのパスワードが一致しません。");
+        if (Environment.TickCount64 < cyclePasswordRetryAfter)
+            throw new SalesRuleException("パスワードを続けて間違えたため、しばらく待ってから再試行してください。");
+        if (!CheckCyclePassword(password))
+        {
+            if (++cyclePasswordFailures >= 5)
+            {
+                cyclePasswordRetryAfter = Environment.TickCount64 + 60_000;
+                cyclePasswordFailures = 0;
+            }
+            throw new SalesRuleException("期間締めのパスワードが一致しません。");
+        }
+        cyclePasswordFailures = 0;
         _ = ReadOpenItems();
         int closeDate = EncodeDate(today);
         if (closeDate <= 0) throw new SalesRuleException("期間締めの日付が有効な範囲にありません。");
