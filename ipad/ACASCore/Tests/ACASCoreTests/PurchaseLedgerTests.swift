@@ -518,6 +518,41 @@ final class PurchaseLedgerTests: XCTestCase {
         XCTAssertThrowsError(try ledger.removeSupplier(code: code, deactivate: false))
     }
 
+    func testPaymentWritesRollBackOnLateFailure() throws {
+        try withDiskLedger { ledger, db in
+            var invoice = PurchaseLedger.Transaction(date: ledger.processingDate)
+            invoice.supplier = try addSupplier(ledger)
+            invoice.lines[0].code = "a1"
+            invoice.lines[0].net = 10_000
+            let folio = try ledger.saveTransaction(invoice)
+            try ledger.postTransactions()
+
+            var payment = PurchaseLedger.Payment(date: ledger.processingDate)
+            payment.supplier = invoice.supplier
+            payment.amount = 5_000
+            payment.allocations = [.init(invoice: folio, amount: 5_000)]
+            let block = "CREATE TRIGGER reject_payment_config BEFORE UPDATE ON files WHEN NEW.name = '\(ledger.base)system.dat' BEGIN SELECT RAISE(ABORT, 'blocked'); END"
+            let unblock = "DROP TRIGGER reject_payment_config"
+
+            func assertRollback(_ operation: () throws -> Void) {
+                let before = EvidenceComparison.snapshot(ledger.store)
+                XCTAssertEqual(sqlite3_exec(db, block, nil, nil, nil), SQLITE_OK)
+                XCTAssertThrowsError(try operation())
+                XCTAssertTrue(EvidenceComparison.diff(before: before, after: EvidenceComparison.snapshot(ledger.store)).isEmpty)
+                XCTAssertEqual(sqlite3_exec(db, unblock, nil, nil, nil), SQLITE_OK)
+            }
+
+            assertRollback { _ = try ledger.savePayment(payment) }
+            let number = try ledger.savePayment(payment)
+            assertRollback { try ledger.cancelPayment(supplier: invoice.supplier, number: number) }
+            assertRollback { _ = try ledger.proofPayments() }
+            try ledger.proofPayments()
+            assertRollback { _ = try ledger.postPayments() }
+            XCTAssertEqual(try ledger.postPayments().map(\.number), [number])
+            XCTAssertTrue(try ledger.postPayments().isEmpty)
+        }
+    }
+
     func testPaymentAllocatesEditsAndPosts() throws {
         let ledger = try makeLedger()
         let code = try addSupplier(ledger)

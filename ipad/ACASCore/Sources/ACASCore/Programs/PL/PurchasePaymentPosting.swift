@@ -3,6 +3,10 @@ import Foundation
 extension PurchaseLedger {
     @discardableResult
     public func proofPayments() throws -> [Payment] {
+        try store.withTransaction { try writePaymentProof() }
+    }
+
+    private func writePaymentProof() throws -> [Payment] {
         let payments = pendingPayments()
         var settings = system
         guard settings.int("p-flag-p") != 0 else { return payments }
@@ -26,6 +30,10 @@ extension PurchaseLedger {
 
     @discardableResult
     public func postPayments() throws -> [Payment] {
+        try store.withTransaction { try postPendingPayments() }
+    }
+
+    private func postPendingPayments() throws -> [Payment] {
         let payments = pendingPayments()
         guard !payments.isEmpty else { return [] }
         var settings = system
@@ -46,7 +54,7 @@ extension PurchaseLedger {
         let items = openItemRecords()
         for var invoice in items where invoice.int("oi-type") == 2 && invoice.int("oi-b-nos") != 0 && invoice.int("oi-b-item") != 0 {
             for field in ["oi-b-nos", "oi-b-item", "oi-cr"] { invoice.setInt(field, 0) }
-            store.rewrite(openItemsPath, key: Array(invoice.bytes.prefix(11)), data: invoice.bytes)
+            try requirePostingWrite(store.rewrite(openItemsPath, key: Array(invoice.bytes.prefix(11)), data: invoice.bytes), path: openItemsPath)
         }
         var totalsBytes = systemFile.read(4) ?? SystemAuxRecords.initialRecord4()
         var totals = Record(PurchaseRecords.sys4Layout, bytes: totalsBytes)
@@ -72,10 +80,10 @@ extension PurchaseLedger {
             supplier.setInt("purch-current", max(0, current))
             supplier.setInt("purch-unapplied", unapplied)
             supplier.setInt("purch-last-pay", item.int("oi-date"))
-            store.rewrite(suppliersPath, key: supplier.raw("purch-key"), data: supplier.bytes)
+            try requirePostingWrite(store.rewrite(suppliersPath, key: supplier.raw("purch-key"), data: supplier.bytes), path: suppliersPath)
             item.setInt("oi-paid", applied)
             item.setInt("oi-status", 1)
-            store.rewrite(openItemsPath, key: key, data: item.bytes)
+            try requirePostingWrite(store.rewrite(openItemsPath, key: key, data: item.bytes), path: openItemsPath)
             if !payment.credit {
                 totals.setInt("pl-payments", Cobol.truncate(totals.int("pl-payments") + amount, digits: 10))
             }
@@ -118,7 +126,7 @@ extension PurchaseLedger {
                 try writePaymentEntry(entry, rrn: rrn, irs: irs)
                 if !irs { rrn += 1 }
                 if index == 99 || offset == payments.count - 1 {
-                    store.write(batchPath, key: Array(batch.bytes.prefix(6)), data: batch.bytes)
+                    try requirePostingWrite(store.write(batchPath, key: Array(batch.bytes.prefix(6)), data: batch.bytes), path: batchPath)
                 }
             }
         }
