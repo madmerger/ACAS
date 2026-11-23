@@ -179,6 +179,7 @@ struct BookkeepingPostingForm: View {
             }
             .accessibilityIdentifier("irs.postSide")
             DatePicker(irsText("field.date"), selection: $date, displayedComponents: .date)
+                .environment(\.timeZone, workspace.context.timeZone)
             TextField(irsText("field.otherAccount"), text: $account).keyboardType(.numberPad)
                 .accessibilityIdentifier("irs.postAccount")
             TextField(irsText("field.narrative"), text: $description).accessibilityIdentifier("irs.postDescription")
