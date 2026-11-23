@@ -43,7 +43,7 @@ public class Irs090 extends IrsBase {
         // lc-process
         try {
             while (true) {
-                if (!wfOpen || !wf.read(work).equals("00")) {
+                if (!wfOpen || !wf.readNext(work).equals("00")) {
                     if (!printLine()) break;
                     getNominal();   // レガシーの perform lze-print-line thru lzf-exit は勘定読込みまで実行する
                     break;
