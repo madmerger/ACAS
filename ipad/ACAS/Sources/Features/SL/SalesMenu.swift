@@ -36,6 +36,8 @@ struct SalesMenu: View {
                     .accessibilityIdentifier("sales.payment.amend")
                 NavigationLink(slText("sales.payment.proof")) { SalesPaymentProofView(workspace: workspace) }
                     .accessibilityIdentifier("sales.payment.proof")
+                NavigationLink(slText("sales.payment.post")) { SalesPaymentPostingView(workspace: workspace) }
+                    .accessibilityIdentifier("sales.payment.post")
             }
             NavigationLink(String(localized: "sales.proof", table: "SL")) {
                 #if DEBUG
