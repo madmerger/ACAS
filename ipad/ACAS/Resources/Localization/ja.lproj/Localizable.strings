@@ -67,3 +67,35 @@
 "acas.opt_invoicing" = "/ 請求書";
 "acas.opt_stock" = "/ 在庫 ";
 "acas.opt_oe" = "/ 受注入力";
+/* ---- ui.ja.strings ---- */
+/* iPad アプリの UI (レガシーに無い、アプリ固有の表示) */
+"ui.home.title" = "ACAS 会計システム";
+"ui.home.subtitle" = "iPad スタンドアロン版 (データはこの端末内に保存されます)";
+"ui.home.start_acas" = "ACAS を開始";
+"ui.home.start_irs" = "IRS (不完全記録システム) を開始";
+"ui.home.cases" = "同一性テストケース";
+"ui.home.calc" = "計算ロジック検証 (CALC)";
+"ui.home.reset_data" = "データをサンプル会社に初期化";
+"ui.home.reset_done" = "データを初期化しました";
+"ui.common.back" = "戻る";
+"ui.common.close" = "閉じる";
+"ui.terminal.finished" = "プログラムが終了しました";
+"ui.terminal.reports" = "帳票";
+"ui.terminal.no_reports" = "帳票はありません";
+"ui.key.enter" = "Enter";
+"ui.key.esc" = "Esc";
+"ui.key.tab" = "Tab";
+"ui.key.backspace" = "BS";
+"ui.cases.title" = "同一性テストケース";
+"ui.cases.run" = "実行";
+"ui.cases.run_all" = "このグループを連続実行";
+"ui.cases.filter_all" = "すべて";
+"ui.cases.running" = "実行中";
+"ui.cases.completed" = "完了";
+"ui.cases.step" = "手順";
+"ui.cases.record_changes" = "レコード更新";
+"ui.cases.input" = "入力";
+"ui.cases.result" = "結果";
+"ui.cases.legacy" = "レガシー";
+"ui.cases.out_of_scope" = "対象外 (レガシー未実施)";
+"ui.calc.title" = "計算ロジック検証 (CALC)";
