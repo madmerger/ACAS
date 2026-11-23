@@ -404,3 +404,18 @@ SL133 PE 060-01	SL133 PE 060-01
 SL134 Warning Record/s missing in Sales File	SL134 警告: 顧客ファイルに存在しないレコードがあります
 SL135 Error On Re/write Sales File	SL135 顧客ファイルの書込/更新エラー
 fs-reply =	fs-reply =
+Payment Data Entry	入金データ入力
+*Date    [  /  /    ]*A/C Nos [       ]*	*日付    [  /  /    ]*顧客    [       ]*
+*Value   {          }*Batch [     /   ]*	*金額    {          }*ﾊﾞｯﾁ  [     /   ]*
+Batch Closed..It is Full!	バッチ終了..満杯です
+Current Balance -	現在残高 -
+Unapplied Balance -	未充当残高 -
+Do you wish to allocate the Unapplied Balance to this account?  [Y]	未充当残高をこの顧客に充当しますか?                              [Y]
+Batch Total -	バッチ合計 -
+Enter further payments (Y/N) ? [Y]	続けて入金を入力 (Y/N) ?       [Y]
+Inv.Nos  --Date--  --Amount--	請求番号 --日付--  ---金額---
+Deductable  ---Paid----	控除可能    --入金額---
+Deduction Taken	控除適用
+....Fully Paid	....全額入金済
+....No Change	....変更なし
+Payment Too High	入金額超過
