@@ -80,3 +80,18 @@ class ReplayTest(unittest.TestCase):
         self.assertEqual(got["verdict"], "未検証")
         self.assertIn("IRS", got["reason"])
         api.call.assert_not_called()
+
+    def test_observed_difference_takes_priority_over_missing_evidence(self):
+        case = {"id": "GL-test", "title": "画面比較", "baseline": "biz",
+                "runner": {"app": "gl", "steps": [{"key": "ENTER"}]},
+                "legacy_result": {"verdict": "合格", "comparison_targets": {
+                    "screen_text": ["screen.txt"], "keyed_record_diff": "missing.json"}}}
+        api = Mock(spec=replay.Api)
+        api.call.side_effect = [None, {}, {"id": 1}, None, {"text": "Web画面"}, {"text": ""}, {}, None]
+        with TemporaryDirectory() as tmp:
+            evid = Path(tmp)
+            (evid / "screen.txt").write_text("レガシー画面")
+            result = replay.run_case(api, evid, case)
+        self.assertEqual(result["verdict"], "不一致")
+        self.assertIn("画面相違", result["reason"])
+        self.assertIn("レコード差分証跡なし", result["reason"])

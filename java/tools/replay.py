@@ -197,8 +197,8 @@ def run_case(api, evid, case, verbose=False):
     if missing_expect: problems.append(f"期待文言なし {missing_expect[:3]}")
     if rec.get("compared") and not rec["match"]: problems.append(f"レコード差分相違 (legacy {rec['legacy_changes']} / java {rec['java_changes']})")
     if any(not r["match"] for r in reps): problems.append("帳票相違 " + ",".join(r["file"] for r in reps if not r["match"]))
-    res["verdict"] = "未検証" if missing_evidence else "不一致" if problems else "一致"
-    issues = missing_evidence + problems
+    res["verdict"] = "不一致" if problems else "未検証" if missing_evidence else "一致"
+    issues = problems + missing_evidence
     res["reason"] = "; ".join(issues) if issues else f"画面 {len(screens)}・レコード差分 {rec.get('legacy_changes', 0)} 件・帳票 {len(reps)} 件がレガシー実測と一致"
     if os_masked: res["reason"] += f"（OS 出力行は比較対象外: {os_masked} 箇所）"
     if problems: res["detail"] = detail
