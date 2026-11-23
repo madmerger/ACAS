@@ -189,6 +189,12 @@ public partial class MainWindow : Window
                         args.ThrowException = false;
                         resetText = datePicker.SelectedDate?.ToString("d", CultureInfo.CurrentCulture) ?? "";
                         SetDateError(true);
+                        datePicker.Dispatcher.InvokeAsync(() =>
+                        {
+                            if (!invalidDate) return;
+                            datePicker.SelectedDate = null;
+                            datePicker.Text = "";
+                        }, System.Windows.Threading.DispatcherPriority.Normal);
                     };
                     datePicker.AddHandler(TextBox.TextChangedEvent, new TextChangedEventHandler((sender, args) =>
                     {
@@ -202,7 +208,10 @@ public partial class MainWindow : Window
                         if (invalidDate && DateTime.TryParse(entry.Text, CultureInfo.CurrentCulture, out _))
                             SetDateError(false);
                     }));
-                    datePicker.SelectedDateChanged += (_, _) => SetDateError(false);
+                    datePicker.SelectedDateChanged += (_, _) =>
+                    {
+                        if (datePicker.SelectedDate.HasValue) SetDateError(false);
+                    };
                     dateValidators.Add(() =>
                     {
                         if (!invalidDate && (string.IsNullOrWhiteSpace(datePicker.Text) ||
