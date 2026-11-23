@@ -49,6 +49,13 @@ public class TerminalController {
     @DeleteMapping("/sessions/{id}")
     public void close(@PathVariable String id) { sessions.close(id); }
 
+    @GetMapping("/csrf")
+    public Map<String, String> csrf(jakarta.servlet.http.HttpServletRequest request) {
+        var token = (org.springframework.security.web.csrf.CsrfToken)
+            request.getAttribute(org.springframework.security.web.csrf.CsrfToken.class.getName());
+        return token == null ? Map.of() : Map.of(token.getHeaderName(), token.getToken());
+    }
+
     private Ctx ctx(String id) {
         try { return sessions.get(id); } catch (IllegalArgumentException e) { throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage()); }
     }

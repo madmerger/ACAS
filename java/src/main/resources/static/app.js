@@ -15,6 +15,7 @@ const named = {
 };
 
 let sessionId = null;
+let csrfHeaders = {};
 let view = null;
 let app = null;
 let busy = false;
@@ -131,6 +132,7 @@ function render(result, refocus = true) {
 }
 
 async function request(path, options) {
+  options.headers = { ...options.headers, ...csrfHeaders };
   const response = await fetch(path, options);
   if (!response.ok) throw new Error(String(response.status));
   if (response.status !== 204 && options.method !== 'DELETE') return response.json();
@@ -142,6 +144,7 @@ async function start(which) {
   queue = [];
   status.textContent = '業務を開いています。';
   try {
+    csrfHeaders = await request('api/csrf', { method: 'GET' });
     if (sessionId) await request('api/sessions/' + sessionId, { method: 'DELETE' });
     sessionId = null;
     app = null;
@@ -227,7 +230,7 @@ for (const name of ['acas', 'irs']) {
 
 window.addEventListener('pagehide', () => {
   if (!sessionId) return;
-  void fetch('api/sessions/' + sessionId, { method: 'DELETE', keepalive: true }).catch(() => {});
+  void fetch('api/sessions/' + sessionId, { method: 'DELETE', headers: csrfHeaders, keepalive: true }).catch(() => {});
   sessionId = null;
 });
 

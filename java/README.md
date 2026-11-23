@@ -14,9 +14,10 @@ java -jar target/acas-web-1.0.0.jar      # http://localhost:8080/
 | プロパティ | 既定 | 説明 |
 |---|---|---|
 | `acas.data-dir` | `./data` | H2 データベースの保存先 |
-| `server.address` | `127.0.0.1` | ローカル利用時の待ち受けアドレス。アプリ内の独立した Web 認証は未実装 |
+| `server.address` | `127.0.0.1` | 待ち受けアドレス |
+| `ACAS_WEB_PASSWORD_HASH` | 空 | Web 利用者 `acas` の BCrypt パスワードハッシュ。未設定時はログイン不可 |
 | `acas.initial-baseline` | 空 | DB が空のとき投入する初期データ名。検証用途では `biz` 等を指定 |
-| `acas.test-api` | `false` | 同一性確認用 API（`/api/test/**`）を有効化。隔離した検証用データベースで使用 |
+| `acas.test-api` | `false` | 同一性確認用 API（`/api/test/**`）を有効化。ループバック上で認証なしの検証用インスタンスを起動します。隔離した検証用データベースで使用 |
 | `acas.fixed-date` | なし | システム日付の固定（`yyyy-MM-dd`、検証用） |
 
 ## 構成
