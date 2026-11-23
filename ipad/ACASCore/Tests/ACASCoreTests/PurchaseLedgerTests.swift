@@ -4,6 +4,102 @@ import XCTest
 @testable import ACASCore
 
 final class PurchaseLedgerTests: XCTestCase {
+    func testAgedCreditorsSortsItemsAndWritesReconciliationOnlyWithoutSupplierFilter() throws {
+        let ledger = try makeLedger()
+        let supplier = try addSupplier(ledger)
+        let date = ledger.processingDate
+        XCTAssertThrowsError(try ledger.agedCreditorsReport(date: date)) {
+            XCTAssertEqual($0 as? PurchaseLedger.PurchaseReportError, .missingOpenItems)
+        }
+        let day = try ledger.legacyDate(date)
+        let ages: [Int64] = [95, 9, 33, 67]
+        for (index, age) in ages.enumerated() {
+            let number = Int64(index + 101)
+            var item = Record(PurchaseRecords.oiLayout)
+            item["oi-supplier"] = supplier
+            item.setInt("oi-invoice", number)
+            item.setInt("oi-date", day - age)
+            item.setInt("oi-type", 2)
+            item.setInt("oi-net", Int64(index + 1) * 10_000)
+            XCTAssertTrue(ledger.store.write(ledger.openItemsPath, key: ledger.openItemKey(supplier: supplier, number: number), data: item.bytes))
+        }
+        var record = try XCTUnwrap(ledger.supplierRecord(supplier))
+        record.setInt("purch-current", 90_000)
+        record.setInt("purch-unapplied", 500)
+        XCTAssertTrue(ledger.store.rewrite(ledger.suppliersPath, key: record.raw("purch-key"), data: record.bytes))
+        var settings = ledger.system
+        ledger.setFileFlag(29, in: &settings)
+        settings.setInt("p-flag-p", 1)
+        try ledger.systemFile.write(1, settings.bytes)
+        XCTAssertThrowsError(try ledger.agedCreditorsReport(date: date)) {
+            XCTAssertEqual($0 as? PurchaseLedger.PurchaseReportError, .proofRequired)
+        }
+        XCTAssertEqual(ledger.system.str("oi-5-flag"), "N")
+        settings.setInt("p-flag-p", 0)
+        try ledger.systemFile.write(1, settings.bytes)
+        let bytes = try ledger.agedCreditorsReport(date: date, supplier: "SUPP01", alphabetical: true)
+        let output = String(decoding: bytes, as: UTF8.self)
+        XCTAssertTrue(output.contains("Aged Creditors Report (Sorted)"))
+        let old = try XCTUnwrap(output.range(of: "101  " + ledger.reportDate(day - 95)))
+        let recent = try XCTUnwrap(output.range(of: "102  " + ledger.reportDate(day - 9)))
+        XCTAssertLessThan(old.lowerBound, recent.lowerBound)
+        XCTAssertTrue(output.contains("1,000.00"))
+        XCTAssertFalse(output.contains("Reconciliation Data:"))
+        XCTAssertEqual(ledger.store.readRaw(ledger.base + "poisort.wrk")?.count, 4 * 109)
+        let unfiltered = try ledger.agedCreditorsReport(date: date)
+        XCTAssertTrue(String(decoding: unfiltered, as: UTF8.self).contains("Reconciliation Data:"))
+        let totals = Record(PurchaseRecords.sys4Layout, bytes: try XCTUnwrap(ledger.systemFile.read(4)))
+        XCTAssertEqual(totals.int("pl-os-bal-this-month"), 89_500)
+        XCTAssertEqual(totals.int("pl-variance"), 89_500)
+    }
+
+    func testSupplierReportsUseNameOrAccountOrderAndFilterDormantSuppliers() throws {
+        let ledger = try makeLedger()
+        var supplier = ledger.newSupplier
+        supplier.address1 = "1 MAIN ROAD\\CITY"
+        supplier.code = "SUPP01"
+        supplier.name = "ZEBRA"
+        let key1 = try ledger.saveSupplier(supplier, creating: true)
+        supplier.code = "SUPP02"
+        supplier.name = "ALPHA"
+        let key2 = try ledger.saveSupplier(supplier, creating: true)
+        try ledger.removeSupplier(code: key2, deactivate: true)
+        func report(_ kind: PurchaseLedger.SupplierReport, _ filter: PurchaseLedger.SupplierReportFilter = .init()) throws -> String {
+            String(decoding: try XCTUnwrap(ledger.supplierReport(kind, filter: filter)), as: UTF8.self)
+        }
+        let nameOrder = try report(.alphabetical)
+        XCTAssertLessThan(try XCTUnwrap(nameOrder.range(of: "ALPHA")).lowerBound, try XCTUnwrap(nameOrder.range(of: "ZEBRA")).lowerBound)
+        XCTAssertEqual(ledger.store.readRaw(ledger.supplierSortPath), [])
+        let accountOrder = try report(.turnover)
+        XCTAssertLessThan(try XCTUnwrap(accountOrder.range(of: "ZEBRA")).lowerBound, try XCTUnwrap(accountOrder.range(of: "ALPHA")).lowerBound)
+        var filter = PurchaseLedger.SupplierReportFilter()
+        filter.status = .dormant
+        let file = try report(.file, filter)
+        XCTAssertTrue(file.contains("ALPHA"))
+        XCTAssertFalse(file.contains("ZEBRA"))
+        filter.supplier = key1
+        XCTAssertNil(try ledger.supplierReport(.file, filter: filter))
+    }
+
+    func testAnalysisCodeReportDistinguishesPurchaseAndAllLedgers() throws {
+        let ledger = try makeLedger()
+        var entry = PurchaseLedger.AnalysisCode()
+        entry.code = "a"
+        entry.name = "PURCHASE GROUP"
+        try ledger.saveAnalysisCode(entry, creating: true)
+        var sales = Record(PurchaseLedger.analysisLayout)
+        sales["system"] = "S"
+        sales["code"] = "b"
+        sales["description"] = "SALES GROUP"
+        XCTAssertTrue(ledger.store.write(ledger.analysisPath, key: Array("Sb ".utf8), data: sales.bytes))
+        let purchase = String(decoding: try ledger.analysisCodeReport(), as: UTF8.self)
+        XCTAssertTrue(purchase.contains("PURCHASE GROUP"))
+        XCTAssertFalse(purchase.contains("SALES GROUP"))
+        let all = String(decoding: try ledger.analysisCodeReport(allLedgers: true), as: UTF8.self)
+        XCTAssertTrue(all.contains("PURCHASE GROUP"))
+        XCTAssertTrue(all.contains("SALES GROUP"))
+    }
+
     func testPeriodCloseCarriesPurchaseRecordsAndRetainsSalesValues() throws {
         let ledger = try makeLedger()
         let supplier = try addSupplier(ledger)

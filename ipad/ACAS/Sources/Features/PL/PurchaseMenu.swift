@@ -43,8 +43,18 @@ struct PurchaseMenu: View {
                 .accessibilityIdentifier("pl.cheques")
             NavigationLink(plString("purchase.analysis.menu")) { PurchaseAnalysisMenu(workspace: workspace) }
                 .accessibilityIdentifier("pl.analysis")
-            NavigationLink(plString("purchase.supplier.alphabetical")) { PurchaseSuppliersView(workspace: workspace, byName: true) }
+            NavigationLink(PurchaseReportView.Mode.analysis.title) { PurchaseReportView(workspace: workspace, mode: .analysis) }
+                .accessibilityIdentifier("pl.report.analysis")
+            NavigationLink(PurchaseReportView.Mode.dayBook.title) { PurchaseReportView(workspace: workspace, mode: .dayBook) }
+                .accessibilityIdentifier("pl.report.day_book")
+            NavigationLink(PurchaseReportView.Mode.aged.title) { PurchaseReportView(workspace: workspace, mode: .aged) }
+                .accessibilityIdentifier("pl.report.aged")
+            NavigationLink(PurchaseReportView.Mode.alphabetical.title) { PurchaseReportView(workspace: workspace, mode: .alphabetical) }
                 .accessibilityIdentifier("pl.suppliers.alphabetical")
+            NavigationLink(PurchaseReportView.Mode.turnover.title) { PurchaseReportView(workspace: workspace, mode: .turnover) }
+                .accessibilityIdentifier("pl.report.turnover")
+            NavigationLink(PurchaseReportView.Mode.file.title) { PurchaseReportView(workspace: workspace, mode: .file) }
+                .accessibilityIdentifier("pl.report.supplier_file")
             NavigationLink(plString("purchase.close.title")) { PurchasePeriodCloseView(workspace: workspace) }
                 .accessibilityIdentifier("pl.period.close")
             NavigationLink(plString("purchase.invoice.settings.menu")) { PurchaseInvoiceMenu(workspace: workspace) }
@@ -90,6 +100,14 @@ struct PurchaseNotice: Identifiable {
     var id: String { message }
 
     init(_ error: Error) {
+        if let error = error as? PurchaseLedger.PurchaseReportError {
+            switch error {
+            case .missingOpenItems: message = plString("purchase.report.error.open_items")
+            case .proofRequired: message = plString("purchase.report.error.pending_payments")
+            case .invalidMinimum: message = plString("purchase.report.error.minimum")
+            }
+            return
+        }
         if let error = error as? PurchaseLedger.PeriodCloseError {
             switch error {
             case .uninitialized: message = plString("purchase.close.error.uninitialized")

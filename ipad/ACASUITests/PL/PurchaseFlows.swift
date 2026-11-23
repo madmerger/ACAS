@@ -188,6 +188,20 @@ final class PurchaseFlows: XCTestCase {
         XCTAssertFalse(app.staticTexts["pl.period.close.completed"].exists)
     }
 
+    func testSupplierFileReportsWithoutMatchingRecordsCannotBeShared() throws {
+        let app = try launch("PL-413", smokeID: "仕入先ファイル帳票")
+        tap(app, "pl.report.supplier_file", scrolling: true)
+        XCTAssertTrue(app.navigationBars["仕入先ファイル帳票"].waitForExistence(timeout: 5))
+        tap(app, "pl.report.generate", scrolling: true)
+        XCTAssertTrue(app.descendants(matching: .any)["pl.report.share"].firstMatch.waitForExistence(timeout: 5))
+        app.swipeDown()
+        enter(app, "pl.report.supplier", "MISS001")
+        dismissKeyboard(app)
+        tap(app, "pl.report.generate", scrolling: true)
+        XCTAssertTrue(app.staticTexts["pl.report.empty"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.descendants(matching: .any)["pl.report.share"].firstMatch.exists)
+    }
+
     func testEmptyPaymentProofCannotGenerateReport() throws {
         let app = try launch("PL-413", smokeID: "空の支払検証")
         tap(app, "pl.payment.proof", scrolling: true)

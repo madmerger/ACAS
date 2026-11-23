@@ -14,6 +14,10 @@ struct PurchaseAnalysisMenu: View {
                 PurchaseAnalysisEditor(workspace: workspace, value: .init(), creating: true)
             }
             .accessibilityIdentifier("pl.analysis.add")
+            NavigationLink(PurchaseReportView.Mode.analysisCodes.title) { PurchaseReportView(workspace: workspace, mode: .analysisCodes) }
+                .accessibilityIdentifier("pl.report.analysis_codes")
+            NavigationLink(PurchaseReportView.Mode.allAnalysisCodes.title) { PurchaseReportView(workspace: workspace, mode: .allAnalysisCodes) }
+                .accessibilityIdentifier("pl.report.all_analysis_codes")
             if failed {
                 ContentUnavailableView(plString("purchase.error.analysis.format"), systemImage: "exclamationmark.circle")
             }
