@@ -3,6 +3,7 @@ import argparse
 import base64
 import hashlib
 import json
+import re
 from pathlib import Path
 
 
@@ -29,6 +30,12 @@ def evidence_path(root, path):
     if not resolved.is_relative_to(root):
         raise ValueError(f"証跡ルート外のパスです: {path}")
     return resolved
+
+
+def validate_case_id(case_id):
+    if not re.fullmatch(r"PL-[0-9]{3}", case_id):
+        raise ValueError(f"不正な買掛ケース ID: {case_id}")
+    return case_id
 
 
 def seed_files(root, run):
@@ -125,15 +132,16 @@ def main():
     args = parser.parse_args()
     root = args.evidence.resolve()
     cases = {c["id"]: c for c in read_json(evidence_path(root, "scenarios/catalog.json"))["cases"]}
-    args.output.mkdir(parents=True, exist_ok=True)
-    for case_id in WORKFLOWS:
-        result = fixture(root, cases[case_id])
-        (args.output / f"{case_id}.json").write_text(json.dumps(result, ensure_ascii=False) + "\n", encoding="utf-8")
     pl_cases = [case for case in cases.values() if case["id"].startswith("PL-")]
     for case in pl_cases:
-        if case["id"] not in WORKFLOWS:
-            result = equivalence_fixture(root, case)
-            (args.output / f"{case['id']}.json").write_text(json.dumps(result, ensure_ascii=False) + "\n", encoding="utf-8")
+        validate_case_id(case["id"])
+    args.output.mkdir(parents=True, exist_ok=True)
+    output = args.output.resolve()
+    for case in pl_cases:
+        generate = fixture if case["id"] in WORKFLOWS else equivalence_fixture
+        result = generate(root, case)
+        evidence_path(output, f"{case['id']}.json").write_text(
+            json.dumps(result, ensure_ascii=False) + "\n", encoding="utf-8")
     print(f"買掛元帳 実 UI 用データ {len(pl_cases)} 件")
 
 

@@ -3,10 +3,16 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from generate_fixtures import fixture, seed_files
+from generate_fixtures import fixture, seed_files, validate_case_id
 
 
 class EvidencePathTests(unittest.TestCase):
+    def test_case_id_requires_three_ascii_digits(self):
+        self.assertEqual(validate_case_id("PL-001"), "PL-001")
+        for case_id in ("PL-01", "PL-００１", "PL-001/extra"):
+            with self.subTest(case_id=case_id), self.assertRaises(ValueError):
+                validate_case_id(case_id)
+
     def setUp(self):
         directory = tempfile.TemporaryDirectory()
         self.addCleanup(directory.cleanup)
