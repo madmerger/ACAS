@@ -22,6 +22,7 @@ enum SectionID: String, CaseIterable, Identifiable {
 
 struct MainMenu: View {
     @ObservedObject var workspace: Workspace
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @State private var section: SectionID? = .system
     @State private var exitedSales = false
 
@@ -49,11 +50,6 @@ struct MainMenu: View {
         .onChange(of: section) { _, selection in
             if selection != .system { exitedSales = false }
         }
-        #if DEBUG
-        .safeAreaInset(edge: .top, spacing: 0) {
-            if let evidence = workspace.evidence { CaseBanner(evidence: evidence) }
-        }
-        #endif
     }
 
     @ViewBuilder private func functions(in section: SectionID) -> some View {
@@ -65,8 +61,10 @@ struct MainMenu: View {
                 }
         case .sales:
             SalesMenu(workspace: workspace) {
-                exitedSales = true
-                self.section = .system
+                if horizontalSizeClass != .compact {
+                    exitedSales = true
+                    self.section = .system
+                }
                 workspace.completed("sales-exit")
             }
         default:
