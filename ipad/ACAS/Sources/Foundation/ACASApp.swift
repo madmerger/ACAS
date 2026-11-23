@@ -1,0 +1,68 @@
+import ACASCore
+import SwiftUI
+
+@main
+struct ACASApp: App {
+    private let workspace = Workspace.open()
+
+    var body: some Scene {
+        WindowGroup {
+            switch workspace {
+            case .success(let workspace):
+                MainMenu(workspace: workspace)
+                    .environment(\.locale, Locale(identifier: "ja_JP"))
+            case .failure:
+                ContentUnavailableView("database.failed", systemImage: "externaldrive.badge.exclamationmark")
+            }
+        }
+    }
+}
+
+@MainActor
+final class Workspace: ObservableObject {
+    let context: BusinessContext
+    #if DEBUG
+    let evidence: DebugEvidence?
+    #endif
+
+    static func open() -> Result<Workspace, Error> {
+        Result { try Workspace() }
+    }
+
+    private init() throws {
+        var root = try FileManager.default.url(
+            for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: true
+        )
+        #if DEBUG
+        evidence = try DebugEvidence.load()
+        if evidence != nil {
+            root = try FileManager.default.url(
+                for: .cachesDirectory, in: .userDomainMask, appropriateFor: nil, create: true
+            ).appendingPathComponent(UUID().uuidString, isDirectory: true)
+            try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        }
+        #endif
+        let store = FileStore(path: root.appendingPathComponent("ACAS.sqlite").path)
+        #if DEBUG
+        if let evidence {
+            if let seed = evidence.seed { try store.load(seed: seed) }
+            context = BusinessContext(store: store, timeZone: .gmt, now: { evidence.date })
+            evidence.before = EvidenceComparison.snapshot(store)
+            return
+        }
+        #endif
+        context = BusinessContext(store: store)
+    }
+
+    func completed(_ workflow: String, calculation: DebugCalculation? = nil) {
+        #if DEBUG
+        guard let evidence, evidence.workflow == workflow else { return }
+        evidence.evaluate(store: context.store, calculation: calculation)
+        #endif
+    }
+}
+
+struct DebugCalculation: Codable, Equatable {
+    let check: Int
+    let valid: Bool
+}
