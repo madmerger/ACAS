@@ -109,6 +109,10 @@ public final class Terminal {
                 default -> k.matches("F\\d{1,2}") && exceptionsEnabled ? 1000 + Integer.parseInt(k.substring(1)) : null;
             };
             if (st != null) { crtStatus = st; break; }
+            if (k.startsWith("ERASE:")) {
+                idx = eraseSelection(buf, k, ' ');
+                continue;
+            }
             switch (k) {
                 case "LEFT" -> { if (idx > 0) idx--; }
                 case "RIGHT" -> { if (idx < size - 1) idx++; }
@@ -170,6 +174,10 @@ public final class Terminal {
                     if (f < fields.size() - 1) { f++; idx = 0; continue; }
                     crtStatus = 0; return 0;
                 }
+            } else if (k.startsWith("ERASE:")) {
+                idx = eraseSelection(buf, k, ' ');
+                eraseSelection(shown[f], k, '_');
+                edit = true;
             } else {
                 Integer st = switch (k) {
                     case "ENTER" -> 0; case "PGUP" -> 2001; case "PGDN" -> 2002;
@@ -198,6 +206,17 @@ public final class Terminal {
                 if ((cur.flags & SECURE) == 0) displayData(cur.line, cur.col, new String(shown[f]), fg);
             }
         }
+    }
+
+    private static int eraseSelection(char[] field, String key, char padding) {
+        String[] range = key.split(":");
+        int start = Math.min(field.length - 1, Integer.parseInt(range[1]));
+        int end = Math.min(field.length, Integer.parseInt(range[2]));
+        if (end > start) {
+            System.arraycopy(field, end, field, start, field.length - end);
+            Arrays.fill(field, field.length - (end - start), field.length, padding);
+        }
+        return start;
     }
 
     /** 入力キーを 1 つ取り出す（無ければ入力待ち状態を通知して待機）。 */

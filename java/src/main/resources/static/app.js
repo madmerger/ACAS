@@ -186,6 +186,13 @@ async function flush() {
   }
 }
 
+function editableKeys(input, keys) {
+  const { selectionStart, selectionEnd } = input;
+  if (selectionStart === selectionEnd) return keys;
+  const clear = 'ERASE:' + selectionStart + ':' + selectionEnd;
+  return ['BACKSPACE', 'DELETE'].includes(keys[0]) ? [clear] : [clear, ...keys];
+}
+
 screen.addEventListener('keydown', event => {
   if (!sessionId || event.ctrlKey || event.metaKey || event.altKey || event.isComposing) return;
   const input = event.target instanceof HTMLInputElement;
@@ -196,7 +203,8 @@ screen.addEventListener('keydown', event => {
     named[event.key] || (/^(?:F(?:[1-9]|1[0-2])|[ -~])$/.test(event.key) ? event.key : null);
   if (key === null) return;
   event.preventDefault();
-  send([key]);
+  const edits = key.length === 1 || key === 'BACKSPACE' || key === 'DELETE';
+  send(input && edits ? editableKeys(event.target, [key]) : [key]);
 });
 
 fields.addEventListener('beforeinput', event => {
@@ -208,7 +216,7 @@ fields.addEventListener('beforeinput', event => {
       status.textContent = '入力には半角文字を使用してください。';
       return;
     }
-    send(keys.slice(0, Number(event.target.maxLength)));
+    send(editableKeys(event.target, keys.slice(0, Number(event.target.maxLength))));
   }
 });
 
