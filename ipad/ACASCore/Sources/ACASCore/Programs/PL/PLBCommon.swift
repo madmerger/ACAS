@@ -54,6 +54,19 @@ enum PLB {
         return Layout("pay-record", f)
     }()
 
+    /// fdpinv.cob invoice-record (129) を wspinv.cob invoice-header として見る
+    static let pinvoice: Layout = {
+        Layout("invoice-header", [
+            ("ih-invoice", .n9(digits: 8, scale: 0, signed: false)), ("ih-test", bc), ("ih-supplier", .x(7)),
+            ("ih-date", bl), ("ih-order", .x(10)), ("ih-type", .n9(digits: 1, scale: 0, signed: false)), ("ih-ref", .x(10)),
+            ("ih-p-c", money7), ("ih-net", money7), ("ih-extra", money7), ("ih-carriage", money7), ("ih-vat", money7),
+            ("ih-discount", money7), ("ih-e-vat", money7), ("ih-c-vat", money7),
+            ("ih-status", .x(1)), ("ih-lines", bc), ("ih-deduct-days", bc),
+            ("ih-deduct-amt", .comp(digits: 5, scale: 2, signed: false)), ("ih-deduct-vat", .comp(digits: 5, scale: 2, signed: false)),
+            ("ih-days", bc), ("ih-cr", bl), ("ih-day-book-flag", .x(1)), ("ih-update", .x(1)), ("", .filler(30))
+        ])
+    }()
+
     /// fdval.cob: value-record
     static let value: Layout = {
         Layout("value-record", [
@@ -130,6 +143,12 @@ enum PLB {
         func prefix(_ n: Int) -> String { String(c[0..<n]) }
     }
 
+    /// 数値編集 (BLANK WHEN ZERO)
+    static func bwz(_ pic: String, _ v: Int64, scale: Int = 0) -> String {
+        let e = Pic.edit(pic, value: v, scale: scale)
+        return e.contains { $0 >= "1" && $0 <= "9" } ? e : Cobol.x("", e.count)
+    }
+
     /// COMPUTE ... ROUNDED の除算: num / den を四捨五入 (0 から遠い方へ)。den は 0 でないこと。
     static func divRounded(_ num: Int64, _ den: Int64) -> Int64 {
         let q = num / den, r = num % den
@@ -147,6 +166,9 @@ enum PLB {
     }
     static func payFile(_ s: Session) -> IndexedFile {
         IndexedFile(s.store, path: s.ledgers + "pay.dat", layout: pay, keyLength: 8)
+    }
+    static func pinvoiceFile(_ s: Session) -> IndexedFile {
+        IndexedFile(s.store, path: s.ledgers + "pinvoice.dat", layout: pinvoice, keyLength: 9)
     }
     static func valueFile(_ s: Session) -> IndexedFile {
         IndexedFile(s.store, path: s.ledgers + "value.dat", layout: value, keyLength: 3)
