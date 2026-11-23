@@ -487,3 +487,34 @@ Record not found	レコードなし
    Deliver	   配送先
 y Address	住所
 Notes: 	備考: 
+Sales Ledger Dump	顧客ファイルダンプ
+Sales-Key	顧客コード
+Sales-Credit	与信日数
+Sales-Current	現在残高
+Sales-Name	顧客名
+Sales-Discount	値引率
+Sales-Last	前回残高
+Sales-Addr1	住所1
+Sales-Late-Min	延滞料下限
+Turnover-Q1	売上高 Q1
+Sales-Addr2	住所2
+Sales-Late-Max	延滞料上限
+Turnover-Q2	売上高 Q2
+Sales-Phone	電話
+Sales-Limit	与信限度
+Turnover-Q3	売上高 Q3
+Delivery-Tag	配送先有無
+Sales-Activety	請求件数
+Turnover-Q4	売上高 Q4
+Notes Tag	備考有無
+Sales-Status	状態
+Sales-Last-Inv	最終請求日
+Sales-Late	延滞料
+Sales-Last-Pay	最終入金日
+Sales-Dunning	督促状
+Sales-Average	平均請求額
+Sales-Email   	メール        
+Live	有効
+Dead	休止
+Yes	はい
+No	いいえ

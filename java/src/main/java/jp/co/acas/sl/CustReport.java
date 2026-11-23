@@ -14,6 +14,9 @@ abstract class CustReport extends SlProgram {
         enterDateIn = " ".repeat(10), enterDateOp = " ";
     protected int creditIn, invoiceIn, averageIn, overdueIn;
     protected long wsEnterDate;
+    /** 入力値を大文字化するか（sl170 は大文字化しない）。 */
+    protected boolean upperCase = true;
+    private String up(String v) { return upperCase ? upper(v) : v; }
 
     protected static Rec sortKeyRec() { return Layout.ofSource(" 01  sales-sort-record.\n     03  sales-sort-key  pic x(7).\n", "sales-sort-record").newRec(); }
 
@@ -55,17 +58,17 @@ abstract class CustReport extends SlProgram {
         s.display();
         while (true) {
             s.accept();
-            custIn = upper(pad(custIn, 6));
+            custIn = up(pad(custIn, 6));
             customerIn = pad(custIn, 7);
             if (!customerIn.isBlank()) customerIn = customerIn.replace(' ', 'Z');
-            statusIn = upper(statusIn);
+            statusIn = up(statusIn);
             if (!statusIn.equals("L") && !statusIn.equals("D") && !statusIn.equals(" ")) continue;
-            creditOp = upper(creditOp); if (badOp(creditOp)) continue;
-            invoiceOp = upper(invoiceOp); if (badOp(invoiceOp)) continue;
-            averageOp = upper(averageOp); if (badOp(averageOp)) continue;
-            overdueOp = upper(overdueOp); if (badOp(overdueOp)) continue;
+            creditOp = up(creditOp); if (badOp(creditOp)) continue;
+            invoiceOp = up(invoiceOp); if (badOp(invoiceOp)) continue;
+            averageOp = up(averageOp); if (badOp(averageOp)) continue;
+            overdueOp = up(overdueOp); if (badOp(overdueOp)) continue;
             if (!withDate) return;
-            enterDateOp = upper(enterDateOp); if (badOp(enterDateOp)) continue;
+            enterDateOp = up(enterDateOp); if (badOp(enterDateOp)) continue;
             if (enterDateIn.isBlank()) return;
             long bin = validateDate(enterDateIn);
             if (bin == 0) { display(23, 61, SL005); continue; }
