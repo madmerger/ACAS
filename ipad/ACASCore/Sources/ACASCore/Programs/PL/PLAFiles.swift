@@ -228,3 +228,8 @@ extension PLA {
         SJIS.decode(ArraySlice(raw.map { $0 < 0x20 ? 0x20 : $0 }))
     }
 }
+
+extension PLA {
+    /// fdpdnos.cob del-inv-nos-record (19 バイト)
+    static let delInvLayout = Layout("del-inv-nos-record", [("del-inv-nos", d(8)), ("del-inv-dat", bl), ("del-inv-cus", .x(7))])
+}
