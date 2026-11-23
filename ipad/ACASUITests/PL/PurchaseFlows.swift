@@ -74,9 +74,13 @@ final class PurchaseFlows: XCTestCase {
         let folios = app.staticTexts.matching(identifier: "pl.transaction.number")
         XCTAssertTrue(folios.firstMatch.waitForExistence(timeout: 5), "検証帳票の取引行がありません")
         XCTAssertEqual(folios.count, 1, "検証帳票の取引行数")
-        XCTAssertEqual(folios.firstMatch.label, "1")
-        for label in ["SUPP018", "請求書", "100.00", "20.00"] {
-            XCTAssertTrue(app.staticTexts[label].exists, "検証帳票の取引行に「\(label)」がありません")
+        let folio = "1"
+        XCTAssertEqual(folios.firstMatch.label, folio)
+        let table = app.descendants(matching: .any).matching(identifier: "pl.transactions.table").firstMatch
+        for (column, expected) in [("supplier", "SUPP018"), ("type", "請求書"), ("net", "100.00"), ("tax", "20.00")] {
+            let cell = table.staticTexts["pl.transaction.\(folio).\(column)"]
+            XCTAssertTrue(cell.exists, "伝票\(folio)の\(column)列がありません")
+            XCTAssertEqual(cell.label, expected, "伝票\(folio)の\(column)列")
         }
         finish(app, "PL-413")
     }
