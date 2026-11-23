@@ -161,12 +161,16 @@ extension PurchaseLedger {
         var configuration = system
         let deletedPath = base + "delfolio.dat"
         let deleted = store.readRaw(deletedPath)
-        let reusable = deleted.flatMap { bytes -> Int64? in
-            stride(from: 0, to: max(0, bytes.count - 18), by: 19).lazy
-                .compactMap { Int64(String(decoding: bytes[$0..<($0 + 8)], as: UTF8.self)) }
-                .first { $0 > 0 }
+        let reusable = deleted.flatMap { bytes -> (offset: Int, number: Int64)? in
+            for offset in stride(from: 0, to: max(0, bytes.count - 18), by: 19) {
+                if let number = Int64(String(decoding: bytes[offset..<(offset + 8)], as: UTF8.self)),
+                   number > 0, header(number) == nil {
+                    return (offset, number)
+                }
+            }
+            return nil
         }
-        let number = value.number ?? reusable ?? (deleted == nil ? max(1, configuration.int("next-folio")) : configuration.int("next-invoice"))
+        let number = value.number ?? reusable?.number ?? max(1, configuration.int("next-folio"))
         guard (1...99_999_999).contains(number) else { throw Error.invalidTransaction }
         let previous = header(number)
         if value.number != nil && previous == nil { throw Error.transactionNotFound }
@@ -219,8 +223,13 @@ extension PurchaseLedger {
                 store.delete(invoicePath, key: invoiceKey(number, i))
             }
         } else {
-            if deleted != nil && reusable == nil { store.writeRaw(deletedPath, []) }
-            if reusable == nil { configuration.setInt("next-folio", max(1, configuration.int("next-folio")) + 1) }
+            if let reusable, var deleted {
+                deleted.removeSubrange(reusable.offset..<(reusable.offset + 19))
+                store.writeRaw(deletedPath, deleted)
+            } else {
+                if deleted != nil { store.writeRaw(deletedPath, []) }
+                configuration.setInt("next-folio", number + 1)
+            }
             setFileFlag(26, in: &configuration)
         }
         store.write(invoicePath, key: invoiceKey(number), data: header.bytes)

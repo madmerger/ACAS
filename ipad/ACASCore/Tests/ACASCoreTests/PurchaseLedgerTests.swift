@@ -3,6 +3,20 @@ import XCTest
 @testable import ACASCore
 
 final class PurchaseLedgerTests: XCTestCase {
+    func testDeletedFolioIsReusedOnlyOnce() throws {
+        let ledger = try makeLedger()
+        var value = PurchaseLedger.Transaction(date: ledger.processingDate)
+        value.supplier = try addSupplier(ledger)
+        value.lines[0].code = "a1"
+        value.lines[0].net = 100
+        let first = try ledger.saveTransaction(value)
+        let second = try ledger.saveTransaction(value)
+        try ledger.removeTransaction(number: first)
+        XCTAssertEqual(try ledger.saveTransaction(value), first)
+        XCTAssertEqual(try ledger.saveTransaction(value), second + 1)
+        XCTAssertEqual(ledger.store.readRaw(ledger.base + "delfolio.dat"), [])
+    }
+
     func testSupplierLifecyclePreservesFixedWidthRecord() throws {
         let ledger = try makeLedger()
         let code = try addSupplier(ledger)
