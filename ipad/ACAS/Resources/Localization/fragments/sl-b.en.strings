@@ -235,3 +235,14 @@
 "report.sl200.page" = "Page";
 "report.sl200.title" = "Invoice Deletion Report";
 "report.sl200.head" = "   Invoice No       Date         Cust No";
+/* sl940 */
+"sl940.title" = "Invoicing Data Deletion";
+"sl940.box_date" = "*Date   [  /  /    ]*                  *";
+"sl940.box_ac" = "*A/C Nos   [       ]*                 **";
+"sl940.box_invoice" = "*Invoice [         ]*Order [          ]*";
+"sl940.type_line" = "Type [ ]  <1> = Receipt; <2> = Account; <3> = CrediT Note; <4> = Pro-Forma";
+"sl940.give_letter" = "Now give Invoice letter (A, B, C or return for space)";
+"sl940.sl194" = "SL194 Invoice Not Found!!!!";
+"sl940.sl195" = "SL195 Invoice Details Already Passed To Sales Ledger!";
+"sl940.to_be_deleted" = "Invoice To Be Deleted (Y/N) - [ ]";
+"sl940.delete_further" = "Delete Further Invoices (Y/N) ? [Y]";

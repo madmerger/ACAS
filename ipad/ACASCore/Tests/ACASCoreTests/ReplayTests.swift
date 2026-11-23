@@ -106,6 +106,8 @@ final class ReplayTests: XCTestCase {
                 }
                 // 帳票・一時ファイルは別途比較
                 got = got.filter { $0.contains(".dat|") }
+                // 空ファイルの作成 (OPEN OUTPUT のみ) はレコードが無く、レガシーのレコード差分には現れない
+                got = got.filter { !$0.hasSuffix("|追加|") }
                 if want != got {
                     diffs.append("レコード差分 相違: legacyのみ \(want.subtracting(got).sorted().map { String($0.prefix(160)) }) / ipadのみ \(got.subtracting(want).sorted().map { String($0.prefix(160)) })")
                 }
