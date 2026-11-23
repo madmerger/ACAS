@@ -8,7 +8,7 @@ enum GL030 {
         let s: Session
         let c: Console
         var file: IndexedFile
-        var rec = Record(GL.ledgerLayout)       // ledger-record
+        var rec = Record(GL.ledgerLayout, bytes: [UInt8](repeating: 0, count: GL.ledgerLayout.size)) // ledger-record (FD のレコード域は初期値 low-values)
         var menu = 0, a = 1, est = 0, y = 0, z = 0
         var lin = 0, cole = 0, lin2 = 0, col2 = 0
         var weError = 0, truth = 0, gateSw = 1
@@ -219,7 +219,8 @@ enum GL030 {
     static func ledgerRead(_ ws: WS) {
         ws.truth = 0
         ws.rec.setInt("ledger-nos", ws.checkNos)
-        ws.rec.setInt("ledger-pc", ws.pc2 == "*" ? 0 : Int64(num(ws.pcCode)))
+        // move pc-code to ledger-pc: 英数字項目のバイトがそのまま入る (未入力の空白は空白のままキーになる)
+        if ws.pc2 == "*" { ws.rec.setInt("ledger-pc", 0) } else { ws.rec.setRaw("ledger-pc", SJIS.encode(ws.pcCode, size: 2)) }
         let dummy = ws.rec
         ws.weError = 0
         ws.read()
