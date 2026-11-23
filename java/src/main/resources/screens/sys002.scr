@@ -156,7 +156,7 @@
      03  using RDBMS-User      pic x(12)                  col 17.
      03          value "]"                                col 29.
      03          value "DB User Password - ["      line 9 col 02.
-     03  using RDBMS-Passwd    pic x(12)                  col 22.
+     03  using New-RDBMS-Passwd pic x(12) secure          col 22.
      03          value "] "                               col 34.
 *>
  01  gl-data   foreground-color 2.

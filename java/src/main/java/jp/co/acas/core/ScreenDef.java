@@ -30,6 +30,7 @@ public final class ScreenDef {
     public static final class Item {
         public String name, value, from, using, pic;
         public int line, col, size;
+        boolean secure;
         boolean input() { return using != null; }
         String source() { return using != null ? using : from != null ? from : name; }
     }
@@ -98,6 +99,7 @@ public final class ScreenDef {
                     case "line" -> { it.line = Integer.parseInt(toks.get(i++)[1]); hasLine = true; }
                     case "col", "column" -> { it.col = Integer.parseInt(toks.get(i++)[1]); hasCol = true; }
                     case "foreground-color", "background-color" -> i++;
+                    case "secure" -> it.secure = true;
                     default -> { }
                 }
             }
@@ -164,6 +166,7 @@ public final class ScreenDef {
     /** DISPLAY screen-name。 */
     public void display(Terminal term, Binder b, int fg) {
         for (Item it : items) {
+            if (it.secure) continue;
             if (it.value != null && it.name == null && it.from == null && it.using == null) term.display(it.line, it.col, it.value, fg);
             else term.displayData(it.line, it.col, it.value != null && it.from == null && it.using == null && b.get(it.name) == null ? it.value : text(it, b), fg);
         }
@@ -179,7 +182,7 @@ public final class ScreenDef {
             if (!it.input()) continue;
             String t = text(it, b);
             inputs.add(it);
-            fields.add(new Terminal.Field(it.line, it.col, t.length(), t));
+            fields.add(new Terminal.Field(it.line, it.col, t.length(), t, it.secure ? Terminal.SECURE : 0));
         }
         int st = term.acceptScreen(fields, fg);
         for (int i = 0; i < inputs.size(); i++) b.set(inputs.get(i).using, fields.get(i).value);
