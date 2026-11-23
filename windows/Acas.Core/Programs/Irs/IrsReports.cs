@@ -99,7 +99,15 @@ public sealed partial class IrsBookkeeping
 
     private IrsReport VatDaybook(string title, IEnumerable<IrsJournalEntry> rows, DateTime? start, DateTime? end)
     {
-        var report = new StringBuilder(Header(title)).AppendLine("番号　日付　摘要　仕入税抜　仕入税額　売上税抜　売上税額");
+        const int amountWidth = 13;
+        string Amount(decimal? value) => (value is decimal amount ? Money(amount) : "").PadLeft(amountWidth);
+        string Columns(decimal? inputNet, decimal? inputTax, decimal? outputNet, decimal? outputTax) =>
+            $" | {Amount(inputNet)} | {Amount(inputTax)} | {Amount(outputNet)} | {Amount(outputTax)} | ";
+        string Heading(string caption, int width) => caption.PadLeft(width - caption.Length);
+        var report = new StringBuilder(Header(title)).Append(Heading("番号", 5)).Append(" | ").Append(Heading("日付", 14));
+        foreach (string label in new[] { "仕入税抜", "仕入税額", "売上税抜", "売上税額" })
+            report.Append(" | ").Append(Heading(label, amountWidth));
+        report.AppendLine(" | 摘要");
         decimal inputNet = 0, inputTax = 0, outputNet = 0, outputTax = 0;
         foreach (var row in rows.Where(r => r.TaxDefault is 31 or 32 && r.Date >= start && r.Date <= end))
         {
@@ -108,10 +116,11 @@ public sealed partial class IrsBookkeeping
             decimal net = sign * row.Amount, tax = sign * row.Tax;
             if (input) { inputNet += net; inputTax += tax; }
             else { outputNet += net; outputTax += tax; }
-            string values = $"{Money(net)}　{Money(tax)}";
-            report.AppendLine($"{Cob.P9(row.Number, 5)}　{row.Date:yyyy年M月d日}　{row.Legend}　{(input ? values + "　　　" : "　　　" + values)}");
+            string columns = input ? Columns(net, tax, null, null) : Columns(null, null, net, tax);
+            report.AppendLine($"{Cob.P9(row.Number, 5)} | {row.Date:yyyy年MM月dd日}{columns}{row.Legend}");
         }
-        report.AppendLine($"合計　{Money(inputNet)}　{Money(inputTax)}　{Money(outputNet)}　{Money(outputTax)}");
+        report.Append(Heading("合計", 5)).Append(" | ").Append(' ', 14)
+            .AppendLine(Columns(inputNet, inputTax, outputNet, outputTax));
         return new(title, report.ToString());
     }
 
