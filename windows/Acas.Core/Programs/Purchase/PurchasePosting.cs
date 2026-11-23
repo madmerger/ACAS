@@ -216,6 +216,8 @@ public sealed partial class PurchaseLedger
 
     private bool WriteIrsInvoice(Rec posting)
     {
+        decimal amount = posting.N("post-amount"), tax = posting.N("vat-amount");
+        if (Math.Abs(amount) > 9999999.99m || Math.Abs(tax) > 9999999.99m) return false;
         var record = IrsPosting.New();
         record.SetN("batch", posting.N("batch"));
         record.SetN("number", posting.N("post-number"));
@@ -223,11 +225,11 @@ public sealed partial class PurchaseLedger
         record.Set("date", posting.S("post-date"));
         record.SetN("debit", posting.N("post-dr"));
         record.SetN("credit", posting.N("post-cr"));
-        SetIrsLeadingAmount(record, "amount", posting.N("post-amount"));
+        SetIrsLeadingAmount(record, "amount", amount);
         record.Set("legend", posting.S("post-legend"));
         record.SetN("taxAccount", 31);
         record.Set("taxSide", "DR");
-        SetIrsLeadingAmount(record, "taxAmount", posting.N("vat-amount"));
+        SetIrsLeadingAmount(record, "taxAmount", tax);
         return database.Write(IrsPostingFile, record.S("batch") + record.S("number"), record.B);
     }
 

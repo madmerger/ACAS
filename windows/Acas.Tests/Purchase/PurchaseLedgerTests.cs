@@ -282,6 +282,25 @@ public sealed class PurchaseLedgerTests
     }
 
     [Fact]
+    public void アイアールエス仕訳の金額が七桁を超えたら転記を取り消す()
+    {
+        using var db = Fixture("sl-ready");
+        var ledger = new PurchaseLedger(db);
+        var system = ledger.System();
+        system.Set("Irs-Instead", "Y");
+        Assert.True(ledger.SaveSystem(system));
+        Assert.True(ledger.SaveAnalysis(ledger.NewAnalysis("a1"), true));
+        var invoice = Sample(ledger) with { Carriage = 9999999m };
+        Assert.True(ledger.SaveInvoice(invoice, true));
+        var supplier = db.Read(PurchaseLedger.SupplierFile, invoice.Supplier);
+        Assert.Null(ledger.PostInvoices());
+        Assert.Equal(supplier, db.Read(PurchaseLedger.SupplierFile, invoice.Supplier));
+        Assert.False(ledger.Invoice(invoice.Folio)!.Posted);
+        Assert.Empty(db.Scan("ledgers/acas/postings2irs.dat"));
+        Assert.Empty(ledger.PurchaseAnalysisTotals()!);
+    }
+
+    [Fact]
     public void アイアールエス仕入転記は固定長仕訳とバッチだけを作る()
     {
         using var db = Fixture("pl-invoice");
