@@ -3,6 +3,30 @@ import XCTest
 @testable import ACASCore
 
 final class PurchaseLedgerTests: XCTestCase {
+    func testPostingFileUsesEvidenceRecordWidthForConsecutiveEntries() throws {
+        let ledger = try makeLedger()
+        var system = ledger.system
+        system.setInt("level-1", 1)
+        ledger.systemFile.write(1, system.bytes)
+        var value = PurchaseLedger.Transaction(date: ledger.processingDate)
+        value.supplier = try addSupplier(ledger)
+        value.lines[0].code = "a1"
+        for net in [100, 200] {
+            value.lines[0].net = Int64(net)
+            try ledger.saveTransaction(value)
+        }
+        try ledger.postTransactions()
+        XCTAssertEqual(PurchaseRecords.postLayout.size, 98)
+        let posting = RelativeFile(ledger.store, path: ledger.base + "posting.dat", recordSize: 98)
+        for (number, net) in [(1, 100), (2, 200)] {
+            let raw = try XCTUnwrap(posting.read(number))
+            let record = Record(PurchaseRecords.postLayout, bytes: raw)
+            XCTAssertEqual(raw.count, 98)
+            XCTAssertEqual(record.int("post-number"), Int64(number))
+            XCTAssertEqual(record.int("post-amount"), Int64(net))
+        }
+    }
+
     func testPostingAccumulatesLegacyAnalysisKeysAndTotals() throws {
         let ledger = try makeLedger()
         var value = PurchaseLedger.Transaction(date: ledger.processingDate)
