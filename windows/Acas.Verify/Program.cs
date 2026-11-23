@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.IO.Compression;
 using System.Security.Cryptography;
+using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.RegularExpressions;
@@ -72,8 +73,7 @@ static Result Evaluate(JsonElement scenario, string root, Dictionary<string, str
         var service = new SalesLedger(database);
         var compare = legacy.GetProperty("comparison_targets");
         var evidencePath = legacy.GetProperty("evidence")[0].GetString()!;
-        string evidence = string.Join("\n", compare.GetProperty("screen_text").EnumerateArray()
-            .Select(p => File.ReadAllText(SafePath(root, p.GetString()!))));
+        string evidence = ReadScreenEvidence(compare, root);
         if (evidence.Length == 0) issues.Add("画面証跡がありません。");
         if (database.Exists(SalesLedger.AnalysisFile)) service.ImportAnalysisRecordLength(66);
         var before = database.Snapshot();
@@ -96,6 +96,26 @@ static Result Evaluate(JsonElement scenario, string root, Dictionary<string, str
         issues.Add("検証処理: " + ex.Message);
     }
     return new(id, issues.Count == 0 ? "一致" : "不一致", issues);
+}
+
+static string ReadScreenEvidence(JsonElement comparison, string root)
+{
+    var text = new StringBuilder();
+    int remaining = EvidenceInput.MaxBytes;
+    bool first = true;
+    foreach (var entry in comparison.GetProperty("screen_text").EnumerateArray())
+    {
+        if (!first)
+        {
+            remaining--;
+            text.Append('\n');
+        }
+        first = false;
+        byte[] bytes = EvidenceInput.Read(SafePath(root, entry.GetString()!), "画面証跡の合計", remaining);
+        remaining -= bytes.Length;
+        text.Append(EvidenceInput.Decode(bytes));
+    }
+    return text.ToString();
 }
 
 static Screen? Replay(string id, string[] path, JsonElement[] steps, SalesScreens screens, string evidence, List<string> issues)
@@ -267,7 +287,7 @@ static bool SettingsMatch(string evidence, TableScreen settings, List<string> is
 static void CheckSnapshot(string root, string path, SortedDictionary<string, SortedDictionary<string, string>> actual,
     string phase, List<string> issues)
 {
-    using var export = JsonDocument.Parse(File.ReadAllText(SafePath(root, path)));
+    using var export = JsonDocument.Parse(EvidenceInput.ReadText(SafePath(root, path), phase + "のスナップショット"));
     foreach (var file in export.RootElement.GetProperty("files").EnumerateObject())
     {
         var expected = file.Value.GetProperty("records").EnumerateObject().ToDictionary(r => r.Name,
@@ -287,7 +307,7 @@ static void CheckDiff(JsonElement comparison, string root, SortedDictionary<stri
     SortedDictionary<string, SortedDictionary<string, string>> after, List<string> issues)
 {
     string path = comparison.GetProperty("keyed_record_diff").GetString() ?? throw new InvalidDataException("レコード証跡パスがありません。");
-    using var diff = JsonDocument.Parse(File.ReadAllText(SafePath(root, path)));
+    using var diff = JsonDocument.Parse(EvidenceInput.ReadText(SafePath(root, path), "固定長レコード差分"));
     if (diff.RootElement.TryGetProperty("export_errors", out var errors) && errors.GetArrayLength() != 0)
         issues.Add("固定長レコードの証跡に抽出エラーがあります。");
     var expected = diff.RootElement.GetProperty("changes").EnumerateArray().ToDictionary(
@@ -317,7 +337,6 @@ static void CheckDiff(JsonElement comparison, string root, SortedDictionary<stri
 
 static void CheckReports(JsonElement comparison, string root, Db database, List<string> issues)
 {
-    const int maxReportBytes = 32 * 1024 * 1024;
     var seen = new HashSet<(string Name, string Hash)>();
     var actual = database.Spool().GroupBy(r => r.Name)
         .ToDictionary(g => g.Key, g => new Queue<string>(g.Select(report => report.Body)
@@ -326,17 +345,9 @@ static void CheckReports(JsonElement comparison, string root, Db database, List<
     {
         string path = SafePath(root, report.GetString()!);
         string name = Path.GetFileName(path);
-        using var stream = File.OpenRead(path);
-        long length = stream.Length;
-        if (length > maxReportBytes)
-            throw new InvalidDataException($"帳票が最大サイズ（32 MiB）を超えています: {name}");
-        byte[] bytes = new byte[(int)length];
-        stream.ReadExactly(bytes);
-        if (stream.ReadByte() != -1)
-            throw new InvalidDataException($"読み込み中に帳票のサイズが変わりました: {name}");
+        byte[] bytes = EvidenceInput.Read(path, "帳票");
         if (!seen.Add((name, Convert.ToHexString(SHA256.HashData(bytes))))) continue;
-        using var reader = new StreamReader(new MemoryStream(bytes, writable: false));
-        string legacy = reader.ReadToEnd();
+        string legacy = EvidenceInput.Decode(bytes);
         if (!actual.TryGetValue(name, out var entries) || !entries.TryDequeue(out var body))
         {
             issues.Add(legacy.Contains("Product Analysis Codes", StringComparison.Ordinal) && legacy.Contains('\0')
@@ -354,7 +365,9 @@ static void CheckReports(JsonElement comparison, string root, Db database, List<
 
 static DateTime ReadClock(string path)
 {
-    using var header = JsonDocument.Parse(File.ReadLines(path).First());
+    byte[] bytes = EvidenceInput.Read(path, "端末記録");
+    using var reader = new StreamReader(new MemoryStream(bytes, writable: false));
+    using var header = JsonDocument.Parse(reader.ReadLine() ?? throw new InvalidDataException("端末記録が空です。"));
     return DateTimeOffset.FromUnixTimeSeconds(header.RootElement.GetProperty("timestamp").GetInt64()).UtcDateTime;
 }
 
@@ -375,3 +388,30 @@ static string SafePath(string root, string path)
 }
 
 internal sealed record Result(string Id, string Verdict, IReadOnlyList<string> Differences);
+
+internal static class EvidenceInput
+{
+    public const int MaxBytes = 32 * 1024 * 1024;
+
+    public static byte[] Read(string path, string kind, int limit = MaxBytes)
+    {
+        string name = Path.GetFileName(path);
+        using var stream = File.OpenRead(path);
+        long length = stream.Length;
+        if (length > limit)
+            throw new InvalidDataException($"{kind}が最大サイズ（32 MiB）を超えています: {name}");
+        byte[] bytes = new byte[(int)length];
+        stream.ReadExactly(bytes);
+        if (stream.ReadByte() != -1)
+            throw new InvalidDataException($"読み込み中に{kind}のサイズが変わりました: {name}");
+        return bytes;
+    }
+
+    public static string Decode(byte[] bytes)
+    {
+        using var reader = new StreamReader(new MemoryStream(bytes, writable: false));
+        return reader.ReadToEnd();
+    }
+
+    public static string ReadText(string path, string kind) => Decode(Read(path, kind));
+}
