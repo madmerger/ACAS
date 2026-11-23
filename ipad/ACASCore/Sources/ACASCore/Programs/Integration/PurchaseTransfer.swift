@@ -28,6 +28,52 @@ public struct PurchaseTransfer {
 
     public init(_ context: BusinessContext) { self.context = context }
 
+    public func postPending() throws -> [String] {
+        let invoicePath = directory + "pinvoice.dat"
+        let supplierPath = directory + "purchled.dat"
+        let settings = RelativeFile(store, path: directory + "system.dat", recordSize: 1024)
+        guard let bytes = settings.read(1) else { throw Failure.unconfigured }
+        let config = Record(SystemLayout.layout, bytes: bytes)
+        let quarter = config.int("current-quarter")
+        guard (1...4).contains(quarter), config.int("level-1") == 1 else { throw Failure.unconfigured }
+        let quarterField = "turnover-q\(quarter)"
+        var invoices: [Invoice] = []
+        var headers: [([UInt8], [UInt8])] = []
+        var suppliers: [[UInt8]: Record] = [:]
+        for (key, raw) in store.all(invoicePath) where key.count == 9 && key.last == 0 {
+            var invoice = Record(PeriodRecords.pihLayout, bytes: raw)
+            guard invoice.str("status").uppercased() == "P" else { continue }
+            let supplierKey = invoice.raw("supplier")
+            guard invoice.int("test") == 0, invoice.int("type") == 2,
+                  let supplierRaw = store.read(supplierPath, key: supplierKey)
+            else { throw Failure.invalidInvoice }
+            var supplier = suppliers[supplierKey] ?? Record(PeriodRecords.purchLayout, bytes: supplierRaw)
+            let goods = invoice.int("net")
+            let net = goods + invoice.int("carriage")
+            let tax = invoice.int("vat") + invoice.int("c-vat")
+            let activity = supplier.int("activety")
+            let nextActivity = activity + 1
+            guard nextActivity > 0, nextActivity <= Int64(Int32.max) else { throw Failure.invalidInvoice }
+            let current = supplier.int("current") + net + tax
+            supplier.setInt("activety", nextActivity)
+            supplier.setInt("average", (activity * supplier.int("average") + goods) / nextActivity)
+            supplier.setInt("last-inv", invoice.int("date"))
+            supplier.setInt(quarterField, supplier.int(quarterField) + goods)
+            supplier.setInt("current", max(0, current))
+            if current < 0 { supplier.setInt("unapplied", supplier.int("unapplied") - current) }
+            supplier.setInt("status", 1)
+            suppliers[supplierKey] = supplier
+            invoices.append(Invoice(number: Int(invoice.int("invoice")), supplier: Cobol.rtrim(supplier.str("name")), net: net, tax: tax))
+            invoice["status"] = "z"
+            invoice["update"] = "z"
+            headers.append((key, invoice.bytes + raw.dropFirst(invoice.bytes.count)))
+        }
+        let batches = try write(invoices, processingDate: context.now())
+        for (key, bytes) in headers { store.rewrite(invoicePath, key: key, data: bytes) }
+        for (key, supplier) in suppliers { store.rewrite(supplierPath, key: key, data: supplier.bytes) }
+        return batches
+    }
+
     public func write(_ invoices: [Invoice], processingDate: Date,
                       bookkeepingDestination: BookkeepingDestination = .dedicated) throws -> [String] {
         guard !invoices.isEmpty else { return [] }
