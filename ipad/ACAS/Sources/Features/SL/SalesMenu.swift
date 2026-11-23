@@ -54,6 +54,8 @@ struct SalesMenu: View {
                     .accessibilityIdentifier("sales.period")
             }
             Section(slText("sales.receivables.section")) {
+                NavigationLink(slText("sales.statement.title")) { SalesStatementsView(workspace: workspace) }
+                    .accessibilityIdentifier("sales.statement")
                 NavigationLink(slText("sales.dunning.title")) { SalesDunningView(workspace: workspace) }
                     .accessibilityIdentifier("sales.dunning")
             }

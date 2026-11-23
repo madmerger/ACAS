@@ -87,6 +87,14 @@
 "sales.dunning.next" = "次へ";
 "sales.dunning.dateNotAccepted" = "旧システムと同じ制約により、基準日を確定できません。督促状は出力されません。";
 "sales.dunning.failed" = "督促状出力を開始できませんでした";
+"sales.statement.title" = "得意先明細書";
+"sales.statement.minimum" = "残高の下限";
+"sales.statement.message1" = "備考の1行目";
+"sales.statement.message2" = "備考の2行目";
+"sales.statement.empty" = "条件に該当する明細書はありません";
+"sales.statement.inputInvalid" = "得意先コード、残高の下限、または備考を確認してください。";
+"sales.statement.failed" = "得意先明細書を作成できませんでした";
+"sales.statement.filename" = "得意先明細書.prt";
 "sales.payment.post.failed" = "入金を転記できませんでした。先に入金検証帳票を作成してください";
 "sales.payment.post.filename" = "入金転記帳票";
 "sales.payment.reverse" = "入金を取り消す";
