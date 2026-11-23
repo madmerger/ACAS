@@ -59,6 +59,8 @@ struct MainMenu: View {
             SalesMenu(workspace: workspace)
         case .stock:
             StockMenu(workspace: workspace)
+        case .incomplete:
+            BookkeepingMenu(workspace: workspace)
         default:
             ContentUnavailableView("menu.pending", systemImage: section.symbol)
         }
