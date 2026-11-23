@@ -224,8 +224,21 @@ public struct SalesLedger {
         }
         let delimiter = system.raw("sl-delim")[0]
         func validAddress(_ bytes: [UInt8]) -> Bool {
-            let separators = bytes.indices.filter { bytes[$0] == delimiter }
-            return (1...4).contains(separators.count) && separators[0] <= 30
+            var index = 0
+            var count = 0
+            while index < bytes.count {
+                let byte = bytes[index]
+                if (0x81...0x9f).contains(byte) || (0xe0...0xfc).contains(byte) {
+                    index += 2
+                    continue
+                }
+                if byte == delimiter {
+                    if count == 0 && index > 30 { return false }
+                    count += 1
+                }
+                index += 1
+            }
+            return (1...4).contains(count)
         }
         guard validAddress(record.raw("sales-addr1") + record.raw("sales-addr2")) else { throw Error.invalidAddress }
         if hasDelivery(customer) || !Cobol.rtrim(customer.deliveryName).isEmpty {
