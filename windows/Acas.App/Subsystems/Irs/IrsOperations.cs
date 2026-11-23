@@ -80,8 +80,18 @@ public sealed partial class IrsScreens
     private Screen Audit(IrsBookkeeping books) => Form("監査証跡",
         [new ChoiceField("IrsAuditType", "帳票の種類", [new("A", "監査報告"), new("L", "元帳明細"), new("D", "付加価値税日計帳")], "A"),
          new ChoiceField("IrsAuditOrder", "表示順", [new("1", "取引区分順"), new("2", "日付順"), new("3", "伝票番号順")], "3")],
-        "帳票を作成", v => Report(books, books.AuditReport(v.Choice("IrsAuditType") ?? "A",
-            v.Choice("IrsAuditOrder") ?? "3"), () => Audit(books)));
+        "次へ", v =>
+        {
+            string type = v.Choice("IrsAuditType") ?? "A", order = v.Choice("IrsAuditOrder") ?? "3";
+            if (type != "D") return Report(books, books.AuditReport(type, order), () => Audit(books));
+            var settings = books.Configuration();
+            return Form("付加価値税日計帳",
+                [new DateField("IrsVatPeriodStart", "開始日", settings.Start),
+                 new DateField("IrsVatPeriodEnd", "終了日", settings.End)],
+                "帳票を作成", dates => Report(books,
+                    books.AuditReport(type, order, Date(dates, "IrsVatPeriodStart"), Date(dates, "IrsVatPeriodEnd")),
+                    () => Audit(books)));
+        });
 
     private Screen FinalAccounts(IrsBookkeeping books) => Form("決算書作成",
         [new ChoiceField("IrsFinalComparison", "比較対象", Enumerable.Range(0, 5).Select(i =>

@@ -82,7 +82,7 @@ public sealed partial class IrsBookkeeping
         return new(title, report.ToString());
     }
 
-    public IrsReport AuditReport(string type, string order)
+    public IrsReport AuditReport(string type, string order, DateTime? start = null, DateTime? end = null)
     {
         string title = type switch { "L" => "元帳明細", "D" => "付加価値税日計帳", _ => "監査証跡" };
         IEnumerable<IrsJournalEntry> rows = Journal();
@@ -92,15 +92,16 @@ public sealed partial class IrsBookkeeping
             "2" => rows.OrderBy(r => r.Date).ThenBy(r => r.Number),
             _ => rows.OrderBy(r => r.Number)
         };
-        return type == "D" ? VatDaybook(title, rows) : JournalReport(title, rows);
+        if (type != "D") return JournalReport(title, rows);
+        var settings = Configuration();
+        return VatDaybook(title, rows, start ?? settings.Start, end ?? settings.End);
     }
 
-    private IrsReport VatDaybook(string title, IEnumerable<IrsJournalEntry> rows)
+    private IrsReport VatDaybook(string title, IEnumerable<IrsJournalEntry> rows, DateTime? start, DateTime? end)
     {
-        var settings = Configuration();
         var report = new StringBuilder(Header(title)).AppendLine("番号　日付　摘要　仕入税抜　仕入税額　売上税抜　売上税額");
         decimal inputNet = 0, inputTax = 0, outputNet = 0, outputTax = 0;
-        foreach (var row in rows.Where(r => r.TaxDefault is 31 or 32 && r.Date >= settings.Start && r.Date <= settings.End))
+        foreach (var row in rows.Where(r => r.TaxDefault is 31 or 32 && r.Date >= start && r.Date <= end))
         {
             bool input = row.TaxDefault == 31;
             int sign = row.TaxSide == (input ? "CR" : "DR") ? -1 : 1;

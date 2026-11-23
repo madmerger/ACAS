@@ -8,6 +8,28 @@ namespace Acas.Tests.Irs;
 public class IntegrationTests
 {
     [Fact]
+    public void 付加価値税日計帳は期間内の返品を仕入と売上から差し引く()
+    {
+        using var db = new Db();
+        void Write(int number, string date, string code, string tax, string side)
+        {
+            string raw = $"{number:D5}BK{date}4000130001000010000{code.PadRight(32)}{tax}{side}000002000";
+            db.Put("ledgers/irs/post.dat", $"{number:D5}", Encoding.ASCII.GetBytes(raw));
+        }
+        Write(1, "01/11/26", "INPUT", "31", "DR");
+        Write(2, "30/11/26", "INPUT RETURN", "31", "CR");
+        Write(3, "30/11/26", "OUTPUT RETURN", "32", "DR");
+        Write(4, "01/12/26", "OUTSIDE", "32", "CR");
+
+        var report = new IrsBookkeeping(db).AuditReport("D", "3", new DateTime(2026, 11, 1), new DateTime(2026, 11, 30));
+
+        Assert.Contains("INPUT RETURN　-100.00　-20.00", report.Body);
+        Assert.Contains("OUTPUT RETURN　　　-100.00　-20.00", report.Body);
+        Assert.Contains("合計　0.00　0.00　-100.00　-20.00", report.Body);
+        Assert.DoesNotContain("OUTSIDE", report.Body);
+    }
+
+    [Fact]
     public void 買掛請求を総勘定元帳へ転記する()
     {
         using var db = new Db();
