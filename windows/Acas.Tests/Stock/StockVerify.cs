@@ -77,7 +77,7 @@ public static class StockVerify
             if (Path.IsPathRooted(relative) || relative.StartsWith(@"\\", StringComparison.Ordinal)) return null;
             string baseDir = Path.GetFullPath(root).TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
             string full = Path.GetFullPath(Path.Combine(baseDir, relative));
-            if (!full.StartsWith(baseDir, StringComparison.OrdinalIgnoreCase)) return null;
+            if (!full.StartsWith(baseDir, OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal)) return null;
             for (var d = new DirectoryInfo(full); d != null && d.FullName.Length >= baseDir.Length - 1; d = d.Parent)
                 if (d.Exists && d.Attributes.HasFlag(FileAttributes.ReparsePoint)) return null;
             if (Directory.Exists(full) && Directory.EnumerateFileSystemEntries(full, "*", SearchOption.AllDirectories)
