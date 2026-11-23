@@ -35,6 +35,7 @@ public struct LedgerBatchDraft {
     public var gross: Int64 = 0
     public var tax: Int64 = 0
     public var defaultBranch = "00"
+    public var temporaryDefault: TemporaryLedgerDefault?
 
     public init(cycle: Int, defaultNumber: Int, direction: LedgerDirection, date: DateComponents) {
         self.cycle = cycle
@@ -144,6 +145,22 @@ public struct LedgerBatches {
         }
     }
 
+    public func exitDefaultSelection() throws {
+        try context.store.transaction {
+            guard let bytes = system.read(1) else { throw Error.missingCompany }
+            var settings = Record(SystemLayout.layout, bytes: bytes)
+            let next = settings.int("next-batch")
+            guard (1..<32_767).contains(next) else { throw Error.capacity }
+            settings.setInt("next-batch", next + 1)
+            try system.write(1, settings.bytes)
+        }
+    }
+
+    public func retainTemporaryDefault(_ value: TemporaryLedgerDefault, branch: String) throws {
+        _ = try GeneralLedgerSetup(context).writeDefault(number: 33, account: value.account,
+            transactionCode: value.code.uppercased(), tax: value.tax, branch: branch, requireAccount: true)
+    }
+
     private func insert(_ draft: LedgerBatchDraft, lines: [JournalLine]) throws -> Int {
         guard let bytes = system.read(1) else { throw Error.missingCompany }
         var settings = Record(SystemLayout.layout, bytes: bytes)
@@ -154,9 +171,14 @@ public struct LedgerBatches {
         let branchEnabled = ["P", "B"].contains(settings.str("p-c"))
         let defaultBranch = branchEnabled ? draft.defaultBranch : "00"
         let defaults = GeneralLedgerSetup(context).defaults
-        guard (1...32).contains(draft.defaultNumber),
-              let template = defaults.first(where: { $0.id == draft.defaultNumber }),
-              chart.account(code: template.account, branch: defaultBranch) != nil else { throw Error.missingDefault }
+        let template: LedgerDefault
+        if draft.defaultNumber == 33, let value = draft.temporaryDefault {
+            template = LedgerDefault(id: 33, account: value.account, transactionCode: value.code.uppercased(), tax: value.tax)
+        } else if (1...32).contains(draft.defaultNumber),
+                  let value = defaults.first(where: { $0.id == draft.defaultNumber }) {
+            template = value
+        } else { throw Error.missingDefault }
+        guard chart.account(code: template.account, branch: defaultBranch) != nil else { throw Error.missingDefault }
         guard (0...99).contains(draft.expectedItems), (1...99).contains(lines.count) else { throw Error.items }
         guard (0..<100_000_000_000).contains(draft.gross), (0...draft.gross).contains(draft.tax) else { throw Error.amount }
         let vatNumber: Int?
@@ -215,6 +237,9 @@ public struct LedgerBatches {
             return posting
         }
         guard batches.read(key: batches.key(of: batch)) == nil else { throw Error.storage }
+        if draft.defaultNumber == 33, let value = draft.temporaryDefault {
+            try retainTemporaryDefault(value, branch: defaultBranch)
+        }
         try prepareFiles()
         for (index, record) in records.enumerated() { try postings.write(start + index + 1, record.bytes) }
         guard batches.write(batch) == "00" else { throw Error.storage }
