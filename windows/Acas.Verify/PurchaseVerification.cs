@@ -61,9 +61,9 @@ public static class PurchaseVerification
                     .Select(System.Security.Cryptography.SHA256.HashData)
                     .Select(Convert.ToHexString).Distinct().Count();
                 int appReports = db.Spool().Count;
-                if (legacyReports != appReports) differences.Add($"帳票数が異なります（既存 {legacyReports}、移行 {appReports}）。");
-                else if (id == "PL-232" && legacyReports == 1)
-                    VerifyScheduledPaymentReport(evidence, targets, db, differences);
+                if (id == "PL-232" && legacyReports == 1 && appReports == 0 && referenceDirectory != null)
+                    VerifyScheduledPaymentReport(evidence, targets, referenceDirectory, differences);
+                else if (legacyReports != appReports) differences.Add($"帳票数が異なります（既存 {legacyReports}、移行 {appReports}）。");
                 else if (id is "PL-221" or "PL-413" or "PL-414" && legacyReports == 1)
                 {
                     var report = db.Spool().Single();
@@ -92,24 +92,17 @@ public static class PurchaseVerification
         return differences;
     }
 
-    static void VerifyScheduledPaymentReport(string evidence, JsonElement targets, Db db, List<string> differences)
+    static void VerifyScheduledPaymentReport(string evidence, JsonElement targets, string referenceDirectory, List<string> differences)
     {
         var legacyPath = EvidenceFile(evidence, targets.GetProperty("report_files")[0].GetString()!);
         var nonblank = File.ReadLines(legacyPath).Select(line => line.Trim()).Where(line => line.Length != 0).ToArray();
-        var body = db.Spool().Single().Body;
-        var lines = body.Split('\n', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
-        Require(nonblank.Length >= 3 && nonblank[0].Contains("Payments Due Proof Report", StringComparison.Ordinal) &&
-            nonblank[0].EndsWith("Page   1", StringComparison.Ordinal) && lines.Contains("ページ 1") &&
-            lines.Length >= 3 && nonblank[1].StartsWith(lines[1], StringComparison.Ordinal) &&
-            nonblank[1].EndsWith("23/11/2026", StringComparison.Ordinal) && lines[2] == "処理日　2026年11月23日" &&
-            nonblank[2] == "Folio M    Date     Invoice      Current       30 +        60 +        90 +       Total to Pay" &&
-            lines.Contains("伝票番号　支払方法　支払日　請求書番号") && lines.Contains("当期　30日以上　60日以上　90日以上　支払額"),
-            differences, "支払予定検証帳票の表題、事業者、処理日、ページ番号、列見出しが異なります。");
-        if (nonblank.Length == 3 && !File.Exists(Path.Combine(Path.GetDirectoryName(legacyPath)!, "pay.dat")) &&
+        using var before = JsonDocument.Parse(File.ReadAllBytes(Path.Combine(referenceDirectory, "before.json")));
+        if (nonblank.Length == 3 && nonblank[0].Contains("Payments Due Proof Report", StringComparison.Ordinal) &&
+            !before.RootElement.TryGetProperty("ledgers/acas/pay.dat", out _) &&
             new FileInfo(legacyPath).Length > 1_000_000)
-            differences.Add("旧版の証跡は支払予定ファイルがなく、見出しの後に大量の空行が続き、合計欄・完了時の改ページを確認できません。移行版はゼロ件の合計を出力して終了します。");
+            differences.Add("旧版は支払予定ファイルの開始に失敗（状態35）し、読み取りエラー（状態47）を終端と扱わず、空行を出力し続けます。移行版はファイル欠如を表示し、帳票を作成しません。");
         else
-            differences.Add("支払予定検証帳票の明細・合計・改ページは未照合です。");
+            differences.Add("旧版に支払予定の検証帳票がありますが、移行版にはありません。");
     }
 
     static void VerifySupplierSetup(Db db, Change[] reference, List<string> differences,

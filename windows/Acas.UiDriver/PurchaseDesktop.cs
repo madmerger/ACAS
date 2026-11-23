@@ -204,7 +204,7 @@ internal sealed partial class Desktop
             case "S": case "S6": Menu(7, "小切手・送金"); break;
             case "S1": Check("PurchaseChequeAge"); break;
             case "S2": Check("PurchaseChequeSupplier"); break;
-            case "S3": Check("ScreenTitle", "支払予定の検証"); Report(); break;
+            case "S3": Check("ScreenTitle", "支払予定の検証"); Message("支払予定ファイルがありません。"); break;
             case "S4": Message("処理するデータがありません。"); break;
             case "S5": case "T":
                 Submit();

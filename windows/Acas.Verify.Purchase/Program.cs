@@ -131,7 +131,7 @@ static void Exercise(JsonElement entry, string id, Db db, List<string> differenc
         "S" or "S6" => screen is MenuScreen cheques && cheques.Items.Select(item => item.Number).SequenceEqual((int?[])[1, 2, 3, 4, 5, 6, 9]),
         "S1" => HasField(screen, "PurchaseChequeAge"),
         "S2" => HasField(screen, "PurchaseChequeSupplier"),
-        "S3" => screen is ReportScreen { Title: "支払予定の検証" },
+        "S3" => screen is InformationScreen { Title: "支払予定の検証", Message: "支払予定ファイルがありません。" },
         "S4" => screen is InformationScreen { Message: "処理するデータがありません。" },
         "S5" => Submit(screen) is ConfirmationScreen,
         "T" => Submit(screen) is ConfirmationScreen,
