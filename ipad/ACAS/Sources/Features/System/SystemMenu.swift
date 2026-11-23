@@ -8,12 +8,12 @@ struct SystemMenu: View {
         List {
             NavigationLink("system.company") { CompanyForm(workspace: workspace) }
                 .accessibilityIdentifier("system.company")
-            #if DEBUG
-            if workspace.evidence != nil {
-                NavigationLink("calculation.title") { CheckDigitForm(workspace: workspace) }
-                    .accessibilityIdentifier("calculation.title")
+            NavigationLink {
+                CalculationForm(workspace: workspace)
+            } label: {
+                Text("calc.title", tableName: "CALC")
             }
-            #endif
+            .accessibilityIdentifier("calculation.title")
         }
     }
 }
@@ -50,39 +50,3 @@ private struct CompanyForm: View {
         }
     }
 }
-
-#if DEBUG
-private struct CheckDigitForm: View {
-    let workspace: Workspace
-    @State private var code = ""
-    @State private var check: Int?
-    @State private var calculated = false
-    @FocusState private var editingCode: Bool
-
-    var body: some View {
-        Form {
-            TextField("calculation.code", text: $code)
-                .focused($editingCode)
-                .textInputAutocapitalization(.characters)
-                .autocorrectionDisabled()
-                .accessibilityIdentifier("calculation.code")
-            Button("action.calculate") {
-                editingCode = false
-                check = Maps09.checkDigit(code)
-                calculated = true
-                workspace.completed("check-digit", calculation: DebugCalculation(check: check ?? 0, valid: check != nil))
-            }
-            .accessibilityIdentifier("action.calculate")
-            if let check {
-                Text(verbatim: String(check))
-                    .accessibilityIdentifier("calculation.result")
-                Text("calculation.valid")
-                    .accessibilityIdentifier("calculation.valid")
-            } else if calculated {
-                Text("calculation.invalid")
-            }
-        }
-        .navigationTitle("calculation.title")
-    }
-}
-#endif
