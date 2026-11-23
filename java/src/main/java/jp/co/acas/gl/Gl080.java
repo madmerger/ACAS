@@ -14,7 +14,7 @@ import java.util.List;
 /** gl080.cbl: 期末（サイクル末）処理。バッチ確認・仕訳の保管/削除・posting 圧縮・期間末の元帳四半期更新。 */
 public class Gl080 extends GlProgram {
     static final String PROG_NAME = "gl080 (3.00.02)";
-    private static final String ARC_LAYOUT = """
+    static final String ARC_LAYOUT = """
              01  arc-trans-record.
                  03  arc-batch       pic 9(5).
                  03  arc-post        pic 9(5).
