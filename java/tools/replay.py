@@ -34,6 +34,8 @@ def to_keys(text):
 
 
 class Api:
+    supports_irs_path = True
+
     def __init__(self, url): self.url = url.rstrip("/")
     def call(self, method, path, body=None):
         req = urllib.request.Request(self.url + path, method=method,
@@ -107,6 +109,8 @@ def run_case(api, evid, case, verbose=False):
         return dict(res, verdict="対象外", reason="レガシー未実施のため比較対象なし: " + str(legacy.get("reason")))
     if not runner.get("steps"):
         return dict(res, verdict="未検証", reason="業務操作の手順がありません")
+    if runner.get("irs_path") and not api.supports_irs_path:
+        return dict(res, verdict="未検証", reason="画面から IRS ディレクトリを指定できません")
     targets = legacy.get("comparison_targets") or {}
     screens = targets.get("screen_text") or []
     api.call("POST", "/api/test/reset?baseline=" + case["baseline"])

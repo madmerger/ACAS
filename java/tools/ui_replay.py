@@ -49,6 +49,8 @@ class Browser:
 
 class UiApi(replay.Api):
     """replay.Api のうち「セッション開始」「キー送信」をブラウザ操作に置き換える。"""
+    supports_irs_path = False
+
     def __init__(self, url):
         super().__init__(url)
         self.b = Browser(url); self.page = self.b.page; self.sid = None
