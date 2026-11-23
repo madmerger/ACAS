@@ -8,6 +8,27 @@ import dump_baselines
 
 
 class DumpBaselinesTest(unittest.TestCase):
+    def test_symlinks_are_rejected_before_conversion(self):
+        for relative in [".", "baselines", "baselines/sample", "baselines/sample/ledgers",
+                         "baselines/sample/ledgers/irs/system.dat"]:
+            with self.subTest(relative=relative), tempfile.TemporaryDirectory() as tmp:
+                root = Path(tmp)
+                evidence = root / "evidence"
+                link = evidence / relative
+                link.parent.mkdir(parents=True)
+                outside = root / "sample"
+                if relative.endswith(".dat"):
+                    outside.write_text("synthetic fixture")
+                else:
+                    outside.mkdir()
+                link.symlink_to(outside)
+                with patch.object(dump_baselines.sys, "argv", ["dump_baselines.py", str(evidence), str(root / "out")]), \
+                     patch("dump_baselines.build") as build:
+                    with self.assertRaisesRegex(SystemExit, "シンボリックリンク"):
+                        dump_baselines.main()
+                    build.assert_not_called()
+                self.assertFalse((root / "out").exists())
+
     def test_unreadable_analysis_index_is_not_scanned_as_raw_bytes(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
