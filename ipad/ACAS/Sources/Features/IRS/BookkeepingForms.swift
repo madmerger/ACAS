@@ -5,6 +5,7 @@ struct BookkeepingConfigurationForm: View {
     let workspace: Workspace
     @State private var value: BookkeepingService.Configuration
     @State private var password = ""
+    @State private var newPassword = ""
     @State private var message = ""
 
     init(workspace: Workspace) {
@@ -31,12 +32,16 @@ struct BookkeepingConfigurationForm: View {
             }
             SecureField(irsText("field.password"), text: $password)
                 .accessibilityIdentifier("irs.settingsPassword")
+            SecureField(irsText("field.newPassword"), text: $newPassword)
+                .accessibilityIdentifier("irs.newPassword")
             Button(irsText("action.save")) {
                 do {
-                    try BookkeepingService(workspace.context).save(value, password: password)
+                    try BookkeepingService(workspace.context).save(value, password: password,
+                                                                   newPassword: newPassword.isEmpty ? nil : newPassword)
                     message = irsText("result.settingsSaved")
                 } catch { message = bookkeepingError(error) }
                 password = ""
+                newPassword = ""
                 workspace.completed("irs.settings")
             }
             .accessibilityIdentifier("irs.saveSettings")

@@ -98,9 +98,15 @@ public struct BookkeepingService {
         return value
     }
 
-    public func save(_ configuration: Configuration, password: String) throws {
+    public func save(_ configuration: Configuration, password: String, newPassword: String? = nil) throws {
         var row = system
         try verifyPassword(password, against: row)
+        if let newPassword {
+            let bytes = SJIS.encode(newPassword, size: 4)
+            guard !Cobol.rtrim(newPassword).isEmpty,
+                  Cobol.rtrim(SJIS.decode(bytes[...])) == newPassword else { throw Failure.invalidInput }
+            row.setRaw("pass-word", bytes)
+        }
         guard !configuration.client.isEmpty, configuration.start <= configuration.end,
               (0...9999).contains(configuration.taxRate) else { throw Failure.invalidInput }
         for (field, text) in [

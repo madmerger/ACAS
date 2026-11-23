@@ -4,6 +4,19 @@ import XCTest
 @testable import ACASCore
 
 final class BookkeepingPostingTests: XCTestCase {
+    func testPasswordCanBeRegisteredAndChanged() throws {
+        let service = BookkeepingService(BusinessContext(store: try FileStore()))
+        var configuration = service.configuration
+        configuration.client = "会社"
+        try service.save(configuration, password: "", newPassword: "1234")
+        XCTAssertThrowsError(try service.recalculate(password: ""))
+        XCTAssertThrowsError(try service.save(configuration, password: "", newPassword: "5678"))
+        try service.save(configuration, password: "1234", newPassword: "5678")
+        XCTAssertThrowsError(try service.recalculate(password: "1234"))
+        try service.store.writeRaw(service.postPath, [])
+        try service.recalculate(password: "5678")
+    }
+
     func testPasswordRequiredForConfigurationAndRecalculation() throws {
         let service = BookkeepingService(BusinessContext(store: try FileStore()))
         var system = service.system
