@@ -1,5 +1,13 @@
 import Foundation
 
+enum PurchasePostingWriteError: Swift.Error {
+    case rejected(String)
+}
+
+func requirePostingWrite(_ succeeded: Bool, path: String) throws {
+    guard succeeded else { throw PurchasePostingWriteError.rejected(path) }
+}
+
 extension PurchaseLedger {
     @discardableResult
     public func postTransactions() throws -> [Transaction] {
@@ -76,20 +84,21 @@ private final class PurchasePosting {
             }
         }
         head(credits: false)
-        PurchaseAnalysisPosting(ledger).accumulate(headers: items.compactMap { $0.staged ? nil : $0.header })
+        try PurchaseAnalysisPosting(ledger).accumulate(headers: items.compactMap { $0.staged ? nil : $0.header })
         for (header, storedItem, staged) in items {
             var item = storedItem
             if usesGL { try writePosting(item) }
-            if item.int("oi-type") == 3 { allocateCredit(&item) }
-            updateSupplier(item, tally: !staged)
-            store.write(archivePath, key: openKey(item), data: item.bytes)
+            if item.int("oi-type") == 3 { try allocateCredit(&item) }
+            try updateSupplier(item, tally: !staged)
+            try requirePostingWrite(store.write(archivePath, key: openKey(item), data: item.bytes), path: archivePath)
             if var header {
                 header["ih-status"] = "z"
                 header["ih-update"] = "z"
-                store.rewrite(ledger.invoicePath, key: ledger.invoiceKey(item.int("oi-invoice")), data: header.bytes)
+                let key = ledger.invoiceKey(item.int("oi-invoice"))
+                try requirePostingWrite(store.rewrite(ledger.invoicePath, key: key, data: header.bytes), path: ledger.invoicePath)
             }
         }
-        closeBatch()
+        try closeBatch()
         if printLines > pageLength - 7 { head(credits: false) }
         let categories = ["Receipts", "Invoices", "Credit Notes"]
         for i in 1...3 {
@@ -98,7 +107,7 @@ private final class PurchasePosting {
                 + figure(reportNet[i] + reportTax[i], digits: 8)
             printer.write(text, after: i == 1 ? 3 : 2)
         }
-        finishUnappliedCredits()
+        try finishUnappliedCredits()
         try printer.close()
         try store.writeRaw(stagingPath, [])
         system.setInt("p-flag-i", 2)
@@ -144,8 +153,8 @@ private final class PurchasePosting {
         totals.setInt(name, Cobol.truncate(totals.int(name) + value, digits: 10))
     }
 
-    private func updateSupplier(_ item: Record, tally: Bool) {
-        guard var supplier = ledger.supplierRecord(item.str("oi-supplier")) else { return }
+    private func updateSupplier(_ item: Record, tally: Bool) throws {
+        guard var supplier = ledger.supplierRecord(item.str("oi-supplier")) else { throw PurchaseLedger.Error.supplierNotFound }
         let type = Int(item.int("oi-type")), quarter = system.int("current-quarter")
         let value = gross(item)
         let old = supplier.int("purch-current") - supplier.int("purch-unapplied")
@@ -175,7 +184,8 @@ private final class PurchasePosting {
             if tally { addTotal(type == 2 ? "pl-invoices-this-month" : "pl-credit-notes-this-month", abs(value)) }
         }
         supplier.setInt("purch-status", 1)
-        store.rewrite(ledger.suppliersPath, key: Array(supplier.bytes.prefix(7)), data: supplier.bytes)
+        try requirePostingWrite(store.rewrite(ledger.suppliersPath, key: Array(supplier.bytes.prefix(7)), data: supplier.bytes),
+                                path: ledger.suppliersPath)
         reportNet[type] = Cobol.truncate(reportNet[type] + net(item), digits: 9)
         reportTax[type] = Cobol.truncate(reportTax[type] + tax(item), digits: 9)
         let new = supplier.int("purch-current") - supplier.int("purch-unapplied")
@@ -209,7 +219,7 @@ private final class PurchasePosting {
         printLines = credits ? 6 : 5
     }
 
-    private func allocateCredit(_ credit: inout Record) {
+    private func allocateCredit(_ credit: inout Record) throws {
         let supplier = Array(credit.bytes.prefix(7))
         let target = credit.int("oi-cr")
         let items = store.all(archivePath).filter { $0.key.starts(with: supplier) }.map { Record(R.oiLayout, bytes: $0.data) }
@@ -222,13 +232,13 @@ private final class PurchasePosting {
             invoice.setInt("oi-p-c", invoice.int("oi-p-c") + applied)
             credit.setInt("oi-paid", credit.int("oi-paid") + applied)
             if balance == applied { invoice.setInt("oi-status", 1) }
-            store.rewrite(archivePath, key: openKey(invoice), data: invoice.bytes)
+            try requirePostingWrite(store.rewrite(archivePath, key: openKey(invoice), data: invoice.bytes), path: archivePath)
             remaining -= applied
         }
         if remaining == 0 { credit.setInt("oi-status", 1) }
     }
 
-    private func finishUnappliedCredits() {
+    private func finishUnappliedCredits() throws {
         let outstanding = store.all(archivePath).map { Record(R.oiLayout, bytes: $0.data) }
             .filter { $0.int("oi-status") != 1 && $0.int("oi-type") == 3 }
         guard !outstanding.isEmpty else { return }
@@ -243,7 +253,7 @@ private final class PurchasePosting {
             if printLines > pageLength { head(credits: true) }
             item.setInt("oi-paid", item.int("oi-paid") - amount)
             item.setInt("oi-status", 1)
-            store.rewrite(archivePath, key: openKey(item), data: item.bytes)
+            try requirePostingWrite(store.rewrite(archivePath, key: openKey(item), data: item.bytes), path: archivePath)
         }
         addTotal("pl-cn-unappl-this-month", balance)
         printer.write(Cobol.x("", 24) + Cobol.x("Unapplied credits carried forward", 32) + figure(balance, digits: 8), after: 3)
@@ -265,9 +275,10 @@ private final class PurchasePosting {
         return batch
     }
 
-    private func closeBatch() {
+    private func closeBatch() throws {
         guard let batch else { return }
-        store.write(ledger.base + "batch.dat", key: Array(batch.bytes.prefix(6)), data: batch.bytes)
+        let path = ledger.base + "batch.dat"
+        try requirePostingWrite(store.write(path, key: Array(batch.bytes.prefix(6)), data: batch.bytes), path: path)
         if !usesIRS { system.setInt("postings", Int64(postingNumber)) }
         self.batch = nil
     }
@@ -303,6 +314,6 @@ private final class PurchasePosting {
             postingNumber += 1
         }
         self.batch = batch
-        if count == 99 { closeBatch() }
+        if count == 99 { try closeBatch() }
     }
 }

@@ -4,6 +4,34 @@ import XCTest
 @testable import ACASCore
 
 final class PurchaseLedgerTests: XCTestCase {
+    func testPostingDoesNotWriteAfterSQLiteRollsBackSupplierUpdate() throws {
+        try withDiskLedger { ledger, db in
+            var value = PurchaseLedger.Transaction(date: ledger.processingDate)
+            value.supplier = try addSupplier(ledger)
+            value.lines[0].code = "a1"
+            value.lines[0].net = 10_000
+            let folio = try ledger.saveTransaction(value)
+            let before = EvidenceComparison.snapshot(ledger.store)
+            let sql = "CREATE TRIGGER reject_supplier BEFORE UPDATE ON records WHEN NEW.file = '\(ledger.suppliersPath)' BEGIN SELECT RAISE(ROLLBACK, 'blocked'); END"
+            XCTAssertEqual(sqlite3_exec(db, sql, nil, nil, nil), SQLITE_OK)
+
+            XCTAssertThrowsError(try ledger.postTransactions()) { error in
+                guard case .rejected(let path) = error as? PurchasePostingWriteError else {
+                    return XCTFail("予期しないエラー: \(error)")
+                }
+                XCTAssertEqual(path, ledger.suppliersPath)
+            }
+            XCTAssertTrue(EvidenceComparison.diff(before: before, after: EvidenceComparison.snapshot(ledger.store)).isEmpty)
+            XCTAssertNil(ledger.store.readRaw(PurchaseLedger.reportPath))
+            XCTAssertEqual(ledger.transactions().map(\.posted), [false])
+            XCTAssertTrue(ledger.openItems(supplier: value.supplier).isEmpty)
+
+            XCTAssertEqual(sqlite3_exec(db, "DROP TRIGGER reject_supplier", nil, nil, nil), SQLITE_OK)
+            XCTAssertEqual(try ledger.postTransactions().map(\.id), [folio])
+            XCTAssertEqual(try ledger.supplier(code: value.supplier).currentBalance, 12_000)
+        }
+    }
+
     func testPostingReportFailureRollsBackBeforeRetry() throws {
         try withDiskLedger { ledger, db in
             var value = PurchaseLedger.Transaction(date: ledger.processingDate)
