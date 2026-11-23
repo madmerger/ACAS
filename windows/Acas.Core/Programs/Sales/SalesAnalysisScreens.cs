@@ -50,16 +50,26 @@ public sealed partial class SalesScreens
                 translated ? "" : entry?.Description ?? "", 24),
             new TextField("SalesAnalysisPrintCode", "印刷分類", entry?.PrintCode ?? "", 3)
         ]);
-        return Form(title, fields, "保存内容を確認", v => Confirm(title, "分析コードを保存しますか。", "保存",
-            () =>
+        return Form(title, fields, "保存内容を確認", v =>
+        {
+            string? description = v.Text("SalesAnalysisDescription");
+            if (translated && v.Choice("SalesAnalysisDescriptionAction") != "1")
             {
-                string? description = v.Text("SalesAnalysisDescription");
-                if (translated ? v.Choice("SalesAnalysisDescriptionAction") != "1" : entry?.Description == description)
-                    description = null;
+                if (description.Length != 0)
+                    throw new SalesRuleException("新しい分析名が入力されています。分析名を変更するか、入力欄を空にしてから保存してください。");
+                description = null;
+            }
+            else if (!translated && entry?.Description == description)
+            {
+                description = null;
+            }
+            return Confirm(title, "分析コードを保存しますか。", "保存", () =>
+            {
                 sales.SaveAnalysis(entry?.Code ?? v.Text("SalesAnalysisCode"), v.Text("SalesAnalysisAccount"),
                     description, v.Text("SalesAnalysisPrintCode"), entry != null);
                 return AnalysisMenu();
-            }, () => AnalysisEditor(entry)));
+            }, () => AnalysisEditor(entry));
+        });
     }
 
     private Screen PrintAnalysis(bool all)

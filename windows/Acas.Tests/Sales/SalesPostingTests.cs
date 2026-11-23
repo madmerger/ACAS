@@ -96,9 +96,14 @@ public sealed class SalesPostingTests
         var action = Assert.IsType<ChoiceField>(editor.Fields.Single(f => f.Id == "SalesAnalysisDescriptionAction"));
         Assert.Equal("現在の分析名：売上付加価値税（請求書・貸方伝票）", action.Label);
         var fields = EditorFields(editor);
+        byte[] before = db.Read(SalesLedger.AnalysisFile, "Svo")!;
+        Assert.Equal("0", fields["SalesAnalysisDescriptionAction"]);
+        fields["SalesAnalysisDescription"] = "新しい分析名";
+        var conflict = Assert.IsType<InformationScreen>(editor.Submit(new FormValues(fields)));
+        Assert.Contains("新しい分析名が入力されています", conflict.Message);
+        Assert.Equal(before, db.Read(SalesLedger.AnalysisFile, "Svo"));
         fields["SalesAnalysisDescriptionAction"] = "1";
         fields["SalesAnalysisDescription"] = new string('税', 13);
-        byte[] before = db.Read(SalesLedger.AnalysisFile, "Svo")!;
         var rejected = Assert.IsType<InformationScreen>(Assert.IsType<ConfirmationScreen>(editor.Submit(new FormValues(fields))).Confirm());
         Assert.Contains("固定長レコード", rejected.Message);
         Assert.Equal(before, db.Read(SalesLedger.AnalysisFile, "Svo"));
