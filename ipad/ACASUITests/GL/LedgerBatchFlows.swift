@@ -81,6 +81,44 @@ final class LedgerBatchFlows: XCTestCase {
     }
 
     @MainActor
+    func testTemporaryDefaultDraftCanCloseWithOrWithoutValidAccount() throws {
+        continueAfterFailure = false
+        let fixture = try XCTUnwrap(Bundle(for: Self.self).url(forResource: "GL-020", withExtension: "json",
+                                                               subdirectory: "fixtures"))
+        let app = XCUIApplication()
+        app.launchEnvironment["ACAS_FIXTURE"] = try Data(contentsOf: fixture).base64EncodedString()
+        app.launchArguments = ["-AppleLanguages", "(ja)", "-AppleLocale", "ja_JP"]
+        XCUIDevice.shared.orientation = .landscapeLeft
+        app.launch()
+        tap(app, "section.general")
+        tap(app, "gl.confirm-date")
+        tap(app, "gl.batches")
+
+        func openTemporaryDefault() {
+            tap(app, "gl.batch.new")
+            tap(app, "gl.batch.default")
+            tap(app, "33：一時既定勘定")
+        }
+
+        openTemporaryDefault()
+        enter(app, "gl.batch-temp-account", "300")
+        tap(app, "gl.batch.cancel")
+        XCTAssertTrue(app.buttons["gl.batch.new"].isHittable)
+
+        openTemporaryDefault()
+        enter(app, "gl.batch-temp-account", "300001")
+        enter(app, "gl.batch-temp-code", "BK")
+        tap(app, "gl.batch.cancel")
+        XCTAssertTrue(app.buttons["gl.batch.new"].isHittable)
+
+        openTemporaryDefault()
+        XCTAssertEqual(app.textFields["gl.batch-temp-account"].value as? String, "300001")
+        XCTAssertEqual(app.textFields["gl.batch-temp-code"].value as? String, "BK")
+        tap(app, "gl.batch.cancel")
+        XCTAssertFalse(app.descendants(matching: .any)["gl.batch.row.1"].firstMatch.exists)
+    }
+
+    @MainActor
     private func enter(_ app: XCUIApplication, _ id: String, _ input: String) {
         let field = app.textFields[id]
         let form = app.collectionViews["gl.batch.form"]

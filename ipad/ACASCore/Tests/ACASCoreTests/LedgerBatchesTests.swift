@@ -1,4 +1,4 @@
-import ACASCore
+@testable import ACASCore
 import SQLite3
 import XCTest
 
@@ -39,6 +39,58 @@ final class LedgerBatchesTests: XCTestCase {
             }
         }
         XCTAssertEqual(store.snapshot(), before)
+    }
+
+    func testTemporaryDefaultBatchRecordsAndRollback() throws {
+        let path = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer {
+            for suffix in ["", "-shm", "-wal"] { try? FileManager.default.removeItem(atPath: path.path + suffix) }
+        }
+        let store = try FileStore(path: path.path)
+        let context = BusinessContext(store: store)
+        let setup = CompanySetup(context)
+        var settings = setup.settings
+        try settings.setText("TEST", for: "usera")
+        try settings.setText("B", for: "p-c")
+        try settings.setNumber(1, for: "scycle")
+        try setup.save(settings)
+        let chart = ChartOfAccounts(context)
+        for (code, branch) in [("300000", "00"), ("300000", "01"), ("400000", "00"), ("400000", "02")] {
+            try chart.add(code: code, branch: branch, name: "CONTROL", type: 0, placement: "S", level: 1)
+        }
+        let batches = LedgerBatches(context)
+        let date = DateComponents(year: 2026, month: 11, day: 23)
+        var draft = LedgerBatchDraft(cycle: 1, defaultNumber: 33, direction: .debit, date: date)
+        draft.defaultBranch = "01"
+        draft.temporaryDefault = TemporaryLedgerDefault(account: "300000", code: "bk", tax: .noTax)
+        let line = JournalLine(date: date, account: "400000", branch: "02", amount: 10, memo: "")
+        let before = store.snapshot()
+        var database: OpaquePointer?
+        XCTAssertEqual(sqlite3_open(path.path, &database), SQLITE_OK)
+        defer { sqlite3_close(database) }
+        XCTAssertEqual(sqlite3_exec(database, """
+            CREATE TRIGGER fail_posting BEFORE INSERT ON files
+            WHEN NEW.name LIKE '%/posting.dat' BEGIN SELECT RAISE(ABORT, 'test'); END
+            """, nil, nil, nil), SQLITE_OK)
+        XCTAssertThrowsError(try batches.add(draft, lines: [line]))
+        XCTAssertEqual(store.snapshot(), before)
+        XCTAssertEqual(sqlite3_exec(database, "DROP TRIGGER fail_posting", nil, nil, nil), SQLITE_OK)
+
+        XCTAssertEqual(try batches.add(draft, lines: [line]), 1)
+        let batchFile = IndexedFile(store, path: "ledgers/acas/batch.dat", layout: LedgerBatches.batchLayout, keyLength: 6)
+        let batch = try XCTUnwrap(batchFile.read(key: Array("100001".utf8)))
+        XCTAssertEqual(batch.int("default"), 33)
+        XCTAssertEqual(batch.str("default-account"), "300000")
+        XCTAssertEqual(batch.str("default-branch"), "01")
+        XCTAssertEqual(batch.str("default-code"), "BK")
+        let postingFile = RelativeFile(store, path: "ledgers/acas/posting.dat", recordSize: LedgerBatches.postingLayout.size)
+        let posting = Record(LedgerBatches.postingLayout, bytes: try XCTUnwrap(postingFile.read(2)))
+        XCTAssertEqual(posting.str("code"), "BK")
+        XCTAssertEqual(posting.str("credit"), "300000")
+        XCTAssertEqual(posting.str("credit-branch"), "01")
+        XCTAssertEqual(posting.str("debit"), "400000")
+        XCTAssertEqual(posting.str("debit-branch"), "02")
+        XCTAssertEqual(GeneralLedgerSetup(context).defaults.last?.transactionCode, "BK")
     }
 
     func testTaxAmountsAndAccountAreWrittenToTheBatchAndPosting() throws {
@@ -136,6 +188,7 @@ final class LedgerBatchesTests: XCTestCase {
         XCTAssertEqual(Array(sentinel.prefix(12)), Array("999999000099".utf8))
         XCTAssertTrue(batches.all.isEmpty)
         XCTAssertTrue(store.exists("ledgers/acas/posting.dat"))
+        XCTAssertEqual(store.readRaw("ledgers/acas/posting.dat"), [])
     }
 
     func testBatchAndPostingBytesAndValidation() throws {
