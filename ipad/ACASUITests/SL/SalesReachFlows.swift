@@ -200,9 +200,26 @@ final class SalesReachFlows: XCTestCase {
     }
 
     func testSL242() throws {
-        try reach("SL-242", through: ["section.system", "system.company"], title: "会社設定", verdict: nil) { app in
-            XCTAssertEqual(app.textFields["system.company.name"].value as? String, "EQUIVALENCE BUSINESS")
-            XCTAssertEqual(app.textFields.count, 1)
+        try reach("SL-242", through: ["sales.common"], title: "共通設定") { app in
+            let fields = [
+                ("usera", "EQUIVALENCE BUSINESS"), ("address-1", "Test Street"), ("address-2", "未設定"),
+                ("address-3", "未設定"), ("address-4", "未設定"), ("post-code", "TEST1"), ("country", "UK"),
+                ("date-form", "1"), ("start-date", "01/01/2026"), ("end-date", "31/12/2026"),
+                ("page-lines", "048"), ("vat-rate-1", "20.00"), ("vat-rate-2", "05.00"), ("vat-rate-3", "00.00"),
+                ("vat-rate-4", "00.00"), ("vat-rate-5", "00.00"), ("vat-reg-number", "TESTVAT"), ("sl-vat-printed", "N"),
+                ("password", "非表示"), ("scycle", "01"), ("current-quarter", "01"), ("period", "03"),
+                ("file-system-used", "0"), ("file-duplicates-in-use", "0"),
+            ]
+            let form = app.scrollViews.firstMatch
+            XCTAssertTrue(form.waitForExistence(timeout: 5))
+            XCTAssertTrue(form.staticTexts["sales.common.usera"].waitForExistence(timeout: 5))
+            attach(app, name: "SL-242-初期表示")
+            for (key, value) in fields {
+                let field = form.staticTexts["sales.common." + key]
+                for _ in 0..<3 where !field.isHittable { form.swipeUp() }
+                XCTAssertTrue(field.isHittable, key)
+                XCTAssertTrue(field.label == value || field.label.hasSuffix("、" + value), "\(key): \(field.label)")
+            }
         }
     }
     func testSL244() throws { try invoiceFixedData("SL-244") }

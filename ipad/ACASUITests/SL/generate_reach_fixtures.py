@@ -64,7 +64,7 @@ CASES = {
     "SL-239": ("sales-period-view", "期間締めの確認画面"),
     "SL-240": ("sales-customer-report-view", "得意先ファイル帳票の抽出条件"),
     "SL-241": ("sales-exit", "売掛元帳からメインメニューへ戻る"),
-    "SL-242": ("ui-test-only", "共通設定を開く"),
+    "SL-242": ("sales-common-settings-view", "共通設定を開く"),
     "SL-244": ("sales-invoice-fixed-data-view", "請求書固定項目設定・初回表示"),
 }
 
