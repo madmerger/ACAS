@@ -393,6 +393,27 @@
 "sl085.sl003" = "SL003 Return で続行";
 "sl085.sl140" = "SL140 訂正は未対応";
 "sl085.sl141" = "SL141 消込額または控除額が 0 でない";
+
+/* sl090 / sl095 */
+"sl090.syserr" = "システムエラー - OTM3 と OTMS の長さ相違 - ";
+"sl090.sorted" = " & ソート - ";
+"sl090.note" = "内容を控えて Return で終了";
+"sl095.title" = "入金プルーフリスト";
+"sl095.printing" = "印刷中..... お待ち下さい";
+"report.sl095.title" = "入金・振替プルーフリスト";
+"report.sl095.page" = "頁   ";
+"report.sl095.line4a" = "  ﾊﾞｯﾁ   種  入金日    <--------------得意先-------------->";
+"report.sl095.line4b" = "   金額     消込額     控除    <-------------入金消込内訳------------->";
+"report.sl095.line5a" = " ｺｰﾄﾞ              名称";
+"report.sl095.line5b" = "請求書    日付       消込額        残高 ";
+"report.sl095.unknown" = "!! 得意先未登録";
+"report.sl095.payment" = "入金";
+"report.sl095.journal" = "振替";
+"report.sl095.totals" = " 合計";
+"report.sl095.payments" = "入金額";
+"report.sl095.appropriations" = "消込額";
+"report.sl095.unapplied_cash" = "未消込入金";
+"report.sl095.deductions" = "控除適用額";
 /* ---- sys.ja.strings ---- */
 /* ACAS.cbl — システムメニュー (日本語) */
 "sys.sy006" = "SY006 プログラム引数は2個までです。指定された数: ";

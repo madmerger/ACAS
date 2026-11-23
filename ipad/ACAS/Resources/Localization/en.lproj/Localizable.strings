@@ -393,6 +393,27 @@
 "sl085.sl003" = "SL003 Hit Return To Continue";
 "sl085.sl140" = "SL140 Not Yet Supporting Corrections";
 "sl085.sl141" = "SL141 Amount Approp Or Deduct Amt Not Zero";
+
+/* sl090 / sl095 */
+"sl090.syserr" = "System Error - OTM3 and OTMS not the same - ";
+"sl090.sorted" = " & Sorted - ";
+"sl090.note" = "Note details and then return to quit";
+"sl095.title" = "Payment Proof Report";
+"sl095.printing" = "Printing..... Please Wait";
+"report.sl095.title" = "Payment And Journal Proof Report";
+"report.sl095.page" = "Page ";
+"report.sl095.line4a" = "  Batch  Tp  Pay Date  <-------------Customer------------->";
+"report.sl095.line4b" = "  Value    Approp.    Ded'n    <--------Payment Appropriation--------->";
+"report.sl095.line5a" = " A/C               Name";
+"report.sl095.line5b" = "Invoice   Date      Approp.     Balance ";
+"report.sl095.unknown" = "!! Customer Unknown";
+"report.sl095.payment" = "Payment";
+"report.sl095.journal" = "Journal";
+"report.sl095.totals" = " Totals";
+"report.sl095.payments" = "Payments";
+"report.sl095.appropriations" = "Appropriations";
+"report.sl095.unapplied_cash" = "Unapplied Cash";
+"report.sl095.deductions" = "Deductions Taken";
 /* ---- sys.en.strings ---- */
 /* ACAS.cbl — システムメニュー (英語 = レガシー原文) */
 "sys.sy006" = "SY006 Program Arguments limited to two and you have specified ";
