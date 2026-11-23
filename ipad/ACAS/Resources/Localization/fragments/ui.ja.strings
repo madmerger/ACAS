@@ -29,3 +29,25 @@
 "ui.cases.legacy" = "レガシー";
 "ui.cases.out_of_scope" = "対象外 (レガシー未実施)";
 "ui.calc.title" = "計算ロジック検証 (CALC)";
+
+/* CALC ケースの入力・結果の項目名 */
+"ui.calc.field.code" = "コード";
+"ui.calc.field.net" = "税抜額";
+"ui.calc.field.rate" = "税率";
+"ui.calc.field.date" = "日付";
+"ui.calc.field.days" = "日数";
+"ui.calc.field.action" = "処理";
+"ui.calc.field.route" = "経路";
+"ui.calc.field.value" = "金額";
+"ui.calc.field.qty" = "数量";
+"ui.calc.field.password" = "パスワード";
+"ui.calc.field.user_name" = "利用者名";
+"ui.calc.field.bucket" = "年齢区分";
+"ui.calc.field.check" = "検査数字";
+"ui.calc.field.cost" = "平均原価";
+"ui.calc.field.integer" = "整数値";
+"ui.calc.field.normalized" = "正規化日付";
+"ui.calc.field.valid" = "有効";
+"ui.calc.field.null" = "なし";
+"ui.calc.field.true" = "はい";
+"ui.calc.field.false" = "いいえ";

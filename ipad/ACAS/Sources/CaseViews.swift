@@ -105,7 +105,7 @@ struct CalcRunView: View {
         VStack(spacing: 18) {
             CaseBanner(id: testCase.id, title: testCase.title, detail: program)
             VStack(alignment: .leading, spacing: 16) {
-                row("ui.cases.input", input.keys.sorted().map { "\($0) = \(input[$0]!)" }.joined(separator: "   "))
+                row("ui.cases.input", Self.describe(input))
                 row("ui.cases.result", result)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -120,10 +120,23 @@ struct CalcRunView: View {
             if program.isEmpty {
                 result = "ui.cases.out_of_scope".localizedString
             } else if let r = Calc.run(program: program, input: input) {
-                result = r.keys.sorted().map { "\($0) = \(r[$0]! is NSNull ? "null" : "\(r[$0]!)")" }.joined(separator: "   ")
+                result = Self.describe(r)
             }
             DispatchQueue.main.asyncAfter(deadline: .now() + 1.6) { onFinish() }
         }
+    }
+
+    /// 項目名と真偽・空値を表示言語で出す。値そのものはレガシー実測と同じ表記のまま。
+    private static func describe(_ d: [String: Any]) -> String {
+        d.keys.sorted().map { k in
+            let v = d[k]!
+            let text: String
+            if v is NSNull { text = "ui.calc.field.null".localizedString }
+            else if let b = v as? Bool { text = (b ? "ui.calc.field.true" : "ui.calc.field.false").localizedString }
+            else { text = "\(v)" }
+            let name = "ui.calc.field.\(k)".localizedString
+            return "\(name.hasPrefix("ui.calc.field.") ? k : name) = \(text)"
+        }.joined(separator: "   ")
     }
 
     private func row(_ key: String, _ value: String) -> some View {

@@ -3252,6 +3252,28 @@
 "ui.cases.legacy" = "Legacy";
 "ui.cases.out_of_scope" = "Out of scope (not executed on legacy)";
 "ui.calc.title" = "Calculation checks (CALC)";
+
+/* CALC ケースの入力・結果の項目名 */
+"ui.calc.field.code" = "code";
+"ui.calc.field.net" = "net";
+"ui.calc.field.rate" = "rate";
+"ui.calc.field.date" = "date";
+"ui.calc.field.days" = "days";
+"ui.calc.field.action" = "action";
+"ui.calc.field.route" = "route";
+"ui.calc.field.value" = "value";
+"ui.calc.field.qty" = "qty";
+"ui.calc.field.password" = "password";
+"ui.calc.field.user_name" = "user name";
+"ui.calc.field.bucket" = "bucket";
+"ui.calc.field.check" = "check";
+"ui.calc.field.cost" = "cost";
+"ui.calc.field.integer" = "integer";
+"ui.calc.field.normalized" = "normalized";
+"ui.calc.field.valid" = "valid";
+"ui.calc.field.null" = "null";
+"ui.calc.field.true" = "true";
+"ui.calc.field.false" = "false";
 /* ---- xl150.en.strings ---- */
 /* common/xl150.cbl — 期末 (サイクル末) 処理 */
 "xl150.title" = "End of Cycle Processing";
