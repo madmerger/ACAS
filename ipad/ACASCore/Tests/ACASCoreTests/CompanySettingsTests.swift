@@ -15,6 +15,7 @@ final class CompanySettingsTests: XCTestCase {
         var settings = setup.settings
         for (key, input, expected) in [("p-c", "p", "P"), ("p-c-level", "r", "R"),
                                        ("stk-period-cur", "q", "Q"), ("stk-period-dat", "y", "Y"),
+                                       ("sl-vat-printed", "y", "Y"), ("sl-vat-printed", "n", "N"),
                                        ("usera", "Business", "Business")] {
             try settings.setText(input, for: key)
             XCTAssertEqual(settings.text(key), expected)
@@ -32,6 +33,11 @@ final class CompanySettingsTests: XCTestCase {
         try setup.save(settings, printReport: true)
         let report = try XCTUnwrap(store.readRaw(CompanySetup.reportPath))
         let address = SJIS.encode(String(repeating: "東", count: 12) + ",1234567890,日本日本", size: 44)
-        XCTAssertNotNil(Data(report).range(of: Data(address.prefix(43))))
+        let lines = report.split(separator: 10, omittingEmptySubsequences: false)
+        let line = try XCTUnwrap(lines.dropFirst(9).first)
+        let expected = [UInt8](repeating: 32, count: 27) + address.prefix(43)
+            + SJIS.encode("Alphabetic Ledger Index not Selected", size: 50)
+            + [UInt8](repeating: 32, count: 12)
+        XCTAssertEqual(Array(line), expected)
     }
 }

@@ -50,6 +50,7 @@ public struct LedgerBatch: Identifiable {
     public let cycle: Int
     public let items: Int
     public let gross: Int64
+    public let tax: Int64
     public let closed: Bool
     public let posted: Bool
 
@@ -59,6 +60,7 @@ public struct LedgerBatch: Identifiable {
         description = Cobol.rtrim(record.str("description"))
         items = Int(record.int("items"))
         gross = record.int("input-gross")
+        tax = record.int("input-vat")
         closed = record.int("status") == 1
         posted = record.int("cleared") != 0
     }
@@ -121,6 +123,24 @@ public struct LedgerBatches {
 
     public func add(_ draft: LedgerBatchDraft, lines: [JournalLine]) throws -> Int {
         try context.store.transaction { try insert(draft, lines: lines) }
+    }
+
+    public func amendHeader(number: Int, cycle: Int, items: Int, gross: Int64, tax: Int64, description: String) throws {
+        try context.store.transaction {
+            guard let bytes = system.read(1) else { throw Error.missingCompany }
+            let current = Int(Record(SystemLayout.layout, bytes: bytes).int("scycle"))
+            guard (current...current + 1).contains(cycle) else { throw Error.cycle }
+            guard (0...99).contains(items) else { throw Error.items }
+            guard (0..<100_000_000_000).contains(gross), (0...gross).contains(tax) else { throw Error.amount }
+            guard (1...99998).contains(number), var batch = batches.read(key: "1" + Cobol.z(number, 5)),
+                  batch.int("cleared") == 0 else { throw Error.storage }
+            batch["description"] = try Self.checked(description, width: 24)
+            batch.setInt("cycle", Int64(cycle))
+            batch.setInt("items", Int64(items))
+            batch.setInt("input-gross", gross)
+            batch.setInt("input-vat", tax)
+            guard batches.rewrite(batch) == "00" else { throw Error.storage }
+        }
     }
 
     private func insert(_ draft: LedgerBatchDraft, lines: [JournalLine]) throws -> Int {

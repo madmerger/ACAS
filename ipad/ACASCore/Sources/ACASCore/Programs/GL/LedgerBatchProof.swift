@@ -117,7 +117,8 @@ public struct LedgerBatchProof {
                 + (vatAccount == 0 ? Cobol.x("", 7) : pic("zzz9.99", vatAccount, scale: 2))
                 + (vatBranch == 0 ? Cobol.x("", 9) : pic("bz9bbbbbb", vatBranch))
                 + Cobol.x(vatAccount == 0 ? "" : line.str("vat-side"), 8)
-            bytes += [10] + SJIS.encode(leading + amounts, size: 100) + line.raw("memo")
+            let detail = SJIS.encode(leading + amounts, size: 102) + line.raw("memo")
+            bytes += [10] + detail.prefix(132)
             count += 1
             if present.contains(false) {
                 write(Cobol.x("", 24) + present.map { Cobol.x($0 ? "" : "^^^^^^^^^^", 12) }.joined())

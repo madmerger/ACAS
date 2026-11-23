@@ -16,7 +16,8 @@ final class LedgerBatchProofTests: XCTestCase {
         try GeneralLedgerSetup(context).saveDefault(number: 1, account: "300000", transactionCode: "GL", tax: .noTax)
         let date = DateComponents(year: 2026, month: 11, day: 23)
         var draft = LedgerBatchDraft(cycle: 1, defaultNumber: 1, direction: .debit, date: date)
-        let line = JournalLine(date: date, account: "400000", amount: 12_345, memo: "Posting test")
+        let memo = "Posting test 123456789012345678!"
+        let line = JournalLine(date: date, account: "400000", amount: 12_345, memo: memo)
         let batches = LedgerBatches(context)
         draft.gross = 12_345
         try batches.add(draft, lines: [line])
@@ -32,10 +33,18 @@ final class LedgerBatchProofTests: XCTestCase {
         XCTAssertTrue(one.verified)
         XCTAssertEqual(store.readRaw(CompanySetup.reportPath), one.bytes)
         XCTAssertTrue(String(decoding: one.bytes, as: UTF8.self).contains("* Batch Verified Ok *"))
+        let detail = try XCTUnwrap(one.bytes.split(separator: 10).dropFirst(6).first)
+        XCTAssertEqual(detail.count, 132)
+        XCTAssertEqual(Array(detail.dropFirst(102)), Array(memo.utf8.prefix(30)))
         let all = try proof.generate()
         XCTAssertEqual(all.map(\.id), [1, 2])
         XCTAssertEqual(all.map(\.verified), [true, false])
         XCTAssertEqual(batches.all.map(\.closed), [true, false, false])
         XCTAssertThrowsError(try posting.postCurrentCycle())
+        try batches.amendHeader(number: 2, cycle: 1, items: 1, gross: 12_345, tax: 0, description: "訂正")
+        XCTAssertEqual(batches.all[1].description, "訂正")
+        XCTAssertTrue(try XCTUnwrap(proof.generate(batch: 2).first).verified)
+        XCTAssertEqual(try posting.postCurrentCycle().batches, 2)
+        XCTAssertThrowsError(try batches.amendHeader(number: 2, cycle: 1, items: 1, gross: 1, tax: 0, description: ""))
     }
 }

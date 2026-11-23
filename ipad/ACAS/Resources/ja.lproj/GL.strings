@@ -55,6 +55,7 @@
 "gl.batch-error.storage" = "バッチを保存できませんでした";
 "gl.report.share" = "帳票原本を共有";
 "gl.batch-proof.title" = "仕訳の検証・帳票";
+"gl.batch-amend.title" = "登録済みバッチの予定を訂正";
 "gl.batch-proof.all" = "当期の全バッチを検証して帳票を出力";
 "gl.batch-proof.one" = "指定バッチを検証して帳票を出力";
 "gl.batch-proof.select" = "検証するバッチを選択";
