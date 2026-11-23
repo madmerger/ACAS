@@ -11,16 +11,20 @@ from generate_cases import evidence_path, expected_changes, read_json, save, sna
 
 
 REACH_CASES = {
+    "ST-001": ("date.reopen", "在庫処理日の再表示"),
     "ST-002": ("master", "在庫品目マスター管理"),
     "ST-003": ("movements", "入出庫・発注記録"),
     "ST-004": ("reports", "在庫帳票メニュー"),
     "ST-005": ("closePeriod", "在庫期間締めの準備"),
     "ST-006": ("rebuild", "在庫ファイル圧縮の準備"),
+    "ST-200": ("date.initial", "在庫開始時の処理日入力"),
+    "ST-201": ("date.reopen", "在庫処理日の再表示"),
     "ST-202": ("master", "在庫品目マスター管理"),
     "ST-209": ("movements", "入出庫・発注記録"),
     "ST-215": ("reports", "在庫帳票メニュー"),
     "ST-221": ("closePeriod", "在庫期間締めの準備"),
     "ST-224": ("rebuild", "在庫ファイル圧縮の準備"),
+    "ST-226": ("date.initial", "在庫開始時の処理日入力"),
 }
 
 

@@ -40,6 +40,7 @@ struct StockMenu: View {
             NavigationStack {
                 Form {
                     DatePicker(stockText("field.date"), selection: $proposedDate, displayedComponents: .date)
+                        .environment(\.timeZone, workspace.context.timeZone)
                     Button(stockText("action.commit")) {
                         processingDate = proposedDate
                         showDate = false
@@ -48,6 +49,9 @@ struct StockMenu: View {
                     .accessibilityIdentifier("stock.confirmDate")
                 }
                 .navigationTitle(stockText("date.title"))
+                .onAppear {
+                    workspace.completed(processingDate == nil ? "stock.date.initial.open" : "stock.date.reopen.open")
+                }
             }
             .interactiveDismissDisabled(processingDate == nil)
         }

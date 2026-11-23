@@ -13,6 +13,9 @@ final class StockFlows: XCTestCase {
     }
 
     @MainActor
+    func testReachST001() throws { try verifyDate("ST-001", reopen: true) }
+
+    @MainActor
     func testReachST002() throws { try verifyMaster("ST-002") }
 
     @MainActor
@@ -28,6 +31,12 @@ final class StockFlows: XCTestCase {
     func testReachST006() throws { try verifyRebuild("ST-006") }
 
     @MainActor
+    func testReachST200() throws { try verifyDate("ST-200", reopen: false) }
+
+    @MainActor
+    func testReachST201() throws { try verifyDate("ST-201", reopen: true) }
+
+    @MainActor
     func testReachST202() throws { try verifyMaster("ST-202") }
 
     @MainActor
@@ -41,6 +50,21 @@ final class StockFlows: XCTestCase {
 
     @MainActor
     func testReachST224() throws { try verifyRebuild("ST-224") }
+
+    @MainActor
+    func testReachST226() throws { try verifyDate("ST-226", reopen: false) }
+
+    @MainActor
+    private func verifyDate(_ id: String, reopen: Bool) throws {
+        let app = try launchReach(id)
+        if reopen {
+            tap(app, "stock.confirmDate")
+            tap(app, "stock.date")
+        }
+        XCTAssertTrue(app.navigationBars["在庫処理日"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["stock.confirmDate"].waitForExistence(timeout: 5))
+        verifyVerdict(app, id)
+    }
 
     @MainActor
     private func verifyMaster(_ id: String) throws {
@@ -69,6 +93,20 @@ final class StockFlows: XCTestCase {
 
     @MainActor
     private func verifyReach(_ id: String, destination: String, identifiers: [String] = [], labels: [String] = []) throws {
+        let app = try launchReach(id)
+        tap(app, "stock.confirmDate")
+        tap(app, "stock." + destination)
+        for identifier in identifiers {
+            XCTAssertTrue(app.descendants(matching: .any)["stock." + identifier].firstMatch.waitForExistence(timeout: 5), id)
+        }
+        for label in labels {
+            XCTAssertTrue(app.switches[label].waitForExistence(timeout: 5), id)
+        }
+        verifyVerdict(app, id)
+    }
+
+    @MainActor
+    private func launchReach(_ id: String) throws -> XCUIApplication {
         continueAfterFailure = false
         let url = try XCTUnwrap(Bundle(for: Self.self).url(forResource: id, withExtension: "json", subdirectory: "fixtures"))
         let app = XCUIApplication()
@@ -77,15 +115,12 @@ final class StockFlows: XCTestCase {
         XCUIDevice.shared.orientation = .landscapeLeft
         app.launch()
         XCTAssertTrue(app.staticTexts[id].waitForExistence(timeout: 10))
-        for identifier in ["section.stock", "stock.confirmDate", "stock." + destination] {
-            tap(app, identifier)
-        }
-        for identifier in identifiers {
-            XCTAssertTrue(app.descendants(matching: .any)["stock." + identifier].firstMatch.waitForExistence(timeout: 5), id)
-        }
-        for label in labels {
-            XCTAssertTrue(app.switches[label].waitForExistence(timeout: 5), id)
-        }
+        tap(app, "section.stock")
+        return app
+    }
+
+    @MainActor
+    private func verifyVerdict(_ app: XCUIApplication, _ id: String) {
         XCTAssertTrue(app.staticTexts["case.verdict.match"].waitForExistence(timeout: 5), id)
         let screenshot = XCTAttachment(screenshot: app.screenshot())
         screenshot.name = id
