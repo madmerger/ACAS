@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.IO.Compression;
+using System.Security.Cryptography;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.RegularExpressions;
@@ -316,16 +317,26 @@ static void CheckDiff(JsonElement comparison, string root, SortedDictionary<stri
 
 static void CheckReports(JsonElement comparison, string root, Db database, List<string> issues)
 {
-    var expected = comparison.GetProperty("report_files").EnumerateArray().Select(p => SafePath(root, p.GetString()!))
-        .GroupBy(p => (Path.GetFileName(p), Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(p)))))
-        .Select(g => g.First()).ToArray();
+    const int maxReportBytes = 32 * 1024 * 1024;
+    var seen = new HashSet<(string Name, string Hash)>();
     var actual = database.Spool().GroupBy(r => r.Name)
         .ToDictionary(g => g.Key, g => new Queue<string>(g.Select(report => report.Body)
             .Skip(g.Key is "prt-2" or "prt-3" && g.Count() > 1 && g.First().Body.Length == 0 ? 1 : 0)));
-    foreach (var path in expected)
+    foreach (var report in comparison.GetProperty("report_files").EnumerateArray())
     {
+        string path = SafePath(root, report.GetString()!);
         string name = Path.GetFileName(path);
-        string legacy = File.ReadAllText(path);
+        using var stream = File.OpenRead(path);
+        long length = stream.Length;
+        if (length > maxReportBytes)
+            throw new InvalidDataException($"帳票が最大サイズ（32 MiB）を超えています: {name}");
+        byte[] bytes = new byte[(int)length];
+        stream.ReadExactly(bytes);
+        if (stream.ReadByte() != -1)
+            throw new InvalidDataException($"読み込み中に帳票のサイズが変わりました: {name}");
+        if (!seen.Add((name, Convert.ToHexString(SHA256.HashData(bytes))))) continue;
+        using var reader = new StreamReader(new MemoryStream(bytes, writable: false));
+        string legacy = reader.ReadToEnd();
         if (!actual.TryGetValue(name, out var entries) || !entries.TryDequeue(out var body))
         {
             issues.Add(legacy.Contains("Product Analysis Codes", StringComparison.Ordinal) && legacy.Contains('\0')
