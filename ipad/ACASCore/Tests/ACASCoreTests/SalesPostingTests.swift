@@ -40,7 +40,20 @@ final class SalesPostingTests: XCTestCase {
         XCTAssertEqual(openItems.read(key: SalesOpenItems.key(customer: credit.customer, invoice: saved.id.value))?.int("credit"), target.id.value)
     }
 
-    func testFirstUnappliedCreditStartsDedicatedReportPage() throws {
+    func testInvoiceOnlyReportIncludesBlankUnappliedCreditsTotal() throws {
+        let (store, context, invoices) = try newCompany()
+        _ = try invoices.save(draft(in: invoices))
+        _ = try invoices.printInvoices()
+        _ = try SalesPosting(context).post()
+
+        let report = try XCTUnwrap(store.readRaw(SalesPosting.exportPath))
+        let total = try XCTUnwrap(report.split(separator: 0x0a).last)
+        XCTAssertEqual(Array(total), Array(("                        Un-Applied Credits C/F"
+            + String(repeating: " ", count: 86)).utf8))
+        XCTAssertFalse(report.contains(0x0c))
+    }
+
+    func testFirstUnappliedCreditDoesNotAdvancePageWhenWorkFileIsRegistered() throws {
         let (store, context, invoices) = try newCompany()
         var credit = draft(in: invoices)
         credit.kind = .creditNote
@@ -50,9 +63,8 @@ final class SalesPostingTests: XCTestCase {
 
         let report = try XCTUnwrap(store.readRaw(SalesPosting.exportPath))
         let pages = report.split(separator: 0x0c).map { String(decoding: $0, as: UTF8.self) }
-        XCTAssertEqual(pages.count, 2)
+        XCTAssertEqual(pages.count, 1)
         XCTAssertFalse(pages.first?.contains("--Customer--   Invoice") ?? true)
-        XCTAssertTrue(pages.last?.contains("--Customer--   Invoice") ?? false)
         XCTAssertTrue(pages.last?.contains("Un-Applied Credits C/F") ?? false)
     }
 
