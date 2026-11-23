@@ -85,10 +85,12 @@ internal static partial class JapaneseAudit
         {
             desktop.OpenTree(tree);
             string route = string.Join(" / ", actions.Prepend(tree));
-            foreach (string action in actions)
+            for (int index = 0; index < actions.Length; index++)
             {
+                if (desktop.Confirmation() is { Name: "初回の残高確認" } opening)
+                    ConfirmOpeningBalances(string.Join(" / ", actions.Take(index).Prepend(tree)), opening);
                 var previousMenu = desktop.Find("ScreenMenu");
-                desktop.SelectAction(action);
+                desktop.SelectAction(actions[index]);
                 for (int attempt = 0; attempt < 12; attempt++)
                 {
                     if (desktop.Confirmation() is not null ||
@@ -97,11 +99,13 @@ internal static partial class JapaneseAudit
                     Thread.Sleep(50);
                 }
             }
-            if (desktop.Confirmation() is { } dialog)
+            if (desktop.Confirmation() is { Name: "初回の残高確認" } balances)
+                ConfirmOpeningBalances(route, balances);
+            else if (desktop.Confirmation() is { } dialog)
             {
                 Inspect(route, dialog.AsWindow());
                 string? action = actions.LastOrDefault();
-                switch (action)
+                switch (action ?? tree)
                 {
                     case "CreateSettingsReport" or "ProofAllBatches" or "JournalPostConfirm":
                         ClickDialog(dialog, "ConfirmationConfirm");
@@ -122,6 +126,31 @@ internal static partial class JapaneseAudit
                         Inspect(route + " / 元帳印刷の指定", desktop.Window);
                         desktop.Find("FormSubmit").AsButton().Invoke();
                         InspectReport(route);
+                        break;
+                    case "SalesCycleNavigation" or "SalesCycle":
+                        ClickDialog(dialog, "ConfirmationConfirm");
+                        Desktop.Wait(() => desktop.Window.FindFirstDescendant(c =>
+                            c.ByAutomationId("SalesCyclePassword").Or(c.ByAutomationId("ScreenMessage"))),
+                            "期間締めの確認後の画面");
+                        Inspect(route + " / 確認後の画面", desktop.Window);
+                        break;
+                    case "IrsAccountExport":
+                        ClickDialog(dialog, "ConfirmationConfirm");
+                        desktop.Find("IrsExportFormat");
+                        Inspect(route + " / 書き出し形式", desktop.Window);
+                        desktop.Find("FormSubmit").AsButton().Invoke();
+                        string output = desktop.AuditFile($"書出-{checkedScreens.Count}.txt");
+                        ChooseAuditFile(route, "科目表の保存先", output, save: true);
+                        if (desktop.Find("ScreenMessage").Name != "処理が完了しました。" || !File.Exists(output))
+                            throw new InvalidOperationException("監査用の科目表を書き出せませんでした。");
+                        Inspect(route + " / 書き出し結果", desktop.Window);
+                        break;
+                    case "IrsAccountImport":
+                        ClickDialog(dialog, "ConfirmationConfirm");
+                        ChooseAuditFile(route, "科目表の取り込み元", desktop.AuditFile("取込.txt"));
+                        if (desktop.Find("ScreenMessage").Name != "1件の科目を取り込みました。")
+                            throw new InvalidOperationException("監査用の科目表を取り込めませんでした。");
+                        Inspect(route + " / 取り込み結果", desktop.Window);
                         break;
                     default:
                         ClickDialog(dialog, "ConfirmationCancel");
@@ -165,6 +194,31 @@ internal static partial class JapaneseAudit
                 gaps.Add($"{route}：確認後の帳票本文を取得できません。");
             else
                 Inspect(route + " / 確認後の帳票", desktop.Window);
+        }
+
+        void ConfirmOpeningBalances(string route, Window dialog)
+        {
+            string confirmation = route + " / 初回の残高確認";
+            if (!checkedScreens.Contains(confirmation)) Inspect(confirmation, dialog);
+            ClickDialog(dialog, "ConfirmationConfirm");
+            desktop.Find("IrsAccountList");
+        }
+
+        void ChooseAuditFile(string route, string title, string path, bool save = false)
+        {
+            var picker = desktop.FileDialog(title);
+            string screen = route + " / ファイル選択";
+            checkedScreens.Add(screen);
+            if (English().IsMatch(picker.Name)) findings.Add(new(screen, "", picker.Name));
+            try
+            {
+                Desktop.SelectDialogFile(picker, path, save);
+            }
+            catch
+            {
+                Desktop.ClickNativeDialogButton(picker, "2");
+                throw;
+            }
         }
 
         static void ClickDialog(Window dialog, string buttonId) =>

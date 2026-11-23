@@ -1,10 +1,14 @@
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Text;
 using Acas.Core;
 using Acas.Core.Engine;
+using Acas.Core.Programs.Irs;
 using FlaUI.Core.AutomationElements;
 using FlaUI.Core.Definitions;
+using FlaUI.Core.Input;
+using FlaUI.Core.WindowsAPI;
 using FlaUI.UIA3;
 using Microsoft.Data.Sqlite;
 
@@ -30,7 +34,7 @@ internal sealed partial class Desktop : IDisposable
             {
                 using (var db = new Db(_databasePath))
                 {
-                    if (audit) SeedAudit(db);
+                    if (audit) SeedAudit(db, AuditFile("取込.txt"));
                     else db.LoadBaseline(baseline!);
                     prepare?.Invoke(db);
                 }
@@ -55,7 +59,7 @@ internal sealed partial class Desktop : IDisposable
         }
     }
 
-    private static void SeedAudit(Db db)
+    private static void SeedAudit(Db db, string importFile)
     {
         db.LoadBaseline("biz");
         var settings = new SystemSettings(db);
@@ -80,7 +84,61 @@ internal sealed partial class Desktop : IDisposable
         if (status != JournalError.None)
             throw new InvalidOperationException($"監査用の仕訳を作成できません（{(int)status}）。");
         db.AddSpool("検証帳票", "日本語表示を確認する検証帳票");
+        using var fixture = new Db();
+        var accounts = new IrsBookkeeping(fixture);
+        accounts.SaveAccount(10001, 0, "監査用勘定", "A", amend: false);
+        File.WriteAllBytes(importFile, accounts.ExportAccounts(csv: false));
     }
+
+    internal string AuditFile(string filename) => Path.Combine(_folder, filename);
+
+    internal Window FileDialog(string title) => Wait(() =>
+        Window.FindFirstDescendant(c => c.ByClassName("#32770").And(c.ByName(title)))?.AsWindow(), title);
+
+    internal static void SelectDialogFile(Window dialog, string path, bool save)
+    {
+        const uint setWindowText = 0x000C, getWindowText = 0x000D, abortIfHung = 0x0002;
+        var filename = dialog.FindFirstDescendant(c =>
+            c.ByClassName("Edit").And(c.ByAutomationId(save ? "1001" : "1148")))
+            ?? throw new InvalidOperationException("ファイル名の入力欄が見つかりません。");
+        IntPtr handle = filename.Properties.NativeWindowHandle.Value;
+        if (save)
+        {
+            filename.Click();
+            Keyboard.TypeSimultaneously(VirtualKeyShort.CONTROL, VirtualKeyShort.KEY_A);
+            Keyboard.Type(path);
+            var entered = new StringBuilder(path.Length + 1);
+            if (SendMessageTimeout(handle, getWindowText, new IntPtr(entered.Capacity), entered,
+                    abortIfHung, 2000, out _) == IntPtr.Zero || entered.ToString() != path)
+                throw new InvalidOperationException("監査用の保存先を入力できませんでした。");
+            Keyboard.Press(VirtualKeyShort.RETURN);
+            return;
+        }
+        if (SendMessageTimeout(handle, setWindowText, IntPtr.Zero, path,
+                abortIfHung, 2000, out var setText) == IntPtr.Zero || setText == IntPtr.Zero)
+            throw new InvalidOperationException("ファイル名を設定できませんでした。");
+        ClickNativeDialogButton(dialog, "1");
+    }
+
+    internal static void ClickNativeDialogButton(Window dialog, string id)
+    {
+        const uint buttonClick = 0x00F5;
+        var button = dialog.FindFirstDescendant(c => c.ByAutomationId(id).And(c.ByClassName("Button")));
+        if (button is null || !PostMessage(button.Properties.NativeWindowHandle.Value, buttonClick, IntPtr.Zero, IntPtr.Zero))
+            throw new InvalidOperationException("ファイル選択画面のボタンを操作できませんでした。");
+    }
+
+    [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+    private static extern IntPtr SendMessageTimeout(IntPtr window, uint message, IntPtr wParam, string lParam,
+        uint flags, uint timeout, out IntPtr result);
+
+    [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+    private static extern IntPtr SendMessageTimeout(IntPtr window, uint message, IntPtr wParam, StringBuilder lParam,
+        uint flags, uint timeout, out IntPtr result);
+
+    [DllImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool PostMessage(IntPtr window, uint message, IntPtr wParam, IntPtr lParam);
 
     public string Calculate(string id, string first, string second)
     {
