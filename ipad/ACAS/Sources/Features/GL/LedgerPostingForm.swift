@@ -40,7 +40,7 @@ struct LedgerPostingForm: View {
         } catch LedgerPosting.Error.invalidPostings, LedgerPosting.Error.missingAccount {
             status = ledgerText("posting.invalid")
         } catch {
-            status = ledgerText("error.other")
+            status = ledgerText("posting.failed")
         }
     }
 }

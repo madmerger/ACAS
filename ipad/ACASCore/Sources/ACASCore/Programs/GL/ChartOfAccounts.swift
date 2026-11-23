@@ -81,12 +81,15 @@ public struct ChartOfAccounts {
         file.write(end)
     }
 
-    public func add(code: String, branch: String = "00", name: String, type: Int, placement: String, level: Int) throws {
+    public func add(code: String, branch: String = "00", name: String, type: Int, placement: String,
+                    level: Int, amendScreenVisited: Bool = true) throws {
         let key = try validatedKey(code, branch: branch)
         var record = newRecord()
         record["code"] = code
         record["branch"] = String(key.suffix(2))
-        try apply(name: name, type: type, placement: placement, level: level, to: &record)
+        let usesBranches = ["P", "B"].contains(CompanySetup(context).settings.text("p-c"))
+        let headerBranch = usesBranches || amendScreenVisited ? String(key.suffix(2)) : "  "
+        try apply(name: name, type: type, placement: placement, level: level, to: &record, headerBranch: headerBranch)
         prepare()
         guard file.write(record) == "00" else { throw Error.duplicate }
     }
@@ -127,12 +130,13 @@ public struct ChartOfAccounts {
         return code + (["P", "B"].contains(settings.text("p-c")) ? branch : "00")
     }
 
-    private func apply(name: String, type: Int, placement: String, level: Int, to record: inout Record) throws {
+    private func apply(name: String, type: Int, placement: String, level: Int, to record: inout Record,
+                       headerBranch: String? = nil) throws {
         let name = name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !name.isEmpty, !name.unicodeScalars.contains(where: CharacterSet.controlCharacters.contains),
               Cobol.rtrim(SJIS.decode(SJIS.encode(name, size: 24)[...])) == name else { throw Error.invalidName }
         let code = record.str("code")
-        let branch = record.str("branch")
+        let branch = headerBranch ?? record.str("branch")
         record["name"] = name
         let head = String(code.prefix(4))
         if code.suffix(2) != "00" {

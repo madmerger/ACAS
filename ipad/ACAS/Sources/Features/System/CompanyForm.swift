@@ -9,6 +9,7 @@ struct PendingInitialCompany {
 
 struct CompanyForm: View {
     @ObservedObject var workspace: Workspace
+    @Environment(\.dismiss) private var dismiss
     @State private var settings: CompanySettings
     @State private var textDraft: [String: String] = [:]
     @State private var dateDraft: [String: String] = [:]
@@ -80,6 +81,16 @@ struct CompanyForm: View {
         }
         .navigationTitle(String(localized: "system.company", table: "System"))
         .onAppear(perform: loadSettings)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button(String(localized: "system.company.cancel", table: "System")) {
+                    workspace.pendingInitialCompany = nil
+                    workspace.completed("system-company-cancel")
+                    dismiss()
+                }
+                .accessibilityIdentifier("system.company.cancel")
+            }
+        }
         .alert(systemSetting("invalid"), isPresented: $invalid) {
             Button("action.close", role: .cancel) {}
         }
@@ -162,10 +173,14 @@ struct CompanyForm: View {
                     .keyboardType(.numbersAndPunctuation)
                     .accessibilityIdentifier("system.settings." + field.id)
                 case .number, .rate:
-                    SystemNumberField(field: field, value: settings.number(field.id)) { number in
+                    SystemNumberField(field: field, value: settings.number(field.id), update: { number in
                         update { try settings.setNumber(number, for: field.id) }
                         return settings.number(field.id)
-                    }
+                    }, completed: {
+                        if field.id == "page-lines" || field.id == "period" {
+                            workspace.completed("system-company-" + field.id)
+                        }
+                    })
                 }
             }
             if group == .operations {
@@ -185,6 +200,9 @@ struct CompanyForm: View {
         }
         .accessibilityIdentifier("system.settings.form." + group.rawValue)
         .navigationTitle(systemSetting(group.rawValue))
+        .onAppear {
+            if group == .company { workspace.completed("system-company-data") }
+        }
     }
 
     @ViewBuilder
@@ -257,6 +275,7 @@ struct CompanyForm: View {
             editingName = false
             saved = true
             workspace.completed("company")
+            if selection.printReport { workspace.completed("system-company-report") }
         } catch is CompanySetup.Error {
             invalid = true
         } catch {
@@ -289,13 +308,18 @@ struct CompanyForm: View {
 private struct SystemNumberField: View {
     let field: SystemSettingField
     @State private var input: String
+    @State private var effectiveValue: Int64
+    @State private var resetPageLines = false
     @FocusState private var focused: Bool
     let update: (Int64) -> Int64
+    let completed: () -> Void
 
-    init(field: SystemSettingField, value: Int64, update: @escaping (Int64) -> Int64) {
+    init(field: SystemSettingField, value: Int64, update: @escaping (Int64) -> Int64, completed: @escaping () -> Void) {
         self.field = field
         _input = State(initialValue: Self.format(value, isRate: field.kind == .rate))
+        _effectiveValue = State(initialValue: value)
         self.update = update
+        self.completed = completed
     }
 
     var body: some View {
@@ -307,12 +331,30 @@ private struct SystemNumberField: View {
                 .focused($focused)
                 .accessibilityIdentifier("system.settings." + field.id)
                 .onChange(of: focused) {
-                    if !focused { input = Self.format(update(number ?? -1), isRate: field.kind == .rate) }
+                    if !focused { applyInput() }
                 }
                 .onSubmit { focused = false }
         } label: {
             Text(systemSetting(field.id))
         }
+        if field.id == "period" {
+            Text(systemSetting(effectiveValue == 13 ? "period.weekly" : effectiveValue == 6 ? "period.fortnightly" : "period.monthly"))
+                .accessibilityIdentifier("system.settings.period.effective")
+        }
+        if resetPageLines {
+            Text(systemSetting("page-lines.minimum"))
+                .accessibilityIdentifier("system.settings.page-lines.minimum")
+        }
+    }
+
+    private func applyInput() {
+        let entered = number
+        effectiveValue = update(entered ?? -1)
+        resetPageLines = field.id == "page-lines" && (entered.map { (0...28).contains($0) } ?? false)
+        if field.id != "period" || !(entered.map { (0...99).contains($0) } ?? false) {
+            input = Self.format(effectiveValue, isRate: field.kind == .rate)
+        }
+        completed()
     }
 
     private var number: Int64? {

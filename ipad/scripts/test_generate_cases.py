@@ -1,3 +1,4 @@
+import hashlib
 import tempfile
 import unittest
 from pathlib import Path
@@ -42,6 +43,44 @@ class EvidencePathTests(unittest.TestCase):
             snapshot_seed(self.root, run)
         with self.assertRaisesRegex(ValueError, "証跡ルート外"):
             expected_changes(self.root, self.outside / "changes.json")
+
+    def test_batch_diff_uses_the_six_byte_index_key(self):
+        change = {
+            "file": "ledgers/acas/batch.dat", "key": "999999", "before": None,
+            "after": {"hex": b"999999000099".hex()},
+        }
+        save(self.root / "changes.json", {"changes": [change]})
+        self.assertEqual(expected_changes(self.root, "changes.json"), [{
+            "file": change["file"], "key": b"999999".hex(),
+            "before": None, "after": change["after"]["hex"],
+        }])
+
+    def test_large_report_uses_digest_to_keep_fixture_small(self):
+        run = self.root / "run"
+        raw = b"x" * 65537
+        path = Path("run/files/ledgers/acas/report")
+        (self.root / path).parent.mkdir(parents=True)
+        (self.root / path).write_bytes(raw)
+        (run / "terminal.cast").write_text('{"timestamp": 0}\n', encoding="utf-8")
+        output = fixture(self.root, {
+            "id": "CALC-200", "input_data": {},
+            "legacy_result": {"evidence": ["run"], "comparison_targets": {"report_files": [path.as_posix()]}},
+        })
+        self.assertEqual(output["reports"], {})
+        self.assertEqual(output["reportSHA256"], {"ledgers/acas/report": hashlib.sha256(raw).hexdigest()})
+
+    def test_batch_menu_compares_an_existing_empty_posting_file(self):
+        run = self.root / "run"
+        path = "ledgers/acas/posting.dat"
+        (run / "files" / path).parent.mkdir(parents=True)
+        (run / "files" / path).touch()
+        (run / "before-records").mkdir()
+        save(run / "before-records/records.json", {"files": {}})
+        (run / "terminal.cast").write_text('{"timestamp": 0}\n', encoding="utf-8")
+        output = fixture(self.root, {
+            "id": "GL-004", "input_data": {}, "legacy_result": {"evidence": ["run"]},
+        })
+        self.assertEqual(output["rawFiles"], {path: ""})
 
 
 if __name__ == "__main__":

@@ -3,8 +3,62 @@ import XCTest
 final class SystemInitializationFlows: XCTestCase {
     @MainActor
     func testSYS001FromEmptyDatabase() throws {
+        let app = try initializeCompany("SYS-001", printReport: true)
+        tap(app, "system.settings.report")
+        XCTAssertTrue(app.navigationBars["設定内容の帳票"].waitForExistence(timeout: 5))
+        saveScreenshot(app, name: "SYS-001 設定帳票")
+        tap(app, "閉じる")
+
+        tap(app, "section.general")
+        tap(app, "gl.confirm-date")
+        tap(app, "gl.accounts")
+        for (code, name, placement) in [
+            ("300000", "ASSETS", "S"), ("300001", "BANK", ""), ("300002", "DEBTORS", ""), ("300003", "CREDITORS", ""),
+            ("400000", "INCOME", "A"), ("400001", "SALES", ""), ("500000", "COSTS", "B"), ("500001", "PURCHASES", ""),
+            ("600000", "VAT", "S"), ("600001", "VAT INPUT", ""), ("600002", "VAT OUTPUT", ""),
+        ] {
+            tap(app, "gl.accounts.add")
+            enter(app, "gl.account.code", code, submit: false)
+            enter(app, "gl.account.name", name, submit: false)
+            if !placement.isEmpty { enter(app, "gl.account.placement", placement, submit: false) }
+            tap(app, "gl.account.save")
+            XCTAssertTrue(app.staticTexts["勘定科目を保存しました"].waitForExistence(timeout: 5), code)
+            back(app)
+            if code == "300000" {
+                tap(app, "gl.accounts.edit")
+                tap(app, "gl.accounts.edit.30000000")
+                tap(app, "gl.account.save")
+                XCTAssertTrue(app.buttons["gl.accounts.edit.30000000"].waitForExistence(timeout: 5))
+                back(app)
+            }
+        }
+        tap(app, "section.system")
+        try MasterSetupFlows.registerMasters(app)
+        XCTAssertTrue(app.staticTexts["case.verdict.match"].waitForExistence(timeout: 5))
+        saveScreenshot(app, name: "SYS-001 一致")
+    }
+
+    @MainActor func testSYS201() throws { try checkInitialization("SYS-201", milestone: "company-name") }
+    @MainActor func testSYS207() throws { try checkInitialization("SYS-207", milestone: "modules") }
+    @MainActor func testSYS208() throws { try checkInitialization("SYS-208", milestone: "company") }
+    @MainActor func testSYS209() throws { try checkInitialization("SYS-209", milestone: "operations") }
+    @MainActor func testSYS210() throws { try checkInitialization("SYS-210", milestone: "print-spool") }
+    @MainActor func testSYS211() throws { try checkInitialization("SYS-211", milestone: "include-report") }
+
+    @MainActor
+    private func checkInitialization(_ id: String, milestone: String) throws {
+        let app = try initializeCompany(id, printReport: false, milestone: milestone)
+        XCTAssertTrue(app.staticTexts["system.settings.confirm-report"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.buttons["system.settings.report"].exists)
+        XCTAssertFalse(app.staticTexts["会社設定を保存しました"].exists)
+        XCTAssertTrue(app.staticTexts["case.verdict.match"].waitForExistence(timeout: 5))
+        saveScreenshot(app, name: "\(id) 一致")
+    }
+
+    @MainActor
+    private func initializeCompany(_ id: String, printReport: Bool, milestone: String? = nil) throws -> XCUIApplication {
         continueAfterFailure = false
-        let fixture = try XCTUnwrap(Bundle(for: Self.self).url(forResource: "SYS-001", withExtension: "json",
+        let fixture = try XCTUnwrap(Bundle(for: Self.self).url(forResource: id, withExtension: "json",
                                                                subdirectory: "fixtures"))
         let app = XCUIApplication()
         app.launchEnvironment["ACAS_FIXTURE"] = try Data(contentsOf: fixture).base64EncodedString()
@@ -12,11 +66,14 @@ final class SystemInitializationFlows: XCTestCase {
         XCUIDevice.shared.orientation = .landscapeLeft
         app.launch()
         tap(app, "system.company")
+        if milestone == "company-name" { saveScreenshot(app, name: "\(id) 会社名入力") }
         enter(app, "system.company.name", "EQUIVALENCE BUSINESS")
         group(app, "modules") {
+            if milestone == "modules" { saveScreenshot(app, name: "\(id) 利用領域") }
             for key in ["level-1", "level-2", "level-3", "full-invoicing", "level-4"] { flag(app, key, true) }
         }
         group(app, "company") {
+            if milestone == "company" { saveScreenshot(app, name: "\(id) 会社・期間設定") }
             for (key, value) in [
                 ("address-1", "Test Street"), ("post-code", "TEST1"), ("country", "UK"),
                 ("start-date", "2026/1/1"), ("end-date", "2026/12/31"), ("vat-rate-1", "20.00"),
@@ -27,11 +84,16 @@ final class SystemInitializationFlows: XCTestCase {
             enter(app, "system.settings.scycle", "1")
         }
         group(app, "operations") {
+            if milestone == "operations" { saveScreenshot(app, name: "\(id) 運用設定") }
             let path = "/home/ubuntu/work/acas-equiv/runtime/ledgers/"
             for (key, value) in [
                 ("op-system", "6"), ("print-spool-name", "CAPTURE"), ("print-spool-name2", "CAPTURE"),
                 ("print-spool-name3", "CAPTURE"), ("archive-incomplete", path + "IRS/"), ("archive-ledgers", path + "ACAS/"),
             ] { enter(app, "system.settings." + key, value) }
+            if milestone == "print-spool" {
+                reveal(app.textFields["system.settings.print-spool-name"], app: app)
+                saveScreenshot(app, name: "\(id) 印刷先設定")
+            }
         }
         group(app, "general") {
             flag(app, "m-v", true)
@@ -66,33 +128,14 @@ final class SystemInitializationFlows: XCTestCase {
             enter(app, "system.settings.stk-period-dat", "Y")
             flag(app, "stk-averaging", true)
         }
+        if !printReport { flag(app, "include-report", false) }
+        if milestone == "include-report" { saveScreenshot(app, name: "\(id) 設定帳票の出力確認") }
         tap(app, "action.save")
-        XCTAssertTrue(app.staticTexts["会社設定を保存しました"].waitForExistence(timeout: 5))
-        tap(app, "system.settings.report")
-        XCTAssertTrue(app.navigationBars["設定内容の帳票"].waitForExistence(timeout: 5))
-        saveScreenshot(app, name: "SYS-001 設定帳票")
-        tap(app, "閉じる")
-
-        tap(app, "section.general")
-        tap(app, "gl.confirm-date")
-        tap(app, "gl.accounts")
-        for (code, name, placement) in [
-            ("300000", "ASSETS", "S"), ("300001", "BANK", ""), ("300002", "DEBTORS", ""), ("300003", "CREDITORS", ""),
-            ("400000", "INCOME", "A"), ("400001", "SALES", ""), ("500000", "COSTS", "B"), ("500001", "PURCHASES", ""),
-            ("600000", "VAT", "S"), ("600001", "VAT INPUT", ""), ("600002", "VAT OUTPUT", ""),
-        ] {
-            tap(app, "gl.accounts.add")
-            enter(app, "gl.account.code", code, submit: false)
-            enter(app, "gl.account.name", name, submit: false)
-            if !placement.isEmpty { enter(app, "gl.account.placement", placement, submit: false) }
-            tap(app, "gl.account.save")
-            XCTAssertTrue(app.staticTexts["勘定科目を保存しました"].waitForExistence(timeout: 5), code)
-            back(app)
+        if milestone == nil {
+            tap(app, "system.settings.confirm-save")
+            XCTAssertTrue(app.staticTexts["会社設定を保存しました"].waitForExistence(timeout: 5))
         }
-        tap(app, "section.system")
-        try MasterSetupFlows.registerMasters(app)
-        XCTAssertTrue(app.staticTexts["case.verdict.match"].waitForExistence(timeout: 5))
-        saveScreenshot(app, name: "SYS-001 一致")
+        return app
     }
 
     @MainActor
@@ -121,6 +164,13 @@ final class SystemInitializationFlows: XCTestCase {
         let desired = enabled ? "1" : "0"
         if toggle.value as? String != desired {
             toggle.coordinate(withNormalizedOffset: CGVector(dx: 0.95, dy: 0.5)).tap()
+            let changed = XCTNSPredicateExpectation(predicate: NSPredicate(format: "value == %@", desired), object: toggle)
+            if XCTWaiter.wait(for: [changed], timeout: 2) != .completed {
+                reveal(toggle, app: app)
+                if toggle.value as? String != desired {
+                    toggle.coordinate(withNormalizedOffset: CGVector(dx: 0.95, dy: 0.5)).tap()
+                }
+            }
         }
         XCTAssertEqual(toggle.value as? String, desired, id)
     }

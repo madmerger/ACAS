@@ -7,13 +7,14 @@ func ledgerText(_ key: String) -> String {
 
 struct GeneralLedgerMenu: View {
     let workspace: Workspace
+    let close: () -> Void
     @State private var opened = false
     @State private var finalSetupUnavailable = false
 
     var body: some View {
         if opened {
             List {
-                NavigationLink(ledgerText("business-date")) { LedgerBusinessDate(workspace: workspace) {} }
+                NavigationLink(ledgerText("business-date")) { LedgerBusinessDate(workspace: workspace, reopening: true) {} }
                     .accessibilityIdentifier("gl.business-date")
                 NavigationLink(ledgerText("accounts")) { LedgerAccountsMenu(workspace: workspace) }
                     .accessibilityIdentifier("gl.accounts")
@@ -48,7 +49,7 @@ struct GeneralLedgerMenu: View {
                     .accessibilityIdentifier("gl.final-print")
                 NavigationLink("section.system") { SystemMenu(workspace: workspace) }
                     .accessibilityIdentifier("gl.company-settings")
-                Button(ledgerText("close-ledger")) { opened = false }
+                Button(ledgerText("close-ledger"), action: close)
                     .accessibilityIdentifier("gl.close-ledger")
             }
             .onAppear { workspace.completed("gl-final-print-unavailable") }
@@ -60,6 +61,7 @@ struct GeneralLedgerMenu: View {
 
 private struct LedgerBusinessDate: View {
     let workspace: Workspace
+    var reopening = false
     let started: () -> Void
     @State private var year = ""
     @State private var month = ""
@@ -82,6 +84,7 @@ private struct LedgerBusinessDate: View {
             year = String(today.year ?? 0)
             month = String(today.month ?? 0)
             day = String(today.day ?? 0)
+            workspace.completed(reopening ? "gl-business-date-reopen" : "gl-business-date")
         }
     }
 
@@ -98,8 +101,11 @@ private struct LedgerBusinessDate: View {
             started()
         } catch GeneralLedgerSetup.Error.missingCompany {
             status = ledgerText("missing-company")
-        } catch {
+        } catch GeneralLedgerSetup.Error.invalidDate {
             status = ledgerText("invalid-date")
+            workspace.completed("gl-business-date-invalid")
+        } catch {
+            status = ledgerText("date-save-failed")
         }
     }
 }
@@ -108,6 +114,7 @@ private struct LedgerAccountsMenu: View {
     let workspace: Workspace
     @State private var accounts: [LedgerAccount] = []
     @State private var selected: LedgerAccount?
+    @State private var amendScreenVisited = false
     @State private var reportStatus: String?
     @State private var reportBytes: [UInt8]?
     @State private var lookupCode = ""
@@ -117,7 +124,7 @@ private struct LedgerAccountsMenu: View {
     var body: some View {
         List {
             NavigationLink(ledgerText("account-add")) {
-                LedgerAccountEditor(workspace: workspace, initial: nil)
+                LedgerAccountEditor(workspace: workspace, initial: nil, amendScreenVisited: amendScreenVisited)
             }
             .accessibilityIdentifier("gl.accounts.add")
             NavigationLink(ledgerText("account-edit")) {
@@ -140,6 +147,7 @@ private struct LedgerAccountsMenu: View {
                     }
                     ForEach(accounts) { account in
                         Button {
+                            amendScreenVisited = true
                             selected = account
                         } label: {
                             LabeledContent(account.name, value: account.code)
@@ -169,6 +177,7 @@ private struct LedgerAccountsMenu: View {
         .onAppear {
             ChartOfAccounts(workspace.context).prepare()
             reload()
+            workspace.completed("gl-accounts-menu")
         }
     }
 
@@ -192,15 +201,19 @@ private struct LedgerAccountsMenu: View {
 
     private func lookup() {
         let branch = usesBranches && !lookupBranch.trimmingCharacters(in: .whitespaces).isEmpty ? lookupBranch : "00"
+        amendScreenVisited = true
         selected = ChartOfAccounts(workspace.context).account(code: lookupCode, branch: branch)
         lookupMissing = selected == nil
-        if lookupMissing { workspace.completed("gl-account-edit-missing") }
+        if lookupMissing {
+            workspace.completed("gl-account-edit-missing")
+        }
     }
 }
 
 private struct LedgerAccountEditor: View {
     let workspace: Workspace
     let initial: LedgerAccount?
+    var amendScreenVisited = true
     @Environment(\.dismiss) private var dismiss
     @State private var code = ""
     @State private var branch = ""
@@ -258,6 +271,7 @@ private struct LedgerAccountEditor: View {
             type = String(initial?.type ?? 0)
             placement = initial?.placement ?? ""
             level = String(max(1, initial?.level ?? 1))
+            if initial == nil { workspace.completed("gl-account-add-menu") }
         }
     }
 
@@ -266,7 +280,8 @@ private struct LedgerAccountEditor: View {
             let chart = ChartOfAccounts(workspace.context)
             let type = Int(type) ?? -1, level = Int(level) ?? -1
             if initial == nil {
-                try chart.add(code: code, branch: branch, name: name, type: type, placement: placement, level: level)
+                try chart.add(code: code, branch: branch, name: name, type: type, placement: placement,
+                              level: level, amendScreenVisited: amendScreenVisited)
                 status = ledgerText("saved")
                 workspace.completed("gl-account-add")
             } else {
@@ -289,7 +304,9 @@ private struct LedgerAccountEditor: View {
         do { try operation() } catch let error as ChartOfAccounts.Error {
             if error == .invalidType { type = "0" }
             if error == .invalidLevel { level = "0" }
-            status = ledgerText("error." + String(describing: error))
+            let code = String(describing: error)
+            status = ledgerText("error." + code)
+            if initial == nil { workspace.completed("gl-account-error-" + code) }
         } catch {
             status = ledgerText("error.other")
         }
