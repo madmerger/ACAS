@@ -213,3 +213,25 @@
 "irs030.vat_accounts_missing" = "消費税科目がありません。修正要。Return";
 "irs030.fix_vat" = "転記の前に消費税科目の問題を修正してください";
 "irs030.hit_return_main" = "Return でメインメニューへ戻ります";
+/* irs040.cbl — 試算表 */
+"irs040.title" = "試算表";
+"irs040.summary_or_detail" = "要約 / 明細     <S> / <D>.........[ ]";
+"irs040.zero_balances" = "残高ゼロも出力 (Y/N)..............[ ]";
+"irs040.return_to_exit" = "<Return> で終了";
+"irs040.display_or_print" = "表示 / 印刷     <D> / <P>.........[ ]";
+"irs040.start_date" = "開始日     -";
+"irs040.end_date" = "終了日   -";
+"irs040.next_or_exit" = "<N> 次画面 / <X> 終了....................[ ]";
+"irs040.return_for_menu" = "Return でメニューへ";
+"report.irs040.trial_balance" = "試算表";
+"report.irs040.page" = "頁   ";
+"report.irs040.summary" = "要約";
+"report.irs040.detail" = "明細";
+"report.irs040.start_date" = "    開始日     - ";
+"report.irs040.end_date" = "           終了日   - ";
+"report.irs040.account_name" = " 科目        ----------名称----------";
+"report.irs040.type" = "   種別";
+"report.irs040.debit_credit" = "   --借方---   --貸方---";
+"report.irs040.total" = "合  計         ";
+"report.irs040.main" = "主";
+"report.irs040.sub" = "補助";
