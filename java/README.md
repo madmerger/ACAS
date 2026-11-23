@@ -17,7 +17,8 @@ java -jar target/acas-web-1.0.0.jar      # http://localhost:8080/
 | `server.address` | `127.0.0.1` | 待ち受けアドレス。ループバック以外ではサーバー側で TLS を構成 |
 | `ACAS_WEB_PASSWORD_HASH` | 空 | Web 利用者 `acas` の BCrypt パスワードハッシュ。未設定時はログイン不可 |
 | `acas.initial-baseline` | 空 | DB が空のとき投入する初期データ名。検証用途では `biz` 等を指定 |
-| `acas.test-api` | `false` | 同一性確認用 API（`/api/test/**`）を有効化。ループバック上で認証なしの検証用インスタンスを起動します。隔離した検証用データベースで使用 |
+| `acas.test-api` | `false` | 同一性確認用 API（`/api/test/**`）を有効化。ループバックの待ち受けとインメモリの H2 を使用 |
+| `ACAS_TEST_API_TOKEN` | 空 | 同一性確認用 API の認証に使う32文字以上のトークン。サーバーと再生スクリプトに同じ値を渡す |
 | `acas.fixed-date` | なし | システム日付の固定（`yyyy-MM-dd`、検証用） |
 
 ## 構成
@@ -54,9 +55,10 @@ java -jar target/acas-web-1.0.0.jar      # http://localhost:8080/
 
 ```
 java -jar target/acas-web-1.0.0.jar --server.port=18080 --acas.test-api=true \
-     --acas.fixed-date=2026-11-23 --acas.data-dir=/tmp/acas-test
+     --acas.fixed-date=2026-11-23 --spring.datasource.url='jdbc:h2:mem:acas;DB_CLOSE_DELAY=-1'
 ACAS_VIDEO=web.mp4 python3 tools/ui_replay.py <証跡展開dir> --out 結果.json GL-020 SL-
 ```
 
 ブラウザーで操作を再生し、同じ業務処理が出力する照合用テキスト、レコードの差分、帳票をレガシー実測と比較します。
+実行前に、サーバーと再生スクリプトを起動する環境に同じ `ACAS_TEST_API_TOKEN` を設定してください。
 録画には Playwright の Chromium と FFmpeg が必要です。レガシー側の入力制限に合わせて、業務フォームは半角文字を受け付けます。
