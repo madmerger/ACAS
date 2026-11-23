@@ -148,7 +148,7 @@ public sealed class StockScreenModel(Db db, Func<DateTime> clock)
             foreach (var f in new[] { "Stock-Held", "Stock-On-Order", "Stock-Back-Ordered", "Stock-ReOrder-Pnt", "Stock-Std-ReOrder" }) r.SetN(f, 0);
         if (r.St("Stock-Services-Flag") == "Y") value = 0;
         else if (Service.System.I("Stk-Averaging") == 1 && value == 0 && held != 0 && cost != 0)
-            value = Cob.Round((held + (Service.System.I("Stk-Manu-Used") == 1 ? r.N("Stock-Work-in-Progress") : 0)) * cost, 2);
+            value = Cob.Trunc(Cob.Trunc(held * cost, 2) + (Service.System.I("Stk-Manu-Used") == 1 ? cost * r.N("Stock-Work-in-Progress") : 0), 2);
         r.SetN("Stock-Value", value);
         return null;
     }
