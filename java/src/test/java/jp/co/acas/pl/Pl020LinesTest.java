@@ -34,10 +34,14 @@ class Pl020LinesTest {
     }
 
     static void assertSaved(PlSession s, int count) {
+        assertSaved(s, count, count, count * (count + 1) / 2);
+    }
+
+    static void assertSaved(PlSession s, int count, int lastNet, int totalNet) {
         List<Rec> heads = s.records("pinvoice.dat", PlBase::invHeaderRec).stream().filter(r -> r.intv("ih-test") == 0).toList();
         assertEquals(1, heads.size());
         assertEquals(count, heads.get(0).intv("ih-lines"));
-        assertEquals(new BigDecimal(count * (count + 1) / 2 + ".00"), heads.get(0).num("ih-net"));
+        assertEquals(new BigDecimal(totalNet + ".00"), heads.get(0).num("ih-net"));
         // 明細レコードは wspinv の invoice-line 形式で書かれる（pl020.cbl: move invoice-line (j) to invoice-record）
         List<Rec> lines = s.records("pinvoice.dat", () -> Layout.of("purchase/wspinv.cob", "Pinvoice-lines").newRec())
                 .stream().filter(r -> r.intv("il-line", 1) != 0).toList();
@@ -45,8 +49,8 @@ class Pl020LinesTest {
         Rec last = lines.get(lines.size() - 1);
         assertEquals(count, last.intv("il-line", 1));
         assertEquals("a1", last.str("il-pa", 1));
-        assertEquals(new BigDecimal(count + ".00"), last.num("il-net", 1));
-        assertEquals(new BigDecimal(count).multiply(new BigDecimal("0.20")).setScale(2), last.num("il-vat", 1));
+        assertEquals(new BigDecimal(lastNet + ".00"), last.num("il-net", 1));
+        assertEquals(new BigDecimal(lastNet).multiply(new BigDecimal("0.20")).setScale(2), last.num("il-vat", 1));
     }
 
     @Test
