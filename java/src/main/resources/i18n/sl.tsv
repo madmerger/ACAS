@@ -338,3 +338,15 @@ Credit Terms:	支払条件:
 Late Payment Surcharge	延滞料
 Prompt pay time:	早期支払期限:
 Total Due:	請求合計:
+Invoicing Data Deletion	請求情報削除
+*A/C Nos   [       ]*                 **	*顧客番号  [       ]*                 **
+Delete Further Invoices (Y/N) ? [Y]	続けて削除しますか      (Y/N) ? [Y]
+Now give Invoice letter (A, B, C or return for space)	請求書の枝番を入力 (A, B, C または Enter で空白)
+Invoice To Be Deleted (Y/N) - [ ]	この請求書を削除 (Y/N)      - [ ]
+Type [ ]  <1> = Receipt; <2> = Account; <3> = CrediT Note; <4> = Pro-Forma	種別 [ ]  <1> = 領収; <2> = 掛売; <3> = 赤伝; <4> = 見積
+Invoice Deletion Report	請求書削除一覧
+None to report	該当データなし
+Invoice No	請求書番号
+Cust No	顧客番号
+Page	頁
+Date	日付
