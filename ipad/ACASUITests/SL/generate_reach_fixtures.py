@@ -1,4 +1,4 @@
-"""得意先・売上取引・請求の到達確認に使うレガシー実測証跡を変換する。"""
+"""売掛元帳の画面到達確認に使うレガシー実測証跡を変換する。"""
 import argparse
 import base64
 import hashlib
@@ -12,6 +12,7 @@ CASES = {
     "SL-002": ("sales-customers-menu-view", "得意先マスター管理を開く"),
     "SL-004": ("sales-invoice-entry-view", "売上取引入力を開く"),
     "SL-005": ("sales-invoice-edit-list-view", "売上取引修正を開く"),
+    "SL-012": ("sales-analysis-menu-view", "売上分析コード管理を開く"),
     "SL-202": ("sales-customers-menu-view", "得意先マスター管理の到達確認"),
     "SL-203": ("sales-customer-screen-register", "得意先登録の到達確認"),
     "SL-204": ("sales-customer-screen-edit", "得意先変更の到達確認"),
@@ -19,6 +20,8 @@ CASES = {
     "SL-207": ("sales-customer-screen-view", "得意先表示の到達確認"),
     "SL-209": ("sales-invoice-entry-view", "売上取引入力の到達確認"),
     "SL-210": ("sales-invoice-edit-list-view", "売上取引修正の到達確認"),
+    "SL-217": ("sales-analysis-menu-view", "売上分析コード管理の到達確認"),
+    "SL-218": ("sales-analysis-add-view", "売上分析コード登録の到達確認"),
     "SL-231": ("sales-invoice-menu-view", "請求書サブシステムの到達確認"),
     "SL-232": ("sales-invoice-entry-view", "一括印刷待ち請求書登録の到達確認"),
     "SL-233": ("sales-invoice-immediate-view", "請求書即時印刷の到達確認"),
@@ -72,7 +75,7 @@ def main():
             "changes": BASE.expected_changes(evidence, targets["keyed_record_diff"]),
             "reports": reports,
         })
-    print(f"得意先・売上取引・請求の到達確認用データ {len(CASES)} 件")
+    print(f"売掛元帳の画面到達確認用データ {len(CASES)} 件")
 
 
 if __name__ == "__main__":

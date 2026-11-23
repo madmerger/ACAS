@@ -18,6 +18,7 @@ struct SalesAnalysisMenu: View {
                 .accessibilityIdentifier("sales.analysis.display")
         }
         .navigationTitle(slText("sales.analysis.codes"))
+        .task { workspace.completed("sales-analysis-menu-view") }
     }
 }
 
@@ -117,6 +118,9 @@ private struct SalesAnalysisEditor: View {
             }
         }
         .navigationTitle(slText(original == nil ? "sales.analysis.add" : "sales.analysis.edit"))
+        .task {
+            if original == nil { workspace.completed("sales-analysis-add-view") }
+        }
         .onAppear {
             if let original {
                 group = original.group

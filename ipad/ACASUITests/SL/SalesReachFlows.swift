@@ -5,6 +5,7 @@ final class SalesReachFlows: XCTestCase {
     func testSL002() throws { try customerMenu("SL-002") }
     func testSL004() throws { try salesEntry("SL-004") }
     func testSL005() throws { try salesAmendment("SL-005") }
+    func testSL012() throws { try analysisMenu("SL-012") }
     func testSL202() throws { try customerMenu("SL-202") }
     func testSL203() throws { try customer("SL-203", mode: "register", title: "得意先登録") }
     func testSL204() throws { try customer("SL-204", mode: "edit", title: "得意先変更") }
@@ -12,6 +13,19 @@ final class SalesReachFlows: XCTestCase {
     func testSL207() throws { try customer("SL-207", mode: "view", title: "得意先表示") }
     func testSL209() throws { try salesEntry("SL-209") }
     func testSL210() throws { try salesAmendment("SL-210") }
+    func testSL217() throws { try analysisMenu("SL-217") }
+
+    func testSL218() throws {
+        try reach("SL-218", through: ["sales.analysis.codes", "sales.analysis.add"], title: "売上分析コード登録") { app in
+            for (field, placeholder) in [("group", "分析コード"), ("account", "勘定科目コード"),
+                                         ("description", "名称"), ("printCode", "印字コード")] {
+                let input = app.textFields["sales.analysis." + field]
+                XCTAssertTrue(input.exists)
+                XCTAssertEqual(input.value as? String, placeholder)
+            }
+            XCTAssertTrue(app.buttons["sales.analysis.save"].exists)
+        }
+    }
 
     func testSL231() throws {
         try reach("SL-231", through: ["sales.invoice.menu"], title: "請求書サブシステム") { app in
@@ -40,6 +54,14 @@ final class SalesReachFlows: XCTestCase {
         try reach(id, through: ["sales.customers"], title: "得意先マスター管理") { app in
             for operation in ["register", "edit", "remove", "report", "view"] {
                 XCTAssertTrue(app.buttons["sales.customer." + operation].exists)
+            }
+        }
+    }
+
+    private func analysisMenu(_ id: String) throws {
+        try reach(id, through: ["sales.analysis.codes"], title: "売上分析コード管理") { app in
+            for operation in ["add", "edit", "print", "printAll", "display"] {
+                XCTAssertTrue(app.buttons["sales.analysis." + operation].exists)
             }
         }
     }
@@ -99,6 +121,11 @@ final class SalesReachFlows: XCTestCase {
         XCTAssertTrue(app.staticTexts["case.verdict.running"].exists)
         for identifier in ["section.sales", "sales.date.save"] + route {
             let button = app.descendants(matching: .any).matching(identifier: identifier).firstMatch
+            if identifier == "sales.analysis.codes", !button.isHittable {
+                let start = app.coordinate(withNormalizedOffset: CGVector(dx: 0.80, dy: 0.80))
+                let end = app.coordinate(withNormalizedOffset: CGVector(dx: 0.80, dy: 0.34))
+                start.press(forDuration: 0.05, thenDragTo: end)
+            }
             XCTAssertTrue(button.waitForExistence(timeout: 5), identifier)
             XCTAssertTrue(button.isHittable, identifier)
             button.tap()
