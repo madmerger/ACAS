@@ -21,6 +21,8 @@ struct GeneralLedgerMenu: View {
                     .accessibilityIdentifier("gl.defaults")
                 NavigationLink(ledgerText("batches")) { LedgerBatchMenu(workspace: workspace) }
                     .accessibilityIdentifier("gl.batches")
+                NavigationLink(ledgerText("batch-proof.title")) { LedgerBatchMaintenanceMenu(workspace: workspace) }
+                    .accessibilityIdentifier("gl.batches.maintenance")
                 NavigationLink(ledgerText("batch-status")) { LedgerBatchStatusMenu(workspace: workspace) }
                     .accessibilityIdentifier("gl.batch-status")
                 NavigationLink(ledgerText("posting")) { LedgerPostingForm(workspace: workspace) }
