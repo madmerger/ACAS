@@ -584,7 +584,6 @@ XL101 WARNING..... Proofed but NOT posted invoices	XL101 警告..... 検証済�
 XL102 !!ERROR..... Proofed but NOT posted payments	XL102 !!エラー..... 検証済みで未転記の入金があります
 XL103 !!ERROR.... Sales Analysis NOT run	XL103 !!エラー.... 売上分析が未実行です
 XL104 I'm confused: You appear to have rejected the run, try again	XL104 処理対象の台帳が選択されていません。やり直してください
-*** Customer Unknown ***	*** 顧客不明 ***
 <------------Customer------------>	<--------------顧客-------------->
 Dedn	控除
 Gl.Nos.	GL番号
