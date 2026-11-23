@@ -4,6 +4,35 @@ import XCTest
 @testable import ACASCore
 
 final class PurchaseLedgerTests: XCTestCase {
+    func testPostingDoesNotWriteAfterSQLiteRollsBackSupplierUpdate() throws {
+        try withDiskLedger { ledger, db in
+            var value = PurchaseLedger.Transaction(date: ledger.processingDate)
+            value.supplier = try addSupplier(ledger)
+            value.lines[0].code = "a1"
+            value.lines[0].net = 10_000
+            value.lines[0].tax = 2_000
+            let folio = try ledger.saveTransaction(value)
+            let before = EvidenceComparison.snapshot(ledger.store)
+            let sql = "CREATE TRIGGER reject_supplier BEFORE UPDATE ON records WHEN NEW.file = '\(ledger.suppliersPath)' BEGIN SELECT RAISE(ROLLBACK, 'blocked'); END"
+            XCTAssertEqual(sqlite3_exec(db, sql, nil, nil, nil), SQLITE_OK)
+
+            XCTAssertThrowsError(try ledger.postTransactions()) { error in
+                guard case .rejected(let path) = error as? PurchasePostingWriteError else {
+                    return XCTFail("予期しないエラー: \(error)")
+                }
+                XCTAssertEqual(path, ledger.suppliersPath)
+            }
+            XCTAssertTrue(EvidenceComparison.diff(before: before, after: EvidenceComparison.snapshot(ledger.store)).isEmpty)
+            XCTAssertNil(ledger.store.readRaw(PurchaseLedger.reportPath))
+            XCTAssertEqual(ledger.transactions().map(\.posted), [false])
+            XCTAssertTrue(ledger.openItems(supplier: value.supplier).isEmpty)
+
+            XCTAssertEqual(sqlite3_exec(db, "DROP TRIGGER reject_supplier", nil, nil, nil), SQLITE_OK)
+            XCTAssertEqual(try ledger.postTransactions().map(\.id), [folio])
+            XCTAssertEqual(try ledger.supplier(code: value.supplier).currentBalance, 12_000)
+        }
+    }
+
     func testPostingReportFailureRollsBackBeforeRetry() throws {
         try withDiskLedger { ledger, db in
             var value = PurchaseLedger.Transaction(date: ledger.processingDate)
@@ -26,6 +55,39 @@ final class PurchaseLedgerTests: XCTestCase {
             XCTAssertEqual(try ledger.postTransactions().map(\.id), [folio])
             XCTAssertEqual(try ledger.supplier(code: value.supplier).currentBalance, 12_000)
             XCTAssertEqual(ledger.systemFile.read(4).map { Record(PurchaseRecords.sys4Layout, bytes: $0).int("pl-invoices-this-month") }, 12_000)
+        }
+    }
+
+    func testPostingRestoresStagingIfConfigurationWriteFailsAfterClearingIt() throws {
+        try withDiskLedger { ledger, db in
+            let supplier = try addSupplier(ledger)
+            var staged = Record(PurchaseRecords.oiLayout)
+            staged["oi-supplier"] = supplier
+            staged.setInt("oi-invoice", 99)
+            staged.setInt("oi-type", 2)
+            staged.setInt("oi-net", 4_000)
+            let path = ledger.base + "openitm4.dat"
+            try ledger.store.writeRaw(path, staged.bytes)
+            let before = EvidenceComparison.snapshot(ledger.store)
+            let sql = """
+                CREATE TRIGGER reject_system BEFORE UPDATE ON files
+                WHEN NEW.name = '\(ledger.base)system.dat' AND (SELECT length(data) FROM files WHERE name = '\(path)') = 0
+                BEGIN SELECT RAISE(ABORT, 'blocked after clearing staging'); END
+                """
+            XCTAssertEqual(sqlite3_exec(db, sql, nil, nil, nil), SQLITE_OK)
+
+            XCTAssertThrowsError(try ledger.postTransactions()) { error in
+                XCTAssertEqual((error as? FileStore.DatabaseError)?.message, "blocked after clearing staging")
+            }
+            XCTAssertEqual(ledger.store.readRaw(path), staged.bytes)
+            XCTAssertTrue(EvidenceComparison.diff(before: before, after: EvidenceComparison.snapshot(ledger.store)).isEmpty)
+            XCTAssertNil(ledger.store.readRaw(PurchaseLedger.reportPath))
+
+            XCTAssertEqual(sqlite3_exec(db, "DROP TRIGGER reject_system", nil, nil, nil), SQLITE_OK)
+            try ledger.postTransactions()
+            XCTAssertEqual(ledger.store.readRaw(path), [])
+            XCTAssertEqual(ledger.openItems(supplier: supplier).map(\.id), [99])
+            XCTAssertEqual(try ledger.supplier(code: supplier).currentBalance, 4_000)
         }
     }
 
@@ -287,7 +349,7 @@ final class PurchaseLedgerTests: XCTestCase {
         let before = try XCTUnwrap(ledger.supplierRecord(supplier.code)).bytes
         supplier.address1 = String(repeating: "東", count: 14)
         XCTAssertThrowsError(try ledger.saveSupplier(supplier, creating: false, joiningAddressLines: true)) {
-            XCTAssertEqual($0 as? PurchaseLedger.Error, .invalidAddress)
+            XCTAssertEqual($0 as? PurchaseLedger.Error, .addressTooLong)
         }
         XCTAssertEqual(ledger.supplierRecord(supplier.code)?.bytes, before)
     }
@@ -299,7 +361,7 @@ final class PurchaseLedgerTests: XCTestCase {
         supplier.address1 = " "
         supplier.address2 = ""
         XCTAssertThrowsError(try ledger.saveSupplier(supplier, creating: true, joiningAddressLines: true)) {
-            XCTAssertEqual($0 as? PurchaseLedger.Error, .invalidAddress)
+            XCTAssertEqual($0 as? PurchaseLedger.Error, .missingAddress)
         }
         XCTAssertTrue(ledger.suppliers().isEmpty)
     }

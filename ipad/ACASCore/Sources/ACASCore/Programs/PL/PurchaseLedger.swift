@@ -3,6 +3,7 @@ import Foundation
 public struct PurchaseLedger {
     public enum Error: Swift.Error {
         case invalidDate, invalidCode, invalidAddress, duplicateSupplier, supplierNotFound
+        case missingAddress, addressTooLong
         case supplierHasBalance, invalidTransaction, transactionNotFound, alreadyPosted, duplicateTransaction
         case analysisCodeNotFound, analysisFileIncompatible
     }
@@ -146,12 +147,12 @@ public struct PurchaseLedger {
             if creating || first != previous.first || second != previous.second {
                 guard !first.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ||
                       !second.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
-                    throw Error.invalidAddress
+                    throw Error.missingAddress
                 }
                 let address = second.isEmpty && first.contains(delimiter) ? first : first + String(delimiter) + second
                 let width = record.raw("purch-address").count
                 let bytes = SJIS.encode(address, size: max(width, address.utf8.count))
-                guard bytes.dropFirst(width).allSatisfy({ $0 == 0x20 }) else { throw Error.invalidAddress }
+                guard bytes.dropFirst(width).allSatisfy({ $0 == 0x20 }) else { throw Error.addressTooLong }
                 record.setRaw("purch-address", Array(bytes.prefix(width)))
             }
         } else {
