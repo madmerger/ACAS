@@ -37,6 +37,14 @@ public struct SalesCustomerReport {
     }
 
     public static let exportPath = "ledgers/acas/prt-1"
+
+    public struct Entry: Identifiable {
+        public var id: String { code }
+        public let code: String
+        public let name: String
+        public let quarterlyTurnover: [Int64]
+    }
+
     private let context: BusinessContext
     public init(_ context: BusinessContext) { self.context = context }
 
@@ -44,7 +52,7 @@ public struct SalesCustomerReport {
         try context.store.writeRaw(Self.exportPath, [])
     }
 
-    public func generate(_ filter: Filter, kind: Kind = .listing) throws -> [SalesLedger.Customer] {
+    public func generate(_ filter: Filter, kind: Kind = .listing) throws -> [Entry] {
         let ledger = SalesLedger(context)
         let system = try ledger.systemRecord()
         let prefix = filter.code.uppercased()
@@ -89,9 +97,13 @@ public struct SalesCustomerReport {
         let date = Maps04.format(Maps04.toDate(Int(runDay)), dateForm: dateForm)
         let configuredLines = Int(system.int("page-lines"))
         let pageLines = configuredLines > 28 ? configuredLines : 48
+        func entry(_ record: Record) -> Entry {
+            Entry(code: Cobol.rtrim(record.str("sales-key")), name: Cobol.rtrim(record.str("sales-name")),
+                  quarterlyTurnover: kind == .turnover ? (1...4).map { record.int("turnover-q\($0)") } : [])
+        }
         if kind == .turnover {
             try writeTurnover(matching, system: system, date: date, dateForm: dateForm, pageLines: pageLines)
-            return matching.map(ledger.customer(from:))
+            return matching.map(entry)
         }
         if kind == .alphabetical {
             matching.sort { $0.raw("sales-name").lexicographicallyPrecedes($1.raw("sales-name")) }
@@ -176,7 +188,7 @@ public struct SalesCustomerReport {
             try context.store.writeRaw(Self.exportPath, spool + [0x0a])
             if kind == .alphabetical { try context.store.writeRaw("custsort.tmp", []) }
         }
-        return matching.map(ledger.customer(from:))
+        return matching.map(entry)
     }
 
     private func writeTurnover(_ records: [Record], system: Record, date: String, dateForm: Int, pageLines: Int) throws {

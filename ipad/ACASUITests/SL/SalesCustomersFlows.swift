@@ -16,6 +16,18 @@ final class SalesCustomersFlows: XCTestCase {
     func testSL229() throws { try reportConditions("SL-229", operation: "turnover", title: "得意先別売上高表") }
 
     @MainActor
+    func testTurnoverPreviewShowsQuarterlyAmounts() throws {
+        try reportConditions("SL-019", operation: "turnover", title: "得意先別売上高表")
+        let app = XCUIApplication()
+        tap("sales.customer.report.generate", in: app)
+        XCTAssertTrue(app.staticTexts["第1四半期の売上高"].firstMatch.waitForExistence(timeout: 5))
+        let screenshot = XCTAttachment(screenshot: app.screenshot())
+        screenshot.name = "得意先別売上高表-四半期別金額"
+        screenshot.lifetime = .keepAlways
+        add(screenshot)
+    }
+
+    @MainActor
     func testEmptyCreditDaysRejectsSave() throws {
         try assertInvalidTerms(fieldID: "sales.customer.creditDays", replacement: "")
     }
