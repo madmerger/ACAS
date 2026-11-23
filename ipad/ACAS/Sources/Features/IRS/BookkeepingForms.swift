@@ -177,6 +177,7 @@ struct BookkeepingPostingForm: View {
                 Text(irsText("field.debit")).tag(BookkeepingService.Side.debit)
                 Text(irsText("field.credit")).tag(BookkeepingService.Side.credit)
             }
+            .accessibilityIdentifier("irs.postSide")
             DatePicker(irsText("field.date"), selection: $date, displayedComponents: .date)
             TextField(irsText("field.otherAccount"), text: $account).keyboardType(.numberPad)
                 .accessibilityIdentifier("irs.postAccount")

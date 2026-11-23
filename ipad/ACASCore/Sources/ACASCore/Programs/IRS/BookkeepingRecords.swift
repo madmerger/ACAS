@@ -36,7 +36,7 @@ enum BookkeepingRecords {
         return l
     }()
 
-    /// wspost.cob (posting-record, 77 桁)
+    /// wspost.cob (posting-record, 79 桁)
     static let postLayout: Layout = {
         let l = Layout("irs-post", [
             ("key", .n9(digits: 5, scale: 0, signed: false)), ("code", .x(2)), ("date", .x(8)),
