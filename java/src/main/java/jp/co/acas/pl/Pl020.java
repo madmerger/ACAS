@@ -17,10 +17,12 @@ public class Pl020 extends PlBase {
     static final String[] D_TYPES = {"Receipt <<<    ", "Account <<<    ", "Credit Note <<<"};
     static final BigDecimal HUNDRED = BigDecimal.valueOf(100);
     private static final String DELETED_FOLIOS = "delfolio.dat";
+    private static final long MAX_FOLIO = 99_999_999L;
     protected Rec ih, lines, purch, anal, del;
     protected CobFile purchaseFile, analysisFile, invoiceFile;
     protected int z, i, j, lin, newScreen, vatCode;
     private byte[] selectedDeletedFolio;
+    private long nextFolioAfterSave;
     private boolean delExists;
     protected String escapeCode = " ", wsNamed = " ", wsDate = "";
     protected BigDecimal wsNet = BigDecimal.ZERO, wsVat = BigDecimal.ZERO;
@@ -222,7 +224,7 @@ public class Pl020 extends PlBase {
             if (r.equals("Y")) break;
         }
         if (storeInvoice()) {
-            if (selectedDeletedFolio == null) sys.setNum("next-folio", sys.longv("next-folio") + 1);
+            if (selectedDeletedFolio == null) sys.setNum("next-folio", nextFolioAfterSave);
             sys.setNum("p-flag-i", 1);
         }
         eraseEos(11, 1);
@@ -379,11 +381,19 @@ public class Pl020 extends PlBase {
             show(9, 11, pad("", 23));
             eraseEol(23, 1);
             selectedDeletedFolio = null;
+            nextFolioAfterSave = sys.longv("next-folio") + 1;
             ih.setNum("ih-invoice", 0);
             if (delExists) getADeletedInvoice();
             if (ih.longv("ih-invoice") == 0) {
-                if (sys.longv("next-folio") == 0) sys.setNum("next-folio", 1);
-                ih.setNum("ih-invoice", sys.longv("next-folio"));
+                long number = nextAvailableFolio();
+                if (number == 0) {
+                    display(23, 1, "空き伝票番号を取得できません");
+                    accept(24, 79, 1);
+                    z = 1;
+                    return true;
+                }
+                ih.setNum("ih-invoice", number);
+                nextFolioAfterSave = number + 1;
             }
             show(7, 50, ih.str("ih-invoice"));
             show(3, 1, purch.str("purch-name"));
@@ -432,6 +442,15 @@ public class Pl020 extends PlBase {
         if (nextInvoice > 0 && folioAvailable(key, nextInvoice)) {
             ih.setNum("ih-invoice", nextInvoice);
         }
+    }
+
+    private long nextAvailableFolio() {
+        if (!invoiceFile.isOpen()) return 0;
+        Rec key = invHeaderRec();
+        for (long number = Math.max(1, sys.longv("next-folio")); number <= MAX_FOLIO; number++) {
+            if (folioAvailable(key, number)) return number;
+        }
+        return 0;
     }
 
     /** ヘッダーがなくても旧明細が残っている番号は使わない。 */

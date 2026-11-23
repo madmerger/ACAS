@@ -137,6 +137,25 @@ class Pl020LinesTest {
         assertEquals(1, deleted.count());
     }
 
+    @Test
+    void 通常採番でも旧明細だけが残る番号を飛ばす() throws Exception {
+        PlSession s = new PlSession("pl020-orphan-next", "sl-ready");
+        var sys = SystemFile.shared(s.ctx);
+        sys.setNum("next-folio", 7);
+        sys.setNum("next-invoice", 0);
+        var deleted = addDeletedFolio(s, 7);
+        addOldLine(s, 7);
+
+        s.keys("D").keys(HEADER).keys(newLines(2)).keys(TOTALS);
+        s.assertMenu();
+        var headers = s.records("pinvoice.dat", PlBase::invHeaderRec)
+                .stream().filter(r -> r.intv("ih-test") == 0).toList();
+        assertEquals(1, headers.size());
+        assertEquals(8, headers.getFirst().longv("ih-invoice"));
+        assertEquals(9, sys.longv("next-folio"));
+        assertEquals(1, deleted.count());
+    }
+
     private static void addOldLine(PlSession s, long folio) {
         var invoice = CobFile.indexed(s.ctx.store, s.ctx.path("pinvoice.dat"), 0, 9);
         invoice.open(CobFile.Mode.IO, true);
