@@ -83,6 +83,9 @@ private struct LedgerAccountsMenu: View {
     let workspace: Workspace
     @State private var accounts: [LedgerAccount] = []
     @State private var selected: LedgerAccount?
+    @State private var lookupCode = ""
+    @State private var lookupBranch = ""
+    @State private var lookupMissing = false
 
     var body: some View {
         List {
@@ -91,13 +94,31 @@ private struct LedgerAccountsMenu: View {
             }
             .accessibilityIdentifier("gl.accounts.add")
             NavigationLink(ledgerText("account-edit")) {
-                List(accounts) { account in
-                    Button {
-                        selected = account
-                    } label: {
-                        LabeledContent(account.name, value: account.code)
+                List {
+                    Section {
+                        TextField(ledgerText("account-code"), text: $lookupCode)
+                            .keyboardType(.numberPad)
+                            .accessibilityIdentifier("gl.accounts.lookup.code")
+                        if usesBranches {
+                            TextField(ledgerText("account-branch"), text: $lookupBranch)
+                                .keyboardType(.numberPad)
+                                .accessibilityIdentifier("gl.accounts.lookup.branch")
+                        }
+                        Button(ledgerText("account-edit.lookup"), action: lookup)
+                            .accessibilityIdentifier("gl.accounts.lookup.submit")
+                        if lookupMissing {
+                            Text(ledgerText("error.missingAccount"))
+                                .accessibilityIdentifier("gl.accounts.lookup.missing")
+                        }
                     }
-                    .accessibilityIdentifier("gl.accounts.edit." + account.id)
+                    ForEach(accounts) { account in
+                        Button {
+                            selected = account
+                        } label: {
+                            LabeledContent(account.name, value: account.code)
+                        }
+                        .accessibilityIdentifier("gl.accounts.edit." + account.id)
+                    }
                 }
                 .navigationTitle(ledgerText("account-edit"))
                 .sheet(item: $selected, onDismiss: reload) { account in
@@ -125,6 +146,16 @@ private struct LedgerAccountsMenu: View {
     }
 
     private func reload() { accounts = ChartOfAccounts(workspace.context).accounts }
+
+    private var usesBranches: Bool {
+        ["P", "B"].contains(CompanySetup(workspace.context).settings.text("p-c"))
+    }
+
+    private func lookup() {
+        selected = ChartOfAccounts(workspace.context).account(code: lookupCode, branch: usesBranches ? lookupBranch : "00")
+        lookupMissing = selected == nil
+        if lookupMissing { workspace.completed("gl-account-edit-missing") }
+    }
 }
 
 private struct LedgerAccountEditor: View {
