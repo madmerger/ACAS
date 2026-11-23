@@ -492,6 +492,7 @@ struct SalesInvoiceList: View {
         entries = service.invoices()
         if action == .print {
             report = workspace.context.store.readRaw(SalesInvoices.printPath).map(SalesReportDocument.init)
+            workspace.completed("sales-invoice-print-view")
         } else {
             workspace.completed(action == .edit ? "sales-invoice-edit-list-view" : "sales-invoice-delete-list-view")
         }
