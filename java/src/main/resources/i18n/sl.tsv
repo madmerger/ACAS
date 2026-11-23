@@ -522,3 +522,10 @@ Sales Ledger Turnover Report	顧客別売上帳票
 Credit Terms  <------------- T u r n o v e r ------------> <--S A L E S-->  <--Date Of Last-->	与信条件      <------------------ 売上高 -----------------> <----売上---->  <------最終日----->
 Acct No          Name	顧客番号         名称
 Days   Limit  Mvmt Average   Qtr 1   Qtr 2   Qtr 3   Qtr 4 Current    Last  Invoice    Payment	日数   限度   件数 平均額    Q1      Q2      Q3      Q4    当期       前期  請求       入金
+Sales Analysis	売上分析
+Sales  Analysis	売上分析
+Analysis  Type    <-----Description------>   <-------Transactions------->   <----------------Amount----------------->  % Period Mvmt	分析      種別    <---------名称--------->   <----------取引件数--------->   <------------------金額------------------>  % 期間増減
+  Code	  コード
+Current   Previous   Y. to D      Current      Previous    Year To Date  Trans. Amount	当期      前期       年累計       当期         前期        年累計        件数   金額
+Group	グループ
+ Detail	 明細
