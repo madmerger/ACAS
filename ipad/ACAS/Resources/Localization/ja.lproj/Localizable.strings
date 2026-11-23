@@ -310,6 +310,29 @@
 "pl040.to_be_deleted" = "この請求書を削除する (Y/N)  - [ ]";
 "pl040.pl187" = "PL187 請求書なし!!!!";
 "pl040.pl188" = "PL188 請求書明細は買掛元帳へ転記済!";
+/* pl050.cbl — Invoice Proof Report */
+"pl050.title" = "仕入請求書検証帳票";
+"pl050.rep_title" = "未転記仕入取引一覧表";
+"pl050.rep_page" = "頁   ";
+"pl050.rep_line4a" = " 番号    ---日付--- <-------------仕入先------------->    --種別--";
+"pl050.rep_line4b" = "     商品                  <--税抜-->  <-消費税->  <--税込-->";
+"pl050.rep_line7" = "商品        運賃        税抜      消費税        税込    早期割引";
+"pl050.rep_total" = "    合計 ";
+"pl050.rep_warning" = "警告: 仕入先マスタに無いレコードあり";
+"pl050.rep_line9" = "消費税照合                  現金仕入         掛仕入           赤伝";
+"pl050.rep_vat_code" = "税コード";
+"pl050.supplier_unknown" = "仕入先不明";
+"pl050.prompt_pay" = "早期割引    ";
+"pl050.carriage" = "運賃        ";
+"pl050.type_receipt" = "現金";
+"pl050.type_invoice" = "掛仕入";
+"pl050.type_cr_note" = "赤伝";
+"pl050.la_analysis" = "分析";
+"pl050.la_value" = "金額";
+"pl050.la_vat_code" = "税コード";
+"pl050.lit_receipts" = "現金仕入";
+"pl050.lit_invoices" = "掛仕入";
+"pl050.lit_credit_notes" = "赤伝";
 /* ---- sys.ja.strings ---- */
 /* ACAS.cbl — システムメニュー (日本語) */
 "sys.sy006" = "SY006 プログラム引数は2個までです。指定された数: ";

@@ -310,6 +310,29 @@
 "pl040.to_be_deleted" = "Invoice to be deleted (Y/N) - [ ]";
 "pl040.pl187" = "PL187 Invoice Not Found!!!!";
 "pl040.pl188" = "PL188 Invoice Details Already Passed To Purchase Ledger!";
+/* pl050.cbl — Invoice Proof Report */
+"pl050.title" = "Invoice Proof Report";
+"pl050.rep_title" = "Unapplied Purchase Transaction Report";
+"pl050.rep_page" = "Page ";
+"pl050.rep_line4a" = " Number  ---Date--- <------------Supplier------------>    --Type--";
+"pl050.rep_line4b" = "     Goods                 <---Net-->  <---Vat-->  <--Gross->";
+"pl050.rep_line7" = "Goods    Carriage         Net         Vat       Gross  Prompt Pay";
+"pl050.rep_total" = "    Total";
+"pl050.rep_warning" = "Warning: Record/s missing in Purchase File";
+"pl050.rep_line9" = "V.A.T. Reconciliation       Receipts       Invoices   Credit Notes";
+"pl050.rep_vat_code" = "Vat Code";
+"pl050.supplier_unknown" = "Supplier Unknown";
+"pl050.prompt_pay" = "Prompt Pay  ";
+"pl050.carriage" = "Carriage    ";
+"pl050.type_receipt" = "Receipt";
+"pl050.type_invoice" = "Invoice";
+"pl050.type_cr_note" = "Cr. Note";
+"pl050.la_analysis" = "Analysis";
+"pl050.la_value" = "Value";
+"pl050.la_vat_code" = "Vat Code";
+"pl050.lit_receipts" = "Receipts";
+"pl050.lit_invoices" = "Invoices";
+"pl050.lit_credit_notes" = "Credit Notes";
 /* ---- sys.en.strings ---- */
 /* ACAS.cbl — システムメニュー (英語 = レガシー原文) */
 "sys.sy006" = "SY006 Program Arguments limited to two and you have specified ";

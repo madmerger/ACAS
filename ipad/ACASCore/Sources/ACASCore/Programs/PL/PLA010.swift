@@ -654,7 +654,8 @@ final class PLA010 {
             listing()
         }
         customerIn = upper
-        if printOut == "Y" { p.closeAndSpool() }
+        p.close()
+        if printOut == "Y" { p.spool() }
     }
 
     // MARK: report-heading-setup section

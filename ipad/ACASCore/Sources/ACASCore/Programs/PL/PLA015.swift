@@ -1,23 +1,29 @@
 import Foundation
 
 extension PLA {
-    /// 行順編成の print-file への WRITE ... AFTER ADVANCING
-    struct Printer {
+    /// print-file (prt-1) への WRITE ... BEFORE/AFTER ADVANCING。
+    /// selprint.cob は line sequential 指定を外しているため、レコードは固定長 (空白詰め) のまま出力される。
+    final class Printer {
         let s: Session
         let path: String
-        init(_ s: Session, path: String? = nil) { self.s = s; self.path = path ?? PLA.printPath(s) }
-        func openOutput() { s.store.writeRaw(path, []) }
+        let size: Int
+        private var pendingNewline = false
+        init(_ s: Session, size: Int = 132, path: String? = nil) { self.s = s; self.size = size; self.path = path ?? PLA.printPath(s) }
+        private func rec(_ line: String) -> [UInt8] { Array(Cobol.x(line, size).utf8) }
+        func openOutput() { s.store.writeRaw(path, []); pendingNewline = false }
         func write(_ line: String, after n: Int) {
-            s.store.appendRaw(path, [UInt8](repeating: 0x0a, count: n) + Array(Cobol.rtrim(line).utf8))
+            s.store.appendRaw(path, [UInt8](repeating: 0x0a, count: n) + rec(line)); pendingNewline = true
         }
-        func writePage(_ line: String) {
-            s.store.appendRaw(path, [0x0c] + Array(Cobol.rtrim(line).utf8))
-        }
+        func writePage(_ line: String) { s.store.appendRaw(path, [0x0c] + rec(line)); pendingNewline = true }
         func writeBefore(_ line: String, before n: Int) {
-            s.store.appendRaw(path, Array(Cobol.rtrim(line).utf8) + [UInt8](repeating: 0x0a, count: n))
+            s.store.appendRaw(path, rec(line) + [UInt8](repeating: 0x0a, count: n)); pendingNewline = false
         }
-        /// close + call "SYSTEM" using Print-Report
-        func closeAndSpool() { s.onReport?(path) }
+        /// CLOSE: 最後の WRITE が AFTER ADVANCING の場合、改行が 1 つ補われる (レガシー実測)
+        func close() {
+            if pendingNewline { s.store.appendRaw(path, [0x0a]); pendingNewline = false }
+        }
+        /// call "SYSTEM" using Print-Report
+        func spool() { s.onReport?(path) }
     }
 
     /// 符号なし編集項目への MOVE (絶対値・上位桁切り捨て)
@@ -270,7 +276,7 @@ final class PLA015 {
     // MARK: print-screen section
 
     func printScreen() {
-        let p = PLA.Printer(s)
+        let p = PLA.Printer(s, size: 80)
         p.openOutput()
         let line0 = Cobol.x(PLA015.progName, 16) + Cobol.x("", 13) + s.t("pl015.title") + Cobol.x("", 18) + Cobol.x(PLA.toDayDisplay(s), 10)
         p.write(line0, after: 1)
@@ -295,7 +301,8 @@ final class PLA015 {
         }
         p.write(s.t("pl015.line20"), after: 2)
         p.write(line21, after: 2)
-        p.closeAndSpool()
+        p.close()
+        p.spool()
     }
 
     // MARK: set-up-work-file section
