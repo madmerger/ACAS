@@ -162,7 +162,7 @@ public static class StockReports
         var rows = sel.Select(r => kind switch
         {
             1 => new[] { "品目番号 " + r.St("Stock-Key"), "品名 " + r.St("Stock-Desc"), "在庫数 " + Q(r, "Stock-Held"),
-                "原価 " + Fmt.E(r.N("Stock-Cost"), "zzzzzz9.9999").Trim(), "在庫金額 " + Fmt.E(r.N("Stock-Value"), "zzzzz,zz9.99").Trim() },
+                "原価 " + Fmt.E(r.N("Stock-Cost"), "zzzzzz9.9999").Trim(), "在庫金額 " + Fmt.E(r.N("Stock-Value"), "zzz,zzz,zz9.99").Trim() },
             2 => new[] { "品目番号 " + r.St("Stock-Key"), "品名 " + r.St("Stock-Desc"), "当期入庫 " + Q(r, "Stock-Adds"), "当期出庫 " + Q(r, "Stock-Deducts"),
                 "年間入庫 " + Fmt.E(Enumerable.Range(1, 12).Sum(m => r.N("Stock-TD-Adds-" + m)), "zzzzzz9").Trim(),
                 "年間出庫 " + Fmt.E(Enumerable.Range(1, 12).Sum(m => r.N("Stock-TD-Deds-" + m)), "zzzzzz9").Trim() },
