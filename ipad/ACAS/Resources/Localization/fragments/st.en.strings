@@ -344,3 +344,16 @@
 "report.st030.line_54" = "Abrev   Number        ";
 "report.st030.total" = " Total stock records Printed ";
 "report.st030.no_wip_data" = "WIP records were present but none had data";
+/* st060.cbl */
+"st060.title" = "Stock File Importer";
+"st060.ask_file" = "Provide full path and file name of file to be imported";
+"st060.imported" = "Records Imported - ";
+"st060.written" = "Records Written  - ";
+"st060.st000" = "ST000 Error on Writing to Stock File";
+"st060.st601" = "ST601 Error on Open/Reading Import File - ";
+"st060.st602" = "ST602 Note error and hit return";
+"st060.st603" = "ST603 Note total and hit return";
+"st060.st604" = "ST604 Note error and hit return to quit";
+"st060.problem" = "Problem with amount - ";
+"st060.bad_quotes" = "Has invalid quotes or other!";
+"st060.has_become" = "Has become - ";
