@@ -134,6 +134,11 @@ final class PurchaseLedgerTests: XCTestCase {
         XCTAssertEqual(ledger.system.int("current-quarter"), 2)
         XCTAssertEqual(ledger.system.int("bl-end-cycle-date"), day)
         XCTAssertEqual(ledger.system.str("oi-5-flag"), "Y")
+
+        let emptyDayBook = try XCTUnwrap(reopened.purchaseDayBook())
+        XCTAssertNotEqual(emptyDayBook, dayBook)
+        try reopened.closePeriod(confirmUnpostedInvoices: true, password: "", endQuarter: false)
+        XCTAssertEqual(PurchaseLedger(ledger.context).closedPurchaseDayBook, emptyDayBook)
     }
 
     func testPeriodCloseWeeklyYearEndRequiresPasswordAndNoPendingPayments() throws {
