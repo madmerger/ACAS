@@ -1,6 +1,7 @@
 """証跡台帳を変更せず、ケース一覧と実 UI テストの入力・期待値を生成する。"""
 import argparse
 import base64
+import hashlib
 import json
 import re
 import subprocess
@@ -33,6 +34,7 @@ WORKFLOWS = {
     "GL-002": ("gl-accounts-menu", "勘定科目の管理メニューを表示"),
     "GL-003": ("gl-defaults-menu", "既定勘定の管理メニューを表示"),
     "GL-004": ("gl-batch-menu", "仕訳入力メニューを表示"),
+    "GL-005": ("gl-batch-maintenance-menu", "仕訳の検証・修正メニューを表示"),
     "GL-006": ("gl-batch-status-menu", "バッチ状況のメニューを表示"),
     "GL-007": ("gl-posting-menu", "仕訳転記のバッチ確認を表示"),
     "GL-008": ("gl-cycle-close-menu", "期間締めの確認画面を表示"),
@@ -63,11 +65,15 @@ WORKFLOWS = {
     "GL-205": ("gl-chart-inquiry-menu", "勘定科目一覧の照会画面を表示"),
     "GL-206": ("gl-chart-print", "勘定科目一覧の帳票を確認"),
     "GL-207": ("gl-defaults-menu", "既定勘定の管理メニューを表示"),
+    "GL-209": ("gl-defaults-menu", "既定勘定の管理メニューまで到達"),
+    "GL-210": ("gl-defaults-menu", "既定勘定の管理メニューまで到達"),
     "GL-212": ("gl-batch-menu", "仕訳入力メニューに到達"),
     "GL-213": ("gl-batch-new-menu", "新規バッチ登録画面に到達"),
+    "GL-214": ("gl-batch-maintenance-menu", "仕訳の検証・修正メニューに到達"),
     "GL-215": ("gl-batch-amend-menu", "訂正するバッチの選択画面に到達"),
     "GL-216": ("gl-batch-proof-all", "対象なしの全バッチ検証を実行"),
     "GL-217": ("gl-batch-proof-select", "指定バッチの選択画面を表示"),
+    "GL-218": ("gl-batch-print-all", "全仕訳の帳票を出力"),
     "GL-219": ("gl-batch-status-menu", "バッチ状況メニューを表示"),
     "GL-220": ("gl-batch-status-display", "バッチ状況を照会"),
     "GL-221": ("gl-batch-status-print", "バッチ状況帳票を出力"),
@@ -161,12 +167,12 @@ def fixture(evidence, case):
     run = evidence_path(evidence, legacy["evidence"][0])
     report_paths = {path: evidence_path(evidence, path) for path in targets.get("report_files", [])}
     reports = {
-        str(Path(path).relative_to(Path(legacy["evidence"][0]) / "files")): source.read_bytes().hex()
+        str(Path(path).relative_to(Path(legacy["evidence"][0]) / "files")): source.read_bytes()
         for path, source in report_paths.items()
         if "/files/ledgers/" in path
     }
     for path, source in report_paths.items():
-        if "/files/spool/" in path and source.read_bytes().hex() not in reports.values():
+        if "/files/spool/" in path and source.read_bytes() not in reports.values():
             raise ValueError(f"帳票スプールと原本が一致しません: {path}")
     seeded = workflow == "sales-proof" or workflow.startswith(
         (
@@ -208,7 +214,8 @@ def fixture(evidence, case):
         "dateSeconds": date,
         "seed": seed,
         "changes": changes,
-        "reports": reports,
+        "reports": {path: data.hex() for path, data in reports.items() if len(data) <= 65536},
+        "reportSHA256": {path: hashlib.sha256(data).hexdigest() for path, data in reports.items() if len(data) > 65536},
         "calculation": legacy.get("actual") if workflow == "check-digit" else None,
         "input": values,
     }

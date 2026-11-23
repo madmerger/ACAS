@@ -14,6 +14,8 @@ final class LedgerMenuReachabilityFlows: XCTestCase {
         try check("GL-004", path: ["gl.batches"], buttons: ["gl.batch.new"])
     }
 
+    @MainActor func testGL005() throws { try checkBatchMaintenance("GL-005") }
+
     @MainActor
     func testGL006() throws {
         try check("GL-006", path: ["gl.batch-status"], buttons: ["gl.batch-status.display", "gl.batch-status.print"])
@@ -50,6 +52,8 @@ final class LedgerMenuReachabilityFlows: XCTestCase {
         }
     }
 
+    @MainActor func testGL214() throws { try checkBatchMaintenance("GL-214") }
+
     @MainActor
     func testGL215() throws {
         try check("GL-215", path: ["gl.batches.maintenance", "gl.batch.amend"], buttons: []) { app in
@@ -76,6 +80,14 @@ final class LedgerMenuReachabilityFlows: XCTestCase {
     }
 
     @MainActor
+    func testGL218() throws {
+        try check("GL-218", path: ["gl.batches.maintenance", "gl.batch.proof.print-all"],
+                  buttons: ["gl.report.share"], verdict: "mismatch") { app in
+            XCTAssertEqual(app.staticTexts["gl.batch.proof.status"].label, "全仕訳の帳票を出力しました")
+        }
+    }
+
+    @MainActor
     private func checkAccounts(_ id: String) throws {
         try check(id, path: ["gl.accounts"], buttons: [
             "gl.accounts.add", "gl.accounts.edit", "gl.accounts.list", "gl.accounts.print"
@@ -83,7 +95,14 @@ final class LedgerMenuReachabilityFlows: XCTestCase {
     }
 
     @MainActor
+    private func checkBatchMaintenance(_ id: String) throws {
+        try check(id, path: ["gl.batches.maintenance"],
+                  buttons: ["gl.batch.amend", "gl.batch.proof.all", "gl.batch.proof.one", "gl.batch.proof.print-all"])
+    }
+
+    @MainActor
     private func check(_ id: String, path: [String], buttons: [String],
+                       verdict: String = "match",
                        assertFields: (XCUIApplication) -> Void = { _ in }) throws {
         continueAfterFailure = false
         let fixture = try XCTUnwrap(Bundle(for: Self.self).url(forResource: id, withExtension: "json",
@@ -102,9 +121,9 @@ final class LedgerMenuReachabilityFlows: XCTestCase {
             XCTAssertTrue(app.buttons[button].waitForExistence(timeout: 5), button)
         }
         assertFields(app)
-        XCTAssertTrue(app.staticTexts["case.verdict.match"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["case.verdict." + verdict].waitForExistence(timeout: 5))
         let screenshot = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
-        screenshot.name = "\(id) 一致"
+        screenshot.name = "\(id) \(verdict == "match" ? "一致" : "不一致")"
         screenshot.lifetime = .keepAlways
         add(screenshot)
     }

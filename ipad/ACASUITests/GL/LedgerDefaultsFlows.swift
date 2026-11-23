@@ -27,9 +27,17 @@ final class LedgerDefaultsFlows: XCTestCase {
 
     @MainActor
     func testGL207() throws {
-        let (app, _) = try openMenu("GL-207")
+        try checkMenu("GL-207")
+    }
+
+    @MainActor func testGL209() throws { try checkMenu("GL-209") }
+    @MainActor func testGL210() throws { try checkMenu("GL-210") }
+
+    @MainActor
+    private func checkMenu(_ id: String) throws {
+        let (app, _) = try openMenu(id)
         for action in ["add", "edit", "list"] { XCTAssertTrue(app.buttons["gl.defaults." + action].exists) }
-        captureMatch(app, "GL-207")
+        captureMatch(app, id)
     }
 
     @MainActor
