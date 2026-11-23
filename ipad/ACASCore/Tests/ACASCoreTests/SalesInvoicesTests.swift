@@ -41,6 +41,61 @@ final class SalesInvoicesTests: XCTestCase {
         }
     }
 
+    func testCreditRegistrationRequiresMatchingOpenAccountInvoiceOrExplicitConfirmation() throws {
+        let (service, invoice) = try makeInvoice()
+        var draft = try service.draft(for: invoice.id)
+        draft.kind = .creditNote
+        draft.creditedInvoice = invoice.id.value
+        let path = "ledgers/acas/openitm3.dat"
+        let key = Array(draft.customer.utf8) + [1, 0, 0, 0]
+        var record = key + Array(repeating: UInt8(0x20), count: 103)
+        let otherKey = Array("OTHER01".utf8) + [1, 0, 0, 0]
+        XCTAssertTrue(service.context.store.write(path, key: otherKey, data: otherKey + Array(record.dropFirst(11))))
+        let before = service.context.store.snapshot()
+        XCTAssertThrowsError(try service.save(draft)) {
+            XCTAssertEqual($0 as? SalesInvoices.Error, .unverifiedCreditTarget)
+        }
+        XCTAssertEqual(service.context.store.snapshot(), before)
+        XCTAssertNoThrow(try service.save(draft, confirmingUnknownCreditTarget: true))
+        record[21] = 0x31
+        record[94] = 0x30
+        XCTAssertTrue(service.context.store.write(path, key: key, data: record))
+        XCTAssertThrowsError(try service.save(draft, confirmingUnknownCreditTarget: true)) {
+            XCTAssertEqual($0 as? SalesInvoices.Error, .invalidCreditTarget)
+        }
+        record[21] = 0x32
+        record[94] = 0x31
+        XCTAssertTrue(service.context.store.rewrite(path, key: key, data: record))
+        XCTAssertThrowsError(try service.save(draft, confirmingUnknownCreditTarget: true)) {
+            XCTAssertEqual($0 as? SalesInvoices.Error, .invalidCreditTarget)
+        }
+        record[94] = 0x30
+        XCTAssertTrue(service.context.store.rewrite(path, key: key, data: record))
+        XCTAssertNoThrow(try service.save(draft))
+    }
+
+    func testCreditAmendmentChecksCustomerAndInvoiceType() throws {
+        let (service, invoice) = try makeInvoice()
+        var draft = try service.draft(for: invoice.id)
+        draft.kind = .creditNote
+        let credit = try service.save(draft)
+        draft.creditedInvoice = invoice.id.value
+        XCTAssertNoThrow(try service.save(draft, replacing: credit.id))
+        draft.creditedInvoice = credit.id.value
+        XCTAssertThrowsError(try service.save(draft, replacing: credit.id, confirmingUnknownCreditTarget: true)) {
+            XCTAssertEqual($0 as? SalesInvoices.Error, .invalidCreditTarget)
+        }
+        var target = try XCTUnwrap(service.header(invoice.id))
+        target["ih-customer"] = "OTHER01"
+        XCTAssertTrue(service.context.store.rewrite(
+            service.file.path, key: service.key(invoice.id), data: Array(target.bytes.prefix(SalesInvoices.recordSize))
+        ))
+        draft.creditedInvoice = invoice.id.value
+        XCTAssertThrowsError(try service.save(draft, replacing: credit.id, confirmingUnknownCreditTarget: true)) {
+            XCTAssertEqual($0 as? SalesInvoices.Error, .invalidCreditTarget)
+        }
+    }
+
     private func makeInvoice() throws -> (SalesInvoices, SalesInvoices.Invoice) {
         let store = try FileStore()
         let date = Date(timeIntervalSince1970: 1_700_000_000)

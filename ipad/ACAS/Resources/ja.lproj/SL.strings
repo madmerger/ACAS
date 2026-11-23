@@ -124,6 +124,11 @@
 "sales.invoice.deleted" = "請求書を削除しました";
 "sales.invoice.error.missingCustomer" = "取引中の得意先コードを指定してください";
 "sales.invoice.error.missingInvoice" = "指定した請求書が見つかりません";
+"sales.invoice.error.invalidCreditTarget" = "指定番号は、この得意先の取消対象となる請求書ではありません";
+"sales.invoice.creditedInvoiceSuffix" = "対象請求書番号の枝番";
+"sales.invoice.unknownCreditTitle" = "対象請求書を確認できません";
+"sales.invoice.unknownCreditMessage" = "この番号が同じ得意先の掛売請求書であることを確認してから続行してください。";
+"sales.invoice.useCreditNumber" = "確認してこの番号を使う";
 "sales.invoice.error.invalidInput" = "明細の入力、金額、文字数を確認してください";
 "sales.invoice.error.duplicate" = "その請求書番号は使用されています";
 "sales.invoice.error.locked" = "指定した請求書は変更できません";

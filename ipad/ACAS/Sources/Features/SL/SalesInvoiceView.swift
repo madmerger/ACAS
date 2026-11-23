@@ -78,6 +78,7 @@ struct SalesInvoiceEditor: View {
     @State private var result: String?
     @State private var saved = false
     @State private var confirms = false
+    @State private var confirmsCreditTarget = false
     @State private var report: SalesInvoiceReport?
     @State private var editingLine: LineSelection?
     @FocusState private var focusedInput: String?
@@ -113,6 +114,9 @@ struct SalesInvoiceEditor: View {
                     LabeledContent(slText("sales.invoice.creditedInvoice")) {
                         TextField(slText("sales.invoice.creditedInvoice"), value: $draft.creditedInvoice, format: .number.grouping(.never))
                             .keyboardType(.numberPad)
+                    }
+                    if existing != nil && SalesInvoices(workspace.context).usesOwnNumbers {
+                        input(slText("sales.invoice.creditedInvoiceSuffix"), text: $draft.creditedInvoiceSuffix, id: "creditedInvoiceSuffix")
                     }
                 }
             }
@@ -165,6 +169,12 @@ struct SalesInvoiceEditor: View {
         .confirmationDialog(slText("sales.invoice.confirmImmediate"), isPresented: $confirms, titleVisibility: .visible) {
             Button(slText("sales.invoice.saveAndPrint"), action: save)
             Button(slText("sales.action.cancel"), role: .cancel) {}
+        }
+        .alert(slText("sales.invoice.unknownCreditTitle"), isPresented: $confirmsCreditTarget) {
+            Button(slText("sales.invoice.useCreditNumber")) { save(confirmingUnknownCreditTarget: true) }
+            Button(slText("sales.action.cancel"), role: .cancel) {}
+        } message: {
+            Text(slText("sales.invoice.unknownCreditMessage"))
         }
     }
 
@@ -237,16 +247,21 @@ struct SalesInvoiceEditor: View {
         })
     }
 
-    private func save() {
+    private func save() { save(confirmingUnknownCreditTarget: false) }
+
+    private func save(confirmingUnknownCreditTarget: Bool) {
         do {
             let service = SalesInvoices(workspace.context)
-            let invoice = try service.save(draft, replacing: existing)
+            let invoice = try service.save(draft, replacing: existing, confirmingUnknownCreditTarget: confirmingUnknownCreditTarget)
             saved = true
             if immediate {
                 _ = try service.printInvoices([invoice.id])
                 report = workspace.context.store.readRaw(SalesInvoices.printPath).map(SalesInvoiceReport.init)
             }
             result = immediate ? slText("sales.invoice.immediatelyPrinted \(invoice.id.display)") : slText("sales.invoice.saved \(invoice.id.display)")
+        } catch SalesInvoices.Error.unverifiedCreditTarget {
+            confirmsCreditTarget = true
+            return
         } catch {
             result = SalesInvoiceMessage.text(for: error)
         }
@@ -361,6 +376,8 @@ private enum SalesInvoiceMessage {
         case .missingCompany: slText("sales.error.missingCompany")
         case .missingCustomer: slText("sales.invoice.error.missingCustomer")
         case .missingInvoice: slText("sales.invoice.error.missingInvoice")
+        case .invalidCreditTarget: slText("sales.invoice.error.invalidCreditTarget")
+        case .unverifiedCreditTarget: slText("sales.invoice.unknownCreditTitle")
         case .invalidInput: slText("sales.invoice.error.invalidInput")
         case .duplicate: slText("sales.invoice.error.duplicate")
         case .locked: slText("sales.invoice.error.locked")
