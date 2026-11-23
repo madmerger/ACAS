@@ -4,32 +4,19 @@ using System.Text.RegularExpressions;
 
 internal static class LegacyPurchaseReport
 {
-    public static bool MatchesKnownFirstPage(string source, string body, string title, bool analysis)
+    public static bool MatchesKnownAnalysisFirstPage(string source, string body, string title)
     {
         var legacy = Lines(source.Split('\f', 2)[0]);
         var actual = Lines(body);
-        string legacyTitle = analysis ? "PL070 .* Product Analysis Codes" : "PL930 .* Payments Due Proof Report";
-        if (legacy.Length < 3 || !Regex.IsMatch(legacy[0], $@"^{legacyTitle}\s+Page\s+1$"))
+        if (legacy.Length < 4 || !Regex.IsMatch(legacy[0], @"^PL070 .* Product Analysis Codes\s+Page\s+1$"))
             return false;
         var header = Regex.Match(legacy[1], @"^(.*?)\s+(\d{2}/\d{2}/\d{4})$");
         if (!header.Success) return false;
-        List<string> expected = [title, header.Groups[1].Value, "処理日　" + Date(header.Groups[2].Value), "ページ 1"];
-        if (analysis)
-        {
-            if (!Regex.IsMatch(legacy[2], @"^Lgr Code\s+GL\.No\.\s+<-----Description------>\s+Print\s+-Type-$") ||
-                legacy.Length < 4 || legacy.Skip(3).Any(row => !Regex.IsMatch(row, "^\0{2} +010000 +\0{24} +\0{3} +Detail$")))
-                return false;
-            expected.Add("元帳　分析コード　勘定コード　摘要　帳票参照コード　区分");
-        }
-        else
-        {
-            if (legacy.Length != 3 ||
-                !Regex.IsMatch(legacy[2], @"^Folio M\s+Date\s+Invoice\s+Current\s+30 \+\s+60 \+\s+90 \+\s+Total to Pay$"))
-                return false;
-            expected.Add("伝票番号　支払方法　支払日　請求書番号");
-            expected.Add("当期　30日以上　60日以上　90日以上　支払額");
-            expected.Add("合計　当期 0.00　30日以上 0.00　60日以上 0.00　90日以上 0.00　支払額 0.00");
-        }
+        if (!Regex.IsMatch(legacy[2], @"^Lgr Code\s+GL\.No\.\s+<-----Description------>\s+Print\s+-Type-$") ||
+            legacy.Skip(3).Any(row => !Regex.IsMatch(row, "^\0{2} +010000 +\0{24} +\0{3} +Detail$")))
+            return false;
+        string[] expected = [title, header.Groups[1].Value, "処理日　" + Date(header.Groups[2].Value), "ページ 1",
+            "元帳　分析コード　勘定コード　摘要　帳票参照コード　区分"];
         return !body.Contains('\f') && expected.SequenceEqual(actual);
     }
 

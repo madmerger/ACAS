@@ -101,21 +101,16 @@ static Result Check(JsonElement entry, string evidence)
                 .Select(Convert.ToHexString).Distinct().Count();
             int appReports = db.Spool().Count;
             if (legacyReports != appReports) differences.Add($"帳票数が異なります（既存 {legacyReports}、移行 {appReports}）。");
-            else if (id is "PL-222" or "PL-232" && legacyReports == 1)
+            else if (id == "PL-222" && legacyReports == 1)
             {
-                bool analysis = id == "PL-222";
                 string path = EvidenceFile(evidence, targets.GetProperty("report_files")[0].GetString()!);
                 string source = File.ReadAllText(path, Encoding.Latin1);
                 var report = db.Spool().Single();
-                bool signature = analysis
-                    ? new PurchaseLedger(db).HasInvalidAnalysisLength && source.Count(c => c == '\f') > 1
-                    : new PurchaseLedger(db).ScheduledPayments() is { Count: 0 } && source.Length > 1_000_000 && !source.Contains('\f');
-                if (!signature || !LegacyPurchaseReport.MatchesKnownFirstPage(source, report.Body, report.Name, analysis))
+                bool signature = new PurchaseLedger(db).HasInvalidAnalysisLength && source.Count(c => c == '\f') > 1;
+                if (!signature || !LegacyPurchaseReport.MatchesKnownAnalysisFirstPage(source, report.Body, report.Name))
                     differences.Add("旧版の既知不具合の特徴または先頭ページの有効項目が一致しません。");
                 else
-                    knownLegacyIssue = analysis
-                        ? "分析ファイルのレコード長不一致で不正明細が繰り返し印刷されます。先頭ページの表題・事業者・日付・列見出しは一致し、不正明細は除外しました。"
-                        : "支払予定ファイルがないため、先頭ページの見出しの後に大量の空行が続きます。先頭ページの有効項目は一致し、移行版はゼロ件の合計を出力して終了します。";
+                    knownLegacyIssue = "分析ファイルのレコード長不一致で不正明細が繰り返し印刷されます。先頭ページの表題・事業者・日付・列見出しは一致し、不正明細は除外しました。";
             }
             else if (id is "PL-221" or "PL-413" or "PL-414" && legacyReports == 1)
             {
@@ -167,6 +162,11 @@ static void Exercise(JsonElement entry, string id, Db db, List<string> differenc
 
     switch (id)
     {
+        case "PL-232":
+            Require(screen is InformationScreen { Title: "支払予定の検証", Message: "支払予定ファイルがありません。" },
+                differences, "支払予定ファイルがないことが通知されません。");
+            Require(db.Spool().Count == 0, differences, "支払予定ファイルがないのに帳票が作成されました。");
+            return;
         case "PL-400":
             screen = Submit(screen, ("PurchaseSupplierCode", "SUPP018"));
             screen = Accept(Submit(screen, ("PurchaseSupplierName", "EQUIV UPDATED SUPPLIER")));

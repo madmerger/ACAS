@@ -12,6 +12,10 @@ public sealed class PurchaseLedgerTests
         using var db = new Db();
         var ledger = new PurchaseLedger(db);
         Assert.Empty(ledger.ScheduledPayments()!);
+        Assert.False(ledger.PaymentScheduleFileAvailable);
+        db.Create("ledgers/acas/pay.dat");
+        Assert.True(ledger.PaymentScheduleFileAvailable);
+        Assert.Empty(ledger.ScheduledPayments()!);
         var raw = new byte[237];
         "SUPP018"u8.CopyTo(raw);
         raw[7] = 2;
