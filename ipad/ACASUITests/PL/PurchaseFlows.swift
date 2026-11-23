@@ -161,7 +161,9 @@ final class PurchaseFlows: XCTestCase {
     }
 
     func testPaymentEntryShowsSavedAmountInPendingPayments() throws {
-        let app = try launch("PL-413", smokeID: "支払入力スモーク")
+        let app = try launch("PL-413", smokeID: "支払入力スモーク") { fixture in
+            try Self.setSystemFlags(&fixture, invoice: "2", openItems: "1")
+        }
         tap(app, "pl.payment.add", scrolling: true)
         tap(app, "pl.payment.supplier")
         let supplier = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "SUPP018")).firstMatch
@@ -321,11 +323,33 @@ final class PurchaseFlows: XCTestCase {
     }
 
     func testEmptyPaymentProofCannotGenerateReport() throws {
-        let app = try launch("PL-413", smokeID: "空の支払検証")
+        let app = try launch("PL-413", smokeID: "空の支払検証") { fixture in
+            try Self.setSystemFlags(&fixture, payment: "1")
+        }
         tap(app, "pl.payment.proof", scrolling: true)
         let button = app.buttons["pl.payment.proof.generate"]
         XCTAssertTrue(button.waitForExistence(timeout: 5))
         XCTAssertFalse(button.isEnabled)
+    }
+
+    private static func setSystemFlags(_ fixture: inout [String: Any], invoice: String? = nil,
+                                       payment: String? = nil, openItems: String? = nil) throws {
+        let seed = try XCTUnwrap(Data(base64Encoded: try XCTUnwrap(fixture["seed"] as? String)))
+        var snapshot = try XCTUnwrap(JSONSerialization.jsonObject(with: seed) as? [String: Any])
+        var files = try XCTUnwrap(snapshot["files"] as? [String: Any])
+        let path = "ledgers/acas/system.dat"
+        var relative = try XCTUnwrap(files[path] as? [String: Any])
+        var hex = Array(try XCTUnwrap(relative["hex"] as? String))
+        for (offset, value) in [(491, invoice), (492, payment), (303, openItems)] {
+            if let byte = value?.utf8.first {
+                let begin = (8 + offset) * 2
+                hex.replaceSubrange(begin..<(begin + 2), with: String(format: "%02x", byte))
+            }
+        }
+        relative["hex"] = String(hex)
+        files[path] = relative
+        snapshot["files"] = files
+        fixture["seed"] = try JSONSerialization.data(withJSONObject: snapshot).base64EncodedString()
     }
 
     private func launch(_ id: String, smokeID: String? = nil, openPurchases: Bool = true,
@@ -497,19 +521,20 @@ final class PurchaseFlows: XCTestCase {
                     && app.descendants(matching: .any)["pl.cheques.remittance"].firstMatch.exists
             case "blocked":
                 tap(app, try XCTUnwrap(route.links.first), scrolling: true)
-                let opened = app.navigationBars[route.title].waitForExistence(timeout: 3)
                 let alert = app.alerts.firstMatch
+                _ = alert.waitForExistence(timeout: 3)
+                let opened = app.navigationBars[route.title].exists
                 let message = alert.exists ? alert.staticTexts.allElementsBoundByIndex.map(\.label).joined(separator: " ") : ""
                 let legacyError = try XCTUnwrap(checkpoint?["detail"]?.split(separator: " ").dropFirst().first)
                 let equivalents: [Substring: String] = [
-                    "T-014": "検証対象の仕入取引がありません",
-                    "T-017": "該当する仕入取引がありません",
-                    "T-023": "先に支払を検証してください",
-                    "T-025": "未決済明細が初期化されていません",
-                    "T-030": "検証対象の支払がありません",
+                    "T-014": "検証・転記する仕入取引がありません。",
+                    "T-017": "仕入取引ファイルがありません。",
+                    "T-023": "転記する検証済みの支払取引がありません。",
+                    "T-025": "仕入取引が転記されていません。",
+                    "T-030": "修正・検証・転記する支払取引がありません。",
                 ]
-                screenMatches = !opened && (message.contains(legacyError) ||
-                    equivalents[legacyError].map { message.contains($0) } == true)
+                screenMatches = !opened && message.contains(legacyError)
+                    && equivalents[legacyError].map { message.contains($0) } == true
                 let observed = opened ? "移行版は「\(route.title)」画面を表示" :
                     (message.isEmpty ? "移行版の拒否画面を確認できず" : "移行版の警告：\(message)")
                 print("ACAS_PL_SCREEN|\(id)|" + observed)

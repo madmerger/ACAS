@@ -4,6 +4,39 @@ import XCTest
 @testable import ACASCore
 
 final class PurchaseLedgerTests: XCTestCase {
+    func testPurchaseMenuUsesLegacyFileAndProcessingFlags() throws {
+        let ledger = try makeLedger()
+        var settings = ledger.system
+        settings.setRaw("file-statuses", Array(repeating: 0x30, count: 32))
+        settings.setInt("p-flag-i", 0)
+        settings.setInt("p-flag-p", 0)
+        try ledger.systemFile.write(1, settings.bytes)
+        let checks: [(PurchaseLedger.MenuAction, PurchaseLedger.MenuRejection)] = [
+            (.enquiry, .purchasePostingRequired), (.agedReport, .purchasePostingRequired),
+            (.invoiceDelete, .invoiceFileMissing), (.invoiceProof, .noInvoices), (.invoicePost, .noInvoices),
+            (.paymentAdd, .purchasePostingRequired), (.paymentEdit, .noPayments), (.paymentProof, .noPayments),
+            (.paymentPost, .paymentProofRequired),
+        ]
+        for (action, rejection) in checks { XCTAssertEqual(ledger.menuRejection(for: action), rejection) }
+
+        ledger.setFileFlag(26, in: &settings)
+        ledger.setFileFlag(29, in: &settings)
+        settings.setInt("p-flag-i", 1)
+        settings.setInt("p-flag-p", 1)
+        try ledger.systemFile.write(1, settings.bytes)
+        XCTAssertEqual(ledger.menuRejection(for: .paymentAdd), .pendingInvoices)
+        XCTAssertEqual(ledger.menuRejection(for: .paymentPost), .paymentProofRequired)
+        for (action, _) in checks where action != .paymentAdd && action != .paymentPost {
+            XCTAssertNil(ledger.menuRejection(for: action))
+        }
+        settings.setInt("p-flag-i", 2)
+        settings.setInt("p-flag-p", 2)
+        try ledger.systemFile.write(1, settings.bytes)
+        XCTAssertNil(ledger.menuRejection(for: .paymentAdd))
+        XCTAssertNil(ledger.menuRejection(for: .paymentPost))
+        XCTAssertEqual(ledger.menuRejection(for: .invoiceProof), .noInvoices)
+    }
+
     func testAgedCreditorsCountsBypassedPaymentsBeforeButNotAfterSelectedSupplier() throws {
         let ledger = try makeLedger()
         let date = ledger.processingDate
