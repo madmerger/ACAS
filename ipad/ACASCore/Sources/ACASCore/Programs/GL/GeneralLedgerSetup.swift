@@ -23,6 +23,14 @@ public struct GeneralLedgerSetup {
 
     public init(_ context: BusinessContext) { self.context = context }
 
+    public var processingDate: Date {
+        let stored = Int(CompanySetup(context).settings.number("run-date"))
+        guard stored > 0 else { return context.now() }
+        let date = Maps04.dateOfInteger(stored)
+        return context.calendar.date(from: DateComponents(year: date.year, month: date.month, day: date.day))
+            ?? context.now()
+    }
+
     public func start(year: Int, month: Int, day: Int) throws {
         guard Maps04.validYMD(year, month, day) else { throw Error.invalidDate }
         guard let bytes = system.read(1) else { throw Error.missingCompany }

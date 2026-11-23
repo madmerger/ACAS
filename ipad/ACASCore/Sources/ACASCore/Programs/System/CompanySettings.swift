@@ -7,6 +7,7 @@ public struct CompanySettings {
     public func number(_ key: String) -> Int64 { record.int(key) }
 
     public mutating func setText(_ value: String, for key: String) throws {
+        let value = Self.uppercaseFields.contains(key) ? value.uppercased() : value
         guard let field = record.layout.fields[key], case .x(let width) = field.type,
               !["user-code", "pass-word", "file-statuses", "rdbms-passwd"].contains(key),
               !value.unicodeScalars.contains(where: CharacterSet.controlCharacters.contains),
@@ -14,6 +15,12 @@ public struct CompanySettings {
         else { throw CompanySetup.Error.invalidField }
         record[key] = value
     }
+
+    private static let uppercaseFields: Set<String> = [
+        "p-c", "p-c-level", "p-c-grouped", "comps", "ledger-2nd-index", "m-v", "arch", "vat",
+        "irs-instead", "sl-own-nos", "sl-stock-link", "sl-comp-head-inv", "sl-comp-head-stat",
+        "sl-comp-head-lets", "sl-comp-head-pick", "pl-stock-link", "stk-period-cur", "stk-period-dat",
+    ]
 
     public mutating func setNumber(_ value: Int64, for key: String) throws {
         guard let field = record.layout.fields[key], value >= 0 else { throw CompanySetup.Error.invalidField }
@@ -24,7 +31,9 @@ public struct CompanySettings {
             maxValue = Cobol.pow10(digits) - 1
         default: throw CompanySetup.Error.invalidField
         }
-        guard value <= maxValue else { throw CompanySetup.Error.invalidField }
+        guard value <= maxValue, key != "sl-credit" || value <= 99 else {
+            throw CompanySetup.Error.invalidField
+        }
         switch key {
         case "page-lines": record.setInt(key, value <= 28 ? 48 : value)
         case "period": record.setInt(key, value == 13 || value == 6 ? value : 3)

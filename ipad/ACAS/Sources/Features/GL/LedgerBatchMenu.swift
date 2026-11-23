@@ -5,11 +5,38 @@ struct LedgerBatchMenu: View {
     let workspace: Workspace
     @State private var batches: [LedgerBatch] = []
     @State private var editing = false
+    @State private var preparationFailed = false
+    @State private var proofReports: [LedgerBatchProof.Report] = []
+    @State private var proofStatus: String?
 
     var body: some View {
         List {
             Button(ledgerText("batch-new")) { editing = true }
                 .accessibilityIdentifier("gl.batch.new")
+                .disabled(preparationFailed)
+            if preparationFailed { Text(ledgerText("batch-error.storage")) }
+            Section(ledgerText("batch-proof.title")) {
+                Button(ledgerText("batch-proof.all")) { proof() }
+                    .accessibilityIdentifier("gl.batch.proof.all")
+                Menu(ledgerText("batch-proof.one")) {
+                    ForEach(batches) { batch in
+                        Button("\(batch.id)　\(batch.description)") { proof(batch.id) }
+                            .accessibilityIdentifier("gl.batch.proof.\(batch.id)")
+                    }
+                }
+                .disabled(batches.isEmpty)
+                .accessibilityIdentifier("gl.batch.proof.one")
+                if let proofStatus {
+                    Text(proofStatus).accessibilityIdentifier("gl.batch.proof.status")
+                }
+                ForEach(proofReports) { report in
+                    LabeledContent {
+                        LedgerReportShare(bytes: report.bytes)
+                    } label: {
+                        Text("\(report.id)　\(ledgerText(report.verified ? "batch-closed" : "batch-open"))")
+                    }
+                }
+            }
             Section(ledgerText("batch-list")) {
                 ForEach(batches) { batch in
                     LabeledContent("\(batch.id)　\(batch.description)", value: ledgerText(batch.posted ? "batch-posted" : batch.closed ? "batch-closed" : "batch-open"))
@@ -18,13 +45,36 @@ struct LedgerBatchMenu: View {
             }
         }
         .navigationTitle(ledgerText("batches"))
-        .onAppear(perform: reload)
+        .onAppear {
+            do {
+                try LedgerBatches(workspace.context).prepare()
+                preparationFailed = false
+                reload()
+                workspace.completed("gl-batch-menu")
+            } catch {
+                preparationFailed = true
+            }
+        }
         .sheet(isPresented: $editing, onDismiss: reload) {
             NavigationStack { LedgerBatchEditor(workspace: workspace) }
         }
     }
 
     private func reload() { batches = LedgerBatches(workspace.context).all }
+
+    private func proof(_ number: Int? = nil) {
+        proofReports = []
+        do {
+            proofReports = try LedgerBatchProof(workspace.context).generate(batch: number)
+            let key = proofReports.isEmpty ? "batch-proof.empty" :
+                proofReports.allSatisfy(\.verified) ? "batch-proof.verified" : "batch-proof.differences"
+            proofStatus = ledgerText(key)
+            reload()
+            workspace.completed(number == nil ? "gl-batch-proof-all" : "gl-batch-proof-one")
+        } catch {
+            proofStatus = ledgerText("batch-proof.failed")
+        }
+    }
 }
 
 private struct LedgerBatchEditor: View {
@@ -32,7 +82,9 @@ private struct LedgerBatchEditor: View {
         let id = UUID()
         var date: Date
         var account = ""
+        var branch = "00"
         var amount = ""
+        var tax = ""
         var memo = ""
     }
 
@@ -40,17 +92,29 @@ private struct LedgerBatchEditor: View {
     @Environment(\.dismiss) private var dismiss
     @State private var entries: [Entry] = []
     @State private var selectedDefault = 0
+    @State private var defaultBranch = "00"
     @State private var direction = LedgerDirection.credit
     @State private var cycle = ""
     @State private var description = ""
     @State private var count = ""
     @State private var gross = ""
+    @State private var tax = ""
     @State private var date = Date()
     @State private var error: String?
 
     private var defaults: [LedgerDefault] {
         let chart = ChartOfAccounts(workspace.context)
-        return GeneralLedgerSetup(workspace.context).defaults.filter { chart.account(code: $0.account) != nil }
+        let codes = Set(chart.accounts.filter { usesBranches || $0.branch == "00" }.map(\.code))
+        return GeneralLedgerSetup(workspace.context).defaults.filter { $0.id <= 32 && codes.contains($0.account) }
+    }
+
+    private var usesBranches: Bool {
+        ["P", "B"].contains(CompanySetup(workspace.context).settings.text("p-c"))
+    }
+
+    private var usesTax: Bool {
+        let selected = defaults.first(where: { $0.id == selectedDefault })?.tax
+        return selected == .input || selected == .output
     }
 
     var body: some View {
@@ -61,6 +125,7 @@ private struct LedgerBatchEditor: View {
                     ForEach(defaults) { item in Text("\(item.id)：\(item.account)").tag(item.id) }
                 }
                 .accessibilityIdentifier("gl.batch.default")
+                if usesBranches { field("batch-default-branch", $defaultBranch, type: .numberPad) }
                 Picker(ledgerText("batch-direction"), selection: $direction) {
                     Text(ledgerText("batch-debit")).tag(LedgerDirection.debit)
                     Text(ledgerText("batch-credit")).tag(LedgerDirection.credit)
@@ -70,12 +135,15 @@ private struct LedgerBatchEditor: View {
                 field("batch-description", $description)
                 field("batch-count", $count, type: .numberPad)
                 field("batch-gross", $gross, type: .numbersAndPunctuation)
+                if usesTax { field("batch-tax", $tax, type: .numbersAndPunctuation) }
             }
             ForEach($entries) { $entry in
                 Section(ledgerText("batch-line")) {
                     datePicker("batch-line-date", $entry.date)
                     field("account-code", $entry.account, type: .numberPad)
+                    if usesBranches { field("batch-line-branch", $entry.branch, type: .numberPad) }
                     field("batch-amount", $entry.amount, type: .numbersAndPunctuation)
+                    if usesTax { field("batch-line-tax", $entry.tax, type: .numbersAndPunctuation) }
                     field("batch-memo", $entry.memo)
                     Button(ledgerText("batch-remove-line"), role: .destructive) { entries.removeAll { $0.id == entry.id } }
                 }
@@ -95,8 +163,9 @@ private struct LedgerBatchEditor: View {
             }
         }
         .onAppear {
-            date = workspace.context.now()
+            date = GeneralLedgerSetup(workspace.context).processingDate
             cycle = String(CompanySetup(workspace.context).settings.number("scycle"))
+            workspace.completed("gl-batch-new-menu")
         }
     }
 
@@ -119,7 +188,12 @@ private struct LedgerBatchEditor: View {
             draft.description = description
             draft.expectedItems = Int(count.isEmpty ? "0" : count) ?? -1
             draft.gross = try money(gross)
-            let lines = try entries.map { JournalLine(date: parts($0.date), account: $0.account, amount: try money($0.amount), memo: $0.memo) }
+            draft.tax = usesTax ? try money(tax) : 0
+            draft.defaultBranch = defaultBranch
+            let lines = try entries.map {
+                JournalLine(date: parts($0.date), account: $0.account, branch: $0.branch,
+                            amount: try money($0.amount), memo: $0.memo, tax: usesTax ? try money($0.tax) : 0)
+            }
             _ = try LedgerBatches(workspace.context).add(draft, lines: lines)
             workspace.completed("gl-batch")
             dismiss()

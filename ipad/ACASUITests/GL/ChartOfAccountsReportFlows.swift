@@ -27,6 +27,7 @@ final class ChartOfAccountsReportFlows: XCTestCase {
             button.tap()
         }
         XCTAssertTrue(app.staticTexts["gl.accounts.print.result"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["gl.report.share"].exists)
         XCTAssertTrue(app.staticTexts["case.verdict.match"].waitForExistence(timeout: 5))
         let screenshot = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
         screenshot.name = "\(id) 一致"
