@@ -26,18 +26,16 @@ python3 ipad/ACASUITests/PL/record_equivalence.py "$UDID" ipad/.derived/Build/Pr
 
 不一致の修正後は、最後に `PL-414` のようなケース ID を指定すると該当分だけを実行します。各回のディレクトリは別にしてください。録画開始と各ケース開始は同じ時計で記録され、判定は Simulator のオーバーレイと実行ログに残ります。
 
-帳票原本のある追加ケースは、アプリ内でサイズと SHA-256 を照合し、Simulator のアプリコンテナに実測バイトを書き出します。次のパスを `summarize_equivalence.py` の `actual_reports` に指定すると原本との直接比較を追加できます。
+帳票原本のある追加ケースは、アプリ内でサイズと SHA-256 を照合します。録画コマンドは実測バイトを試行ごとの `reports/` に保存し、集計時に同じ試行の帳票だけを原本と直接比較します。以前の録画で `reports/` がない場合は、直接照合できなかった旨を記載し、ログの判定を使います。
 
-```sh
-CONTAINER="$(xcrun simctl get_app_container "$UDID" jp.acas.ipad data)"
-ls "$CONTAINER/Library/Caches/pl-evidence"
-```
-
-各回の実測帳票を保存してから同じケースを再実行してください。録画の結合と集計には
+録画の結合と集計には
 `ffmpeg` と `ffprobe` を使用します。実行ディレクトリは初回から時系列で指定します。
 
 ```sh
+mkdir -p "$DELIVERABLES" "$WORK"
 python3 ipad/ACASUITests/PL/assemble_equivalence.py "$DELIVERABLES" "$WORK" "$HOME/acas-pl-run-1" "$HOME/acas-pl-run-2"
-python3 ipad/ACASUITests/PL/summarize_equivalence.py "$EVIDENCE" "$ACTUAL_REPORTS" "$DELIVERABLES" \
-  "$WORK/timeline.json" --diagnoses "$WORK/diagnoses.json" --sha "$(git rev-parse HEAD)"
+python3 ipad/ACASUITests/PL/summarize_equivalence.py "$EVIDENCE" "$DELIVERABLES" \
+  "$WORK/timeline.json" --sha "$(git rev-parse HEAD)"
 ```
+
+調査済みの原因・対処を追記する場合のみ、ケース ID から日本語の説明文字列への JSON オブジェクトを作成し、`--diagnoses "$WORK/diagnoses.json"` を追加します。診断ファイルがなければこの指定は不要です。
