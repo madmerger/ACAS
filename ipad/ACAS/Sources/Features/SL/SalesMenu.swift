@@ -4,11 +4,17 @@ import SwiftUI
 struct SalesMenu: View {
     let workspace: Workspace
     let onExit: () -> Void
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @State private var entered = false
+    @State private var exitCount = 0
 
     var body: some View {
         if entered {
             actions
+                .id(exitCount)
+                .safeAreaInset(edge: .top, spacing: 0) {
+                    if exitCount > 0 { SalesExitNotice() }
+                }
         } else {
             SalesDateView(workspace: workspace, onConfirm: { entered = true })
         }
@@ -108,8 +114,13 @@ struct SalesMenu: View {
             Section {
                 NavigationLink(slText("sales.common.title")) { SalesCommonSettingsView(workspace: workspace) }
                     .accessibilityIdentifier("sales.common")
-                Button(slText("sales.exit.title"), action: onExit)
-                    .accessibilityIdentifier("sales.exit")
+                Button(slText("sales.exit.title")) {
+                    if horizontalSizeClass == .compact {
+                        exitCount += 1
+                    }
+                    onExit()
+                }
+                .accessibilityIdentifier("sales.exit")
             }
         }
     }
