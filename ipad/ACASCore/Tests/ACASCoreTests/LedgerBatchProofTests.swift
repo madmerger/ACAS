@@ -41,5 +41,10 @@ final class LedgerBatchProofTests: XCTestCase {
         XCTAssertEqual(all.map(\.verified), [true, false])
         XCTAssertEqual(batches.all.map(\.closed), [true, false, false])
         XCTAssertThrowsError(try posting.postCurrentCycle())
+        try batches.amendHeader(number: 2, cycle: 1, items: 1, gross: 12_345, tax: 0, description: "訂正")
+        XCTAssertEqual(batches.all[1].description, "訂正")
+        XCTAssertTrue(try XCTUnwrap(proof.generate(batch: 2).first).verified)
+        XCTAssertEqual(try posting.postCurrentCycle().batches, 2)
+        XCTAssertThrowsError(try batches.amendHeader(number: 2, cycle: 1, items: 1, gross: 1, tax: 0, description: ""))
     }
 }

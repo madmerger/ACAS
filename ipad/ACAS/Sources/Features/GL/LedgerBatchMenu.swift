@@ -42,11 +42,27 @@ struct LedgerBatchMenu: View {
 struct LedgerBatchMaintenanceMenu: View {
     let workspace: Workspace
     @State private var choosingBatch = false
+    @State private var editingBatch: LedgerBatch?
     @State private var proofReports: [LedgerBatchProof.Report] = []
     @State private var proofStatus: String?
 
     var body: some View {
         List {
+            NavigationLink(ledgerText("batch-amend.title")) {
+                List(LedgerBatches(workspace.context).all.filter { !$0.posted }) { batch in
+                    Button("\(batch.id)　\(batch.description)") { editingBatch = batch }
+                        .accessibilityIdentifier("gl.batch.amend.\(batch.id)")
+                }
+                .navigationTitle(ledgerText("batch-amend.title"))
+                .onAppear { workspace.completed("gl-batch-amend-menu") }
+                .sheet(item: $editingBatch, onDismiss: {
+                    proofReports = []
+                    proofStatus = nil
+                }) { batch in
+                    NavigationStack { LedgerBatchHeaderEditor(workspace: workspace, batch: batch) }
+                }
+            }
+            .accessibilityIdentifier("gl.batch.amend")
             Button(ledgerText("batch-proof.all")) { proof() }
                 .accessibilityIdentifier("gl.batch.proof.all")
             Button(ledgerText("batch-proof.one")) { choosingBatch = true }
@@ -101,6 +117,66 @@ struct LedgerBatchMaintenanceMenu: View {
             workspace.completed(number == nil ? "gl-batch-proof-all" : "gl-batch-proof-one")
         } catch {
             proofStatus = ledgerText("batch-proof.failed")
+        }
+    }
+}
+
+private struct LedgerBatchHeaderEditor: View {
+    let workspace: Workspace
+    let batch: LedgerBatch
+    @Environment(\.dismiss) private var dismiss
+    @State private var cycle = ""
+    @State private var items = ""
+    @State private var gross = ""
+    @State private var tax = ""
+    @State private var description = ""
+    @State private var error: String?
+
+    var body: some View {
+        Form {
+            field("batch-cycle", $cycle, .numberPad)
+            field("batch-count", $items, .numberPad)
+            field("batch-gross", $gross, .numbersAndPunctuation)
+            if CompanySetup(workspace.context).settings.text("vat") == "Y" || batch.tax != 0 {
+                field("batch-tax", $tax, .numbersAndPunctuation)
+            }
+            field("batch-description", $description, .default)
+            Button(ledgerText("action.save"), action: save)
+                .accessibilityIdentifier("gl.batch.amend.save")
+            if let error { Text(error) }
+        }
+        .navigationTitle(ledgerText("batch-amend.title"))
+        .toolbar {
+            ToolbarItem(placement: .cancellationAction) {
+                Button("action.close") { dismiss() }
+            }
+        }
+        .onAppear {
+            cycle = String(batch.cycle)
+            items = String(batch.items)
+            gross = "\(batch.gross / 100).\(Cobol.z(Int(batch.gross % 100), 2))"
+            tax = "\(batch.tax / 100).\(Cobol.z(Int(batch.tax % 100), 2))"
+            description = batch.description
+        }
+    }
+
+    private func field(_ key: String, _ value: Binding<String>, _ keyboard: UIKeyboardType) -> some View {
+        TextField(ledgerText(key), text: value)
+            .keyboardType(keyboard)
+            .accessibilityIdentifier("gl.batch.amend." + key)
+    }
+
+    private func save() {
+        do {
+            guard let cycle = Int(cycle) else { throw LedgerBatches.Error.cycle }
+            guard let items = Int(items) else { throw LedgerBatches.Error.items }
+            try LedgerBatches(workspace.context).amendHeader(number: batch.id, cycle: cycle, items: items,
+                gross: LedgerBatchEditor.money(gross), tax: LedgerBatchEditor.money(tax), description: description)
+            dismiss()
+        } catch let problem as LedgerBatches.Error {
+            error = ledgerText("batch-error." + String(describing: problem))
+        } catch {
+            self.error = ledgerText("batch-error.storage")
         }
     }
 }
@@ -215,12 +291,12 @@ private struct LedgerBatchEditor: View {
             var draft = LedgerBatchDraft(cycle: cycle, defaultNumber: selectedDefault, direction: direction, date: parts(date))
             draft.description = description
             draft.expectedItems = Int(count.isEmpty ? "0" : count) ?? -1
-            draft.gross = try money(gross)
-            draft.tax = usesTax ? try money(tax) : 0
+            draft.gross = try Self.money(gross)
+            draft.tax = usesTax ? try Self.money(tax) : 0
             draft.defaultBranch = defaultBranch
             let lines = try entries.map {
                 JournalLine(date: parts($0.date), account: $0.account, branch: $0.branch,
-                            amount: try money($0.amount), memo: $0.memo, tax: usesTax ? try money($0.tax) : 0)
+                            amount: try Self.money($0.amount), memo: $0.memo, tax: usesTax ? try Self.money($0.tax) : 0)
             }
             _ = try LedgerBatches(workspace.context).add(draft, lines: lines)
             workspace.completed("gl-batch")
@@ -232,7 +308,7 @@ private struct LedgerBatchEditor: View {
         }
     }
 
-    private func money(_ input: String) throws -> Int64 {
+    fileprivate static func money(_ input: String) throws -> Int64 {
         if input.isEmpty { return 0 }
         let negative = input.first == "-"
         let parts = input.dropFirst(negative ? 1 : 0).split(separator: ".", omittingEmptySubsequences: false)
