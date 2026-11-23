@@ -553,6 +553,36 @@ final class PurchaseLedgerTests: XCTestCase {
         }
     }
 
+    func testPaymentPostingUsesFreeGLBatchAfterInvoicePosting() throws {
+        let ledger = try makeLedger()
+        var configuration = ledger.system
+        configuration.setInt("level-1", 1)
+        configuration.setInt("next-batch", 2)
+        configuration.setInt("bl-next-batch", 1)
+        try ledger.systemFile.write(1, configuration.bytes)
+        var invoice = PurchaseLedger.Transaction(date: ledger.processingDate)
+        invoice.supplier = try addSupplier(ledger)
+        invoice.lines[0].code = "a1"
+        invoice.lines[0].net = 10_000
+        try ledger.saveTransaction(invoice)
+        try ledger.postTransactions()
+        let batchPath = ledger.base + "batch.dat"
+        let firstKey = Array("200002".utf8)
+        let firstBatch = try XCTUnwrap(ledger.store.read(batchPath, key: firstKey))
+
+        var payment = PurchaseLedger.Payment(date: ledger.processingDate)
+        payment.supplier = invoice.supplier
+        payment.amount = 5_000
+        payment.allocations = try ledger.proposedAllocations(supplier: invoice.supplier, amount: payment.amount, date: payment.date)
+        let number = try ledger.savePayment(payment)
+        XCTAssertEqual(ledger.system.int("bl-next-batch"), 2)
+        try ledger.proofPayments()
+        XCTAssertEqual(try ledger.postPayments().map(\.number), [number])
+        XCTAssertEqual(ledger.store.read(batchPath, key: firstKey), firstBatch)
+        XCTAssertNotNil(ledger.store.read(batchPath, key: Array("200003".utf8)))
+        XCTAssertEqual(ledger.system.int("bl-next-batch"), 4)
+    }
+
     func testPaymentSkipsOccupiedInvoiceNumber() throws {
         let ledger = try makeLedger()
         let code = try addSupplier(ledger)

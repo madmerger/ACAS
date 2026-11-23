@@ -44,11 +44,17 @@ extension PurchaseLedger {
         let gl = settings.int("level-1") == 1
         let irs = settings.str("irs-instead") == "Y"
         let batchPath = base + "batch.dat"
-        let firstBatch = max(1, settings.int("bl-next-batch"))
+        var nextBatch = max(1, settings.int("bl-next-batch"))
+        var batchNumbers: [Int64] = []
         if gl {
-            for offset in 0...((payments.count - 1) / 99) {
-                let key = Array(("2" + Cobol.z(firstBatch + Int64(offset), 5)).utf8)
-                guard store.read(batchPath, key: key) == nil else { throw Error.duplicateTransaction }
+            for _ in 0...((payments.count - 1) / 99) {
+                while nextBatch <= Int64(Int16.max),
+                      store.read(batchPath, key: Array(("2" + Cobol.z(nextBatch, 5)).utf8)) != nil {
+                    nextBatch += 1
+                }
+                guard nextBatch < Int64(Int16.max) else { throw Error.duplicateTransaction }
+                batchNumbers.append(nextBatch)
+                nextBatch += 1
             }
         }
         let items = openItemRecords()
@@ -100,7 +106,7 @@ extension PurchaseLedger {
             if gl {
                 if offset % 99 == 0 {
                     batch = Record(PurchaseRecords.batchLayout)
-                    batch.setInt("batch-nos", firstBatch + Int64(offset / 99))
+                    batch.setInt("batch-nos", batchNumbers[offset / 99])
                     batch.setInt("ledger", 2)
                     batch.setInt("entered", settings.int("run-date"))
                     batch.setInt("bcycle", settings.int("scycle"))
@@ -134,7 +140,7 @@ extension PurchaseLedger {
         printer.write(Cobol.x("", 29) + Cobol.x("Journal Totals", 25) + Cobol.x("", 41) + paymentFigures(summary[1]), after: 2)
         try printer.close()
         if gl && !irs { settings.setInt("postings", Int64(rrn)) }
-        if gl { settings.setInt("bl-next-batch", firstBatch + Int64((payments.count - 1) / 99 + 1)) }
+        if gl { settings.setInt("bl-next-batch", nextBatch) }
         settings["oi-5-flag"] = "Y"
         settings.setInt("p-flag-p", 0)
         try systemFile.write(1, settings.bytes)
