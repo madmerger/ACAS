@@ -537,7 +537,7 @@ Report Attributes	帳票条件
 Status	状態
 Details Ok To File (Y/N) ...........[Y]	保存してよいですか (Y/N) ...........[Y]
 Extra Charge Discount Account	追加料金・値引勘定
-Extra Charge/Discount Description - [	追加料金/値引 摘要                -
+Extra Charge/Discount Description - [	追加料金/値引 摘要                - [
 Extra Charge/Discount Percentage  - [     ]	追加料金/値引 率                  - [     ]
 Extra Charge/Discount Type (C/D)  - [ ]	追加料金/値引 種別 (C/D)          - [ ]
 Invoice Entry Level (1, 2) 	請求入力レベル (1, 2)
@@ -918,7 +918,7 @@ Sundry Income Accounts	雑収入勘定
 Trading and Profit & Loss Account	売上総利益・損益計算書
 Give password [    ]	パスワード入力[    ]
 ACAS System Setup Routine - Level 1	ACAS システム初期設定 - レベル 1
-Enter the Company Name :- [	会社名を入力してください:-
+Enter the Company Name :- [	会社名を入力してください:-[
 Please verify that name is correct (Y/N) :- [ ]	名称が正しいか確認してください (Y/N) :-     [ ]
 Using General  Ledger (Y/N) ? :- [ ]	総勘定元帳を使用  (Y/N) ? :-     [ ]
 Using Purchase Ledger (Y/N) ? :- [ ]	買掛元帳を使用    (Y/N) ? :-     [ ]
