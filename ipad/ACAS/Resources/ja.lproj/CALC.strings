@@ -18,6 +18,7 @@
 "calculation.output" = "計算結果";
 "calculation.validCode" = "有効なコードです";
 "calculation.invalidCode" = "入力したコードは無効です";
+"calculation.code_too_long" = "取引先コードは６桁で入力してください";
 "calculation.normalized" = "日付表記";
 "calculation.serial" = "日付の通し番号";
 "calculation.invalidDate" = "入力した日付は無効です";

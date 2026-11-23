@@ -40,7 +40,7 @@ struct CalculationForm: View {
         case date(serial: Int, normalized: String)
         case invalidDate
         case value(String, String)
-        case invalidNumber, numberTooLong, divisionByZero
+        case invalidNumber, numberTooLong, codeTooLong, divisionByZero
 
         #if DEBUG
         var oracleValues: [String: String] {
@@ -53,7 +53,7 @@ struct CalculationForm: View {
                 ["integer": "0", "normalized": "", "valid": "false"]
             case .value(let name, let value):
                 [name: value]
-            case .invalidNumber, .numberTooLong, .divisionByZero:
+            case .invalidNumber, .numberTooLong, .codeTooLong, .divisionByZero:
                 [:]
             }
         }
@@ -152,7 +152,10 @@ struct CalculationForm: View {
         }
         switch function {
         case .checkDigit:
-            return .digit(Maps09.checkDigit(inputs["code", default: ""]))
+            let code = inputs["code", default: ""]
+            guard code.count <= 6 else { return .codeTooLong }
+            guard code.utf8.allSatisfy({ $0 < 128 }) else { return .digit(nil) }
+            return .digit(Maps09.checkDigit(code))
         case .date:
             guard let date = Calc.convertDate(inputs["date", default: ""]) else { return .invalidDate }
             return .date(serial: date.serial, normalized: date.normalized)
@@ -198,6 +201,9 @@ struct CalculationForm: View {
         case .numberTooLong:
             Text("calculation.number_too_long", tableName: "CALC")
                 .accessibilityIdentifier("calc.error.numberTooLong")
+        case .codeTooLong:
+            Text("calculation.code_too_long", tableName: "CALC")
+                .accessibilityIdentifier("calc.error.codeTooLong")
         case .divisionByZero:
             Text("calculation.divisionByZero", tableName: "CALC")
         }

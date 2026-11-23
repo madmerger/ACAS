@@ -87,6 +87,18 @@ final class CalculationFlows: XCTestCase {
     }
 
     @MainActor
+    func testRejectsCheckDigitInputLongerThanSixCharacters() {
+        let app = openCalculation()
+        let code = app.textFields["calculation.code"]
+        code.tap()
+        code.typeText("K9P34Y9")
+        app.buttons["action.calculate"].tap()
+        XCTAssertEqual(app.staticTexts["calc.error.codeTooLong"].label, "取引先コードは６桁で入力してください")
+        XCTAssertFalse(app.staticTexts["calculation.result"].exists)
+        XCTAssertFalse(app.staticTexts["calculation.valid"].exists)
+    }
+
+    @MainActor
     func testCALCIdenticalToLegacy() throws {
         let fixture = try XCTUnwrap(Bundle(for: Self.self).url(
             forResource: "calc-suite", withExtension: "json", subdirectory: "fixtures"
