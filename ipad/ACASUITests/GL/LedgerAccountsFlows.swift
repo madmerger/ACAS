@@ -22,8 +22,23 @@ final class LedgerAccountsFlows: XCTestCase {
     }
 
     @MainActor
+    func testGL028() throws {
+        try checkRejected("GL-028", message: "科目の種類に0、1、9のいずれかを入力してください", reset: "type")
+    }
+
+    @MainActor
     func testGL029() throws {
         try checkRejected("GL-029", message: "決算書の配置コードを半角英字１文字で入力してください")
+    }
+
+    @MainActor
+    func testGL030() throws {
+        try checkRejected("GL-030", message: "見出し階層に1～4を入力してください", reset: "level")
+    }
+
+    @MainActor
+    func testGL031() throws {
+        try checkRejected("GL-031", message: "見出し階層に1～4を入力してください", reset: "level")
     }
 
     @MainActor
@@ -98,9 +113,10 @@ final class LedgerAccountsFlows: XCTestCase {
     }
 
     @MainActor
-    private func checkRejected(_ id: String, message: String) throws {
+    private func checkRejected(_ id: String, message: String, reset: String? = nil) throws {
         let app = try submitAccount(id)
         XCTAssertTrue(app.staticTexts[message].waitForExistence(timeout: 5))
+        if let reset { XCTAssertEqual(app.textFields["gl.account." + reset].value as? String, "0") }
         captureMatch(app, id)
     }
 
@@ -121,6 +137,16 @@ final class LedgerAccountsFlows: XCTestCase {
         try fill(app, "gl.account.code", values["account"])
         if let name = values["name"] as? String { try fill(app, "gl.account.name", name) }
         if let placement = values["placement"] as? String { try fill(app, "gl.account.placement", placement) }
+        for key in ["type", "level"] {
+            if let value = values[key] as? String {
+                let field = app.textFields["gl.account." + key]
+                XCTAssertTrue(field.waitForExistence(timeout: 5))
+                let old = try XCTUnwrap(field.value as? String)
+                field.tap()
+                field.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: old.count) + value)
+                XCTAssertEqual(field.value as? String, value)
+            }
+        }
         tap(app, "gl.account.save")
         return app
     }

@@ -30,6 +30,17 @@ final class LedgerDefaultsFlows: XCTestCase {
         try checkMenu("GL-207")
     }
 
+    @MainActor
+    func testGL208() throws {
+        let (app, _) = try openMenu("GL-208")
+        tap(app, "gl.defaults.add")
+        XCTAssertTrue(app.buttons["gl.defaults.setup.keep"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["gl.defaults.setup.reset"].exists)
+        XCTAssertEqual(app.staticTexts["gl.defaults.setup.warning"].label,
+                       "初めて設定する場合は初期化を選択してください。初期化すると既存の既定勘定が消去されます。")
+        captureMatch(app, "GL-208")
+    }
+
     @MainActor func testGL209() throws { try checkMenu("GL-209") }
     @MainActor func testGL210() throws { try checkMenu("GL-210") }
 

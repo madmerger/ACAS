@@ -17,7 +17,12 @@ final class TrialBalanceFlows: XCTestCase {
     }
 
     @MainActor
-    private func checkTrialBalance(_ id: String, print: Bool) throws {
+    func testGL226() throws {
+        try checkTrialBalance("GL-226", print: true, report: "structured")
+    }
+
+    @MainActor
+    private func checkTrialBalance(_ id: String, print: Bool, report: String = "detail") throws {
         continueAfterFailure = false
         let fixture = try XCTUnwrap(Bundle(for: Self.self).url(forResource: id, withExtension: "json",
                                                                subdirectory: "fixtures"))
@@ -34,7 +39,7 @@ final class TrialBalanceFlows: XCTestCase {
         let detail = app.buttons["gl.trial-balance.detail"]
         XCTAssertTrue(detail.waitForExistence(timeout: 5))
         if print {
-            detail.tap()
+            app.buttons["gl.trial-balance." + report].tap()
             XCTAssertTrue(app.staticTexts["gl.trial-balance.result"].waitForExistence(timeout: 5))
         }
         XCTAssertTrue(app.staticTexts["case.verdict.match"].waitForExistence(timeout: 5))

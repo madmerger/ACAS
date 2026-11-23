@@ -95,6 +95,23 @@ final class LedgerMenuReachabilityFlows: XCTestCase {
     }
 
     @MainActor
+    func testGL011() throws { try checkArchiveSortEnd("GL-011") }
+
+    @MainActor
+    func testGL228() throws { try checkArchiveSortEnd("GL-228") }
+
+    @MainActor
+    private func checkArchiveSortEnd(_ id: String) throws {
+        try check(id, path: ["gl.archive-sort"], buttons: []) { app in
+            let status = app.staticTexts["gl.archive-sort.result"]
+            XCTAssertTrue(status.waitForExistence(timeout: 5))
+            XCTAssertEqual(status.label, "処理が終了しました")
+            XCTAssertTrue(app.navigationBars["元帳印刷：仕訳の並べ替え"].exists)
+            XCTAssertFalse(app.buttons["gl.report.share"].exists)
+        }
+    }
+
+    @MainActor
     func testGL229() throws {
         try check("GL-229", path: [], buttons: ["gl.final-print"]) { app in
             XCTAssertFalse(app.buttons["gl.final-print"].isEnabled)

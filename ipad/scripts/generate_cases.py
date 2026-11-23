@@ -24,6 +24,7 @@ WORKFLOWS = {
     "SYS-202": ("system-unavailable-orders", "受注管理が利用できないことを確認"),
     "SYS-203": ("system-unavailable-payroll", "給与管理が利用できないことを確認"),
     "SYS-204": ("system-unavailable-retail", "店頭販売が利用できないことを確認"),
+    "SYS-205": ("system-session-end", "会計管理の作業を終了する"),
     "SYS-206": ("system-company-data", "会社・期間設定の表示を確認"),
     "SYS-207": ("system-initial-report-confirmation", "初期登録で利用領域を選択"),
     "SYS-208": ("system-initial-report-confirmation", "初期登録で会社・期間を設定"),
@@ -40,6 +41,7 @@ WORKFLOWS = {
     "GL-008": ("gl-cycle-close-menu", "期間締めの確認画面を表示"),
     "GL-009": ("gl-trial-balance-menu", "試算表メニューを表示"),
     "GL-010": ("gl-financial-statements-date", "損益計算書・貸借対照表の基準日を表示"),
+    "GL-011": ("gl-archive-sort-ended", "元帳印刷の並べ替えが終了することを確認"),
     "GL-020": ("gl-account-add", "新規の見出し勘定を登録"),
     "GL-021": ("gl-account-edit", "既存の見出し勘定の名称を変更"),
     "GL-022": ("gl-account-delete", "残高ゼロの明細勘定を削除"),
@@ -48,7 +50,10 @@ WORKFLOWS = {
     "GL-025": ("gl-account-error-reservedCode", "予約済みの科目コードを拒否する"),
     "GL-026": ("gl-account-error-invalidPrefix", "売掛元帳用の科目コードを拒否する"),
     "GL-027": ("gl-account-error-invalidPrefix", "買掛元帳用の科目コードを拒否する"),
+    "GL-028": ("gl-account-error-invalidType", "無効な科目の種類を拒否する"),
     "GL-029": ("gl-account-error-invalidPlacement", "無効な決算書配置コードを拒否する"),
+    "GL-030": ("gl-account-error-invalidLevel", "下限未満の見出し階層を拒否する"),
+    "GL-031": ("gl-account-error-invalidLevel", "上限を超える見出し階層を拒否する"),
     "GL-032": ("gl-account-edit-missing", "未登録の勘定科目を変更画面で検索"),
     "GL-033": ("gl-chart-print", "勘定科目一覧を出力"),
     "GL-034": ("gl-trial-balance-detail", "詳細試算表を出力"),
@@ -59,6 +64,15 @@ WORKFLOWS = {
     "GL-040": ("gl-defaults-save", "既定勘定を更新"),
     "GL-041": ("gl-defaults-missing-account", "存在しない既定勘定の保存結果を確認"),
     "GL-042": ("gl-defaults-list", "既定勘定の一覧を確認"),
+    "GL-043": ("gl-batch-cycle-cycleTooEarly", "過去の会計サイクルを拒否する"),
+    "GL-044": ("gl-batch-cycle-cycleTooLate", "先の会計サイクルを拒否する"),
+    "GL-045": ("gl-batch-exit-default", "既定勘定を選ばず仕訳入力を終了"),
+    "GL-046": ("gl-batch-draft", "仕訳の明細日付の入力結果を比較"),
+    "GL-047": ("gl-batch-cancel", "一時既定勘定を使った仕訳明細を取り消す"),
+    "GL-048": ("gl-batch-error-account", "空の明細勘定を拒否する"),
+    "GL-049": ("gl-batch-draft", "仕訳明細にゼロを入力する"),
+    "GL-050": ("gl-batch-draft", "仕訳明細の入力日を変えずに日付選択を閉じる"),
+    "GL-051": ("gl-batch-draft", "明細の日付から勘定入力に進む"),
     "GL-200": ("gl-business-date", "総勘定元帳を開いて処理日入力へ進む"),
     "GL-201": ("gl-business-date-reopen", "総勘定元帳メニューから処理日入力を開く"),
     "GL-202": ("gl-accounts-menu", "勘定科目の管理メニューに到達"),
@@ -67,6 +81,7 @@ WORKFLOWS = {
     "GL-205": ("gl-chart-inquiry-menu", "勘定科目一覧の照会画面を表示"),
     "GL-206": ("gl-chart-print", "勘定科目一覧の帳票を確認"),
     "GL-207": ("gl-defaults-menu", "既定勘定の管理メニューを表示"),
+    "GL-208": ("gl-defaults-setup", "既定勘定を追加するか初期化するかを確認"),
     "GL-209": ("gl-defaults-menu", "既定勘定の管理メニューまで到達"),
     "GL-210": ("gl-defaults-menu", "既定勘定の管理メニューまで到達"),
     "GL-211": ("gl-final-setup-unavailable", "決算書の設定が利用不可であることを確認"),
@@ -84,7 +99,9 @@ WORKFLOWS = {
     "GL-223": ("gl-cycle-close-menu", "期間締めの事前確認を表示"),
     "GL-224": ("gl-trial-balance-menu", "試算表メニューを表示"),
     "GL-225": ("gl-trial-balance-detail", "詳細試算表の帳票を確認"),
+    "GL-226": ("gl-trial-balance-structured", "階層別試算表の帳票を確認"),
     "GL-227": ("gl-financial-statements-date", "損益計算書・貸借対照表の基準日を表示"),
+    "GL-228": ("gl-archive-sort-ended", "元帳印刷の並べ替えが終了することを確認"),
     "GL-229": ("gl-final-print-unavailable", "設定済み決算書の印刷が利用不可であることを確認"),
     "GL-230": ("gl-close-ledger", "総勘定元帳を閉じて会計管理メニューに戻る"),
     "GL-231": ("system-company-data", "総勘定元帳から会社・期間設定を開く"),
@@ -189,7 +206,7 @@ def fixture(evidence, case):
             raise ValueError(f"帳票スプールと原本が一致しません: {path}")
     seeded = workflow == "sales-proof" or workflow.startswith(
         (
-            "system-", "gl-account-", "gl-accounts-", "gl-chart-", "gl-batch-", "gl-business-date",
+            "system-", "gl-account-", "gl-accounts-", "gl-archive-", "gl-chart-", "gl-batch-", "gl-business-date",
             "gl-close-ledger", "gl-cycle-close-", "gl-defaults-", "gl-final-", "gl-financial-statements-",
             "gl-posting-", "gl-trial-balance-",
         )
@@ -209,6 +226,10 @@ def fixture(evidence, case):
                       name=fields[2] if len(fields) > 2 else None)
         if len(fields) > 4:
             values["placement"] = fields[4]
+        if workflow == "gl-account-error-invalidType":
+            values["type"] = fields[3]
+        if workflow == "gl-account-error-invalidLevel":
+            values["level"] = fields[5]
     if workflow == "gl-account-edit-missing":
         code, branch = recorded_field(evidence, run, r"([0-9]{6})/([0-9]{2}) Does not exist!")
         values.update(account=code, branch=branch)
@@ -221,6 +242,18 @@ def fixture(evidence, case):
     if workflow in ("gl-defaults-save", "gl-defaults-missing-account"):
         number, account, *rest = text_inputs[3].rstrip("\r").split("\r")
         values.update(entry=int(number), account=account.replace(".", ""), transactionCode=rest[0] if rest else None)
+    if workflow.startswith("gl-batch-cycle-"):
+        cycle, = recorded_field(evidence, run, r"Enter Cycle\s*:- \[([0-9]{2})\] GL10[89]")
+        values["cycle"] = cycle
+    if case["id"] in {"GL-046", "GL-047", "GL-048", "GL-049", "GL-050", "GL-051"}:
+        cycle = text_inputs[9].split("\r")
+        values.update(temporaryAccount=text_inputs[4].replace(".", "").strip(),
+                      transactionCode=text_inputs[6].strip(), cycle=cycle[0],
+                      items=cycle[1], gross=cycle[2], memo=cycle[4])
+        if len(text_inputs) > 10:
+            line = text_inputs[10].split("\r")
+            if len(line) > 1 and line[1]:
+                values.update(lineAccount=line[1].replace(".", ""), lineAmount=line[2], lineMemo=line[3])
     changes = expected_changes(evidence, targets.get("keyed_record_diff"))
     if case["id"] == "SYS-001":
         changes += analysis_changes(evidence, run)

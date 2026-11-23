@@ -1,6 +1,41 @@
 import XCTest
 
 final class LedgerBatchFlows: XCTestCase {
+    @MainActor func testGL043() throws { try checkCycle("GL-043", error: "GL108") }
+    @MainActor func testGL044() throws { try checkCycle("GL-044", error: "GL109") }
+
+    @MainActor
+    private func checkCycle(_ id: String, error: String) throws {
+        continueAfterFailure = false
+        let url = try XCTUnwrap(Bundle(for: Self.self).url(forResource: id, withExtension: "json",
+                                                           subdirectory: "fixtures"))
+        let fixture = try Data(contentsOf: url)
+        let payload = try XCTUnwrap(JSONSerialization.jsonObject(with: fixture) as? [String: Any])
+        let fields = try XCTUnwrap(payload["input"] as? [String: Any])
+        let cycle = try XCTUnwrap(fields["cycle"] as? String)
+        let app = XCUIApplication()
+        app.launchEnvironment["ACAS_FIXTURE"] = fixture.base64EncodedString()
+        app.launchArguments = ["-AppleLanguages", "(ja)", "-AppleLocale", "ja_JP"]
+        XCUIDevice.shared.orientation = .landscapeLeft
+        app.launch()
+        for id in ["section.general", "gl.confirm-date", "gl.batches", "gl.batch.new"] { tap(app, id) }
+        let field = app.textFields["gl.batch-cycle"]
+        XCTAssertTrue(field.waitForExistence(timeout: 5))
+        let previous = try XCTUnwrap(field.value as? String)
+        enter(app, "gl.batch-cycle", String(repeating: XCUIKeyboardKey.delete.rawValue, count: previous.count) + cycle)
+        XCTAssertEqual(field.value as? String, cycle)
+        tap(app, "gl.batch.save")
+        let message = app.staticTexts["gl.batch.error"]
+        let form = app.collectionViews["gl.batch.form"]
+        for _ in 0..<3 where !message.isHittable { form.swipeUp() }
+        XCTAssertTrue(message.label.hasPrefix(error))
+        XCTAssertTrue(app.staticTexts["case.verdict.match"].waitForExistence(timeout: 5))
+        let screenshot = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        screenshot.name = "\(id) 一致"
+        screenshot.lifetime = .keepAlways
+        add(screenshot)
+    }
+
     @MainActor
     func testRegisterJournalBatch() throws {
         continueAfterFailure = false

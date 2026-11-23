@@ -16,6 +16,18 @@ final class SystemMenuFlows: XCTestCase {
     @MainActor func testSYS204() throws { try checkUnavailable("SYS-204", section: "retail") }
 
     @MainActor
+    func testSYS205() throws {
+        let app = try launch("SYS-205")
+        let end = app.buttons["system.session.end"]
+        XCTAssertTrue(end.waitForExistence(timeout: 5))
+        end.tap()
+        let ended = app.staticTexts["system.session.ended"]
+        XCTAssertTrue(ended.waitForExistence(timeout: 5))
+        XCTAssertEqual(ended.label, "作業が終了しました")
+        captureMatch(app, "SYS-205")
+    }
+
+    @MainActor
     private func checkUnavailable(_ id: String, section: String) throws {
         let app = try launch(id)
         let item = app.descendants(matching: .any)["section." + section].firstMatch
