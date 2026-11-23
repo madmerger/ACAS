@@ -118,6 +118,18 @@ public sealed partial class PurchaseLedger(Db database, TimeProvider? clock = nu
         record.SetN("notes", hasNotes ? 1 : 0);
         if (!(create ? database.Write(SupplierFile, key, record.B) : database.Rewrite(SupplierFile, key, record.B)))
             return false;
+        if (create && database.Read(SystemFile, SystemKey) is { } raw)
+        {
+            var system = Layouts.System.From(raw);
+            if (system.S("Purchase-Ledger") != "Y")
+            {
+                database.Create(DeliveryFile);
+                system.Set("Purchase-Ledger", "Y");
+                system.SetN("File-Status-14", 1);
+                system.SetN("File-Status-22", 1);
+                database.Put(SystemFile, SystemKey, system.B);
+            }
+        }
         if (hasNotes)
         {
             var note = NoteLayout.New();
