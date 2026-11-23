@@ -40,7 +40,41 @@ final class StockFlows: XCTestCase {
     func testReachST202() throws { try verifyMaster("ST-202") }
 
     @MainActor
+    func testReachST205() throws {
+        try verifyItemReach("ST-205", menu: "master", destination: "delete", action: "削除")
+    }
+
+    @MainActor
+    func testReachST206() throws {
+        try verifyItemReach("ST-206", menu: "master", destination: "renumber", action: "確定",
+                            additionalFields: ["新しい品目コード"])
+    }
+
+    @MainActor
+    func testReachST207() throws {
+        try verifyItemReach("ST-207", menu: "master", destination: "lookup", action: "照会")
+    }
+
+    @MainActor
     func testReachST209() throws { try verifyMovements("ST-209") }
+
+    @MainActor
+    func testReachST210() throws {
+        try verifyItemReach("ST-210", menu: "movements", destination: "receive", action: "確定",
+                            additionalFields: ["stock.quantity", "stock.price"])
+    }
+
+    @MainActor
+    func testReachST211() throws {
+        try verifyItemReach("ST-211", menu: "movements", destination: "issue", action: "確定",
+                            additionalFields: ["stock.quantity"])
+    }
+
+    @MainActor
+    func testReachST212() throws {
+        try verifyItemReach("ST-212", menu: "movements", destination: "barcode", action: "確定",
+                            additionalFields: ["stock.quantity", "stock.price"])
+    }
 
     @MainActor
     func testReachST215() throws { try verifyReports("ST-215") }
@@ -89,6 +123,20 @@ final class StockFlows: XCTestCase {
     @MainActor
     private func verifyRebuild(_ id: String) throws {
         try verifyReach(id, destination: "rebuild", labels: ["一時ファイルから復元"])
+    }
+
+    @MainActor
+    private func verifyItemReach(_ id: String, menu: String, destination: String, action: String,
+                                 additionalFields: [String] = []) throws {
+        let app = try launchReach(id)
+        for identifier in ["stock.confirmDate", "stock." + menu, "stock." + destination] { tap(app, identifier) }
+        for field in ["stock.code"] + additionalFields {
+            XCTAssertTrue(app.textFields[field].waitForExistence(timeout: 5), id)
+        }
+        let button = app.buttons["stock.action"]
+        XCTAssertTrue(button.waitForExistence(timeout: 5), id)
+        XCTAssertEqual(button.label, action)
+        verifyVerdict(app, id)
     }
 
     @MainActor

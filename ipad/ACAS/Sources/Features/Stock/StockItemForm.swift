@@ -35,6 +35,7 @@ struct StockItemForm: View {
     @State private var selected: String?
     @State private var message = ""
     @State private var confirmingDelete = false
+    @State private var opened = false
 
     private var stock: StockService { StockService(workspace.context) }
     private var isReceipt: Bool { operation == .receive || operation == .barcode }
@@ -96,6 +97,15 @@ struct StockItemForm: View {
             }
         }
         .navigationTitle(operation.title)
+        .onAppear {
+            guard !opened else { return }
+            opened = true
+            if isReceipt || operation == .issue {
+                do { try stock.prepareMovementEntry() }
+                catch { message = stockError(error) }
+            }
+            workspace.completed("stock." + operation.rawValue + ".open")
+        }
         .confirmationDialog(stockText("delete.confirm"), isPresented: $confirmingDelete, titleVisibility: .visible) {
             Button(stockText("action.confirmDelete"), role: .destructive, action: submit)
         }

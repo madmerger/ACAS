@@ -73,6 +73,30 @@ final class StockServiceTests: XCTestCase {
         XCTAssertNil(store.readRaw("ledgers/acas/prt-1"))
     }
 
+    func testOpeningMovementClearsTheReportAndPreservesExistingAudit() throws {
+        let store = try FileStore()
+        let service = StockService(BusinessContext(store: store))
+        var settings = Record(SystemLayout.layout)
+        settings.setInt("stk-audit-used", 1)
+        try service.settings.write(1, settings.bytes)
+        var item = StockService.Item()
+        item.code = "ITEM001"
+        item.abbreviation = "ITEM"
+        item.name = "品目"
+        try service.save(item)
+        let original = EvidenceComparison.snapshot(store)
+        try store.writeRaw("ledgers/acas/prt-1", [0x20])
+
+        try service.prepareMovementEntry()
+
+        XCTAssertEqual(store.readRaw("ledgers/acas/prt-1"), [])
+        XCTAssertEqual(store.readRaw("ledgers/acas/staudit.dat"), [])
+        try store.writeRaw("ledgers/acas/staudit.dat", [0x20])
+        try service.prepareMovementEntry()
+        XCTAssertEqual(store.readRaw("ledgers/acas/staudit.dat"), [0x20])
+        XCTAssertEqual(EvidenceComparison.snapshot(store), original)
+    }
+
     func testMissingMovementItemClearsReportWithoutChangingStock() throws {
         let store = try FileStore()
         let service = StockService(BusinessContext(store: store))

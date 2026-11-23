@@ -3,6 +3,20 @@ import Foundation
 extension StockService {
     public enum Direction { case receipt, issue }
 
+    private var movementReportPath: String { directory + "prt-1" }
+
+    public func prepareMovementEntry() throws {
+        try store.transaction {
+            guard store.exists(path) else { return }
+            let audit = directory + "staudit.dat"
+            if let settingBytes = settings.read(1), Record(SystemLayout.layout, bytes: settingBytes).int("stk-audit-used") == 1,
+               !store.exists(audit) {
+                try store.writeRaw(audit, [])
+            }
+            try store.writeRaw(movementReportPath, [])
+        }
+    }
+
     public func move(_ direction: Direction, code: String, quantity: Int64, price: Int64 = 0,
                      valueOverride: Int64? = nil, date: Date, codeOnly: Bool = false) throws -> Item {
         let result = try store.transaction {
@@ -26,8 +40,7 @@ extension StockService {
             throw Failure.invalidInput
         }
         let receiving = direction == .receipt
-        let report = directory + "prt-1"
-        if store.exists(path) { try store.writeRaw(report, []) }
+        if store.exists(path) { try store.writeRaw(movementReportPath, []) }
         var row: Record
         do {
             row = try codeOnly ? record(code) : movementRecord(code)
@@ -95,7 +108,7 @@ extension StockService {
         let current = context.calendar.dateComponents([.hour, .minute], from: today)
         let printed = Maps04.format(Maps04.toDate(day(today)), dateForm: format) + " "
             + Cobol.z(current.hour ?? 0, 2) + ":" + Cobol.z(current.minute ?? 0, 2)
-        try store.writeRaw(report, Self.movementReport(receiving: receiving, company: system.str("usera"),
+        try store.writeRaw(movementReportPath, Self.movementReport(receiving: receiving, company: system.str("usera"),
             printed: printed, processing: processing, row: row, quantity: quantity, price: price, change: change,
             dates: dates))
         return Item(row)

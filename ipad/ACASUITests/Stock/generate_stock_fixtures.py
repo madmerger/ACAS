@@ -20,7 +20,13 @@ REACH_CASES = {
     "ST-200": ("date.initial", "在庫開始時の処理日入力"),
     "ST-201": ("date.reopen", "在庫処理日の再表示"),
     "ST-202": ("master", "在庫品目マスター管理"),
+    "ST-205": ("delete", "在庫品目削除"),
+    "ST-206": ("renumber", "在庫コード変更"),
+    "ST-207": ("lookup", "在庫品目照会"),
     "ST-209": ("movements", "入出庫・発注記録"),
+    "ST-210": ("receive", "入庫入力"),
+    "ST-211": ("issue", "出庫入力"),
+    "ST-212": ("barcode", "バーコード入庫"),
     "ST-215": ("reports", "在庫帳票メニュー"),
     "ST-221": ("closePeriod", "在庫期間締めの準備"),
     "ST-224": ("rebuild", "在庫ファイル圧縮の準備"),
@@ -34,14 +40,31 @@ def reach_fixture(evidence, case):
     run = evidence_path(evidence, legacy["evidence"][0])
     targets = legacy["comparison_targets"]
     changes = expected_changes(evidence, targets["keyed_record_diff"])
-    if legacy["verdict"] != "合格" or changes or targets["report_files"] or not targets["screen_text"]:
-        raise ValueError(f'{case["id"]}: 画面到達のみのレガシー実測ではありません')
+    if legacy["verdict"] != "合格" or changes or not targets["screen_text"]:
+        raise ValueError(f'{case["id"]}: 台帳を更新しない画面到達のレガシー実測ではありません')
     with evidence_path(evidence, run / "terminal.cast").open(encoding="utf-8") as recording:
         timestamp = json.loads(recording.readline())["timestamp"]
+    seed = json.loads(base64.b64decode(snapshot_seed(evidence, run)))
+    reports = {}
+    if destination in {"receive", "issue", "barcode"}:
+        report = "ledgers/acas/prt-1"
+        if targets["report_files"] != [str(Path(legacy["evidence"][0]) / "files" / report)]:
+            raise ValueError(f'{case["id"]}: 入出庫の帳票実測が必要です')
+        original = evidence_path(evidence, run / "before-files" / report).read_bytes()
+        seed["files"][report] = {"type": "raw", "hex": original.hex()}
+        reports[report] = evidence_path(evidence, targets["report_files"][0]).read_bytes().hex()
+        audit = "ledgers/acas/staudit.dat"
+        if (run / "before-files" / audit).is_file():
+            original = evidence_path(evidence, run / "before-files" / audit).read_bytes()
+            seed["files"][audit] = {"type": "raw", "hex": original.hex()}
+        reports[audit] = evidence_path(evidence, run / "files" / audit).read_bytes().hex()
+    elif targets["report_files"]:
+        raise ValueError(f'{case["id"]}: 画面到達で予期しない帳票が生成されました')
     return {
         "id": case["id"], "title": title + "への到達確認",
         "workflow": f"stock.{destination}.open", "dateSeconds": timestamp,
-        "seed": snapshot_seed(evidence, run), "changes": changes, "reports": {},
+        "seed": base64.b64encode(json.dumps(seed, separators=(",", ":")).encode()).decode(),
+        "changes": changes, "reports": reports,
     }
 
 
