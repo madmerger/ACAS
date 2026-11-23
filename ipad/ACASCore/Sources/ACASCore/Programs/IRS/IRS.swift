@@ -47,12 +47,22 @@ enum IRS {
         let l = Layout("irs-post", [
             ("key", .n9(digits: 5, scale: 0, signed: false)), ("code", .x(2)), ("date", .x(8)),
             ("dr", .n9(digits: 5, scale: 0, signed: false)), ("cr", .n9(digits: 5, scale: 0, signed: false)),
-            ("amount", .x(10)), ("legend", .x(32)),
+            ("amount", .x(9)), ("legend", .x(32)),
             ("vat-ac-def", .n9(digits: 2, scale: 0, signed: false)), ("vat-side", .x(2)),
-            ("vat-amount", .x(10)),
+            ("vat-amount", .x(9)),
         ])
         return l
     }()
+
+    /// fdpost-irs.cob (postings2irs.dat: SL/PL から IRS への転記受け渡しファイル, 84 桁)
+    static let ledgerPostLayout = Layout("irs-ledger-post", [
+        ("batch", .n9(digits: 5, scale: 0, signed: false)), ("post-number", .n9(digits: 5, scale: 0, signed: false)),
+        ("code", .x(2)), ("date", .x(8)),
+        ("dr", .n9(digits: 5, scale: 0, signed: false)), ("cr", .n9(digits: 5, scale: 0, signed: false)),
+        ("amount", .x(9)), ("legend", .x(32)),
+        ("vat-ac-def", .n9(digits: 2, scale: 0, signed: false)), ("vat-side", .x(2)),
+        ("vat-amount", .x(9)),
+    ])
 
     /// wsdflt.cob (default-record, 256 桁)
     static let defaultSize = 256
@@ -87,7 +97,7 @@ enum IRS {
     static func newNL() -> Record { Record(nlLayout) }
     static func newPost() -> Record {
         var r = Record(postLayout)
-        r.setRaw("amount", Array("0000000000".utf8)); r.setRaw("vat-amount", Array("0000000000".utf8))
+        r.setRaw("amount", Array("000000000".utf8)); r.setRaw("vat-amount", Array("000000000".utf8))
         return r
     }
 
