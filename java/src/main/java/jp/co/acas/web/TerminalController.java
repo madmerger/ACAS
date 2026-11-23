@@ -77,8 +77,18 @@ public class TerminalController {
         if (!isReport(name) || !store.exists(name)) throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         List<String> lines = new ArrayList<>();
         for (var e : store.all(name)) {
-            String line = new String(e.getValue(), StandardCharsets.ISO_8859_1);
-            lines.add("ja".equals(lang) ? Messages.jaReport(line) : line);
+            lines.add(new String(e.getValue(), StandardCharsets.ISO_8859_1));
+        }
+        if ("ja".equals(lang)) {
+            boolean systemParameters = !lines.isEmpty() && lines.getFirst().startsWith("SYS002 (");
+            for (int i = 0; i < lines.size(); i++) {
+                String line = lines.get(i);
+                // 設定帳票の冒頭では桁 28〜70 が会社名・住所のデータ領域です。
+                lines.set(i, systemParameters && i >= 5 && i <= 9 && line.length() >= 70
+                        ? Messages.jaReport(line.substring(0, 27)) + line.substring(27, 70)
+                                + Messages.jaReport(line.substring(70))
+                        : Messages.jaReport(line));
+            }
         }
         return Map.of("name", name, "lines", lines);
     }
