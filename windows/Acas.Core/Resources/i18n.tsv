@@ -105,3 +105,24 @@ Page -	頁 -
 ---Level---   Header       Detail	---階層---    ヘッダ       明細
 --Placement--      ----------Name----------	----配置-----      ----------名称----------
 Profit Centre	利益センター
+Default File Utilities	既定勘定ユーティリティ
+GL100 Chart of Accounts not set up	GL100 勘定科目表が未登録です
+GL010 Hit Return	GL010 Enterを押す
+Select the required function by number    [ ]	機能を番号で選択してください              [ ]
+(1)  Set-Up Default Accounts	(1)  既定勘定の登録
+(2)  Amend  Default Accounts	(2)  既定勘定の修正
+(3)  Display The Defaults	(3)  既定勘定の照会
+(9)  Return To System Menu	(9)  システムメニューへ戻る
+Default Accounts Set-Up	既定勘定の登録
+Add To Existing Defaults (Y/N) ? - [ ]	既存の既定値に追加 (Y/N) ?       - [ ]
+N.B. (1) If first time set-up for this client answer no (N)	注   (1) この顧客で初回登録の場合は (N) と答える
+(2) Answering no (N)	(2) (N) と答えると
+destroys	破棄
+the existing defaults	既存の既定値を
+Enter Password  - [    ]	パスワード入力  - [    ]
+Default Accounts Amendment	既定勘定の修正
+Enter Number To Alter (Return to exit)  :- [  ]	変更する番号を入力 (Enterで終了)        :- [  ]
+default accounts display	既定勘定の照会
+End of listing. Hit return for Menu.	一覧終了。Enterでメニューへ
+A/C Nos	勘定番号
+Code Vat	区分 税
