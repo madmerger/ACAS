@@ -2,6 +2,61 @@ import XCTest
 
 final class LedgerAccountsFlows: XCTestCase {
     @MainActor
+    func testGL021() throws {
+        let app = try openEditList("GL-021")
+        tap(app, "gl.accounts.edit.30000000")
+        let name = app.textFields["gl.account.name"]
+        XCTAssertEqual(name.value as? String, "ASSETS")
+        name.tap()
+        name.typeText(" UPDATED")
+        XCTAssertEqual(name.value as? String, "ASSETS UPDATED")
+        tap(app, "gl.account.save")
+        captureMatch(app, "GL-021")
+    }
+
+    @MainActor
+    func testGL022() throws {
+        let app = try openEditList("GL-022")
+        tap(app, "gl.accounts.edit.30000100")
+        tap(app, "gl.account.delete")
+        tap(app, "gl.account.delete.confirm")
+        XCTAssertTrue(app.staticTexts["case.verdict.match"].waitForExistence(timeout: 5))
+        let deleted = app.buttons["gl.accounts.edit.30000100"]
+        let refresh = XCTNSPredicateExpectation(predicate: NSPredicate(format: "exists == false"), object: deleted)
+        XCTAssertEqual(XCTWaiter.wait(for: [refresh], timeout: 5), .completed)
+        captureMatch(app, "GL-022")
+    }
+
+    @MainActor
+    func testGL204() throws {
+        let app = try openEditList("GL-204")
+        XCTAssertTrue(app.buttons["gl.accounts.edit.30000000"].waitForExistence(timeout: 5))
+        captureMatch(app, "GL-204")
+    }
+
+    @MainActor
+    private func openEditList(_ id: String) throws -> XCUIApplication {
+        continueAfterFailure = false
+        let url = try XCTUnwrap(Bundle(for: Self.self).url(forResource: id, withExtension: "json", subdirectory: "fixtures"))
+        let app = XCUIApplication()
+        app.launchEnvironment["ACAS_FIXTURE"] = try Data(contentsOf: url).base64EncodedString()
+        app.launchArguments = ["-AppleLanguages", "(ja)", "-AppleLocale", "ja_JP"]
+        XCUIDevice.shared.orientation = .landscapeLeft
+        app.launch()
+        for id in ["section.general", "gl.confirm-date", "gl.accounts", "gl.accounts.edit"] { tap(app, id) }
+        return app
+    }
+
+    @MainActor
+    private func captureMatch(_ app: XCUIApplication, _ id: String) {
+        XCTAssertTrue(app.staticTexts["case.verdict.match"].waitForExistence(timeout: 5))
+        let attachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        attachment.name = "\(id) 一致"
+        attachment.lifetime = .keepAlways
+        add(attachment)
+    }
+
+    @MainActor
     func testGL020() throws {
         continueAfterFailure = false
         let url = try XCTUnwrap(Bundle(for: Self.self).url(forResource: "GL-020", withExtension: "json", subdirectory: "fixtures"))
