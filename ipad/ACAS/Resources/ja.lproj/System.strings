@@ -1,3 +1,15 @@
+"system.master.customer.title" = "初期得意先登録";
+"system.master.customer.code" = "得意先コード";
+"system.master.customer.name" = "名称";
+"system.master.customer.address" = "住所1";
+"system.master.customer.address2" = "住所2";
+"system.master.customer.phone" = "電話番号";
+"system.master.customer.email" = "メールアドレス";
+"system.master.customer.saved" = "得意先を登録しました";
+"system.master.customer.missingCompany" = "先に会社を登録してください";
+"system.master.customer.duplicate" = "得意先コードは登録済みです";
+"system.master.customer.invalid" = "得意先コードまたは入力内容が正しくありません";
+"system.master.customer.failed" = "得意先を登録できませんでした";
 "system.company" = "会社設定";
 "system.company.name" = "会社名";
 "system.company.saved" = "会社設定を保存しました";

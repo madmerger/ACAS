@@ -12,8 +12,33 @@ final class SalesReachFlows: XCTestCase {
         let fixture = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(contentsOf: url)) as? [String: Any])
         let customers = try XCTUnwrap(fixture["customers"] as? [String: String])
         XCTAssertEqual(customers.count, 2)
+        let contacts = try XCTUnwrap(fixture["contacts"] as? [String: [String: String]])
+        XCTAssertEqual(Set(contacts.keys), Set(customers.keys))
         try reach("SL-090", through: ["sales.customers", "sales.customer.view"],
-                  title: "得意先表示", verdict: nil) { app in
+                  title: "得意先表示", prepare: { app in
+            let entry = app.buttons["system.master.customer"]
+            XCTAssertTrue(entry.waitForExistence(timeout: 5))
+            entry.tap()
+            for code in contacts.keys.sorted() {
+                for name in ["code", "name", "address", "address2", "phone", "email"] {
+                    guard let value = contacts[code]?[name], !value.isEmpty else { continue }
+                    let input = app.textFields["system.master.field." + name]
+                    for _ in 0..<3 where !input.isHittable { app.swipeUp() }
+                    XCTAssertTrue(input.isHittable, name)
+                    input.tap()
+                    input.typeText(value + "\n")
+                }
+                let save = app.buttons["system.master.save"]
+                for _ in 0..<3 where !save.isHittable { app.swipeUp() }
+                XCTAssertTrue(save.isHittable)
+                save.tap()
+                let status = app.staticTexts["system.master.status"]
+                for _ in 0..<3 where !status.isHittable { app.swipeUp() }
+                XCTAssertTrue(status.waitForExistence(timeout: 5))
+                XCTAssertEqual(status.label, "得意先を登録しました")
+                self.attach(app, name: "SL-090-SYS-\(code)")
+            }
+        }) { app in
             let field = app.textFields["sales.customer.code"]
             let name = app.descendants(matching: .any)["sales.customer.summary.name"].firstMatch
             var previous = ""
@@ -363,6 +388,7 @@ final class SalesReachFlows: XCTestCase {
     }
 
     private func reach(_ id: String, through route: [String], title: String, verdict: String? = "match",
+                       prepare: (XCUIApplication) -> Void = { _ in },
                        check: (XCUIApplication) -> Void) throws {
         continueAfterFailure = false
         let url = try fixtureURL(id)
@@ -373,6 +399,7 @@ final class SalesReachFlows: XCTestCase {
         app.launch()
         XCTAssertTrue(app.staticTexts[id].waitForExistence(timeout: 10))
         XCTAssertTrue(app.staticTexts["case.verdict.running"].exists)
+        prepare(app)
         for identifier in ["section.sales", "sales.date.save"] + route {
             let button = app.descendants(matching: .any).matching(identifier: identifier).firstMatch
             for _ in 0..<3 where !button.isHittable {
