@@ -29,6 +29,22 @@ REPORT_CASES = {
 }
 
 
+def exit_fixture(evidence, case):
+    legacy = case["legacy_result"]
+    run = evidence_path(evidence, Path(legacy["evidence"][0]))
+    result = read_json(evidence_path(evidence, run / "result.json"))
+    changes = expected_changes(evidence, legacy["comparison_targets"]["keyed_record_diff"])
+    if legacy["verdict"] != "合格" or changes or result["exitstatus"] != 0 or result["changed"] or result["deleted"]:
+        raise ValueError("IRS-222: 台帳を更新せず終了したレガシー実測が必要です")
+    with evidence_path(evidence, run / "terminal.cast").open(encoding="utf-8") as recording:
+        timestamp = json.loads(recording.readline())["timestamp"]
+    return {
+        "id": case["id"], "title": "簡易記帳を閉じる", "workflow": "irs.close",
+        "dateSeconds": timestamp, "seed": snapshot_seed(evidence, run),
+        "changes": changes, "reports": {},
+    }
+
+
 def seeded_accounts(evidence, run):
     records = read_json(evidence_path(evidence, run / "before-records/records.json"))
     return {
@@ -138,7 +154,8 @@ def main():
         save(args.output / (case_id + ".json"), reach_fixture(evidence, cases[case_id]))
     for case_id in REPORT_CASES:
         save(args.output / (case_id + ".json"), report_fixture(evidence, cases[case_id]))
-    print(f"簡易記帳の実画面用データ {1 + len(REACH_CASES) + len(REPORT_CASES)} 件")
+    save(args.output / "IRS-222.json", exit_fixture(evidence, cases["IRS-222"]))
+    print(f"簡易記帳の実画面用データ {2 + len(REACH_CASES) + len(REPORT_CASES)} 件")
 
 
 if __name__ == "__main__":
