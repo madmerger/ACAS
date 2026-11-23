@@ -1,3 +1,4 @@
+import ACASCore
 import SwiftUI
 
 enum SectionID: String, CaseIterable, Identifiable {
@@ -23,10 +24,11 @@ enum SectionID: String, CaseIterable, Identifiable {
 struct MainMenu: View {
     @ObservedObject var workspace: Workspace
     @State private var section: SectionID? = .system
+    @State private var stockAuditSaveFailed = false
 
     var body: some View {
         NavigationSplitView {
-            List(SectionID.allCases, selection: $section) { item in
+            List(SectionID.allCases, selection: Binding(get: { section }, set: selectSection)) { item in
                 NavigationLink(value: item) {
                     Label(item.title, systemImage: item.symbol)
                 }
@@ -44,11 +46,29 @@ struct MainMenu: View {
             }
             .id(section)
         }
+        .alert(stockText("error.saveAuditStatus"), isPresented: $stockAuditSaveFailed) {
+            Button("閉じる", role: .cancel) {}
+        }
         #if DEBUG
         .safeAreaInset(edge: .top, spacing: 0) {
             if let evidence = workspace.evidence { CaseBanner(evidence: evidence) }
         }
         #endif
+    }
+
+    private func selectSection(_ next: SectionID?) {
+        if section == .stock, next != .stock, !saveStockAuditStatus() { return }
+        section = next
+    }
+
+    private func saveStockAuditStatus() -> Bool {
+        do {
+            try StockService(workspace.context).saveMovementAuditStatus()
+            return true
+        } catch {
+            stockAuditSaveFailed = true
+            return false
+        }
     }
 
     @ViewBuilder private func functions(in section: SectionID) -> some View {
@@ -60,9 +80,9 @@ struct MainMenu: View {
         case .purchases:
             PurchaseIntegrationMenu(workspace: workspace)
         case .stock:
-            StockMenu(workspace: workspace) {
-                self.section = nil
-                workspace.completed("stock.close")
+            StockMenu(workspace: workspace, saveAuditStatus: saveStockAuditStatus) {
+                selectSection(nil)
+                if self.section == nil { workspace.completed("stock.close") }
             }
         case .incomplete:
             BookkeepingMenu(workspace: workspace) {
