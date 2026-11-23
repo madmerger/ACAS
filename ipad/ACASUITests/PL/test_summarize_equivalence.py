@@ -3,7 +3,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from summarize_equivalence import read_run
+from summarize_equivalence import comparison_note, observed_summary, original_reports, read_run
 
 
 class RunHistoryTests(unittest.TestCase):
@@ -19,6 +19,8 @@ class RunHistoryTests(unittest.TestCase):
                 "Test Case '-[ACASUITests.PurchaseFlows testPL222]' started.\n"
                 "ACAS_PL_START|PL-222|140.5\n"
                 "ACAS_PL_RESULT|PL-222|case.verdict.mismatch|prt-1: 期待 200 B / 実測 10\n"
+                "PurchaseFlows.swift:4: error: -[ACASUITests.PurchaseFlows testPL222] : "
+                "XCTAssertNotEqual failed: case.verdict.mismatch — 帳票差分\n"
                 "Test Case '-[ACASUITests.PurchaseFlows testPL222]' failed (23.00 seconds).\n"
             )
             results = read_run(run)
@@ -27,3 +29,26 @@ class RunHistoryTests(unittest.TestCase):
             self.assertIn("入力画面で停止", results["PL-090"]["reason"])
             self.assertEqual(results["PL-222"]["verdict"], "不一致")
             self.assertEqual(results["PL-222"]["reason"], "prt-1: 期待 200 B / 実測 10")
+            self.assertEqual(comparison_note(results["PL-222"]["reason"]), "prt-1：原本 200 B、実測 10 B")
+
+    def test_report_summary_uses_observed_bytes_and_original_size(self):
+        case = {"id": "PL-222", "legacy_result": {"comparison_targets": {
+            "report_files": ["runs/sample/files/ledgers/acas/prt-1"],
+        }}}
+        result = {"verdict": "不一致", "reason": "ledgers/acas/prt-1: 期待 1200 B / 実測 3"}
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            expected = root / case["legacy_result"]["comparison_targets"]["report_files"][0]
+            expected.parent.mkdir(parents=True)
+            expected.write_bytes(b"a" * 1200)
+            actual = root / "actual" / "PL-222" / "prt-1"
+            actual.parent.mkdir(parents=True)
+            actual.write_bytes(b"abc")
+            reports = original_reports(case, root, root / "actual", result["verdict"])
+        self.assertEqual(observed_summary(case, result, reports), "帳票 3 B を生成、原本 1,200 B")
+        self.assertIn("最初の差分位置 1", reports[0][1])
+
+    def test_summary_distinguishes_screen_reached_from_legacy_not_executed(self):
+        case = {"id": "PL-003", "title": "Purchase Ledger Enquiry — 画面表示"}
+        result = {"verdict": "対象外", "reason": "到達先ヘッダに無い: PL015"}
+        self.assertEqual(observed_summary(case, result, []), "PL015 画面に到達、旧証跡では未実施")
