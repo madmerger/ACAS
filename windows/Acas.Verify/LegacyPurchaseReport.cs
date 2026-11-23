@@ -2,6 +2,8 @@ using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
 
+namespace Acas.Verify;
+
 internal static class LegacyPurchaseReport
 {
     public static bool Matches(string path, string body, string title, bool posting, bool analysis)

@@ -14,6 +14,7 @@ public sealed record Scenario(string Id, string Title, string Subsystem, bool Ex
     };
 
     public int Group => GroupOf(Subsystem);
+    public IReadOnlyList<string> MenuPath { get; init; } = [];
 
     public static IReadOnlyList<Scenario> Load(string ledger)
     {
@@ -33,7 +34,11 @@ public sealed record Scenario(string Id, string Title, string Subsystem, bool Ex
             item.TryGetProperty("input_data", out var input) ? input.Clone() : default,
             item.GetProperty("baseline").GetString()!,
             legacy.TryGetProperty("comparison_targets", out var targets) ? targets.Clone() : default,
-            item.TryGetProperty("runner", out var runner) && runner.TryGetProperty("steps", out var steps) ? steps.Clone() : default);
+            item.TryGetProperty("runner", out var runner) && runner.TryGetProperty("steps", out var steps) ? steps.Clone() : default)
+        {
+            MenuPath = item.TryGetProperty("menu_path", out var path)
+                ? path.EnumerateArray().Select(part => part.GetString()!).ToArray() : []
+        };
     }
 
     public (string First, string Second, string AutomationId) CalcInput()

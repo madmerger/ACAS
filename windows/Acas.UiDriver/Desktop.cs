@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.InteropServices;
 using Acas.Core;
 using Acas.Core.Engine;
 using FlaUI.Core.AutomationElements;
@@ -107,12 +108,25 @@ internal sealed partial class Desktop : IDisposable
         (_automation.GetDesktop().FindFirstChild(c => c.ByProcessId(_process.Id).And(c.ByAutomationId("Confirmation"))) ??
          Window.FindFirstDescendant(c => c.ByAutomationId("Confirmation")))?.AsWindow();
 
-    public System.Drawing.Rectangle PrepareRecording()
+    public System.Drawing.Rectangle PrepareRecording(bool topmost = false)
     {
         Window.Patterns.Window.Pattern.SetWindowVisualState(WindowVisualState.Maximized);
-        return Wait(() => Window.Patterns.Window.Pattern.WindowVisualState.Value == WindowVisualState.Maximized
-            ? Window : null, "最大化したアプリの画面範囲").BoundingRectangle;
+        var window = Wait(() => Window.Patterns.Window.Pattern.WindowVisualState.Value == WindowVisualState.Maximized
+            ? Window : null, "最大化したアプリの画面範囲");
+        if (topmost) KeepAbove(_process.MainWindowHandle, activate: true);
+        return window.BoundingRectangle;
     }
+
+    public static void KeepAbove(IntPtr handle, bool activate)
+    {
+        const uint noSize = 0x0001, noMove = 0x0002, noActivate = 0x0010, showWindow = 0x0040;
+        if (!SetWindowPos(handle, new IntPtr(-1), 0, 0, 0, 0, noSize | noMove | showWindow | (activate ? 0 : noActivate)))
+            throw new InvalidOperationException("ウィンドウを最前面に移動できません。");
+    }
+
+    [DllImport("user32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool SetWindowPos(IntPtr window, IntPtr insertAfter, int x, int y, int width, int height, uint flags);
 
     public void OpenTree(string id)
     {

@@ -252,6 +252,8 @@ internal sealed partial class PurchaseScreens
     private Screen ScheduledPaymentProof()
     {
         const string title = "支払予定の検証";
+        if (!_ledger.PaymentScheduleFileAvailable)
+            return Notice(title, "支払予定ファイルがありません。");
         if (_ledger.ScheduledPayments() is not { } payments)
             return Notice(title, "支払予定ファイルのレコード長が定義と一致しません。");
         int pageSize = Math.Max(6, _ledger.System().I("Page-Lines"));

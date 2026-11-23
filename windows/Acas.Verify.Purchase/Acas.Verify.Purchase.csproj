@@ -7,5 +7,6 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\Acas.App\Acas.App.csproj" />
+    <ProjectReference Include="..\Acas.Verify\Acas.Verify.csproj" />
   </ItemGroup>
 </Project>

@@ -4,6 +4,7 @@ using System.IO;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Interop;
 using System.Windows.Media;
 using Acas.Verify;
 
@@ -37,15 +38,22 @@ internal static class Program
                 Content = new Border { Background = new SolidColorBrush(Color.FromRgb(23, 43, 69)),
                     Padding = new Thickness(14, 8, 14, 8), Child = text }
             };
-            var started = DateTimeOffset.Now;
+            var started = DateTimeOffset.UtcNow;
             var stopwatch = Stopwatch.StartNew();
-            if (scenarios.Any(s => s.Group == 2)) Console.WriteLine($"ドライバ開始日時：{started:O}");
+            if (scenarios.Any(s => s.Group == 2))
+                Console.WriteLine($"ドライバ開始日時：{started.ToLocalTime():O}");
+            if (scenarios.Any(s => s.Group == 3))
+                Console.WriteLine($"操作時計の開始（協定世界時）：{started:O}");
             ui.Startup += async (_, _) =>
             {
                 try
                 {
                     var results = await Task.Run(() => Run(app, options, scenarios, stopwatch,
-                        label => overlay.Dispatcher.Invoke(() => text.Text = label),
+                        label => overlay.Dispatcher.Invoke(() =>
+                        {
+                            text.Text = label;
+                            Desktop.KeepAbove(new WindowInteropHelper(overlay).Handle, activate: false);
+                        }),
                         bounds => overlay.Dispatcher.Invoke(() =>
                         {
                             var dpi = VisualTreeHelper.GetDpi(overlay);
@@ -87,9 +95,11 @@ internal static class Program
             Desktop? accounting = null;
             try
             {
-                string title = $"{scenario.Id}　{scenario.Title}";
+                bool purchase = scenario.Group == 3;
+                string caseName = purchase ? Desktop.PurchaseTitle(scenario) : scenario.Title;
+                string title = $"{scenario.Id}　{caseName}";
                 double elapsed = clock.Elapsed.TotalSeconds;
-                show($"{title}\n検証中");
+                if (!purchase || scenario.Excluded) show($"{title}\n検証中");
                 Outcome outcome;
                 if (scenario.Excluded) outcome = Outcome.Exclude(scenario);
                 else
@@ -111,6 +121,16 @@ internal static class Program
                             Console.WriteLine($"アプリの画面範囲：左 {bounds.Left}、上 {bounds.Top}、幅 {bounds.Width}、高さ {bounds.Height}");
                             outcome = accounting.RunGroupTwo(scenario, options.Evidence);
                         }
+                        else if (scenario.Group == 3)
+                        {
+                            accounting = new Desktop(app, baseline: scenario.Baseline);
+                            var bounds = accounting.PrepareRecording(topmost: true);
+                            position(bounds);
+                            Console.WriteLine($"アプリの画面範囲：左 {bounds.Left}、上 {bounds.Top}、幅 {bounds.Width}、高さ {bounds.Height}");
+                            elapsed = clock.Elapsed.TotalSeconds;
+                            show($"{title}\n検証中");
+                            outcome = accounting.RunPurchase(scenario, options.Evidence);
+                        }
                         else if (scenario.Group == 4)
                         {
                             accounting = new Desktop(app, baseline: scenario.Baseline,
@@ -131,14 +151,14 @@ internal static class Program
                     }
                     catch (Exception e)
                     {
-                        outcome = scenario.Group == 2 ? Outcome.Missing(scenario, e.Message) :
-                            Outcome.Compare(scenario, false, "", e.Message, "実画面");
+                        outcome = scenario.Group is 2 or 3 ? Outcome.Missing(scenario, e.Message)
+                            : Outcome.Compare(scenario, false, "", e.Message, "実画面");
                     }
                 }
-                outcomes.Add(outcome with { VideoSeconds = elapsed });
+                outcomes.Add(outcome with { VideoSeconds = elapsed, Title = caseName });
                 show($"{title}\n{outcome.Verdict}");
                 Console.WriteLine($"{scenario.Id}　{outcome.Verdict}　{outcome.Reason}");
-                Thread.Sleep(500);
+                Thread.Sleep(scenario.Group == 3 ? 900 : 500);
             }
             finally
             {
