@@ -64,7 +64,7 @@ internal static class Program
         catch (Exception e)
         {
             Console.Error.WriteLine(e.Message);
-            Console.Error.WriteLine("使い方：Acas.UiDriver <台帳> <証跡ルート> --app <Acas.App.exe> --out <結果> [--group <①〜⑤>]");
+            Console.Error.WriteLine("使い方：Acas.UiDriver <台帳> <証跡ルート> --app <Acas.App.exe> --out <結果> [--group <①〜⑤>] [--case <ケース識別子>]");
             return 2;
         }
     }
@@ -82,32 +82,49 @@ internal static class Program
         var outcomes = new List<Outcome>();
         foreach (var scenario in scenarios)
         {
-            string title = $"{scenario.Id}　{scenario.Title}";
-            double elapsed = clock.Elapsed.TotalSeconds;
-            show($"{title}\n検証中");
-            Outcome outcome;
-            if (scenario.Excluded) outcome = Outcome.Exclude(scenario);
-            else if (scenario.Group != 5) outcome = Outcome.Missing(scenario, "このケースのネイティブ画面操作は未登録です。");
-            else
+            Desktop? accounting = null;
+            try
             {
-                try
+                string title = $"{scenario.Id}　{scenario.Title}";
+                double elapsed = clock.Elapsed.TotalSeconds;
+                show($"{title}\n検証中");
+                Outcome outcome;
+                if (scenario.Excluded) outcome = Outcome.Exclude(scenario);
+                else
                 {
-                    var (first, second, id) = scenario.CalcInput();
-                    string actual = desktop!.Calculate(id, first, second);
-                    string legacy = scenario.ExpectedLine(options.Evidence);
-                    string expected = ExpectedCalculationText(scenario.Driver!, legacy);
-                    outcome = Outcome.Compare(scenario, actual == expected, actual,
-                        $"旧証跡：「{legacy}」／期待表示：「{expected}」／新：「{actual}」", "実画面");
+                    try
+                    {
+                        if (scenario.Group == 1 && GroupOnePlan.For(scenario) is { } plan)
+                        {
+                            accounting = new Desktop(app, baseline: scenario.Baseline);
+                            position(accounting.PrepareRecording());
+                            outcome = accounting.RunGroupOne(scenario, options.Evidence, plan);
+                        }
+                        else if (scenario.Group == 5)
+                        {
+                            var (first, second, id) = scenario.CalcInput();
+                            string actual = desktop!.Calculate(id, first, second);
+                            string legacy = scenario.ExpectedLine(options.Evidence);
+                            string expected = ExpectedCalculationText(scenario.Driver!, legacy);
+                            outcome = Outcome.Compare(scenario, actual == expected, actual,
+                                $"旧証跡：「{legacy}」／期待表示：「{expected}」／新：「{actual}」", "実画面");
+                        }
+                        else outcome = Outcome.Missing(scenario, "このケースのネイティブ画面操作は未登録です。");
+                    }
+                    catch (Exception e)
+                    {
+                        outcome = Outcome.Compare(scenario, false, "", e.Message, "実画面");
+                    }
                 }
-                catch (Exception e)
-                {
-                    outcome = Outcome.Compare(scenario, false, "", e.Message, "実画面");
-                }
+                outcomes.Add(outcome with { VideoSeconds = elapsed });
+                show($"{title}\n{outcome.Verdict}");
+                Console.WriteLine($"{scenario.Id}　{outcome.Verdict}　{outcome.Reason}");
+                Thread.Sleep(500);
             }
-            outcomes.Add(outcome with { VideoSeconds = elapsed });
-            show($"{title}\n{outcome.Verdict}");
-            Console.WriteLine($"{scenario.Id}　{outcome.Verdict}　{outcome.Reason}");
-            Thread.Sleep(500);
+            finally
+            {
+                accounting?.Dispose();
+            }
         }
         return outcomes;
     }

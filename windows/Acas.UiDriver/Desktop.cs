@@ -9,28 +9,33 @@ using Microsoft.Data.Sqlite;
 
 namespace Acas.UiDriver;
 
-internal sealed class Desktop : IDisposable
+internal sealed partial class Desktop : IDisposable
 {
     private readonly UIA3Automation _automation = new();
     private readonly Process _process;
     private readonly string _folder;
+    private readonly string _databasePath;
     public Window Window { get; }
 
-    public Desktop(string executable, bool audit = false)
+    public Desktop(string executable, bool audit = false, string? baseline = null)
     {
         if (!File.Exists(executable)) throw new FileNotFoundException("アプリが見つかりません。", executable);
         _folder = Directory.CreateTempSubdirectory("acas-ui-").FullName;
         try
         {
-            string path = LocalDatabasePath.Resolve(Path.Combine(_folder, "ui.db"));
-            if (audit)
+            _databasePath = LocalDatabasePath.Resolve(Path.Combine(_folder, "ui.db"));
+            if (audit || baseline is not null)
             {
-                using (var db = new Db(path)) SeedAudit(db);
+                using (var db = new Db(_databasePath))
+                {
+                    if (audit) SeedAudit(db);
+                    else db.LoadBaseline(baseline!);
+                }
                 SqliteConnection.ClearAllPools();
             }
             var start = new ProcessStartInfo(Path.GetFullPath(executable)) { UseShellExecute = false };
             start.ArgumentList.Add("--database");
-            start.ArgumentList.Add(path);
+            start.ArgumentList.Add(_databasePath);
             _process = Process.Start(start) ?? throw new InvalidOperationException("アプリを起動できません。");
             Window = Wait(() =>
             {
@@ -143,6 +148,7 @@ internal sealed class Desktop : IDisposable
         {
             _process?.Dispose();
             _automation.Dispose();
+            SqliteConnection.ClearAllPools();
             Directory.Delete(_folder, true);
         }
     }

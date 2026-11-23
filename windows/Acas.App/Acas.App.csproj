@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Acas.Core\Acas.Core.csproj" />
+    <InternalsVisibleTo Include="Acas.Verify" />
   </ItemGroup>
 
   <PropertyGroup>

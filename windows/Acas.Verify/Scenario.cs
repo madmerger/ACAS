@@ -5,7 +5,7 @@ using Acas.Core.Programs.Calculation;
 namespace Acas.Verify;
 
 public sealed record Scenario(string Id, string Title, string Subsystem, bool Excluded, string? Evidence,
-    string? Driver, JsonElement Input)
+    string? Driver, JsonElement Input, string Baseline, JsonElement LegacyTargets, JsonElement Steps)
 {
     public static int GroupOf(string subsystem) => subsystem switch
     {
@@ -30,7 +30,10 @@ public sealed record Scenario(string Id, string Title, string Subsystem, bool Ex
             item.GetProperty("subsystem").GetString()!, legacy.GetProperty("verdict").GetString() == "未実施",
             evidence.GetArrayLength() == 0 ? null : evidence[0].GetString(),
             programs.GetArrayLength() == 0 ? null : programs[0].GetString(),
-            item.TryGetProperty("input_data", out var input) ? input.Clone() : default);
+            item.TryGetProperty("input_data", out var input) ? input.Clone() : default,
+            item.GetProperty("baseline").GetString()!,
+            legacy.TryGetProperty("comparison_targets", out var targets) ? targets.Clone() : default,
+            item.TryGetProperty("runner", out var runner) && runner.TryGetProperty("steps", out var steps) ? steps.Clone() : default);
     }
 
     public (string First, string Second, string AutomationId) CalcInput()
@@ -54,13 +57,19 @@ public sealed record Scenario(string Id, string Title, string Subsystem, bool Ex
     public string ExpectedLine(string root)
     {
         if (Evidence is null) throw new InvalidDataException("台帳に証跡がありません。");
+        string path = EvidencePath(root, Path.Combine(Evidence, "00-output.txt"));
+        return File.ReadLines(path).FirstOrDefault(line => !string.IsNullOrWhiteSpace(line))
+            ?? throw new InvalidDataException("証跡に計算結果がありません。");
+    }
+
+    internal static string EvidencePath(string root, string file)
+    {
         string dir = Path.GetFullPath(root);
-        string path = Path.GetFullPath(Path.Combine(dir, Evidence, "00-output.txt"));
+        string path = Path.GetFullPath(Path.Combine(dir, file));
         string relative = Path.GetRelativePath(dir, path);
         if (Path.IsPathRooted(relative) || relative == ".." || relative.StartsWith(".." + Path.DirectorySeparatorChar))
             throw new InvalidDataException("証跡が指定範囲外にあります。");
-        return File.ReadLines(path).FirstOrDefault(line => !string.IsNullOrWhiteSpace(line))
-            ?? throw new InvalidDataException("証跡に計算結果がありません。");
+        return path;
     }
 
     public Outcome CompareCalculation(string root)
@@ -105,18 +114,21 @@ public sealed record Outcome(string Id, string Title, string Subsystem, int Grou
         File.WriteAllText(path, JsonSerializer.Serialize(outcomes, JsonOptions));
 }
 
-public sealed record RunOptions(string Ledger, string Evidence, string Output, int? Group, string? Extra)
+public sealed record RunOptions(string Ledger, string Evidence, string Output, int? Group, string? Extra,
+    IReadOnlySet<string> Cases)
 {
     public static RunOptions Parse(string[] args, string extraFlag)
     {
         if (args.Length < 4 || (args.Length - 2) % 2 != 0) throw new ArgumentException("台帳と証跡ルートを指定してください。");
         int? group = null;
         string? output = null, extra = null;
+        var cases = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         for (int index = 2; index < args.Length; index += 2)
         {
             string value = args[index + 1];
             if (args[index] == "--out" && output is null) output = value;
             else if (args[index] == extraFlag && extra is null) extra = value;
+            else if (args[index] == "--case" && !string.IsNullOrWhiteSpace(value)) cases.Add(value);
             else if (args[index] == "--group" && group is null)
             {
                 int number = "①②③④⑤".IndexOf(value, StringComparison.Ordinal) + 1;
@@ -126,9 +138,15 @@ public sealed record RunOptions(string Ledger, string Evidence, string Output, i
             }
             else throw new ArgumentException($"不明または重複した指定です：{args[index]}");
         }
-        return new(args[0], args[1], output ?? throw new ArgumentException("結果の保存先を指定してください。"), group, extra);
+        return new(args[0], args[1], output ?? throw new ArgumentException("結果の保存先を指定してください。"), group, extra, cases);
     }
 
-    public IReadOnlyList<Scenario> Scenarios() => Scenario.Load(Ledger)
-        .Where(scenario => Group is null || Group == scenario.Group).ToArray();
+    public IReadOnlyList<Scenario> Scenarios()
+    {
+        var selected = Scenario.Load(Ledger).Where(scenario =>
+            (Group is null || Group == scenario.Group) && (Cases.Count == 0 || Cases.Contains(scenario.Id))).ToArray();
+        var missing = Cases.Except(selected.Select(scenario => scenario.Id), StringComparer.OrdinalIgnoreCase).ToArray();
+        if (missing.Length > 0) throw new ArgumentException($"指定範囲にないケースです：{string.Join("、", missing)}");
+        return selected;
+    }
 }

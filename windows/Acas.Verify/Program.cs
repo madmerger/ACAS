@@ -24,6 +24,8 @@ try
                 reason.AddRange(untranslated.EnumerateArray().Select(d => "未翻訳：" + d.GetString()));
             return Outcome.Compare(scenario, match.GetBoolean(), "旧移植版の端末再生結果", string.Join("\n", reason), "旧移植版・参考");
         }
+        if (scenario.Group == 1 && GroupOnePlan.For(scenario) is { } plan)
+            return GroupOneVerification.Run(scenario, options.Evidence, plan);
         return Outcome.Missing(scenario, "このケースの新アプリ用のヘッドレス手順は未登録です。");
     }).ToArray();
     Outcome.Write(options.Output, outcomes);
@@ -38,7 +40,7 @@ try
 catch (Exception e) when (e is ArgumentException or IOException or InvalidDataException or JsonException or InvalidOperationException)
 {
     Console.Error.WriteLine(e.Message);
-    Console.Error.WriteLine("使い方：Acas.Verify <台帳> <証跡ルート> --out <結果> [--group <①〜⑤>] [--reference <旧 Acas.Verify.dll>]");
+    Console.Error.WriteLine("使い方：Acas.Verify <台帳> <証跡ルート> --out <結果> [--group <①〜⑤>] [--case <ケース識別子>] [--reference <旧 Acas.Verify.dll>]");
     return 2;
 }
 
