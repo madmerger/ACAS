@@ -33,6 +33,19 @@ public final class FileStore: @unchecked Sendable {
 
     deinit { sqlite3_close(db) }
 
+    func transaction<T>(_ operation: () throws -> T) throws -> T {
+        lock.lock(); defer { lock.unlock() }
+        try exec("BEGIN IMMEDIATE")
+        do {
+            let result = try operation()
+            try exec("COMMIT")
+            return result
+        } catch {
+            try? exec("ROLLBACK")
+            throw error
+        }
+    }
+
     private func exec(_ sql: String) throws {
         lock.lock(); defer { lock.unlock() }
         let result = sqlite3_exec(db, sql, nil, nil, nil)

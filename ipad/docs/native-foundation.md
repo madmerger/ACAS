@@ -18,6 +18,10 @@ SwiftUI のリスト、フォーム、テーブル等に専念させ、入力・
 
 ## チェック
 
+SYS-001 の証跡生成には、Berkeley DB の索引ファイルを読み出す `db_dump` が必要。
+macOS では `command -v db_dump` で確認し、未導入なら `brew install berkeley-db` を実行して
+`$(brew --prefix berkeley-db)/bin` を `PATH` に追加する。
+
 ```sh
 # UDID は xcrun simctl list devices available で確認する。
 UDID='<iPadのUUID>'
