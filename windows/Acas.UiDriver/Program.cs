@@ -1,0 +1,112 @@
+using System.Diagnostics;
+using System.IO;
+using System.Text;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Media;
+using Acas.Core;
+using Acas.Verify;
+
+namespace Acas.UiDriver;
+
+internal static class Program
+{
+    [STAThread]
+    private static int Main(string[] args)
+    {
+        Console.OutputEncoding = Encoding.UTF8;
+        try
+        {
+            if (args is ["--audit-xaml", var source, "--out", var staticOutput])
+                return JapaneseAudit.Write(staticOutput, JapaneseAudit.Xaml(source));
+            if (args is ["--audit-ui", var auditApp, "--out", var runtimeOutput])
+            {
+                using var desktop = new Desktop(auditApp, audit: true);
+                return JapaneseAudit.Write(runtimeOutput, JapaneseAudit.Runtime(desktop));
+            }
+            var options = RunOptions.Parse(args, "--app");
+            if (options.Extra is not { } app) throw new ArgumentException("検証するアプリを指定してください。");
+            var scenarios = options.Scenarios();
+            var ui = new Application { ShutdownMode = ShutdownMode.OnExplicitShutdown };
+            var text = new TextBlock { FontSize = 18, Foreground = Brushes.White, TextWrapping = TextWrapping.Wrap };
+            var overlay = new Window
+            {
+                Title = "同一性検証", WindowStyle = WindowStyle.None, ResizeMode = ResizeMode.NoResize,
+                Width = 630, SizeToContent = SizeToContent.Height, Topmost = true, ShowActivated = false,
+                ShowInTaskbar = false, Left = SystemParameters.WorkArea.Left + 15, Top = SystemParameters.WorkArea.Top + 8,
+                Content = new Border { Background = new SolidColorBrush(Color.FromRgb(23, 43, 69)),
+                    Padding = new Thickness(14, 8, 14, 8), Child = text }
+            };
+            var stopwatch = Stopwatch.StartNew();
+            ui.Startup += async (_, _) =>
+            {
+                try
+                {
+                    var results = await Task.Run(() => Run(app, options, scenarios, stopwatch,
+                        label => overlay.Dispatcher.Invoke(() => text.Text = label),
+                        bounds => overlay.Dispatcher.Invoke(() =>
+                        {
+                            var dpi = VisualTreeHelper.GetDpi(overlay);
+                            overlay.Left = bounds.Right / dpi.DpiScaleX - overlay.Width - 24;
+                            overlay.Top = bounds.Top / dpi.DpiScaleY + 38;
+                        })));
+                    Outcome.Write(options.Output, results);
+                    ui.Shutdown(results.All(r => r.Verdict is "一致" or "対象外") ? 0 : 1);
+                }
+                catch (Exception e)
+                {
+                    Console.Error.WriteLine(e.Message);
+                    ui.Shutdown(2);
+                }
+            };
+            return ui.Run(overlay);
+        }
+        catch (Exception e)
+        {
+            Console.Error.WriteLine(e.Message);
+            Console.Error.WriteLine("使い方：Acas.UiDriver <台帳> <証跡ルート> --app <Acas.App.exe> --out <結果> [--group <①〜⑤>]");
+            return 2;
+        }
+    }
+
+    private static IReadOnlyList<Outcome> Run(string app, RunOptions options, IReadOnlyList<Scenario> scenarios,
+        Stopwatch clock, Action<string> show, Action<System.Drawing.Rectangle> position)
+    {
+        using var desktop = scenarios.Any(s => s.Group == 5 && !s.Excluded) ? new Desktop(app) : null;
+        if (desktop is not null)
+        {
+            var bounds = desktop.PrepareRecording();
+            position(bounds);
+            Console.WriteLine($"アプリの画面範囲：左 {bounds.Left}、上 {bounds.Top}、幅 {bounds.Width}、高さ {bounds.Height}");
+        }
+        var outcomes = new List<Outcome>();
+        foreach (var scenario in scenarios)
+        {
+            string title = $"{scenario.Id}　{scenario.Title}";
+            double elapsed = clock.Elapsed.TotalSeconds;
+            show($"{title}\n検証中");
+            Outcome outcome;
+            if (scenario.Excluded) outcome = Outcome.Exclude(scenario);
+            else if (scenario.Group != 5) outcome = Outcome.Missing(scenario, "このケースのネイティブ画面操作は未登録です。");
+            else
+            {
+                try
+                {
+                    var (first, second, id) = scenario.CalcInput();
+                    string actual = desktop!.Calculate(id, first, second);
+                    string expected = Calculations.Summary(scenario.Driver!, scenario.ExpectedLine(options.Evidence));
+                    outcome = Outcome.Compare(scenario, actual == expected, actual, $"旧：「{expected}」／新：「{actual}」", "実画面");
+                }
+                catch (Exception e)
+                {
+                    outcome = Outcome.Compare(scenario, false, "", e.Message, "実画面");
+                }
+            }
+            outcomes.Add(outcome with { VideoSeconds = elapsed });
+            show($"{title}\n{outcome.Verdict}");
+            Console.WriteLine($"{scenario.Id}　{outcome.Verdict}　{outcome.Reason}");
+            Thread.Sleep(500);
+        }
+        return outcomes;
+    }
+}
