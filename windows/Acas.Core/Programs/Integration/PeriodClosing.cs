@@ -140,7 +140,7 @@ public sealed partial class LedgerTransfer
             bool delete = false;
             if (header.Data != null)
             {
-                var row = ReadInvoice(sales, header.Data);
+                var row = Read(sales ? SalesInvoice : PurchaseInvoice, header.Data);
                 if (row.I("test") == 0)
                 {
                     int type = row.I("type");
