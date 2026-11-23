@@ -82,7 +82,7 @@ public static class CaseRunner
                 if (onStep != null) await onStep(-1);
                 ctx.Crt.Keys.Post(k);
             }
-            if (prog.IsFaulted && prog.Exception!.InnerException is not StopRun) { res.Error = prog.Exception.InnerException!.ToString(); break; }
+            if (prog.IsFaulted && prog.Exception!.InnerException is not StopRun and not Halt) { res.Error = prog.Exception.InnerException!.ToString(); break; }
             res.Screens.Add(ctx.Crt.VisibleLines());
             if (runDir != null)
             {

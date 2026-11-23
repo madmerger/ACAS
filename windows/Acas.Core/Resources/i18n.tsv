@@ -211,3 +211,20 @@ Batch              ----Net----    ----VAT----	バッチ             ----正味--
 Actual	実績
 * Batch Verified Ok *	* バッチ検証 正常   *
 *  Batch In ERROR   *	*  バッチ エラー    *
+Batch Status Report	バッチ状態一覧
+(1)  Display Batch Report	(1)  バッチ状態の表示
+(2)  Print Batch Report	(2)  バッチ状態の印刷
+cycle -	サイクル -
+Cycle -	サイクル -
+Page -	頁 -
+Ledger  Batch  Status       Last	元帳    バッチ 状態         最終
+---------Batch Controls---------	---------バッチ管理値-----------
+------  -----  ------     Activity	------  -----  ------     処理日
+Items  ---Gross---- -----VAT----	件数   ----総額---- ----税額----
+Header	ヘッダ
+Open	未締
+Waiting	転記待ち
+Processed	転記済
+Archived	保管済
+Enter <N> for next screen or <X> to exit :- [ ]	<N>=次画面  <X>=終了            :- [ ]
+Type return to exit.	Enterで終了します。

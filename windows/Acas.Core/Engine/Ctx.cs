@@ -4,6 +4,8 @@ namespace Acas.Core.Engine;
 
 /// <summary>プログラム終了 (STOP RUN) を表す。</summary>
 public sealed class StopRun : Exception { }
+/// <summary>レガシーのランタイム異常終了 (画面はそのまま残る)。</summary>
+public sealed class Halt : Exception { public Halt(string why) : base(why) { } }
 
 /// <summary>実行コンテキスト: 画面、ローカルDB、日時、帳票スプール。</summary>
 public sealed class Ctx
