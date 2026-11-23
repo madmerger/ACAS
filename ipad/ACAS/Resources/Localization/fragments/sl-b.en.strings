@@ -431,3 +431,15 @@
 "sl110.credit_note" = "Credit Note Re. Inv - ";
 "sl110.unapplied_alloc" = "Unapplied Credit Allocated";
 "sl110.payment" = "Payment. Received With Thanks";
+
+/* sl190 */
+"sl190.title" = "Letter Production";
+"sl190.box_date" = "*Date    [  /  /    ]                  *";
+"sl190.box_ac" = "*A/C Nos   [       ]                 ***";
+"sl190.box_value" = "*Value  [         ]*                   *";
+"sl190.notes" = "Notes";
+"sl190.note1" = " (1) - <A/C>   :  A/Cs To Match For Printing";
+"sl190.note2" = " (2) - <Value> :  Minimum O/S To Print";
+"sl190.low" = "Low Date    - [  ]";
+"sl190.medium" = "Medium Date - [  ]";
+"sl190.high" = "High Date   - [  ]";
