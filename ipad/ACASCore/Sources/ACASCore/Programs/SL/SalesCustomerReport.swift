@@ -138,7 +138,11 @@ public struct SalesCustomerReport {
                 printedPhone = phone
             } else {
                 let end = Self.doubleSpaceIndex(phone) ?? phone.count
-                printedPhone = Array(phone.prefix(max(0, end - 1))) + [0x78] + ext
+                if kind == .alphabetical {
+                    printedPhone = Array(phone.prefix(end)) + [0x20, 0x78] + ext
+                } else {
+                    printedPhone = Array(phone.prefix(max(0, end - 1))) + [0x78] + ext
+                }
             }
             let late = record.int("sales-late") == 1 ? "Y" : ""
             let dunning = record.int("sales-dunning") == 1 ? "Y" : ""

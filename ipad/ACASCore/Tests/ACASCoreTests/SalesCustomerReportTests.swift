@@ -12,6 +12,8 @@ final class SalesCustomerReportTests: XCTestCase {
             var row = Record(SalesProofRecords.salesLayout)
             row["sales-key"] = code
             row["sales-name"] = name
+            row["sales-phone"] = "0123456789"
+            row["sales-ext"] = "123"
             row.setInt("turnover-q1", 123_456)
             XCTAssertEqual(SalesProofRecords.salesFile(store).write(row), "00")
         }
@@ -20,6 +22,8 @@ final class SalesCustomerReportTests: XCTestCase {
         let alpha = try XCTUnwrap(store.readRaw(SalesCustomerReport.exportPath))
         XCTAssertEqual(String(decoding: alpha[51..<80], as: UTF8.self), "Customer Alphabetical Listing")
         XCTAssertEqual(store.readRaw("custsort.tmp"), [])
+        let alphaRow = try XCTUnwrap(alpha.split(separator: 0x0a).first { $0.starts(with: "CUST011".utf8) })
+        XCTAssertEqual(String(decoding: alphaRow.dropFirst(70).prefix(18), as: UTF8.self), "0123456789 x123   ")
         try service.prepareTurnover()
         XCTAssertEqual(store.readRaw(SalesCustomerReport.exportPath), [])
         XCTAssertEqual(try service.generate(filter, kind: .turnover).map(\.code), ["CUST011", "CUST022"])
