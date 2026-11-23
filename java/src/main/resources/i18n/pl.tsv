@@ -1,0 +1,499 @@
+# 買掛（PL）: レガシー英語文言 → 日本語文言
+# purchase メニュー
+Sub-System	ｻﾌﾞｼｽﾃﾑ
+Supplier File Maintenance	仕入先マスタ保守
+Supplier File	仕入先マスタ
+Suppler File	仕入先マスタ
+Invoice Parameter Amend	請求条件の修正
+Invoice Proof Report	請求検証帳票
+Invoice Post Extract	請求転記抽出
+Invoice Posting Report	請求転記帳票
+Payment Input	支払入力
+Payment Amend	支払修正
+Payment Proof	支払検証
+Payment Post	支払転記
+End Of Cycle Processing	期末処理
+Day Book	日記帳
+Aged Creditors Report	買掛年齢表
+Alphabetical Supplier List	仕入先一覧(名称順)
+Supplier Turnover Report	仕入先取引高表
+Supplier File Dump	仕入先マスタ出力
+Analysis	分析
+Enter <X> to exit or <Return> to continue...	<X> で終了、<Return> で続行...
+Phase 1	第1段階
+# pl000
+Supplier File Set-Up & Maintenance	仕入先マスタ登録・保守
+Set-up Supplier records	仕入先の登録
+Amend Supplier records	仕入先の修正
+Delete Supplier records	仕入先の削除
+Display Supplier records	仕入先の照会
+Print Supplier records	仕入先の印刷
+# pl010
+Supplier Record Creation	仕入先の新規登録
+Supplier Record Amendment	仕入先の修正
+Supplier Record Deletion	仕入先の削除
+Supplier Record Display	仕入先の照会
+Supplier Nos :	仕入先番号 :
+Supplier Note:	仕入先メモ:
+Supplier:	仕入先:
+Supplier	仕入先
+Check Digit {	検査数字 {
+Check Digit { }	検査数字 { }
+Escape Code	中断コード
+Addr:	住所:
+Telephone	電話
+Ext:	内:
+Fax :	FAX :
+Credit limit :	与信限度 :
+Credit Terms	支払条件
+Account Statistics	取引統計
+Last invoice : {	最終請求 : {
+Last payment : {	最終支払 : {
+Unapplied Bal: {	未充当残 : {
+Suppliers Bank Details	仕入先銀行情報
+Sort Code	銀行ｺｰﾄﾞ
+Account No :	口座番号 :
+Account	口座
+F1 = Setup new Supplier	F1 = 新規仕入先
+F1 pressed gives Alphabetic Sort	F1 で名称順に並替え
+Details ok to file (Y/N) ...........	この内容で登録しますか (Y/N) .....
+<B> = Back	<B> = 戻る
+<S> = Save	<S> = 保存
+<Q> = Quit	<Q> = 中止
+<K> = Deleted	<K> = 削除
+K> = Kill	K> = 削除
+D> = Dormant	D> = 休止
+Days	日
+Status	状態
+Notes	メモ
+Notes:	メモ:
+Dormant	休止
+Live	有効
+Dead	廃止
+Active	有効
+% Active	有効%
+Record Not Found	該当なし
+Not Found	該当なし
+Addr Err	住所誤り
+PL101 Addr Err	PL101 住所誤り
+PL107 Opening Delivery files gives	PL107 納入先ファイル開始状態
+PL109 <<<Can not Delete currently active account>>>	PL109 <<<取引中の仕入先は削除不可>>>
+PL170 Not Found	PL170 該当なし
+Delete notes tag	メモ削除
+Rewrite notes tag	メモ更新
+write notes tag	メモ登録
+fs-reply =	状態 =
+hit return	Enter
+Supplier Listing	仕入先一覧
+Supplier Alphabetical Listing	仕入先一覧(名称順)
+(Sorted)	(整列)
+Report On :	出力対象 :
+Report on :	出力対象 :
+<L> Live;<D> Dormant;< > All	<L>有効;<D>休止;< >全件
+Invoice Activity	請求件数
+Overdue A/Cs	延滞先
+Enter number of days & operator	日数と演算子を入力
+Enter number of invoices & operator	請求件数と演算子を入力
+Enter invoice value & operator	請求金額と演算子を入力
+Enter date & operator	日付と演算子を入力
+for credit periods < than	支払条件 < 指定日数
+for credit periods = to	支払条件 = 指定日数
+for credit periods > than	支払条件 > 指定日数
+A/Cs to match for printing	印刷対象の仕入先
+Keys Matching	一致キー
+Matched	一致
+Minimum o/s to print	印刷する最小残高
+days overdue	延滞日数
+Days Overdue	延滞日数
+Days Credit	支払日数
+# pl015
+Select: 'P'rint, 'N'ext enquiry, 'T'oggle query flag,	選択: P=印刷, N=次の照会, T=照会印切替,
+or 'E'nd	E=終了
+'M'ore or 'E'nd	M=続き E=終了
+. Give invoice no. to toggle	. 切替える請求番号を入力
+>> Screen Overflow <<	>> 画面超過 <<
+Balance:	残高:
+Balance	残高
+Cr Bal:	貸方残:
+Over:	超過:
+Terms:	条件:
+90 & over	90日以上
+Total Outstanding	未決済合計
+Unapplied Balance	未充当残高
+Unapplied Cash	未充当入金
+Appears on listing	一覧に表示
+Supplier Unknown	仕入先不明
+# pl020〜pl040 請求入力・修正・削除
+Creating Invoice File	請求ファイル作成中
+Creating Invoice Work File, Please Wait	請求作業ファイル作成中。お待ちください
+Pinvoice-lines	請求明細
+<1> = Receipt; <2> = Account; <3> = Credit Note	<1> = 領収; <2> = 掛; <3> = 貸方票
+Receipt <<<	領収 <<<
+Account <<<	掛 <<<
+Credit Note <<<	貸方票 <<<
+Receipt	領収
+Receipts	領収
+Invoice	請求
+Invoices	請求
+Invoiced	請求済
+Cr. Note	貸方票
+Credit Notes	貸方票
+Invoice to Credit	対象請求
+CN.Re Inv -	貸方対象 -
+Folio	番号
+Folio No	伝票番号
+For Folio	伝票
+For Account:	仕入先:
+Next Folio	次伝票番号
+Vat Account	税勘定
+Vat Amount	税額
+Vat Code	税区分
+Vat	税
+Code	ｺｰﾄﾞ
+Line	行
+Type	種別
+Ref	参
+No.	番
+Lgr	元
+Goods	商品
+Carriage	運賃
+Gross	総額
+Gross Amount	総額
+Shipping & Handling	送料・手数料
+Prompt Payment Disc	早期支払割引
+Prompt Pay	早期割引
+Prompt Payment Disc. lost	早期支払割引 失効
+Prompt pay taken	早期割引適用
+Itemised Totals	明細合計
+Sub-Totals	小計
+Totals	合計
+Total	合計
+total	合計
+Invoice ok to store	この請求を保存
+ok	可
+Do you wish to use this invoice no.? {N}	この請求番号を使用しますか? {N}
+..If so, you must ensure that it belongs to the same Supplier and that it is a	..使用する場合は、同一仕入先のものであり、かつ次であることを確認:
+INVOICE ie not a Receipt	請求（領収ではない）
+INVOICE, ie not a Receipt	請求（領収ではない）
+Amend further invoices? (Y/N)	続けて請求を修正? (Y/N)
+Delete further invoices? (Y/N)	続けて請求を削除? (Y/N)
+Invoice to be deleted (Y/N)	この請求を削除 (Y/N)
+Make further corrections? (Y/N)	さらに訂正しますか? (Y/N)
+Confirm No action? i.e. Request cancelled (Y/N)..	処理せず取消しますか? (Y/N)..
+....no change	....変更なし
+....Fully Paid	....完済
+CR SWOP: Return to continue	貸借入替: Enter で続行
+Computer Control	システム管理
+PL002 Note error and hit return	PL002 エラーを控えて Enter
+PL003 Hit Return To Continue	PL003 Enter で続行
+PL006 Note Details & Hit Return to continue	PL006 内容を控えて Enter で続行
+PL008 P.A. Code Already Exists!!	PL008 分析コードは登録済!!
+PL009 P.A. Group Code Does Not Exist!!	PL009 分析グループ未登録!!
+PL010 P.A. Group Code Used As Analysis Code!!	PL010 分析グループを分析コードに使用!!
+P.A. Code Does Not Exist!	分析コード未登録!
+PL111 Error On Writing Work File. Hit Return To Abort	PL111 作業ファイル書込エラー。Enter で中止
+PL112 Can't open file	PL112 ファイル不可
+PL113 Can't find it	PL113 該当なし
+PL115 Error On Rewrite	PL115 更新エラー
+PL116 Note: and hit return to continue	PL116 控えて Enter で続行
+PL118 Work file Created	PL118 作業ファイル作成
+PL119 Only on invoices	PL119 請求のみ可
+PL130 Open-IT5 =	PL130 未決済 =
+PL131 PE	PL131 PE
+PL133 PE 060-01	PL133 PE 060-01
+PL140 Not Yet Supporting Corrections	PL140 訂正は未対応です
+PL141 Amount Approp Or Deduct Amt Not Zero	PL141 充当額または控除額が残存
+PL150 PE 130-01	PL150 PE 130-01
+PL180 Err on Invoice file write :	PL180 請求ファイル書込エラー :
+PL181 Invoice To Credit Does Not Exist On Open Item File	PL181 対象請求が未決済明細に無い
+PL186 Err on Invoice file rewrite :	PL186 請求ファイル更新エラー :
+PL186 P.A. Code Does Not Exist	PL186 分析コード未登録
+PL187 Invoice Not Found!!!!	PL187 請求なし!!!!
+PL187 You can only credit an invoice with the same account number	PL187 同一仕入先の請求のみ貸方処理可
+PL189 Invoice To Credit Does Not Exist On Invoice File	PL189 対象請求が請求ファイルに無い
+PL202 You will need to update these	PL202 これらの更新が必要です
+PL901 PE 910-01: Note and hit return	PL901 PE 910-01: 控えて Enter
+Note and hit return	控えて Enter
+PL902 Missing data	PL902 データなし
+PL903 No data to process. Hit return	PL903 処理対象なし。Enter
+PL904 PE 950-01:Hit return to continue	PL904 PE 950-01:Enter で続行
+PL905 PE 950-02:Hit return to continue	PL905 PE 950-02:Enter で続行
+# pl050〜pl060 検証・転記
+Posting......Please Wait	転記中......お待ち下さい
+Posting......Please wait	転記中......お待ち下さい
+Reversing please wait	取消中 お待ちください
+Posted	転記済
+VAT Control	税管理
+VAT Input Receipts	仕入税 領収
+VAT Output Receipts	売上税 領収
+V.A.T. Reconciliation	税 照合
+Less: Credit Notes Posted	控除: 転記済貸方票
+Out of Balance	不一致
+<---Net---->	<--本体--->
+<---Net----> Vat	<--本体---> 税
+<---Vat--->	<---税--->
+<---Gross-->	<--総額--->
+<---Net-->	<-本体-->
+<---Vat-->	<--税--->
+<--Gross->	<-総額-->
+<------------Supplier------------>	<------------仕入先-------------->
+*A/C Nos	*仕入先
+* A/C No	* 仕入先
+*Folio	*番号
+*Invoice	*請求
+*Balance	*残高
+*Credit	*与信
+* Credit	* 与信
+*Unapplied	*未充当
+*Unposted	*未転記
+*Ytd	*累
+* Ytd	* 累
+Acct No	仕入先
+G/L Nos	勘定
+GL.No.	勘定
+# pl070 分析コード
+Product Analysis File Set-Up & Maintenance	商品分析コード登録・保守
+Product Analysis Codes	商品分析コード
+Set-Up P/A Records	分析コードの登録
+Set-up P/A records	分析コードの登録
+Amend/Delete P/A Records	分析コードの修正・削除
+Amend/Delete P/A records	分析コードの修正・削除
+Display P/A Records	分析コードの照会
+Display P/A records	分析コードの照会
+Print P/A Records	分析コードの印刷
+Print P/A records	分析コードの印刷
+Print All P/A Records	分析コードの全件印刷
+Print All P/A records	分析コードの全件印刷
+Print	印刷
+Default Group	既定グループ
+Default Purchases	既定仕入
+Group	区分
+Detail	明細
+# pl080〜pl100 支払
+Payment	支払
+Payments	支払
+Paid	支払
+---Paid----	---支払---
+Payment Too High	支払額超過
+Payment Totals	支払合計
+Payment Proof Report	支払検証帳票
+Payment and Journal Proof Report	支払・振替検証帳票
+Payments Posted	転記済支払
+Payment date	支払日
+Journal	振替
+Journal Payment	振替支払
+Journal Totals	振替合計
+Cr Journal	貸方振替
+Warning Unapplied Balance Journal	警告 未充当残高の振替
+Amount	金額
+--Amount--	---金額---
+Amount Available =	利用可能額 =
+Trans. Amount	取引金額
+Applied	充当済
+Apportioned	配分済
+Approp.	充当
+Appropriations	充当
+<--------Payment Appropriation--------->	<--------------支払充当--------------->
+Deductable	控除可能
+Deduction	控除
+Deduction taken	控除適用
+Deductions Taken	控除適用額
+Ded'N	控除
+Enter deduct amount	控除額を入力
+Enter further payments? (Y/N)	続けて支払を入力? (Y/N)
+Do you wish to allocate the unapplied Balance to this account?	未充当残高をこの仕入先に充当しますか?
+OK to post payment transactions (YES/NO) ? <	支払取引を転記しますか (YES/NO) ? <
+> enter {CR}	> Enter
+Cash Posting	支払転記
+Cash Posting Report	支払転記帳票
+Old Balance	旧残高
+New Balance	新残高
+Bal C/F	繰越残
+Balance Brought Forward	前期繰越残高
+Balance Carried Forward	次期繰越残高
+Credit Balances	貸方残高
+Un-Applied Credits	未充当貸方
+Un-Applied Credits C/F	未充当貸方 繰越
+--Type--	--種別--
+-Type-	-種別-
+--Supplier--	---仕入先--
+# pl120〜pl190 帳票
+----Credit----	-----与信-----
+----Fax---	----FAX---
+----Telephone----	-------電話------
+----Telephone---- -----Fax-----	-------電話------ -----FAX-----
+<------------- T u r n o v e r ------------> <--Purchases-->	<----------------- 取引高 -----------------> <----仕入----->
+<-------Transactions------->	<-----------取引----------->
+mount----------------->	額------------------->
+% Period Mvmt	期間増減%
+Period	当期
+Previous	前期
+Last	前期
+Y. to D	年累計
+Qtr 1	第1期
+Qtr 2	第2期
+Qtr 3	第3期
+Limit	限度
+Purch-Record	仕入先ﾚｺｰﾄﾞ
+Purch-Key	仕入先
+Purch-Status	状態
+Purch-Addr1	住所1
+Purch-Addr2	住所2
+Purch-Phone	電話
+Purch-Fax	FAX
+Purch-Email	メール
+Purch-Credit	支払条件
+Purch-Limit	与信限度
+Purch-Activety	取引件数
+Purch-Last	前期取引高
+Purch-Last-Inv	最終請求日
+Purch-Last-Pay	最終支払日
+Purch-Notes	メモ
+Turnover-Q1	取引高Q1
+Turnover-Q2	取引高Q2
+Turnover-Q3	取引高Q3
+Turnover-Q4	取引高Q4
+# pl900〜pl960 小切手
+Cheque Menu	小切手ﾒﾆｭｰ
+Generate payments to be made	支払予定の生成
+Amend payments	支払予定の修正
+Proof payments	支払予定の検証
+Generate cheques	小切手の生成
+Print cheque register	小切手台帳の印刷
+Print remittance advices	送金案内の印刷
+Cheque Due Reporting	支払予定一覧
+Cheque Due Amendment	支払予定修正
+Cheque Print File Generation	小切手印刷データ生成
+Cheque Register	小切手台帳
+Cheque/Bacs Register	小切手・振込台帳
+Cheque	小切手
+Cheque Nos	小切手番号
+Cheques Date	小切手日付
+First Cheque number	開始小切手番号
+Current Age to Pay on is	現在の支払対象日数
+is this correct (Y/N) ?	よろしいですか (Y/N) ?
+line to alter	変更する行
+Payments Due Report	支払予定表
+Payments Due Proof Report	支払予定検証表
+Prior To	基準日
+Folio M	番号 方
+Total to Pay	支払合計
+Sort	銀行
+<------------ Payee ------------->	<------------ 受取人 ------------>
+<--Value-->	<--金額--->
+Warning: Updating Open Item File. Do You Wish to Continue (YES/NO)	警告: 未決済明細を更新します。続行しますか (YES/NO)
+Record Missing	レコードなし
+** Remittance	** 送金
+Advice **	案内 **
+To	宛
+From	差出
+A/C Number	仕入先番号
+Invoice Nos	請求番号
+Total Paid by	支払方法
+to your Bank	銀行振込
+# 共通語句の部分置換で英語が残るため完全一致で定義するもの
+TP Pay Date	種 支払日
+Reconciliation Data:	照合データ:
+Entry Date	入力日
+Amend Invoicing Fixed Data	請求固定データの修正
+Enter Invoices	請求の入力
+Amend Invoices	請求の修正
+Delete Invoices	請求の削除
+Purchase Ledger Enquiry	買掛元帳照会
+Purchase Transactions Input	買掛取引の入力
+Purchase Transactions Amend	買掛取引の修正
+Purchase Transactions Delete	買掛取引の削除
+Purchase Transactions Proof	買掛取引の検証
+Purchase Transactions Post	買掛取引の転記
+Set-Up Purchase Analysis Codes	買掛分析コードの登録
+Purchase Analysis Report	買掛分析帳票
+Batch Closed........Full!	バッチ締切......満杯!
+Year to Date	年累計
+Current Bal	現在残高
+Date Entered-	入力日-
+Mvmt Average	増減 平均
+Qtr 4	第4期
+Default Sales	既定売上
+Email Sales	メール
+Emergency Name	仮名称
+Enter Further Invoices? (Y/N)	続けて請求を入力? (Y/N)
+Invoice Data Amend	請求データ修正
+Invoice Data Deletion	請求データ削除
+Invoice Data Entry	請求データ入力
+Invoicing Fixed Data	請求固定データ
+Number of Active Accounts	取引中の仕入先数
+Number of Live Accounts	有効な仕入先数
+OK to post Purchase Transactions (YES/NO) ?	買掛取引を転記しますか (YES/NO) ?
+PL005 Invalid Date	PL005 日付不正
+PL103 Purchase Ledger files have not been set up yet	PL103 買掛元帳ファイルが未作成です
+PL105 Creating Purchase & Delivery Files	PL105 仕入先・納入先ファイル作成中
+PL106 Opening Purchase files gives	PL106 仕入先ファイル開始状態
+PL117 No Work File Created..No Data	PL117 作業ファイル未作成..データ無
+PL132 Err on Batch file write :	PL132 バッチ書込エラー :
+PL134 Warning Record/s missing in Purchase File	PL134 警告 仕入先ファイルにレコード欠落
+PL184 You Can Only Credit Invoices. Not Receipts, Credit Notes	PL184 貸方処理は請求のみ可。領収・貸方票は不可
+PL188 Invoice Already Passed To Purchase Ledger!	PL188 請求は買掛元帳へ転記済!
+PL188 Invoice Details Already Passed To Purchase Ledger!	PL188 請求明細は買掛元帳へ転記済!
+PL190 You Can Only Credit An Invoice With The Same Account Number	PL190 同一仕入先番号の請求のみ貸方処理可
+PL201 Analyst records with desc, 'Emergency Name' created	PL201 摘要「仮名称」の分析レコードを作成
+Payment Data Amend	支払データ修正
+Payment Data Entry	支払データ入力
+Plus: Invoices Posted	加算: 転記済請求
+Printing..... Please Wait	印刷中..... お待ち下さい
+Printing.......Please wait	印刷中.......お待ち下さい
+Purch-Average	平均取引高
+Purch-Current	現在残高
+Purch-Discount	割引率
+Purch-Name	仕入先名称
+Purchase Carriage Charges	仕入運賃
+Purchase Ledger  Start Of Day	買掛元帳 業務開始
+Purchase Ledger Day Book	買掛元帳 日記帳
+Purchase Ledger Dump	買掛元帳 出力
+Purchase Ledger Invoices	買掛元帳 請求
+Purchase Ledger Payments	買掛元帳 支払
+Purchase Ledger System Menu	買掛元帳システムメニュー
+Purchase Ledger Turnover Report	買掛元帳 取引高表
+Rewrite Sales Rec	仕入先更新
+Sales Carriage Charges	売上運賃
+<----------------Name & Address---------------->	<------------------名称・住所----------------->
+Unapplied Purchase Transaction Report	未充当買掛取引表
+Using Deleted Folio Numbers	削除済伝票番号を使用
+VAT Input Invoices/CN's	仕入税 請求/貸方票
+VAT Output Invoices/CN's	売上税 請求/貸方票
+Warning: One or more P.A. codes contain a zero value for General Ledger numbers	警告: 総勘定元帳番号がゼロの分析コードがあります
+Warning: Record/s missing in Purchase File	警告: 仕入先ファイルにレコード欠落
+# プログラム名
+PL000 (3.01.01)	PL000 (3.01.01)
+PL010 (3.01.13)	PL010 (3.01.13)
+PL015 (3.01.07)	PL015 (3.01.07)
+PL020 (3.01.08)	PL020 (3.01.08)
+PL030 (3.01.01)	PL030 (3.01.01)
+PL040 (3.01.01)	PL040 (3.01.01)
+PL050 (3.01.04)	PL050 (3.01.04)
+PL055 (3.01.03)	PL055 (3.01.03)
+PL060 (3.01.07)	PL060 (3.01.07)
+PL070 (3.01.11)	PL070 (3.01.11)
+PL080 (3.01.04)	PL080 (3.01.04)
+PL085 (3.01.04)	PL085 (3.01.04)
+PL095 (3.01.04)	PL095 (3.01.04)
+PL100 (3.01.04)	PL100 (3.01.04)
+PL120 (3.01.08)	PL120 (3.01.08)
+PL130 (3.01.04)	PL130 (3.01.04)
+PL140 (3.01.07)	PL140 (3.01.07)
+PL160 (3.01.05)	PL160 (3.01.05)
+PL170 (3.01.06)	PL170 (3.01.06)
+PL180 (3.00.02)	PL180 (3.00.02)
+PL190 (3.01.04)	PL190 (3.01.04)
+PL900 (3.01.02)	PL900 (3.01.02)
+PL910 (3.01.07)	PL910 (3.01.07)
+PL920 (3.01.03)	PL920 (3.01.03)
+PL930 (3.01.07)	PL930 (3.01.07)
+PL940 (3.01.04)	PL940 (3.01.04)
+PL950 (3.01.09)	PL950 (3.01.09)
+PL104 Do you wish to create them (Y/N) ? [ ]	PL104 作成しますか (Y/N) ?              [ ]
+PL104 Do you wish to create them (Y/N) ?	PL104 作成しますか (Y/N) ?
+*Date  [  /  /    ]*A/C Nos   [       ]*	*日付  [  /  /    ]*仕入先    [       ]*
+Acct No          Name	仕入先番号       名称
+Overdue A/Cs    - [	延滞先          - [
+A/C               Name	仕入先            名称
+For Account:        . Give invoice no. to toggle [        ]	対象仕入先:         . 切替える請求書番号を入力   [        ]
