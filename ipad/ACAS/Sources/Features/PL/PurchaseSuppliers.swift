@@ -128,7 +128,13 @@ struct PurchaseSupplierForm: View {
     init(workspace: Workspace, supplier: PurchaseLedger.Supplier, creating: Bool) {
         self.workspace = workspace
         self.creating = creating
-        self._supplier = State(initialValue: supplier)
+        var fields = supplier
+        let delimiter = PurchaseLedger(workspace.context).addressDelimiter
+        if !fields.address2.isEmpty, fields.address1.last == delimiter,
+           !fields.address1.dropLast().contains(delimiter), !fields.address2.contains(delimiter) {
+            fields.address1.removeLast()
+        }
+        self._supplier = State(initialValue: fields)
     }
 
     var body: some View {
@@ -174,7 +180,7 @@ struct PurchaseSupplierForm: View {
 
     private func save() {
         do {
-            try PurchaseLedger(workspace.context).saveSupplier(supplier, creating: creating)
+            try PurchaseLedger(workspace.context).saveSupplier(supplier, creating: creating, joiningAddressLines: true)
             workspace.completed(creating ? "pl.supplier.add" : "pl.supplier.edit")
             dismiss()
         } catch { self.error = PurchaseNotice(error) }

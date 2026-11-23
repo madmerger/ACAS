@@ -221,6 +221,18 @@ final class PurchaseLedgerTests: XCTestCase {
         XCTAssertEqual(ledger.store.readRaw(ledger.base + "delfolio.dat"), [])
     }
 
+    func testSupplierFormCanSeparateAddressAcrossFields() throws {
+        let ledger = try makeLedger()
+        var supplier = ledger.newSupplier
+        supplier.code = "SUPP01"
+        supplier.address1 = "東京都"
+        supplier.address2 = "千代田区"
+        let code = try ledger.saveSupplier(supplier, creating: true, joiningAddressLines: true)
+        let record = try XCTUnwrap(ledger.supplierRecord(code))
+        XCTAssertEqual(Cobol.rtrim(record.str("purch-addr1")), "東京都\\")
+        XCTAssertEqual(Cobol.rtrim(record.str("purch-addr2")), "千代田区")
+    }
+
     func testSupplierLifecyclePreservesFixedWidthRecord() throws {
         let ledger = try makeLedger()
         let code = try addSupplier(ledger)

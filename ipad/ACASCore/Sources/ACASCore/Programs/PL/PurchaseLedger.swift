@@ -117,7 +117,13 @@ public struct PurchaseLedger {
     }
 
     @discardableResult
-    public func saveSupplier(_ supplier: Supplier, creating: Bool) throws -> String {
+    public func saveSupplier(_ supplier: Supplier, creating: Bool, joiningAddressLines: Bool = false) throws -> String {
+        let delimiter = addressDelimiter
+        var address1 = supplier.address1
+        if joiningAddressLines, !Cobol.rtrim(address1).isEmpty, !Cobol.rtrim(supplier.address2).isEmpty,
+           !address1.contains(delimiter), !supplier.address2.contains(delimiter) {
+            address1 = Cobol.rtrim(address1) + String(delimiter)
+        }
         var code = supplier.code.uppercased()
         var record: Record
         if creating {
@@ -135,10 +141,9 @@ public struct PurchaseLedger {
             code = record.str("purch-key")
         }
         for (field, value) in [
-            ("name", supplier.name), ("addr1", supplier.address1), ("addr2", supplier.address2),
+            ("name", supplier.name), ("addr1", address1), ("addr2", supplier.address2),
             ("phone", supplier.telephone), ("ext", supplier.extensionNumber), ("fax", supplier.fax), ("email", supplier.email),
         ] { record["purch-" + field] = value }
-        let delimiter = system.str("pl-delim").first.flatMap { $0 == " " ? nil : $0 } ?? "\\"
         let address = Array(record.raw("purch-address").prefix(92))
         let delimiterByte = SJIS.encode(String(delimiter), size: 1)[0]
         let separators = addressSeparators(in: address, delimiter: delimiterByte)
@@ -181,6 +186,10 @@ public struct PurchaseLedger {
             }
         }
         return offsets
+    }
+
+    public var addressDelimiter: Character {
+        system.str("pl-delim").first.flatMap { $0 == " " ? nil : $0 } ?? "\\"
     }
 
     public func removeSupplier(code: String, deactivate: Bool) throws {
