@@ -297,6 +297,7 @@ private final class InvoicePostingReport {
     private let limit: Int
     private var page = 0
     private var lines = 0
+    private var creditsStarted = false
     private var totals = Array(repeating: (net: Int64(0), tax: Int64(0)), count: 4)
 
     init(store: FileStore, system: Record) {
@@ -359,7 +360,8 @@ private final class InvoicePostingReport {
     }
 
     func unapplied(_ credit: Record, balance: Int64) {
-        if lines > limit { headings(credits: true) }
+        if !creditsStarted || lines > limit { headings(credits: true) }
+        creditsStarted = true
         func field(_ key: String) -> String {
             let value = credit.int(key)
             return value == 0 ? Cobol.x("", 10) : Pic.edit("z(7)9", value: value, scale: 0) + "  "
@@ -373,9 +375,11 @@ private final class InvoicePostingReport {
     }
 
     func close(unapplied: Int64, missingCustomer: Bool) throws {
-        if lines > limit - 6 { headings(credits: true) }
-        let total = unapplied == 0 ? "" : Pic.edit("z(7)9.99", value: abs(unapplied), scale: 2)
-        printer.after(3, Cobol.x("", 24) + Cobol.x("Un-Applied Credits C/F ", 32) + total)
+        if creditsStarted {
+            if lines > limit - 6 { headings(credits: true) }
+            let total = unapplied == 0 ? "" : Pic.edit("z(7)9.99", value: abs(unapplied), scale: 2)
+            printer.after(3, Cobol.x("", 24) + Cobol.x("Un-Applied Credits C/F ", 32) + total)
+        }
         if missingCustomer { printer.after(3, "SL134 Warning Record/s missing in Sales File") }
         try printer.close()
     }

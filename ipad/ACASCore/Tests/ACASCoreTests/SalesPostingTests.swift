@@ -40,6 +40,22 @@ final class SalesPostingTests: XCTestCase {
         XCTAssertEqual(openItems.read(key: SalesOpenItems.key(customer: credit.customer, invoice: saved.id.value))?.int("credit"), target.id.value)
     }
 
+    func testFirstUnappliedCreditStartsDedicatedReportPage() throws {
+        let (store, context, invoices) = try newCompany()
+        var credit = draft(in: invoices)
+        credit.kind = .creditNote
+        _ = try invoices.save(credit, confirmingUnknownCreditTarget: true)
+        _ = try invoices.printInvoices()
+        _ = try SalesPosting(context).post()
+
+        let report = try XCTUnwrap(store.readRaw(SalesPosting.exportPath))
+        let pages = report.split(separator: 0x0c).map { String(decoding: $0, as: UTF8.self) }
+        XCTAssertEqual(pages.count, 2)
+        XCTAssertFalse(pages.first?.contains("--Customer--") ?? true)
+        XCTAssertTrue(pages.last?.contains("--Customer--") ?? false)
+        XCTAssertTrue(pages.last?.contains("Un-Applied Credits C/F") ?? false)
+    }
+
     private func newCompany() throws -> (FileStore, BusinessContext, SalesInvoices) {
         let store = try FileStore()
         let context = BusinessContext(store: store, timeZone: .gmt, now: { Date(timeIntervalSince1970: 1_700_000_000) })
