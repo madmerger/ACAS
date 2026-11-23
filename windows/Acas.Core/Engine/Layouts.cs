@@ -31,7 +31,7 @@ public static partial class Layouts
         .X("description", 24).N9("bdefault", 2).X("convention", 2).N9("batch-def-ac", 6).N9("batch-def-pc", 2)
         .X("batch-def-code", 2).X("batch-def-vat", 1).N9("batch-start", 5);
 
-    /// <summary>copybooks/fdpost.cob (96 バイト, 相対編成)。</summary>
+    /// <summary>copybooks/fdpost.cob (98 バイト, 相対編成)。</summary>
     public static readonly Layout Posting = new Layout()
         .N9("batch", 5).N9("post-number", 5).X("post-code", 2).X("post-date", 8).N9("post-dr", 6).N9("dr-pc", 2)
         .N9("post-cr", 6).N9("cr-pc", 2).N9("post-amount", 8, 2, true).X("post-legend", 32).N9("vat-ac", 6).N9("vat-pc", 2)
