@@ -1,6 +1,6 @@
 # ACAS (Java)
 
-Java 21 / Spring Boot 3 port of ACAS, built alongside the COBOL sources. Nothing here is used by the COBOL build (`comp-all.sh`).
+Java 21 / Spring Boot 4 port of ACAS, built alongside the COBOL sources. Nothing here is used by the COBOL build (`comp-all.sh`).
 
 | Module | Contents |
 |---|---|
