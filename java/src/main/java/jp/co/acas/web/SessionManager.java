@@ -18,19 +18,20 @@ import java.util.concurrent.ConcurrentHashMap;
 public class SessionManager {
     private static final Logger log = LoggerFactory.getLogger(SessionManager.class);
     private final Store store;
-    private final Map<String, Ctx> sessions = new ConcurrentHashMap<>();
+    private record Entry(String owner, Ctx ctx) { }
+    private final Map<String, Entry> sessions = new ConcurrentHashMap<>();
     @Value("${acas.fixed-date:}") private String fixedDate;
 
     public SessionManager(Store store) { this.store = store; }
 
-    public String start(String app) {
+    public String start(String app, String owner) {
         String program = switch (app) { case "acas" -> "acas"; case "irs" -> "irs"; default -> throw new IllegalArgumentException("不明なアプリ: " + app); };
         String id = UUID.randomUUID().toString();
         Ctx ctx = new Ctx(store, fixedDate == null || fixedDate.isBlank() ? null : LocalDate.parse(fixedDate));
         synchronized (sessions) {
-            if (sessions.size() >= 200) sessions.entrySet().removeIf(e -> e.getValue().term.isEnded());
+            if (sessions.size() >= 200) sessions.entrySet().removeIf(e -> e.getValue().ctx().term.isEnded());
             if (sessions.size() >= 200) throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "セッション数が上限に達しました");
-            sessions.put(id, ctx);
+            sessions.put(id, new Entry(owner, ctx));
         }
         Thread.ofVirtual().name("acas-" + id).start(() -> {
             String msg = "";
@@ -57,11 +58,29 @@ public class SessionManager {
         ctx.term.awaitIdle(10000);
         return id;
     }
-    public Ctx get(String id) {
-        Ctx c = sessions.get(id);
-        if (c == null) throw new IllegalArgumentException("セッションがありません");
-        return c;
+    Ctx get(String id, String owner) {
+        Entry entry = sessions.get(id);
+        if (entry == null || !entry.owner().equals(owner)) {
+            throw new IllegalArgumentException("セッションがありません");
+        }
+        return entry.ctx();
     }
-    public void close(String id) { Ctx c = sessions.remove(id); if (c != null) c.term.end(""); }
-    public void closeAll() { sessions.values().forEach(c -> c.term.end("")); sessions.clear(); }
+
+    /** トークン認証済みの同一性検証用 API が画面証跡を取得する。 */
+    Ctx get(String id) {
+        Entry entry = sessions.get(id);
+        if (entry == null) throw new IllegalArgumentException("セッションがありません");
+        return entry.ctx();
+    }
+
+    void close(String id, String owner) {
+        Entry entry = sessions.get(id);
+        if (entry != null && entry.owner().equals(owner) && sessions.remove(id, entry)) {
+            entry.ctx().term.end("");
+        }
+    }
+    public void closeAll() {
+        sessions.values().forEach(entry -> entry.ctx().term.end(""));
+        sessions.clear();
+    }
 }
