@@ -41,6 +41,38 @@ final class PurchaseLedgerTests: XCTestCase {
         XCTAssertEqual(result.int("pl-variance"), 0)
     }
 
+    func testAgedCreditorsNameOrderDoesNotPrintPreviouslyBypassedPayment() throws {
+        let ledger = try makeLedger()
+        let date = ledger.processingDate
+        for (input, name) in [("SUPP01", "ALPHA"), ("SUPP02", "ZULU"), ("SUPP03", "BRAVO")] {
+            var supplier = ledger.newSupplier
+            supplier.code = input
+            supplier.name = name
+            supplier.address1 = "1 MAIN ROAD\\CITY"
+            let code = try ledger.saveSupplier(supplier, creating: true)
+            var record = try XCTUnwrap(ledger.supplierRecord(code))
+            record.setInt("purch-current", 10_000)
+            XCTAssertTrue(ledger.store.rewrite(ledger.suppliersPath, key: record.raw("purch-key"), data: record.bytes))
+            guard input == "SUPP01" || input == "SUPP02" else { continue }
+            var item = Record(PurchaseRecords.oiLayout)
+            item["oi-supplier"] = code
+            item.setInt("oi-invoice", 101)
+            item.setInt("oi-date", try ledger.legacyDate(date))
+            item.setInt("oi-type", input == "SUPP01" ? 2 : 5)
+            if input == "SUPP02" { item["oi-hold-flag"] = "Z" }
+            XCTAssertTrue(ledger.store.write(ledger.openItemsPath, key: ledger.openItemKey(supplier: code, number: 101), data: item.bytes))
+        }
+        var settings = ledger.system
+        ledger.setFileFlag(29, in: &settings)
+        try ledger.systemFile.write(1, settings.bytes)
+        let selected = String(decoding: try ledger.agedCreditorsReport(date: date, supplier: "SUPP02"), as: UTF8.self)
+        let byName = String(decoding: try ledger.agedCreditorsReport(date: date, alphabetical: true), as: UTF8.self)
+        let paymentDate = "Z " + ledger.reportDate(try ledger.legacyDate(date))
+        XCTAssertTrue(selected.contains(paymentDate))
+        XCTAssertTrue(byName.contains("ZULU"))
+        XCTAssertFalse(byName.contains(paymentDate))
+    }
+
     func testAgedCreditorsSortsItemsAndWritesReconciliationOnlyWithoutSupplierFilter() throws {
         let ledger = try makeLedger()
         let supplier = try addSupplier(ledger)

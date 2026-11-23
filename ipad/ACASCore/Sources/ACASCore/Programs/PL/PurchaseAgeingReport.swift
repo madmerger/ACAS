@@ -78,7 +78,8 @@ extension PurchaseLedger {
             var payments: Int64 = 0, promptTaken: Int64 = 0
             var nextItem = 0
             var bufferedItem: Record?
-            func countPayments(through key: [UInt8]) {
+            func itemsForStatement(_ key: [UInt8]) -> [Record] {
+                var statement: [Record] = []
                 func count(_ item: Record) {
                     if [5, 6].contains(item.int("oi-type")) {
                         payments += 1
@@ -87,8 +88,11 @@ extension PurchaseLedger {
                 }
                 if let bufferedItem {
                     let previousKey = bufferedItem.raw("oi-supplier")
-                    if key.lexicographicallyPrecedes(previousKey) { return }
-                    if previousKey == key { count(bufferedItem) }
+                    if key.lexicographicallyPrecedes(previousKey) { return [] }
+                    if previousKey == key {
+                        statement.append(bufferedItem)
+                        count(bufferedItem)
+                    }
                 }
                 bufferedItem = nil
                 while nextItem < items.count {
@@ -98,8 +102,10 @@ extension PurchaseLedger {
                         bufferedItem = item
                         break
                     }
+                    if item.raw("oi-supplier") == key { statement.append(item) }
                     count(item)
                 }
+                return statement
             }
             let blank = Cobol.x("", 54)
             func money(_ amount: Int64, _ picture: String = "zzzz,zz9.99cr") -> String {
@@ -121,7 +127,7 @@ extension PurchaseLedger {
                 let sameDay = paymentDay != 0 && invoiceDay == paymentDay
                 guard balance != 0 || (sameDay ? !supplierItems.isEmpty : recent),
                       minimum == 0 || balance >= minimum else { continue }
-                countPayments(through: key)
+                let statement = itemsForStatement(key)
                 active += 1
                 var subtotals = [Int64](repeating: 0, count: 4)
                 var paid = cash
@@ -131,7 +137,7 @@ extension PurchaseLedger {
                     heading = blank
                     line += 2
                 }
-                for item in supplierItems where item.int("oi-type") != 1 {
+                for item in statement where item.int("oi-type") != 1 {
                     if line > settings.int("page-lines") - 5 { headings() }
                     let type = item.int("oi-type"), amountPaid = item.int("oi-paid")
                     let gross = itemGross(item)
