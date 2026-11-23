@@ -2,3 +2,5 @@
 DerivedData/
 *.xcodeproj/xcuserdata/
 .swiftpm/
+ACAS.xcodeproj/
+ACAS/Info.plist

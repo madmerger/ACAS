@@ -24,7 +24,16 @@ public final class KeyQueue: @unchecked Sendable {
 
     /// 文字列を 1 文字ずつ送る。"\r"=Enter, "\t"=Tab, ESC=0x1b。
     public func send(text: String) {
-        for ch in text {
+        // 端末のエスケープシーケンス (ESC O x / ESC [ x) はカーソルキーとして送る
+        let seq: [Character: Key] = ["A": .up, "B": .down, "C": .right, "D": .left, "H": .home, "F": .end]
+        let chars = Array(text)
+        var i = 0
+        while i < chars.count {
+            let ch = chars[i]
+            i += 1
+            if ch == "\u{1b}", i + 1 < chars.count, chars[i] == "O" || chars[i] == "[", let k = seq[chars[i + 1]] {
+                send(k); i += 2; continue
+            }
             switch ch {
             case "\r", "\n": send(.enter)
             case "\t": send(.tab)
@@ -291,11 +300,10 @@ public final class Console: @unchecked Sendable {
 
     // MARK: ACCEPT (SCREEN SECTION)
 
-    /// `typedSpaces`: 利用者が空白を打鍵したセル位置 (レガシーはプロンプト文字へ戻さず空白のまま表示する)
-    private func redraw(_ f: ScreenField, accepting: Bool, typedSpaces: Set<Int> = []) {
+    private func redraw(_ f: ScreenField, accepting: Bool) {
         var c = f.col
         for ch in f.value {
-            let shown: Character = f.secure ? "*" : ((accepting && (ch == " ") && !typedSpaces.contains(c - f.col)) ? "_" : ch)
+            let shown: Character = f.secure ? "*" : ((accepting && (ch == " ")) ? "_" : ch)
             term.put(String(shown), line: f.line, col: c, color: f.color)
             c += CellWidth.of(ch)
         }
@@ -316,11 +324,11 @@ public final class Console: @unchecked Sendable {
         var pos = 0
         var atEOF = false
         var fret = 0
-        var typed: [Int: Set<Int>] = [:]
         func enter(_ i: Int) {
             fields[idx].value = string(of: buf)
             finalize(fields[idx])
-            redraw(fields[idx], accepting: true, typedSpaces: typed[idx] ?? [])
+            // 英数字項目は離れるときに描き直さない (入力済みの空白をプロンプト文字に戻さない: レガシー実測)
+            if fields[idx].kind != .alpha { redraw(fields[idx], accepting: true) }
             idx = (i + fields.count) % fields.count
             buf = cells(of: fields[idx].value, size: fields[idx].size)
             pos = 0; atEOF = false
@@ -348,21 +356,21 @@ public final class Console: @unchecked Sendable {
             case .backspace:
                 if pos > 0 {
                     buf.remove(at: pos - 1); buf.append(" "); pos -= 1
-                    fields[idx].value = string(of: buf); redraw(f, accepting: true, typedSpaces: typed[idx] ?? [])
+                    fields[idx].value = string(of: buf); redraw(f, accepting: true)
                 } else { beep() }
                 atEOF = false
             case .delete:
                 buf.remove(at: pos); buf.append(" ")
-                fields[idx].value = string(of: buf); redraw(f, accepting: true, typedSpaces: typed[idx] ?? [])
+                fields[idx].value = string(of: buf); redraw(f, accepting: true)
             case .char(let ch):
                 if f.kind != .alpha, !("0"..."9").contains(ch), ch != ".", ch != "-", ch != "+" { beep(); continue }
                 let w = CellWidth.of(ch)
                 if pos + w > f.size { beep(); continue }
                 buf[pos] = ch
-                if ch == " " { typed[idx, default: []].insert(pos) } else { typed[idx]?.remove(pos) }
                 if w == 2 { buf[pos + 1] = Self.tailMark }
                 fields[idx].value = string(of: buf)
-                redraw(f, accepting: true, typedSpaces: typed[idx] ?? [])
+                // 入力した文字はそのまま表示する (空白もプロンプト文字にしない: レガシー実測)
+                term.put(String(f.secure ? "*" : ch), line: f.line, col: f.col + pos, color: f.color)
                 if pos + w - 1 == f.size - 1 {
                     if atEOF { beep() } else { atEOF = true }
                     if w == 2 { pos = f.size - 2 }

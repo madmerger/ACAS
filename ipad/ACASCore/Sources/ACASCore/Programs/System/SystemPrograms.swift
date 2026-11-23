@@ -44,8 +44,10 @@ public enum Maps04 {
             let s = String(a[r])
             return s.allSatisfy({ $0.isASCII && $0.isNumber }) ? Int(s) : nil
         }
-        guard let dd = num(0..<2), let mm = num(3..<5), let cc = num(6..<8), let yy = num(8..<10),
+        guard let dd = num(0..<2), let mm = num(3..<5), let cc = num(6..<8),
               (1...31).contains(dd), (1...12).contains(mm) else { return 0 }
+        // a-year は numeric 検査されない。数字以外 (空白等) は GnuCOBOL と同じく (文字コード - "0") として評価される。
+        let yy = a[8..<10].reduce(0) { $0 * 10 + Int($1.asciiValue ?? 48) - 48 }
         let y = cc * 100 + yy
         guard validYMD(y, mm, dd) else { return 0 }
         return integerOfDate(year: y, month: mm, day: dd)
