@@ -11,16 +11,18 @@ public struct PurchaseTransfer {
         public let supplier: String
         public let net: Int64
         public let tax: Int64
+        public let date: Date?
 
-        public init(number: Int, supplier: String, net: Int64, tax: Int64) {
+        public init(number: Int, supplier: String, net: Int64, tax: Int64, date: Date? = nil) {
             self.number = number
             self.supplier = supplier
             self.net = net
             self.tax = tax
+            self.date = date
         }
     }
 
-    public enum Failure: Error { case unconfigured, invalidInvoice, duplicateBatch, postingAreaInUse, noSequence }
+    public enum Failure: Error { case unconfigured, invalidInvoice, duplicateBatch, postingAreaInUse, noSequence, saveFailed }
 
     private let context: BusinessContext
     private let directory = "ledgers/acas/"
@@ -37,6 +39,10 @@ public struct PurchaseTransfer {
     public init(_ context: BusinessContext) { self.context = context }
 
     public func postPending() throws -> [String] {
+        try store.transaction { try savePending() }
+    }
+
+    private func savePending() throws -> [String] {
         let invoicePath = directory + "pinvoice.dat"
         let supplierPath = directory + "purchled.dat"
         let settings = RelativeFile(store, path: directory + "system.dat", recordSize: 1024)
@@ -47,6 +53,7 @@ public struct PurchaseTransfer {
         let quarterField = "turnover-q\(quarter)"
         var posted: [PostedInvoice] = []
         var headers: [([UInt8], [UInt8])] = []
+        var openItems: [[UInt8]] = []
         var suppliers: [[UInt8]: Record] = [:]
         for (key, raw) in store.all(invoicePath) where key.count == 9 && key.last == 0 {
             var invoice = Record(PeriodRecords.pihLayout, bytes: raw)
@@ -74,18 +81,46 @@ public struct PurchaseTransfer {
             if current < 0 { supplier.setInt("unapplied", supplier.int("unapplied") - current) }
             if supplier.int("status") == 0 { supplier.setInt("status", 1) }
             suppliers[supplierKey] = supplier
-            let entry = Invoice(number: Int(invoice.int("invoice")), supplier: Cobol.rtrim(supplier.str("name")), net: net, tax: tax)
-            posted.append(PostedInvoice(invoice: entry, date: Int(invoice.int("date")), supplierCode: supplierKey,
+            let invoiceDay = Int(invoice.int("date"))
+            let d = Maps04.dateOfInteger(invoiceDay)
+            guard Maps04.validYMD(d.year, d.month, d.day),
+                  let invoiceDate = context.calendar.date(from: DateComponents(year: d.year, month: d.month, day: d.day))
+            else { throw Failure.invalidInvoice }
+            let entry = Invoice(number: Int(invoice.int("invoice")), supplier: Cobol.rtrim(supplier.str("name")),
+                                net: net, tax: tax, date: invoiceDate)
+            posted.append(PostedInvoice(invoice: entry, date: invoiceDay, supplierCode: supplierKey,
                                         oldBalance: oldBalance, newBalance: supplier.int("current") - supplier.int("unapplied")))
+            var openItem = Record(PeriodRecords.poiLayout)
+            openItem.setRaw("batch", [UInt8](repeating: 0, count: 6))
+            openItem.setRaw("unapplied", [0])
+            for field in ["supplier", "ref", "order"] { openItem.setRaw(field, invoice.raw(field)) }
+            for field in ["invoice", "date", "type", "net", "carriage", "vat", "c-vat",
+                          "deduct-days", "deduct-amt", "days", "cr"] {
+                openItem.setInt(field, invoice.int(field))
+            }
+            openItems.append(openItem.bytes)
             invoice["status"] = "z"
             invoice["update"] = "z"
             headers.append((key, invoice.bytes + raw.dropFirst(invoice.bytes.count)))
         }
         let date = context.now()
-        let batches = try write(posted.map(\.invoice), processingDate: date)
-        for (key, bytes) in headers { store.rewrite(invoicePath, key: key, data: bytes) }
-        for (key, supplier) in suppliers { store.rewrite(supplierPath, key: key, data: supplier.bytes) }
+        let batches = try write(posted.map(\.invoice), processingDate: date, bookkeepingDestination: .dedicated)
+        for (key, bytes) in headers {
+            guard store.rewrite(invoicePath, key: key, data: bytes) else { throw Failure.saveFailed }
+        }
+        for (key, supplier) in suppliers {
+            guard store.rewrite(supplierPath, key: key, data: supplier.bytes) else { throw Failure.saveFailed }
+        }
         if !posted.isEmpty {
+            let openItemPath = directory + "openitm5.dat"
+            for bytes in openItems {
+                guard store.write(openItemPath, key: Array(bytes.prefix(11)), data: bytes) else { throw Failure.saveFailed }
+            }
+            guard let bytes = settings.read(1) else { throw Failure.saveFailed }
+            var system = Record(SystemLayout.layout, bytes: bytes)
+            system.setInt("p-flag-i", 2)
+            system["oi-5-flag"] = "Y"
+            try settings.write(1, system.bytes)
             try store.writeRaw(directory + "prt-1", postingReport(posted, settings: config, date: date))
         }
         return batches
@@ -157,13 +192,16 @@ public struct PurchaseTransfer {
         guard beginning > 0, beginning + Int64(count) <= Int64(Int16.max),
               rowNumber > 0, useIRS || rowNumber + invoices.count + count - 1 <= Int(Int16.max)
         else { throw Failure.noSequence }
-        let dates = context.calendar.dateComponents([.year, .month, .day], from: processingDate)
-        guard let year = dates.year, let month = dates.month, let day = dates.day,
-              Maps04.validYMD(year, month, day) else { throw Failure.invalidInvoice }
-        let date = Cobol.z(day, 2) + "/" + Cobol.z(month, 2) + "/" + Cobol.z(year % 100, 2)
+        let postingDates = try invoices.map { invoice in
+            let dates = context.calendar.dateComponents([.year, .month, .day], from: invoice.date ?? processingDate)
+            guard let year = dates.year, let month = dates.month, let day = dates.day,
+                  Maps04.validYMD(year, month, day) else { throw Failure.invalidInvoice }
+            return Cobol.z(day, 2) + "/" + Cobol.z(month, 2) + "/" + Cobol.z(year % 100, 2)
+        }
+        let limit: Int64 = useIRS ? 999_999_999 : 9_999_999_999
         guard invoices.allSatisfy({
-            (0...99_999_999).contains($0.number) && (-9_999_999_999...9_999_999_999).contains($0.net)
-                && (-9_999_999_999...9_999_999_999).contains($0.tax)
+            (0...99_999_999).contains($0.number) && (-limit...limit).contains($0.net)
+                && (-limit...limit).contains($0.tax)
         }) else { throw Failure.invalidInvoice }
         let keys = (0..<count).map { "2" + Cobol.z(beginning + Int64($0), 5) }
         guard keys.allSatisfy({ store.read(batchPath, key: Array($0.utf8)) == nil }) else { throw Failure.duplicateBatch }
@@ -190,6 +228,7 @@ public struct PurchaseTransfer {
             var net: Int64 = 0
             var tax: Int64 = 0
             for (offset, invoice) in chunk.enumerated() {
+                let date = postingDates[index * 99 + offset]
                 net = abs(net + invoice.net) % 100_000_000_000
                 tax = abs(tax + invoice.tax) % 100_000_000_000
                 let description = Array("\(invoice.number) : ".utf8) + SJIS.encode(invoice.supplier, size: 30)
@@ -228,7 +267,7 @@ public struct PurchaseTransfer {
             }
             for field in ["input-gross", "actual-gross"] { batch.setInt(field, net) }
             for field in ["input-vat", "actual-vat"] { batch.setInt(field, tax) }
-            store.write(batchPath, key: batch.raw("batch-key"), data: batch.bytes)
+            guard store.write(batchPath, key: batch.raw("batch-key"), data: batch.bytes) else { throw Failure.saveFailed }
             if !useIRS, index < keys.count - 1 { rowNumber += 1 }
         }
         if useIRS {

@@ -38,6 +38,13 @@ public struct PeriodClosing {
 
     public func close(_ ledgers: Set<Ledger>, date: Date, password: String, proceedWithUnposted: Bool,
                       endOfQuarter: Bool) throws {
+        try store.transaction {
+            try applyClose(ledgers, date: date, password: password, proceedWithUnposted: proceedWithUnposted, endOfQuarter: endOfQuarter)
+        }
+    }
+
+    private func applyClose(_ ledgers: Set<Ledger>, date: Date, password: String, proceedWithUnposted: Bool,
+                            endOfQuarter: Bool) throws {
         var system = try settings()
         try validateStatus(system)
         let statuses = system.raw("file-statuses")

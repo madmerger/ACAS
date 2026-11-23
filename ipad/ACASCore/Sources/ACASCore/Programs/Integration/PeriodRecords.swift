@@ -25,9 +25,13 @@ enum PeriodRecords {
     ])
     /// purchase/wssoi.cob (poi-header, 109 バイト)
     static let poiLayout = Layout("xl150-poi", [
-        ("", .filler(7)), ("invoice", bl), ("", .filler(10)), ("type", d1), ("", .filler(22)), ("p-c", c3s), ("", .filler(40)),
-        ("status", d1), ("", .filler(1)), ("deduct-amt", .comp(digits: 5, scale: 2, signed: true)), ("", .filler(9)),
-        ("applied", .x(1)), ("", .filler(4))
+        ("supplier", .x(7)), ("invoice", bl), ("date", bl), ("batch", .filler(6)), ("type", d1),
+        ("ref", .x(10)), ("order", .x(10)), ("hold", .x(1)), ("unapplied", .x(1)),
+        ("p-c", c3s), ("net", c3s), ("extra", c3s), ("carriage", c3s), ("vat", c3s),
+        ("discount", c3s), ("e-vat", c3s), ("c-vat", c3s), ("paid", c3s),
+        ("status", d1), ("deduct-days", bc), ("deduct-amt", .comp(digits: 5, scale: 2, signed: true)),
+        ("deduct-vat", .comp(digits: 5, scale: 2, signed: true)), ("days", bc), ("cr", bl),
+        ("applied", .x(1)), ("date-cleared", bl)
     ])
     /// purchase/wspinv.cob の請求書ヘッダー投影。
     static let pihLayout = Layout("xl150-pih", [
