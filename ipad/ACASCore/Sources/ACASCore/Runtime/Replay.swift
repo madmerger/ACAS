@@ -36,7 +36,8 @@ public final class Replay: @unchecked Sendable {
         try session.store.load(seed: seed)
         if let now { session.now = { now } }
         if let timeZone { session.timeZone = timeZone }
-        if let p = c.irsPath { session.irsDir = p.hasSuffix("/") ? p : p + "/" }
+        // レガシー実測 (INT-401): 単独 IRS は cwd (ledgers/irs) のファイルを使い、ACAS_IRS の値は参照先を変えない
+        if let p = c.irsPath { session.environment["ACAS_IRS"] = p }
         runner = ProgramRunner(session: session)
         before = session.store.snapshot()
     }
