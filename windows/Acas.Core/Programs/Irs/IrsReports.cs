@@ -104,7 +104,9 @@ public sealed partial class IrsBookkeeping
         string Columns(decimal? inputNet, decimal? inputTax, decimal? outputNet, decimal? outputTax) =>
             $" | {Amount(inputNet)} | {Amount(inputTax)} | {Amount(outputNet)} | {Amount(outputTax)} | ";
         string Heading(string caption, int width) => caption.PadLeft(width - caption.Length);
-        var report = new StringBuilder(Header(title)).Append(Heading("番号", 5)).Append(" | ").Append(Heading("日付", 14));
+        string PeriodDate(DateTime? date) => date?.ToString("yyyy年MM月dd日", CultureInfo.InvariantCulture) ?? "未設定";
+        var report = new StringBuilder(Header(title)).AppendLine($"集計期間：{PeriodDate(start)} ～ {PeriodDate(end)}")
+            .Append(Heading("番号", 5)).Append(" | ").Append(Heading("日付", 14));
         foreach (string label in new[] { "仕入税抜", "仕入税額", "売上税抜", "売上税額" })
             report.Append(" | ").Append(Heading(label, amountWidth));
         report.AppendLine(" | 摘要");

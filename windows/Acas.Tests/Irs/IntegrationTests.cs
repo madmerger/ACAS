@@ -23,12 +23,13 @@ public class IntegrationTests
 
         var report = new IrsBookkeeping(db).AuditReport("D", "3", new DateTime(2026, 11, 1), new DateTime(2026, 11, 30));
 
-        string[] Detail(string legend) => Assert.Single(report.Body.Split('\n'), line =>
+        string[] Detail(string legend) => Assert.Single(report.Body.Split(Environment.NewLine), line =>
             line.EndsWith(" | " + legend, StringComparison.Ordinal)).Split('|', StringSplitOptions.TrimEntries);
         Assert.Equal(new[] { "-100.00", "-20.00", "", "" }, Detail("INPUT RETURN")[2..6]);
         Assert.Equal(new[] { "", "", "-100.00", "-20.00" }, Detail("OUTPUT RETURN")[2..6]);
         Assert.Equal(new[] { "0.00", "0.00", "-100.00", "-20.00" }, Detail("")[2..6]);
         Assert.DoesNotContain("OUTSIDE", report.Body);
+        Assert.Contains("集計期間：2026年11月01日 ～ 2026年11月30日", report.Body);
     }
 
     [Fact]
