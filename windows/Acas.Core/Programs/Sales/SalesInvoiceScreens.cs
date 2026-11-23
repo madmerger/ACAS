@@ -106,7 +106,7 @@ public sealed partial class SalesScreens
             new TextField("SalesLineDescription", "品目名", line?.Description ?? "", 32),
             IntegerField("SalesLineQuantity", "数量", line?.Quantity ?? 1, 5),
             AmountField("SalesLineUnitPrice", "単価", line?.UnitPrice ?? 0, 10),
-            AmountField("SalesLineDiscount", "値引率", line?.Discount ?? 0, 5),
+            AmountField("SalesLineDiscount", "値引率", line?.Discount ?? sales.GetCustomer(input.Customer).Details.Discount, 5),
             new ChoiceField("SalesLineVatCode", "税区分", vatCodes, (line?.VatCode ?? 1).ToString(CultureInfo.InvariantCulture))
         ], "明細を確定", v =>
         {
