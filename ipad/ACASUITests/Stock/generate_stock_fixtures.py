@@ -10,6 +10,37 @@ sys.path.insert(0, str(IPAD / "scripts"))
 from generate_cases import evidence_path, expected_changes, read_json, save, snapshot_seed
 
 
+REACH_CASES = {
+    "ST-002": ("master", "在庫品目マスター管理"),
+    "ST-003": ("movements", "入出庫・発注記録"),
+    "ST-004": ("reports", "在庫帳票メニュー"),
+    "ST-005": ("closePeriod", "在庫期間締めの準備"),
+    "ST-006": ("rebuild", "在庫ファイル圧縮の準備"),
+    "ST-202": ("master", "在庫品目マスター管理"),
+    "ST-209": ("movements", "入出庫・発注記録"),
+    "ST-215": ("reports", "在庫帳票メニュー"),
+    "ST-221": ("closePeriod", "在庫期間締めの準備"),
+    "ST-224": ("rebuild", "在庫ファイル圧縮の準備"),
+}
+
+
+def reach_fixture(evidence, case):
+    destination, title = REACH_CASES[case["id"]]
+    legacy = case["legacy_result"]
+    run = evidence_path(evidence, legacy["evidence"][0])
+    targets = legacy["comparison_targets"]
+    changes = expected_changes(evidence, targets["keyed_record_diff"])
+    if legacy["verdict"] != "合格" or changes or targets["report_files"] or not targets["screen_text"]:
+        raise ValueError(f'{case["id"]}: 画面到達のみのレガシー実測ではありません')
+    with evidence_path(evidence, run / "terminal.cast").open(encoding="utf-8") as recording:
+        timestamp = json.loads(recording.readline())["timestamp"]
+    return {
+        "id": case["id"], "title": title + "への到達確認",
+        "workflow": f"stock.{destination}.open", "dateSeconds": timestamp,
+        "seed": snapshot_seed(evidence, run), "changes": changes, "reports": {},
+    }
+
+
 def movement_fixture(evidence, case):
     legacy = case["legacy_result"]
     run = evidence_path(evidence, legacy["evidence"][0])
@@ -61,7 +92,9 @@ def main():
     })
     for case_id in ("ST-400", "ST-401", "ST-402", "ST-403"):
         save(args.output / (case_id + ".json"), movement_fixture(evidence, cases[case_id]))
-    print("在庫の実画面用データ 5 件")
+    for case_id in REACH_CASES:
+        save(args.output / (case_id + ".json"), reach_fixture(evidence, cases[case_id]))
+    print(f"在庫の実画面用データ {5 + len(REACH_CASES)} 件")
 
 
 if __name__ == "__main__":

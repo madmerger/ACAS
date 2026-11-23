@@ -13,6 +13,87 @@ final class StockFlows: XCTestCase {
     }
 
     @MainActor
+    func testReachST002() throws { try verifyMaster("ST-002") }
+
+    @MainActor
+    func testReachST003() throws { try verifyMovements("ST-003") }
+
+    @MainActor
+    func testReachST004() throws { try verifyReports("ST-004") }
+
+    @MainActor
+    func testReachST005() throws { try verifyClosePeriod("ST-005") }
+
+    @MainActor
+    func testReachST006() throws { try verifyRebuild("ST-006") }
+
+    @MainActor
+    func testReachST202() throws { try verifyMaster("ST-202") }
+
+    @MainActor
+    func testReachST209() throws { try verifyMovements("ST-209") }
+
+    @MainActor
+    func testReachST215() throws { try verifyReports("ST-215") }
+
+    @MainActor
+    func testReachST221() throws { try verifyClosePeriod("ST-221") }
+
+    @MainActor
+    func testReachST224() throws { try verifyRebuild("ST-224") }
+
+    @MainActor
+    private func verifyMaster(_ id: String) throws {
+        try verifyReach(id, destination: "master", identifiers: ["create", "edit", "delete", "renumber", "lookup", "masterReport"])
+    }
+
+    @MainActor
+    private func verifyMovements(_ id: String) throws {
+        try verifyReach(id, destination: "movements", identifiers: ["receive", "issue", "barcode", "order", "audit"])
+    }
+
+    @MainActor
+    private func verifyReports(_ id: String) throws {
+        try verifyReach(id, destination: "reports", identifiers: ["valuation", "activity", "reorder", "history", "listing"])
+    }
+
+    @MainActor
+    private func verifyClosePeriod(_ id: String) throws {
+        try verifyReach(id, destination: "closePeriod", labels: ["当期間の累計を消去", "年度累計を消去"])
+    }
+
+    @MainActor
+    private func verifyRebuild(_ id: String) throws {
+        try verifyReach(id, destination: "rebuild", labels: ["一時ファイルから復元"])
+    }
+
+    @MainActor
+    private func verifyReach(_ id: String, destination: String, identifiers: [String] = [], labels: [String] = []) throws {
+        continueAfterFailure = false
+        let url = try XCTUnwrap(Bundle(for: Self.self).url(forResource: id, withExtension: "json", subdirectory: "fixtures"))
+        let app = XCUIApplication()
+        app.launchEnvironment["ACAS_FIXTURE"] = try Data(contentsOf: url).base64EncodedString()
+        app.launchArguments += ["-AppleLanguages", "(ja)", "-AppleLocale", "ja_JP"]
+        XCUIDevice.shared.orientation = .landscapeLeft
+        app.launch()
+        XCTAssertTrue(app.staticTexts[id].waitForExistence(timeout: 10))
+        for identifier in ["section.stock", "stock.confirmDate", "stock." + destination] {
+            tap(app, identifier)
+        }
+        for identifier in identifiers {
+            XCTAssertTrue(app.descendants(matching: .any)["stock." + identifier].firstMatch.waitForExistence(timeout: 5), id)
+        }
+        for label in labels {
+            XCTAssertTrue(app.switches[label].waitForExistence(timeout: 5), id)
+        }
+        XCTAssertTrue(app.staticTexts["case.verdict.match"].waitForExistence(timeout: 5), id)
+        let screenshot = XCTAttachment(screenshot: app.screenshot())
+        screenshot.name = id
+        screenshot.lifetime = .keepAlways
+        add(screenshot)
+    }
+
+    @MainActor
     func testStockReceipt() throws {
         try verifyMovement("ST-400")
     }

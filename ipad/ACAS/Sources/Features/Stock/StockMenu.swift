@@ -22,10 +22,16 @@ struct StockMenu: View {
                 .accessibilityIdentifier("stock.movements")
             NavigationLink(stockText("menu.reports")) { reports }
                 .accessibilityIdentifier("stock.reports")
-            NavigationLink(stockText("menu.closePeriod")) { StockMaintenance(stock: stock, closing: true) }
-                .accessibilityIdentifier("stock.closePeriod")
-            NavigationLink(stockText("menu.rebuild")) { StockMaintenance(stock: stock, closing: false) }
-                .accessibilityIdentifier("stock.rebuild")
+            NavigationLink(stockText("menu.closePeriod")) {
+                StockMaintenance(stock: stock, closing: true)
+                    .onAppear { workspace.completed("stock.closePeriod.open") }
+            }
+            .accessibilityIdentifier("stock.closePeriod")
+            NavigationLink(stockText("menu.rebuild")) {
+                StockMaintenance(stock: stock, closing: false)
+                    .onAppear { workspace.completed("stock.rebuild.open") }
+            }
+            .accessibilityIdentifier("stock.rebuild")
             NavigationLink(stockText("menu.settings")) { SystemMenu(workspace: workspace) }
                 .accessibilityIdentifier("stock.settings")
         }
@@ -57,6 +63,7 @@ struct StockMenu: View {
             report(stockText("report.master"), id: "masterReport")
         }
         .navigationTitle(stockText("menu.master"))
+        .onAppear { workspace.completed("stock.master.open") }
     }
 
     private var movements: some View {
@@ -71,6 +78,7 @@ struct StockMenu: View {
             .accessibilityIdentifier("stock.audit")
         }
         .navigationTitle(stockText("menu.movements"))
+        .onAppear { workspace.completed("stock.movements.open") }
     }
 
     private var reports: some View {
@@ -82,6 +90,7 @@ struct StockMenu: View {
             report(stockText("report.listing"), id: "listing")
         }
         .navigationTitle(stockText("menu.reports"))
+        .onAppear { workspace.completed("stock.reports.open") }
     }
 
     private func itemForm(_ operation: StockItemForm.Operation) -> some View {
