@@ -5,6 +5,14 @@ namespace Acas.Tests;
 public sealed class CalculationTests
 {
     [Theory]
+    [InlineData("drvvat", "", "20")]
+    [InlineData("drvvat", "100", "税")]
+    [InlineData("drvavg", "100", " ")]
+    [InlineData("drvavg", "1,000", "3")]
+    public void 数値未入力と不正な数値を拒否する(string kind, string first, string second) =>
+        Assert.Throws<FormatException>(() => Calculations.Run(kind, first, second));
+
+    [Theory]
     [InlineData("drv09", "K9P34Y", "", "検査数字＝2　判定：有効")]
     [InlineData("drv09", "日本", "", "検査数字＝0　判定：無効")]
     [InlineData("drv04", "29/02/2023", "", "日付不正（通算日＝0）")]

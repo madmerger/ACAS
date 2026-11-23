@@ -68,7 +68,8 @@ public static class Calculations
 
     private static decimal Number(string input, int integral, int fractional, bool signed = false)
     {
-        decimal.TryParse(input.Trim(), NumberStyles.Number, Invariant, out decimal value);
+        decimal value = decimal.Parse(input, NumberStyles.AllowLeadingWhite | NumberStyles.AllowTrailingWhite |
+            NumberStyles.AllowLeadingSign | NumberStyles.AllowDecimalPoint, Invariant);
         decimal modulus = integral switch { 2 => 100m, 6 => 1000000m, 7 => 10000000m, 8 => 100000000m, _ => 1m };
         decimal scale = fractional == 2 ? 100m : 1m;
         decimal magnitude = Math.Truncate(Math.Abs(value) % modulus * scale) / scale;
