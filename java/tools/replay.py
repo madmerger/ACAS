@@ -103,6 +103,30 @@ def norm_report(text):
 def is_report(f): return Path(f).name.startswith(("prt-", "final-")) or f.startswith("spool/")
 
 
+def evidence_path(root, reference):
+    relative = Path(reference)
+    try:
+        root = root.resolve()
+        path = (root / relative).resolve()
+        if not relative.is_absolute() and path.is_relative_to(root):
+            return path
+    except (OSError, RuntimeError, ValueError):
+        pass
+    raise ValueError(f"展開ルート内の証跡を参照できません: {reference}")
+
+
+def load_catalog(root):
+    return json.loads(evidence_path(root, "scenarios/catalog.json").read_text())["cases"]
+
+
+def comparison_path(root, reference, missing_evidence):
+    try:
+        return evidence_path(root, reference)
+    except ValueError as error:
+        missing_evidence.append(str(error))
+        return None
+
+
 def run_case(api, evid, case, verbose=False):
     cid, runner, legacy = case["id"], case["runner"], case["legacy_result"]
     res = {"id": cid, "title": case["title"], "legacy_verdict": legacy.get("verdict")}
@@ -129,7 +153,9 @@ def run_case(api, evid, case, verbose=False):
         if step.get("expect") and step["expect"] not in "\n".join(scr["text"].split("\n")):
             missing_expect.append({"step": i, "expect": step["expect"]})
         if i < len(screens):
-            p = evid / screens[i]
+            p = comparison_path(evid, screens[i], missing_evidence)
+            if p is None:
+                continue
             if not p.is_file():
                 missing_evidence.append(f"画面証跡なし: {screens[i]}")
             else:
@@ -154,10 +180,11 @@ def run_case(api, evid, case, verbose=False):
     rec = {"compared": False}
     dpath = targets.get("keyed_record_diff")
     jdiff = [d for d in snap_diff(before, after) if not is_report(d[0])]
-    if dpath and not (evid / dpath).is_file():
+    p = comparison_path(evid, dpath, missing_evidence) if dpath else None
+    if p is not None and not p.is_file():
         missing_evidence.append(f"レコード差分証跡なし: {dpath}")
-    elif dpath:
-        ld = json.loads((evid / dpath).read_text())
+    elif p is not None:
+        ld = json.loads(p.read_text())
         unsupported = {Path(f).name for f in ld.get("unsupported_files", [])}
         lset = sorted((c["file"].replace("ledgers/", "", 1), {"変更": "更新"}.get(c["operation"], c["operation"]), (c.get("before") or {}).get("hex"), (c.get("after") or {}).get("hex")) for c in ld["changes"])
         jset = sorted(d for d in jdiff if Path(d[0]).name not in unsupported)
@@ -172,8 +199,9 @@ def run_case(api, evid, case, verbose=False):
     reps = []
     for rp in targets.get("report_files") or []:
         m = re.search(r"files/ledgers/(.+)$", rp) or re.search(r"files/(spool/.+)$", rp)
-        p = evid / rp
-        if p.name == "command.json": continue
+        if Path(rp).name == "command.json": continue
+        p = comparison_path(evid, rp, missing_evidence)
+        if p is None: continue
         if not m or not p.is_file():
             missing_evidence.append(f"帳票証跡を比較できません: {rp}")
             continue
@@ -218,7 +246,7 @@ def argument_parser():
 
 def main(make_api=Api, args=None):
     a = args if args is not None else argument_parser().parse_args()
-    catalog = json.loads((a.evidence / "scenarios/catalog.json").read_text())["cases"]
+    catalog = load_catalog(a.evidence)
     sel = [c for c in catalog if any(c["id"] == x or (x.endswith("-") and c["id"].startswith(x)) for x in a.cases)]
     global RESIDUE
     if a.residue: RESIDUE = {}

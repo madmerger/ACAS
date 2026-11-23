@@ -9,6 +9,8 @@ from collections import Counter
 from decimal import Decimal
 from pathlib import Path
 
+from replay import load_catalog
+
 API = {"drv09": "check-digit", "drv04": "date", "drvvat": "vat", "drvage": "age", "drvavg": "average-cost"}
 DRIVER_BY_KEY = {"code": "drv09", "date": "drv04", "net": "drvvat", "days": "drvage", "value": "drvavg"}
 
@@ -28,7 +30,7 @@ def main():
     ap.add_argument("--url", default="http://localhost:18080")
     ap.add_argument("--out", type=Path)
     a = ap.parse_args()
-    cases = [c for c in json.loads((a.evidence / "scenarios/catalog.json").read_text())["cases"] if c["subsystem"] == "CALC"]
+    cases = [c for c in load_catalog(a.evidence) if c["subsystem"] == "CALC"]
     results = []
     for c in cases:
         lr, inp = c["legacy_result"], c["input_data"]

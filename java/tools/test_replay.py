@@ -1,13 +1,53 @@
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 import replay
 import ui_replay
+import calc_replay
 
 
 class ReplayTest(unittest.TestCase):
+    def test_comparison_paths_cannot_leave_evidence_root(self):
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            evid = root / "evidence"
+            report_dir = evid / "files/ledgers"
+            report_dir.mkdir(parents=True)
+            outside = root / "sample.txt"
+            outside.write_text("synthetic fixture")
+            (report_dir / "sample.txt").symlink_to(outside)
+            targets = {"screen_text": ["../sample.txt"], "keyed_record_diff": str(outside),
+                       "report_files": ["files/ledgers/sample.txt"]}
+            case = {"id": "GL-test", "title": "証跡", "baseline": "biz",
+                    "runner": {"app": "gl", "steps": [{"key": "ENTER"}]},
+                    "legacy_result": {"verdict": "合格", "comparison_targets": targets}}
+            api = Mock(spec=replay.Api)
+            api.call.side_effect = [None, {}, {"id": 1}, None, {"text": ""}, {"text": ""}, {}, None]
+            with patch.object(Path, "read_text") as read_text, patch.object(Path, "read_bytes") as read_bytes:
+                result = replay.run_case(api, evid, case)
+            self.assertEqual(result["verdict"], "未検証")
+            self.assertEqual(result["reason"].count("展開ルート内"), 3)
+            read_text.assert_not_called()
+            read_bytes.assert_not_called()
+
+    def test_all_replay_entry_points_reject_outside_catalog(self):
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            evid = root / "evidence"
+            evid.mkdir()
+            (root / "catalog.json").write_text('{"cases": []}')
+            (evid / "scenarios").symlink_to(root, target_is_directory=True)
+            with self.assertRaisesRegex(ValueError, "展開ルート内"):
+                replay.main(args=replay.argument_parser().parse_args([str(evid), "GL-test"]))
+            with self.assertRaisesRegex(ValueError, "展開ルート内"):
+                ui_replay.main([str(evid), "CALC-"])
+            with patch("calc_replay.argparse.ArgumentParser.parse_args") as parse_args:
+                parse_args.return_value.evidence = evid
+                with self.assertRaisesRegex(ValueError, "展開ルート内"):
+                    calc_replay.main()
+
     def test_wrapped_nohup_notice_is_masked_before_screen_normalization(self):
         col = 79 - replay.OS_OUTPUT.index(" ")
         prefix = "L" * col

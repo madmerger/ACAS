@@ -178,7 +178,7 @@ def run_calc(b, case):
 
 
 def main_calc(a):
-    cases = [c for c in json.loads((a.evidence / "scenarios/catalog.json").read_text())["cases"]
+    cases = [c for c in replay.load_catalog(a.evidence)
              if c["subsystem"] == "CALC" and any(c["id"] == x or (x.endswith("-") and c["id"].startswith(x)) for x in a.cases)]
     b = Browser(a.url); b.page.goto(b.url + "/calc.html"); results = []
     b.page.wait_for_function("typeof window.acasSetCase === 'function'")
