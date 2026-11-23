@@ -34,16 +34,23 @@ class PlMessagesTest {
 
     @Test
     void 画面文言は全て対応表で日本語化される() throws Exception {
+        List<String> partial = new ArrayList<>();
         Pattern call = Pattern.compile("\\b(?:display|err)\\([^\"\\n]*?\"((?:[^\"\\\\]|\\\\.)*)\"");
         Path dir = Path.of("src/main/java/jp/co/acas/pl");
         try (Stream<Path> files = Files.list(dir)) {
             for (Path f : (Iterable<Path>) files::iterator) {
                 for (String line : Files.readAllLines(f)) {
                     Matcher m = call.matcher(line);
-                    while (m.find()) Messages.ja(m.group(1).replace("\\\"", "\""));
+                    while (m.find()) {
+                        String ja = Messages.ja(m.group(1).replace("\\\"", "\""));
+                        // 共通語句の部分置換で英単語が残っていないこと（キー名・コード類は除く）
+                        String rest = ja.replaceAll("Enter|Return|YES|NO|FAX|VAT|SWOP|PL\\d{3}|[a-z]{2}/[a-z]{2}/[a-z]{4}|[a-z]{4}/[a-z]{2}/[a-z]{2}|[\\w.-]+\\.(txt|sh|dat)", "");
+                        if (ja.matches(".*[^\\x00-\\x7f].*") && rest.matches(".*[A-Za-z]{3,}.*")) partial.add(ja.strip());
+                    }
                 }
             }
         }
+        assertTrue(partial.isEmpty(), "英語が残る訳語: " + partial);
         List<String> left = new ArrayList<>(Messages.untranslated());
         assertTrue(left.isEmpty(), "未翻訳の文言: " + left);
     }

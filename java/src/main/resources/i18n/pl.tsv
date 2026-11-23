@@ -391,6 +391,77 @@ A/C Number	仕入先番号
 Invoice Nos	請求番号
 Total Paid by	支払方法
 to your Bank	銀行振込
+# 共通語句の部分置換で英語が残るため完全一致で定義するもの
+TP Pay Date	種 支払日
+Reconciliation Data:	照合データ:
+Entry Date	入力日
+Amend Invoicing Fixed Data	請求固定データの修正
+Enter Invoices	請求の入力
+Amend Invoices	請求の修正
+Delete Invoices	請求の削除
+Purchase Ledger Enquiry	買掛元帳照会
+Purchase Transactions Input	買掛取引の入力
+Purchase Transactions Amend	買掛取引の修正
+Purchase Transactions Delete	買掛取引の削除
+Purchase Transactions Proof	買掛取引の検証
+Purchase Transactions Post	買掛取引の転記
+Set-Up Purchase Analysis Codes	買掛分析コードの登録
+Purchase Analysis Report	買掛分析帳票
+Batch Closed........Full!	バッチ締切......満杯!
+Year to Date	年累計
+Current Bal	現在残高
+Date Entered-	入力日-
+Mvmt Average	増減 平均
+Qtr 4	第4期
+Default Sales	既定売上
+Email Sales	メール
+Emergency Name	仮名称
+Enter Further Invoices? (Y/N)	続けて請求を入力? (Y/N)
+Invoice Data Amend	請求データ修正
+Invoice Data Deletion	請求データ削除
+Invoice Data Entry	請求データ入力
+Invoicing Fixed Data	請求固定データ
+Number of Active Accounts	取引中の仕入先数
+Number of Live Accounts	有効な仕入先数
+OK to post Purchase Transactions (YES/NO) ?	買掛取引を転記しますか (YES/NO) ?
+PL005 Invalid Date	PL005 日付不正
+PL103 Purchase Ledger files have not been set up yet	PL103 買掛元帳ファイルが未作成です
+PL105 Creating Purchase & Delivery Files	PL105 仕入先・納入先ファイル作成中
+PL106 Opening Purchase files gives	PL106 仕入先ファイル開始状態
+PL117 No Work File Created..No Data	PL117 作業ファイル未作成..データ無
+PL132 Err on Batch file write :	PL132 バッチ書込エラー :
+PL134 Warning Record/s missing in Purchase File	PL134 警告 仕入先ファイルにレコード欠落
+PL184 You Can Only Credit Invoices. Not Receipts, Credit Notes	PL184 貸方処理は請求のみ可。領収・貸方票は不可
+PL188 Invoice Already Passed To Purchase Ledger!	PL188 請求は買掛元帳へ転記済!
+PL188 Invoice Details Already Passed To Purchase Ledger!	PL188 請求明細は買掛元帳へ転記済!
+PL190 You Can Only Credit An Invoice With The Same Account Number	PL190 同一仕入先番号の請求のみ貸方処理可
+PL201 Analyst records with desc, 'Emergency Name' created	PL201 摘要「仮名称」の分析レコードを作成
+Payment Data Amend	支払データ修正
+Payment Data Entry	支払データ入力
+Plus: Invoices Posted	加算: 転記済請求
+Printing..... Please Wait	印刷中..... お待ち下さい
+Printing.......Please wait	印刷中.......お待ち下さい
+Purch-Average	平均取引高
+Purch-Current	現在残高
+Purch-Discount	割引率
+Purch-Name	仕入先名称
+Purchase Carriage Charges	仕入運賃
+Purchase Ledger  Start Of Day	買掛元帳 業務開始
+Purchase Ledger Day Book	買掛元帳 日記帳
+Purchase Ledger Dump	買掛元帳 出力
+Purchase Ledger Invoices	買掛元帳 請求
+Purchase Ledger Payments	買掛元帳 支払
+Purchase Ledger System Menu	買掛元帳システムメニュー
+Purchase Ledger Turnover Report	買掛元帳 取引高表
+Rewrite Sales Rec	仕入先更新
+Sales Carriage Charges	売上運賃
+<----------------Name & Address---------------->	<------------------名称・住所----------------->
+Unapplied Purchase Transaction Report	未充当買掛取引表
+Using Deleted Folio Numbers	削除済伝票番号を使用
+VAT Input Invoices/CN's	仕入税 請求/貸方票
+VAT Output Invoices/CN's	売上税 請求/貸方票
+Warning: One or more P.A. codes contain a zero value for General Ledger numbers	警告: 総勘定元帳番号がゼロの分析コードがあります
+Warning: Record/s missing in Purchase File	警告: 仕入先ファイルにレコード欠落
 # プログラム名
 PL000 (3.01.01)	PL000 (3.01.01)
 PL010 (3.01.13)	PL010 (3.01.13)
