@@ -266,7 +266,7 @@ Invoicing Data Entry	請求情報入力
 *Date  [  /  /    ]*                   *	*日付  [  /  /    ]*                   *
 *A/C Nos  [       ]*Ref    [          ]*	*顧客番号 [       ]*参照   [          ]*
 *Invoice [        ]*Order  [          ]*	*請求書  [        ]*注文   [          ]*
-F1 = Setup new Customer; F8 = Only Show delivery details	F1 = 顧客新規登録; F8 = 納品先のみ表示
+F1 = Setup new Customer; F8 = Only Show delivery details	F1 = 顧客新規登録      ; F8 = 納品先のみ表示
 Type [ ]  <1> = Receipt; <2> = Account; <3> = Credit Note; <4> = Pro-Forma	区分 [ ]  <1> = 領収; <2> = 掛売; <3> = 赤伝; <4> = 見積
 Creating Invoice File                    	請求書ファイルを作成中
 No such Customer	該当顧客なし
@@ -368,7 +368,7 @@ Goods	商品
 Gross	総額
 Invoice Post Extract	請求書転記抽出
 Working...........Please Wait	処理中...........お待ちください
-SL002 Note error and hit return	SL002 エラーを確認し Enter を押してください
+SL002 Note error and hit return	SL002 エラーを控えて Enter
 SL121 Error writing to Open Item 2 File	SL121 未消込明細ファイル 2 の書込エラー
 SL122 Unprinted Invoices Exist. Correct & Run Again	SL122 未印刷の請求書があります。修正して再実行してください
 Emergency Name	仮登録名称

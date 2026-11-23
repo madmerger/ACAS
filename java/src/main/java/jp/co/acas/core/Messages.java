@@ -111,7 +111,14 @@ public final class Messages {
             pe = me.end(); pj = mj.end();
         }
         if (mj.find()) return ja;
-        return out.append(ja.substring(pj)).toString();
+        String tail = ja.substring(pj);
+        int want = en.length() - pe, w = width(tail);
+        if (pe > 0 && !tail.isBlank() && !tail.endsWith(" ")) { // 右端の記号（枠線の * など）を原文と同じ桁に保つ
+            int sp = tail.lastIndexOf("  ");
+            while (w > want && tail.contains("  ")) { tail = tail.replaceFirst("  ", " "); w--; }
+            if (w < want && sp >= 0) tail = tail.substring(0, sp) + " ".repeat(want - w) + tail.substring(sp);
+        }
+        return out.append(tail).toString();
     }
     private static String chunk(String chunk) {
         String lead = chunk.substring(0, chunk.length() - chunk.stripLeading().length());
