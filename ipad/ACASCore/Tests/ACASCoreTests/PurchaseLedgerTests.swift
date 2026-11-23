@@ -4,6 +4,42 @@ import XCTest
 @testable import ACASCore
 
 final class PurchaseLedgerTests: XCTestCase {
+    func testPostingReportFailureRollsBackBeforeRetry() throws {
+        try withDiskLedger { ledger, db in
+            var value = PurchaseLedger.Transaction(date: ledger.processingDate)
+            value.supplier = try addSupplier(ledger)
+            value.lines[0].code = "a1"
+            value.lines[0].net = 10_000
+            value.lines[0].tax = 2_000
+            let folio = try ledger.saveTransaction(value)
+            let before = EvidenceComparison.snapshot(ledger.store)
+            let sql = "CREATE TRIGGER reject_report BEFORE INSERT ON files WHEN NEW.name = '\(PurchaseLedger.reportPath)' BEGIN SELECT RAISE(ABORT, 'blocked'); END"
+            XCTAssertEqual(sqlite3_exec(db, sql, nil, nil, nil), SQLITE_OK)
+
+            XCTAssertThrowsError(try ledger.postTransactions()) { error in
+                XCTAssertEqual((error as? FileStore.DatabaseError)?.code, SQLITE_CONSTRAINT)
+            }
+            XCTAssertTrue(EvidenceComparison.diff(before: before, after: EvidenceComparison.snapshot(ledger.store)).isEmpty)
+            XCTAssertNil(ledger.store.readRaw(PurchaseLedger.reportPath))
+
+            XCTAssertEqual(sqlite3_exec(db, "DROP TRIGGER reject_report", nil, nil, nil), SQLITE_OK)
+            XCTAssertEqual(try ledger.postTransactions().map(\.id), [folio])
+            XCTAssertEqual(try ledger.supplier(code: value.supplier).currentBalance, 12_000)
+            XCTAssertEqual(ledger.systemFile.read(4).map { Record(PurchaseRecords.sys4Layout, bytes: $0).int("pl-invoices-this-month") }, 12_000)
+        }
+    }
+
+    private func withDiskLedger(_ body: (PurchaseLedger, OpaquePointer) throws -> Void) throws {
+        let url = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: url) }
+        let context = BusinessContext(store: try FileStore(path: url.path))
+        try CompanySetup(context).save(name: "試験会社")
+        var db: OpaquePointer?
+        defer { sqlite3_close(db) }
+        XCTAssertEqual(sqlite3_open(url.path, &db), SQLITE_OK)
+        try body(PurchaseLedger(context), XCTUnwrap(db))
+    }
+
     func testPurchaseProofReportsSQLiteWriteFailure() throws {
         let url = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         defer { try? FileManager.default.removeItem(at: url) }

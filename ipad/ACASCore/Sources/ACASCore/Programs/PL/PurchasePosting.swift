@@ -3,7 +3,7 @@ import Foundation
 extension PurchaseLedger {
     @discardableResult
     public func postTransactions() throws -> [Transaction] {
-        try PurchasePosting(self).post()
+        try store.withTransaction { try PurchasePosting(self).post() }
     }
 }
 
