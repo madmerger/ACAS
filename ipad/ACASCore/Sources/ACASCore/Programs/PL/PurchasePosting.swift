@@ -1,6 +1,10 @@
 import Foundation
 
 extension PurchaseLedger {
+    public func postingAmounts(for number: Int64) -> (net: Int64, tax: Int64)? {
+        header(number).map { PurchasePosting.amounts(PurchasePosting.openItem($0)) }
+    }
+
     @discardableResult
     public func postTransactions() throws -> [Transaction] {
         try PurchasePosting(self).post()
@@ -56,7 +60,7 @@ private final class PurchasePosting {
         let headers = ledger.headers().filter { $0.str("ih-status").uppercased() != "Z" }
         for header in headers {
             guard ledger.decodeTransaction(header) != nil else { throw PurchaseLedger.Error.invalidTransaction }
-            let item = openItem(header)
+            let item = Self.openItem(header)
             let key = openKey(item)
             guard keys.insert(key).inserted, store.read(archivePath, key: key) == nil else {
                 throw PurchaseLedger.Error.duplicateTransaction
@@ -117,7 +121,7 @@ private final class PurchasePosting {
 
     private func openKey(_ item: Record) -> [UInt8] { Array(item.bytes.prefix(11)) }
 
-    private func openItem(_ header: Record) -> Record {
+    static func openItem(_ header: Record) -> Record {
         var item = Record(R.oiLayout)
         item["oi-supplier"] = header.str("ih-supplier")
         for field in ["invoice", "date", "type", "days", "deduct-amt", "deduct-days", "cr"] {
@@ -136,8 +140,12 @@ private final class PurchasePosting {
     }
 
     private func goods(_ item: Record) -> Int64 { item.int("oi-net") }
-    private func net(_ item: Record) -> Int64 { Cobol.truncate(goods(item) + item.int("oi-carriage"), digits: 9) }
-    private func tax(_ item: Record) -> Int64 { Cobol.truncate(item.int("oi-vat") + item.int("oi-c-vat"), digits: 9) }
+    static func amounts(_ item: Record) -> (net: Int64, tax: Int64) {
+        (Cobol.truncate(item.int("oi-net") + item.int("oi-carriage"), digits: 9),
+         Cobol.truncate(item.int("oi-vat") + item.int("oi-c-vat"), digits: 9))
+    }
+    private func net(_ item: Record) -> Int64 { Self.amounts(item).net }
+    private func tax(_ item: Record) -> Int64 { Self.amounts(item).tax }
     private func gross(_ item: Record) -> Int64 { Cobol.truncate(net(item) + tax(item), digits: 9) }
 
     private func addTotal(_ name: String, _ value: Int64) {

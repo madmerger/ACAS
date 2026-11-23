@@ -241,6 +241,26 @@ final class PurchaseLedgerTests: XCTestCase {
         XCTAssertEqual(updated.raw("purch-address"), SJIS.encode("東京都\\", size: 96))
     }
 
+    func testPostingPreviewUsesSignedFixedWidthHeaderTotals() throws {
+        let ledger = try makeLedger()
+        var transaction = PurchaseLedger.Transaction(date: ledger.processingDate)
+        transaction.supplier = try addSupplier(ledger)
+        transaction.type = .creditNote
+        transaction.lines[0].code = "a1"
+        transaction.lines[0].net = 999_999_950
+        transaction.lines[0].tax = 2_000
+        transaction.carriage = 100
+        transaction.carriageTax = 20
+        let folio = try ledger.saveTransaction(transaction)
+        let amounts = try XCTUnwrap(ledger.postingAmounts(for: folio))
+        XCTAssertEqual(amounts.net, -50)
+        XCTAssertEqual(amounts.tax, -2_020)
+
+        try ledger.postTransactions()
+        let report = try XCTUnwrap(ledger.store.readRaw(PurchaseLedger.reportPath))
+        XCTAssertTrue(String(decoding: report, as: UTF8.self).contains("0.50CR"))
+    }
+
     func testSupplierLifecyclePreservesFixedWidthRecord() throws {
         let ledger = try makeLedger()
         let code = try addSupplier(ledger)

@@ -75,10 +75,10 @@ struct PurchaseTransactionsView: View {
                     TableColumn(plString("pl.supplier.code"), value: \.supplier)
                     TableColumn(plString("pl.invoice.type")) { Text($0.type.japaneseTitle) }
                     TableColumn(plString("pl.invoice.net")) { row in
-                        Text(purchaseAmount(reportSign(for: row) * row.lines.reduce(row.carriage) { $0 + $1.net }))
+                        Text(purchaseAmount(amounts(for: row).net))
                     }
                     TableColumn(plString("pl.invoice.tax")) { row in
-                        Text(purchaseAmount(reportSign(for: row) * row.lines.reduce(row.carriageTax ?? 0) { $0 + ($1.tax ?? 0) }))
+                        Text(purchaseAmount(amounts(for: row).tax))
                     }
                     TableColumn(plString("pl.invoice.state")) { row in
                         if mode == .edit || mode == .delete {
@@ -116,8 +116,11 @@ struct PurchaseTransactionsView: View {
         .purchaseAlert($error)
     }
 
-    private func reportSign(for row: PurchaseLedger.Transaction) -> Int64 {
-        (mode == .proof || mode == .post) && row.type == .creditNote ? -1 : 1
+    private func amounts(for row: PurchaseLedger.Transaction) -> (net: Int64, tax: Int64) {
+        if mode == .post, let amounts = ledger.postingAmounts(for: row.id) { return amounts }
+        let sign: Int64 = mode == .proof && row.type == .creditNote ? -1 : 1
+        return (sign * row.lines.reduce(row.carriage) { $0 + $1.net },
+                sign * row.lines.reduce(row.carriageTax ?? 0) { $0 + ($1.tax ?? 0) })
     }
 
     private func action(for row: PurchaseLedger.Transaction) -> some View {
