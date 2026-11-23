@@ -4,6 +4,7 @@ import base64
 import hashlib
 import json
 from pathlib import Path, PurePosixPath
+import subprocess
 
 from generate_customer_fixtures import BASE, IPAD, customer_seed
 
@@ -28,7 +29,7 @@ CASES = {
     "SL-020": ("sales-invoice-fixed-data-view", "請求書の初回固定項目設定"),
     "SL-021": ("sales-period-view", "期間締めの確認画面"),
     "SL-022": ("sales-customer-report-view", "得意先ファイル帳票の抽出条件"),
-    "SL-091": ("sales-analysis-code", "売上分析コードAと勘定科目400001の設定"),
+    "SL-091": ("sales-analysis-registration-refused", "分析ファイルのレコード長不一致で登録を中断"),
     "SL-202": ("sales-customers-menu-view", "得意先マスター管理の到達確認"),
     "SL-203": ("sales-customer-screen-register", "得意先登録の到達確認"),
     "SL-204": ("sales-customer-screen-edit", "得意先変更の到達確認"),
@@ -179,6 +180,19 @@ def main():
             date = json.loads(recording.readline())["timestamp"]
         seed_reports, reports = report_evidence(evidence, run, targets["report_files"])
         seed = json.loads(base64.b64decode(customer_seed(evidence, run)))
+        if case_id == "SL-091":
+            path = "ledgers/acas/analysis.dat"
+            source = BASE.evidence_path(evidence, run / "before-files" / path)
+            before = BASE.read_json(BASE.evidence_path(evidence, run / "before.json"))[path]
+            after = BASE.read_json(BASE.evidence_path(evidence, run / "result.json"))["after"][path]
+            dump = subprocess.run(["db_dump", str(source)], check=True, capture_output=True, text=True).stdout
+            rows = dump.split("HEADER=END\n", 1)[1].splitlines()
+            if not rows or rows.pop() != "DATA=END" or len(rows) % 2:
+                raise ValueError("SL-091: 分析ファイルのレコードを読み取れません")
+            records = [[key.strip(), value.strip()] for key, value in zip(rows[::2], rows[1::2])]
+            if not records or any(len(bytes.fromhex(value)) != 66 for _, value in records) or before != after:
+                raise ValueError("SL-091: 66バイトの分析レコードと更新なしの証跡が必要です")
+            seed["files"][path] = {"type": "indexed", "records": records}
         seed["files"].update({name: {"type": "raw", "hex": data} for name, data in seed_reports.items()})
         BASE.save(fixtures / f"{case_id}.json", {
             "id": case_id, "title": title, "workflow": workflow, "dateSeconds": date,

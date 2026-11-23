@@ -49,23 +49,12 @@ final class SalesReachFlows: XCTestCase {
 
     func testSL091() throws {
         try reach("SL-091", through: ["sales.analysis.codes", "sales.analysis.add"],
-                  title: "売上分析コード登録", verdict: "mismatch") { app in
-            for (field, text) in [("group", "A"), ("account", "400001"), ("description", "SALES")] {
-                let input = app.textFields["sales.analysis." + field]
-                XCTAssertTrue(input.isHittable, field)
-                input.tap()
-                input.typeText(text)
-            }
-            XCTAssertEqual(app.textFields["sales.analysis.printCode"].value as? String, "A")
-            app.buttons["sales.analysis.save"].tap()
-            let display = app.buttons["sales.analysis.display"]
-            XCTAssertTrue(display.waitForExistence(timeout: 5))
-            display.tap()
-            let row = app.descendants(matching: .any)["sales.analysis.code.SA"].firstMatch
-            XCTAssertTrue(row.waitForExistence(timeout: 5))
-            XCTAssertTrue(row.label.contains("SALES"))
-            XCTAssertTrue(row.label.contains("印字コード　A"))
-            XCTAssertEqual(row.value as? String, "400001")
+                  title: "売上分析コード登録") { app in
+            let error = app.staticTexts["sales.analysis.error"]
+            XCTAssertTrue(error.waitForExistence(timeout: 5))
+            XCTAssertEqual(error.label, "分析ファイルのレコード長が一致しないため、売上分析コードの登録を中止しました。")
+            XCTAssertFalse(app.textFields["sales.analysis.group"].exists)
+            XCTAssertFalse(app.buttons["sales.analysis.save"].exists)
         }
     }
 

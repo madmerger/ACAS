@@ -89,6 +89,9 @@ final class SalesAnalysisTests: XCTestCase {
         XCTAssertTrue(store.write(SalesPosting.analysisPath, key: Array("SA ".utf8), data: bytes))
         let before = store.snapshot()
         let service = SalesAnalysis(context)
+        XCTAssertThrowsError(try service.validateRegistration()) {
+            XCTAssertEqual($0 as? SalesAnalysis.Error, .invalidLayout)
+        }
         try service.prepare()
         XCTAssertThrowsError(try service.codes()) { XCTAssertEqual($0 as? SalesAnalysis.Error, .invalidLayout) }
         XCTAssertThrowsError(try service.save(group: "A", account: 400_001, description: "", printCode: ""))

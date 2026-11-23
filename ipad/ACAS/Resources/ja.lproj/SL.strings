@@ -38,6 +38,7 @@
 "sales.analysis.unsupportedDescription" = "説明に保存できない文字があります。別の文字に置き換えてください";
 "sales.analysis.unsupportedPrintCode" = "印字コードに保存できない文字があります。別の文字に置き換えてください";
 "sales.analysis.invalidLayout" = "分析ファイルのレコード形式が一致しません";
+"sales.analysis.registrationStatus39" = "分析ファイルのレコード長が一致しないため、売上分析コードの登録を中止しました。";
 "sales.analysis.duplicate" = "この分析コードは登録済みです";
 "sales.analysis.missingGroup" = "先に集計グループを登録してください";
 "sales.analysis.groupUsed" = "このグループはすでに明細コードとして使用されています";
