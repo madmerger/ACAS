@@ -41,6 +41,12 @@ struct SalesMenu: View {
                 NavigationLink(slText("sales.payment.post")) { SalesPaymentPostingView(workspace: workspace) }
                     .accessibilityIdentifier("sales.payment.post")
             }
+            Section(slText("sales.analysis.section")) {
+                NavigationLink(slText("sales.analysis.codes")) { SalesAnalysisMenu(workspace: workspace) }
+                    .accessibilityIdentifier("sales.analysis.codes")
+                NavigationLink(slText("sales.analysis.totals")) { SalesAnalysisReportView(workspace: workspace, kind: .totals) }
+                    .accessibilityIdentifier("sales.analysis.totals")
+            }
             NavigationLink(String(localized: "sales.proof", table: "SL")) {
                 #if DEBUG
                 if workspace.evidence != nil, ProcessInfo.processInfo.environment["ACAS_COMPACT_REPORT"] == "1" {
