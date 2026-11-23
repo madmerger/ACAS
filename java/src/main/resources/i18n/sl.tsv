@@ -385,3 +385,22 @@ SL002 Note error and hit return	SL002 エラーを確認し Enter を押して�
 SL121 Error writing to Open Item 2 File	SL121 未消込明細ファイル 2 の書込エラー
 SL122 Unprinted Invoices Exist. Correct & Run Again	SL122 未印刷の請求書があります。修正して再実行してください
 Emergency Name	仮登録名称
+Invoice Posting & Report	請求書転記・帳票
+OK to post Sales transactions (YES/NO) ?  [   ]	売上取引を転記しますか (YES/NO) ?      [   ]
+Posting......Please Wait	転記中......お待ちください
+Phase 1 - Building OTM3 from OTM2	フェーズ 1 - OTM2 から OTM3 を作成
+2 - Applying Cr. Notes to OTM3	2 - 赤伝を OTM3 へ充当
+Invoice Posting Report	請求書転記帳票
+Un-Applied Credits	未充当クレジット
+Un-Applied Credits C/F	未充当クレジット繰越
+*** Customer Unknown ***	*** 顧客不明 ***
+CR. Note	赤伝
+Total  Posted	転記合計
+Total  Amount Late Deductions	延滞控除合計
+SL130 Open-IT3 =	SL130 Open-IT3 =
+SL131 PE - CR SWOP: Return to continue	SL131 PE - 赤伝充当: Enter で続行
+SL132 Err on Batch file write :	SL132 バッチファイル書込エラー :
+SL133 PE 060-01	SL133 PE 060-01
+SL134 Warning Record/s missing in Sales File	SL134 警告: 顧客ファイルに存在しないレコードがあります
+SL135 Error On Re/write Sales File	SL135 顧客ファイルの書込/更新エラー
+fs-reply =	fs-reply =
