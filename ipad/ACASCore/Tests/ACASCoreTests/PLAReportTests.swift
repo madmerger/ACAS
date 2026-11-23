@@ -31,7 +31,7 @@ final class PLAReportTests: XCTestCase {
             }
             let seedName = c.baseline == "pure-function" ? "empty" : c.baseline
             let seed = try Data(contentsOf: ReplayTests.resources.appendingPathComponent("Seeds/\(seedName).json"))
-            let l10n = try L10n(directory: ReplayTests.resources.appendingPathComponent("Localization"), language: .en)
+            let l10n = try L10n(directory: ReplayTests.resources.appendingPathComponent("Localization"), language: L10n.Language(rawValue: env["ACAS_LANG"] ?? "en") ?? .en)
             let r = try Replay(c, seed: seed, l10n: l10n, now: now, timeZone: TimeZone(identifier: "UTC"))
             _ = r.runAll()
             // 帳票: この実行でレガシーが書き換えた prt-* (実行前と内容が違うもの) を全て比較する
