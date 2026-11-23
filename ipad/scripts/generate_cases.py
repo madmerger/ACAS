@@ -31,6 +31,7 @@ WORKFLOWS = {
     "GL-001": ("gl-business-date-reopen", "処理日入力を開き直す"),
     "GL-002": ("gl-accounts-menu", "勘定科目の管理メニューを表示"),
     "GL-003": ("gl-defaults-menu", "既定勘定の管理メニューを表示"),
+    "GL-004": ("gl-batch-menu", "仕訳入力メニューを表示"),
     "GL-006": ("gl-batch-status-menu", "バッチ状況のメニューを表示"),
     "GL-007": ("gl-posting-menu", "仕訳転記のバッチ確認を表示"),
     "GL-008": ("gl-cycle-close-menu", "期間締めの確認画面を表示"),
@@ -59,6 +60,10 @@ WORKFLOWS = {
     "GL-205": ("gl-chart-inquiry-menu", "勘定科目一覧の照会画面を表示"),
     "GL-206": ("gl-chart-print", "勘定科目一覧の帳票を確認"),
     "GL-207": ("gl-defaults-menu", "既定勘定の管理メニューを表示"),
+    "GL-212": ("gl-batch-menu", "仕訳入力メニューに到達"),
+    "GL-213": ("gl-batch-new-menu", "新規バッチ登録画面に到達"),
+    "GL-216": ("gl-batch-proof-all", "対象なしの全バッチ検証を実行"),
+    "GL-217": ("gl-batch-proof-select", "指定バッチの選択画面を表示"),
     "GL-219": ("gl-batch-status-menu", "バッチ状況メニューを表示"),
     "GL-220": ("gl-batch-status-display", "バッチ状況を照会"),
     "GL-221": ("gl-batch-status-print", "バッチ状況帳票を出力"),
@@ -73,7 +78,7 @@ WORKFLOWS = {
     "CALC-200": ("check-digit", "得意先コードのチェックディジット"),
 }
 KEY_LENGTHS = {
-    "ledger.dat": 8, "purchled.dat": 7, "salesled.dat": 7, "stockctl.dat": 13, "invoice.dat": 10,
+    "ledger.dat": 8, "purchled.dat": 7, "salesled.dat": 7, "stockctl.dat": 13, "invoice.dat": 10, "batch.dat": 6,
 }
 
 
@@ -153,7 +158,7 @@ def fixture(evidence, case):
             raise ValueError(f"帳票スプールと原本が一致しません: {path}")
     seeded = workflow == "sales-proof" or workflow.startswith(
         (
-            "system-", "gl-account-", "gl-accounts-", "gl-chart-", "gl-batch-status-", "gl-business-date",
+            "system-", "gl-account-", "gl-accounts-", "gl-chart-", "gl-batch-", "gl-business-date",
             "gl-close-ledger", "gl-cycle-close-", "gl-defaults-", "gl-posting-", "gl-trial-balance-",
         )
     )

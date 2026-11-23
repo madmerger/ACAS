@@ -43,6 +43,17 @@ class EvidencePathTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "証跡ルート外"):
             expected_changes(self.root, self.outside / "changes.json")
 
+    def test_batch_diff_uses_the_six_byte_index_key(self):
+        change = {
+            "file": "ledgers/acas/batch.dat", "key": "999999", "before": None,
+            "after": {"hex": b"999999000099".hex()},
+        }
+        save(self.root / "changes.json", {"changes": [change]})
+        self.assertEqual(expected_changes(self.root, "changes.json"), [{
+            "file": change["file"], "key": b"999999".hex(),
+            "before": None, "after": change["after"]["hex"],
+        }])
+
 
 if __name__ == "__main__":
     unittest.main()
