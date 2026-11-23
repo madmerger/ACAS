@@ -132,18 +132,20 @@ public sealed class StockService
         decimal newValue = oldValue + change;
         if (newValue < 0) { newValue = 0; warnings.Add(StockMessages.ST209); }
         if (newValue > MaxValue) { newValue = MaxValue; warnings.Add(StockMessages.ST212); }
-        if (System.I("Stk-Averaging") == 1 && newQty + wip != 0)
-            item.SetN("Stock-Cost", Cob.Round(newValue / (newQty + wip), 4));
+        if (newQty != 0) item.SetN("Stock-Cost", Cob.Round(newValue / newQty, 4));
 
-        decimal onOrder = item.N("Stock-On-Order");
-        if (onOrder > 0 && !reverse) item.SetN("Stock-On-Order", qty >= onOrder ? 0 : onOrder - qty);
+        decimal onOrder = item.N("Stock-On-Order") - qty;
+        decimal back = item.N("Stock-Back-Ordered") + onOrder;
+        item.SetN("Stock-On-Order", 0);
+        item.SetN("Stock-Back-Ordered", Math.Max(0, back));
+        var line = new MovementLine(kind, item.St("Stock-Key"), item.St("Stock-Desc"), signed, price, change, item.N("Stock-Order-Date"), item.N("Stock-Order-Due"));
+        if (item.N("Stock-Back-Ordered") == 0) { item.SetN("Stock-Order-Date", 0); item.SetN("Stock-Order-Due", 0); }
         AddMonthly(item, "Adds", signed);
         item.SetN("Stock-Value", Cob.Round(newValue, 2));
         item.SetN("Stock-Held", newQty);
         Rewrite(item);
-        WriteAudit(item, reverse ? 4 : 1, signed, price, change, reverse);
-        return new MovementResult(true, null, warnings, new MovementLine(kind, item.St("Stock-Key"), item.St("Stock-Desc"),
-            signed, price, change, item.N("Stock-Order-Date"), item.N("Stock-Order-Due")));
+        WriteAudit(item, 1, signed, price, change, reverse);
+        return new MovementResult(true, null, warnings, line);
     }
 
     public MovementResult Deduction(Rec item, decimal qty, bool reverse)
@@ -164,7 +166,7 @@ public sealed class StockService
         if (value > MaxValue) { value = MaxValue; warnings.Add(StockMessages.ST212); }
         item.SetN("Stock-Value", Cob.Round(value, 2));
         Rewrite(item);
-        WriteAudit(item, reverse ? 3 : 2, -signed, cost, Cob.Round(change, 2), reverse);
+        WriteAudit(item, 2, signed, cost, Cob.Round(change, 2), reverse);
         return new MovementResult(true, null, warnings, new MovementLine(MovementKind.Deduction, item.St("Stock-Key"), item.St("Stock-Desc"),
             signed, cost, Cob.Round(change, 2), 0, 0));
     }
@@ -202,6 +204,7 @@ public sealed class StockService
     private void WriteAudit(Rec item, int type, decimal qty, decimal unitCost, decimal change, bool reverse)
     {
         if (!AuditUsed) return;
+        System.SetN("Stk-Activity-Rep-Run", 0);
         if (!_db.Exists(AuditFile)) _db.Create(AuditFile);
         System.SetN("File-Status-10", 1);
         var a = Layouts.StockAudit.New();
@@ -256,11 +259,10 @@ public sealed class StockService
     public int Compress()
     {
         var items = Items().ToList();
-        _db.Recreate(StockFile);
         foreach (var item in items)
         {
             item.SetN("Stock-Value", Cob.Round(item.N("Stock-Held") * item.N("Stock-Cost"), 2));
-            _db.Write(StockFile, item.S("Stock-Key"), item.B);
+            _db.Rewrite(StockFile, item.S("Stock-Key"), item.B);
         }
         return items.Count;
     }

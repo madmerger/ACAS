@@ -93,8 +93,12 @@ public static class StockVerify
             LegacyVerdict = lr.GetProperty("verdict").GetString() ?? "",
         };
         var evidence = lr.TryGetProperty("evidence", out var ev) ? ev.EnumerateArray().Select(e => e.GetString()!).ToList() : [];
-        if (evidence.Count == 0 || !Directory.Exists(Path.Combine(root, evidence[0]))) { r.Verdict = "対象外"; r.Diffs.Add("レガシー未実施（証跡なし）"); return r; }
-        string dir = Path.Combine(root, evidence[0]);
+        string full = evidence.Count == 0 ? "" : Path.GetFullPath(Path.Combine(root, evidence[0]));
+        bool inside = evidence.Count > 0 && !Path.IsPathRooted(evidence[0]) && !evidence[0].StartsWith(@"\\", StringComparison.Ordinal)
+            && full.StartsWith(Path.GetFullPath(root).TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase);
+        if (!inside) { r.Verdict = "対象外"; r.Diffs.Add(evidence.Count == 0 ? "レガシー未実施（証跡なし）" : "証跡パスが証跡ルート外のため読み込まない"); return r; }
+        if (!Directory.Exists(full)) { r.Verdict = "対象外"; r.Diffs.Add("レガシー未実施（証跡なし）"); return r; }
+        string dir = full;
         try
         {
             using var db = new Db();

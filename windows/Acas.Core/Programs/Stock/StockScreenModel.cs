@@ -114,8 +114,12 @@ public sealed class StockScreenModel(Db db, Func<DateTime> clock)
         return fields;
     }
 
+    private static bool SingleByte(string text) => text.All(c => c <= 'ÿ');
+
     private string? ApplyItem(Rec r, FormValues v)
     {
+        if (new[] { "StockAbrev", "StockDesc", "StockSupplier1", "StockSupplier2", "StockSupplier3", "StockLocation", "StockSaCode", "StockPaCode" }
+            .Any(id => !SingleByte(v.Text(id)))) return StockMessages.SingleByteOnly;
         foreach (var (id, f) in new[] { ("StockAbrev", "Stock-Abrev-Key"), ("StockDesc", "Stock-Desc"), ("StockSupplier1", "Stock-Supplier-P1"),
             ("StockSupplier2", "Stock-Supplier-P2"), ("StockSupplier3", "Stock-Supplier-P3"), ("StockLocation", "Stock-Location"),
             ("StockSaCode", "Stock-SA-Code"), ("StockPaCode", "Stock-PA-Code") })
@@ -144,7 +148,7 @@ public sealed class StockScreenModel(Db db, Func<DateTime> clock)
     {
         var r = Layouts.Stock.New();
         r.Set("Stock-Key", v.Text("StockKey").Trim().ToUpperInvariant());
-        string? err = ApplyItem(r, v) ?? Service.Create(r);
+        string? err = SingleByte(v.Text("StockKey")) ? ApplyItem(r, v) ?? Service.Create(r) : StockMessages.SingleByteOnly;
         return err != null ? Error("在庫品目登録", err, CreateForm, MaintenanceMenu)
             : new ConfirmationScreen("在庫品目登録", "品目「" + r.St("Stock-Key") + "」を登録しました。続けて登録しますか。", "続けて登録", CreateForm, MaintenanceMenu);
     });
@@ -159,11 +163,11 @@ public sealed class StockScreenModel(Db db, Func<DateTime> clock)
         : new InformationScreen(MaintenanceTitle, StockMessages.ST112);
 
     private Screen KeyForm(string title, string id, Func<Rec, Screen> next) => new FormScreen(title,
-        [new TextField(id, "品目番号または略号（空欄でメニューへ戻る）", "", 13)], "次へ", v =>
+        [new TextField(id, "品目番号（空欄でメニューへ戻る）", "", 13)], "次へ", v =>
         {
             if (v.Text(id).Trim().Length == 0) return MaintenanceMenu();
-            var item = Service.Find(v.Text(id), out var err);
-            return item == null ? Error(title, err!, () => KeyForm(title, id, next), MaintenanceMenu) : next(item);
+            var item = Service.ReadKey(v.Text(id).Trim());
+            return item == null ? Error(title, StockMessages.ST214, () => KeyForm(title, id, next), MaintenanceMenu) : next(item);
         });
 
     private Screen DeleteForm() => KeyForm("在庫品目削除", "StockDeleteKey", item =>
@@ -175,13 +179,14 @@ public sealed class StockScreenModel(Db db, Func<DateTime> clock)
 
     private Screen RenumberForm() => new FormScreen(MaintenanceTitle,
     [
-        new TextField("StockRenumberKey", "現在の品目番号または略号（空欄でメニューへ戻る）", "", 13),
+        new TextField("StockRenumberKey", "現在の品目番号（空欄でメニューへ戻る）", "", 13),
         new TextField("StockRenumberNewKey", "新しい品目番号", "", 13),
         new TextField("StockRenumberNewAbrev", "新しい略号（空欄は変更なし）", "", 7),
     ], "付番変更", v =>
     {
         if (v.Text("StockRenumberKey").Trim().Length == 0) return MaintenanceMenu();
-        var item = Service.Find(v.Text("StockRenumberKey"), out var err);
+        var item = Service.ReadKey(v.Text("StockRenumberKey").Trim());
+        string? err = item == null ? StockMessages.ST214 : null;
         err ??= Service.Renumber(item!, v.Text("StockRenumberNewKey"), v.Text("StockRenumberNewAbrev"));
         return err != null ? Error(MaintenanceTitle, err, RenumberForm, MaintenanceMenu) : RenumberForm();
     });
@@ -229,7 +234,7 @@ public sealed class StockScreenModel(Db db, Func<DateTime> clock)
         new("StockAdditions", "在庫の入庫入力", 1, Open: () => NumberForm(MovementKind.Addition, [])),
         new("StockDeductions", "在庫の出庫入力", 2, Open: () => NumberForm(MovementKind.Deduction, [])),
         new("StockBarcodeAdditions", "バーコードによる入庫入力", 3, Open: () => NumberForm(MovementKind.Barcode, [])),
-        new("StockOrders", "発注情報の記録", 4, Open: OrderNumberForm),
+        new("StockOrders", "発注情報の記録", 4, Open: () => OrderNumberForm([])),
         new("StockAuditReports", "月末監査帳票の出力", 5, Open: AuditReports),
         new("StockMovementsBack", "在庫管理メニューへ戻る", 9, Open: MainMenu),
     ]);
@@ -270,9 +275,11 @@ public sealed class StockScreenModel(Db db, Func<DateTime> clock)
         {
             if (!StockService.TryQuantity(v.Text("StockMovementQuantity"), out var qty, out var reverse, out var err))
                 return Error(title, err!, () => QuantityForm(kind, lines, item), () => NumberForm(kind, lines));
+            if (qty == 0) return NumberForm(kind, lines);
             if (kind == MovementKind.Deduction) return Apply(kind, lines, Service.Deduction(item, qty, reverse));
             if (!StockService.TryAmount(v.Text("StockMovementPrice"), 2, out var price))
                 return Error(title, StockMessages.InvalidAmount, () => QuantityForm(kind, lines, item), () => NumberForm(kind, lines));
+            if (price == 0) return Error(title, StockMessages.PriceRequired, () => QuantityForm(kind, lines, item), () => NumberForm(kind, lines));
             return Apply(kind, lines, Service.Addition(item, qty, reverse, price));
         });
     }
@@ -297,16 +304,23 @@ public sealed class StockScreenModel(Db db, Func<DateTime> clock)
     /// <summary>メニュー 4（発注情報）。レガシーは見出しに月末処理の題名を表示するため、同じ題名を使う。</summary>
     private const string OrderTitle = "在庫月末処理";
 
-    private Screen OrderNumberForm() => new FormScreen(OrderTitle,
+    private Screen OrderNumberForm(List<Rec> done) => new FormScreen(OrderTitle,
         [new TextField("StockOrderNumber", "品目番号または略号（空欄で終了）", "", 13)], "次へ", v =>
         {
-            if (v.Text("StockOrderNumber").Trim().Length == 0) return MovementsMenu();
+            if (v.Text("StockOrderNumber").Trim().Length == 0) return FinishOrders(done);
             var item = Service.Find(v.Text("StockOrderNumber"), out var err);
             if (item != null && item.St("Stock-Services-Flag") == "Y") err = StockMessages.ST217;
-            return err != null ? Error(OrderTitle, err, OrderNumberForm, MovementsMenu) : OrderForm(item!);
+            return err != null ? Error(OrderTitle, err, () => OrderNumberForm(done), () => FinishOrders(done)) : OrderForm(item!, done);
         });
 
-    private Screen OrderForm(Rec item)
+    private Screen FinishOrders(List<Rec> done)
+    {
+        var report = StockReports.Orders(Service, done);
+        if (report != null) { LastReport = report; Service.Spool(report); }
+        return MovementsMenu();
+    }
+
+    private Screen OrderForm(Rec item, List<Rec> done)
     {
         DateTime? D(string f) => item.N(f) == 0 ? null : StockDates.FromBin(item.N(f));
         return new FormScreen(OrderTitle,
@@ -322,12 +336,15 @@ public sealed class StockScreenModel(Db db, Func<DateTime> clock)
                 : !StockService.TryQuantity(v.Text("StockBackOrdered"), out back, out var n2, out var e2) || n2 ? e2 ?? StockMessages.ST207
                 : null;
             err ??= Service.Order(item, qty, v.Date("StockOrderDate"), v.Date("StockOrderDue"), back);
-            return err != null ? Error(OrderTitle, err, () => OrderForm(item), OrderNumberForm) : OrderNumberForm();
+            if (err != null) return Error(OrderTitle, err, () => OrderForm(item, done), () => OrderNumberForm(done));
+            done.Add(item);
+            return OrderNumberForm(done);
         });
     }
 
     private Screen AuditReports()
     {
+        if (!Service.AuditUsed) return new InformationScreen(MovementsTitle, StockMessages.AuditNotUsed);
         var reports = StockReports.Audit(Service, Service.AuditRecords());
         foreach (var r in reports) Service.Spool(r);
         LastReport = reports[^1];

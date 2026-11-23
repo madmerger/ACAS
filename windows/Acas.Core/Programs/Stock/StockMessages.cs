@@ -31,4 +31,7 @@ public static class StockMessages
     public const string ST308 = "略号の開始は終了より小さくしてください。";
     public const string NotReported = "監査帳票が未出力のため、期間締めは実行できません。";
     public const string InvalidAmount = "金額が正しくありません。";
+    public const string SingleByteOnly = "品名・保管場所などの文字項目は半角英数字・記号で入力してください（固定長レコードは 1 バイト文字のみ保存できます）。";
+    public const string PriceRequired = "単価を入力してください。";
+    public const string AuditNotUsed = "在庫監査を使用していないため、月末監査帳票は出力できません。";
 }

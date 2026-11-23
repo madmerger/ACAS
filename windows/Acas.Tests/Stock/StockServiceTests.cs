@@ -94,11 +94,11 @@ public class StockServiceTests
         var created = Layouts.Stock.From(db.Read(StockService.StockFile, "ITEM003      ")!);
         Assert.Equal("ITM003", created.St("Stock-Abrev-Key"));
         Assert.Equal(StockMessages.ST116, Assert.IsType<ConfirmationScreen>(Submit(Open(maint, "StockItemCreate"), ("StockKey", "ITEM001"), ("StockAbrev", "X1"))).Message);
-        var confirm = Assert.IsType<ConfirmationScreen>(Submit(Open(maint, "StockItemDelete"), ("StockDeleteKey", "ITM003")));
+        var confirm = Assert.IsType<ConfirmationScreen>(Submit(Open(maint, "StockItemDelete"), ("StockDeleteKey", "ITEM003")));
         confirm.Confirm();
         Assert.Null(db.Read(StockService.StockFile, "ITEM003      "));
         Assert.Equal(StockMessages.ST107, Assert.IsType<ConfirmationScreen>(
-            Assert.IsType<ConfirmationScreen>(Submit(Open(maint, "StockItemDelete"), ("StockDeleteKey", "ITM001"))).Confirm()).Message);
+            Assert.IsType<ConfirmationScreen>(Submit(Open(maint, "StockItemDelete"), ("StockDeleteKey", "ITEM001"))).Confirm()).Message);
 
         var reset = Submit(Open(Submit(m.Start()), "StockEndOfCycle"), ("StockResetPeriod", "Y"));
         Assert.Equal(StockMessages.NotReported, Assert.IsType<InformationScreen>(reset).Message);
@@ -129,6 +129,35 @@ public class StockServiceTests
         }
         Assert.True(seen.Count >= 25, seen.Count.ToString());
         Assert.Empty(r.Untranslated);
+    }
+
+    [Fact]
+    public void 一部入庫は残数を入荷待ちへ移し完納で注文日を消去する()
+    {
+        var (db, m) = Open();
+        var svc = m.Service;
+        var item = svc.ReadKey("ITEM001")!;
+        Assert.Null(svc.Order(item, 5, Today, Today.AddDays(7), 0));
+        Assert.True(svc.Addition(svc.ReadKey("ITEM001")!, 2, false, 5m).Ok);
+        var r = svc.ReadKey("ITEM001")!;
+        Assert.Equal(0, r.N("Stock-On-Order"));
+        Assert.Equal(3, r.N("Stock-Back-Ordered"));
+        Assert.NotEqual(0, r.N("Stock-Order-Date"));
+        Assert.True(svc.Addition(r, 3, false, 5m).Ok);
+        r = svc.ReadKey("ITEM001")!;
+        Assert.Equal(0, r.N("Stock-Back-Ordered"));
+        Assert.Equal(0, r.N("Stock-Order-Date"));
+        Assert.Equal(0, r.N("Stock-Order-Due"));
+    }
+
+    [Fact]
+    public void 全角文字の品名は登録しない()
+    {
+        var (db, m) = Open();
+        var maint = Open(Submit(m.Start()), "StockMaintenance");
+        var err = Assert.IsType<ConfirmationScreen>(Submit(Open(maint, "StockItemCreate"), ("StockKey", "ITEM009"), ("StockAbrev", "I9"), ("StockDesc", "日本語")));
+        Assert.Equal(StockMessages.SingleByteOnly, err.Message);
+        Assert.Null(db.Read(StockService.StockFile, "ITEM009      "));
     }
 
     [Theory]

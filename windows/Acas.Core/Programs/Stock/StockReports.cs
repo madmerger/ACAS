@@ -157,7 +157,7 @@ public static class StockReports
     {
         string title = kind switch { 1 => "在庫評価表", 2 => "在庫受払表", 3 => "発注点割れ一覧表", 4 => "在庫履歴表", _ => "在庫一覧表" };
         int month = int.Parse(s.ToDay.Substring(3, 2));
-        IEnumerable<Rec> sel = kind == 3 ? items.Where(r => r.N("Stock-Held") + r.N("Stock-On-Order") <= r.N("Stock-ReOrder-Pnt")) : items;
+        IEnumerable<Rec> sel = kind == 3 ? items.Where(r => r.St("Stock-Services-Flag") != "Y" && r.N("Stock-Held") < r.N("Stock-ReOrder-Pnt")) : items;
         string Q(Rec r, string f) => Fmt.E(r.N(f), "zzzzzz9-").Trim();
         var rows = sel.Select(r => kind switch
         {
@@ -174,6 +174,20 @@ public static class StockReports
                 "在庫数 " + Q(r, "Stock-Held"), "売価 " + Fmt.E(r.N("Stock-Retail"), "zzzzzz9.99").Trim() },
         }).ToList();
         var head = new[] { title + "　" + s.UserName, "処理日 " + StockDates.ToSystemForm(s.ToDay, s.DateForm) + "　当月 " + month + "月" };
+        var foot = new List<string> { "対象品目数 " + rows.Count };
+        if (kind == 1) foot.Add("在庫金額合計 " + Fmt.E(sel.Sum(r => r.N("Stock-Value")), "zzz,zzz,zz9.99").Trim());
+        return new StockReport(title, [], Fmt.Table(title, head, rows, foot));
+    }
+
+    /// <summary>メニュー 4: 発注更新明細表（記録した品目ごとに発注数・入荷待ち・注文日・納期）。</summary>
+    public static StockReport? Orders(StockService s, IReadOnlyList<Rec> items)
+    {
+        if (items.Count == 0) return null;
+        const string title = "発注更新明細表";
+        var head = new[] { title + "　" + s.UserName, "処理日 " + StockDates.ToSystemForm(s.ToDay, s.DateForm) };
+        var rows = items.Select(r => new[] { "品目番号 " + r.St("Stock-Key"), "品名 " + r.St("Stock-Desc"),
+            "発注数 " + Fmt.E(r.N("Stock-On-Order"), "zzzzzz9").Trim(), "入荷待ち " + Fmt.E(r.N("Stock-Back-Ordered"), "zzzzzz9").Trim(),
+            "注文日 " + StockDates.BinToSystemForm(r.N("Stock-Order-Date"), s.DateForm), "納期 " + StockDates.BinToSystemForm(r.N("Stock-Order-Due"), s.DateForm) }).ToList();
         return new StockReport(title, [], Fmt.Table(title, head, rows, ["対象品目数 " + rows.Count]));
     }
 }

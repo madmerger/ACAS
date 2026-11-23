@@ -9,10 +9,14 @@ public class StockVerifyTests
     [Fact]
     public void 在庫の同一性確認ケースがレガシー証跡と一致する()
     {
-        string root = Environment.GetEnvironmentVariable("ACAS_EVIDENCE")
-            ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "acas_evidence");
+        string? explicitRoot = Environment.GetEnvironmentVariable("ACAS_EVIDENCE");
+        string root = explicitRoot ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "acas_evidence");
         string ledger = Path.Combine(root, "入力", "シナリオ台帳.json");
-        if (!File.Exists(ledger)) return;
+        if (!File.Exists(ledger))
+        {
+            Assert.True(explicitRoot == null, "ACAS_EVIDENCE が指す証跡に台帳がありません: " + ledger);
+            return;
+        }
         var results = StockVerify.Run(ledger, root);
         string output = Environment.GetEnvironmentVariable("ACAS_VERIFY_OUT")
             ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "acas-verify-st.json");
