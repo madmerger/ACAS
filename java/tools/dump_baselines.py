@@ -3,7 +3,7 @@
 Web 版の初期データ JSON（{論理ファイル名: {キー16進: レコード16進}}）へ変換する開発用ツール。
 使い方: dump_baselines.py <証跡展開ディレクトリ> <出力ディレクトリ(src/main/resources/baselines)>
 GnuCOBOL 3.1.2 (cobc) が必要。コピー句はこのリポジトリの原本を使う。"""
-import json, re, struct, subprocess, sys, tempfile
+import json, struct, subprocess, sys, tempfile
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
@@ -111,13 +111,9 @@ def main():
                         alt = subprocess.run([str(phys[rel]), str(p)], capture_output=True, text=True, errors="replace")
                         if not alt.returncode:
                             data[rel] = dict(line.split("|") for line in alt.stdout.splitlines() if "|" in line); continue
-                    if out.returncode and rel == "acas/analysis.dat":
-                        # 分析ファイルは作成時の属性差で cobc から開けない(39)ため、36 バイト固定レコードを直接抽出する
-                        recs = {}
-                        for m in re.finditer(rb"[SP][a-z ][a-z0-9 ][0-9]{6}[\x20-\x7e]{27}", p.read_bytes()):
-                            recs[m.group()[:3].hex()] = m.group().hex()
-                        data[rel] = dict(sorted(recs.items())); continue
-                    if out.returncode: raise SystemExit(f"{rel}: {out.stderr}")
+                        raise SystemExit(f"{base.name}/{rel}: 索引レコード境界を確認できません: "
+                                         f"{out.stderr.strip()} / {alt.stderr.strip()}")
+                    if out.returncode: raise SystemExit(f"{base.name}/{rel}: {out.stderr.strip()}")
                     out = out.stdout
                     data[rel] = dict(line.split("|") for line in out.splitlines() if "|" in line)
                 elif rel == "acas/system.dat":   # 相対編成: 8 バイト長 + レコード
