@@ -1,5 +1,14 @@
 "sales.payment.section" = "入金";
 "sales.payment.entry" = "入金登録";
+"sales.payment.amend" = "入金修正";
+"sales.payment.proof" = "入金検証帳票";
+"sales.payment.proof.filename" = "入金検証帳票";
+"sales.payment.reverse" = "入金を取り消す";
+"sales.payment.cancelled" = "入金を取り消しました";
+"sales.payment.none" = "対象の入金がありません";
+"sales.payment.restoreTotal" = "戻す控除額の合計";
+"sales.payment.journal" = "未消込残高の振替";
+"sales.payment.batchNumber" = "入金組番号／明細番号";
 "sales.payment.date" = "入金日";
 "sales.payment.amount" = "入金額";
 "sales.payment.useUnapplied" = "未消込残高を使用";

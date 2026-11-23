@@ -58,6 +58,9 @@ enum SalesProofRecords {
 
         init(_ store: FileStore) { self.store = store }
         func open() { output.removeAll() }
+        func before(_ n: Int, _ line: String) {
+            output += SJIS.encode(line, size: 132) + [UInt8](repeating: 0x0a, count: n)
+        }
         func after(_ n: Int, _ line: String) {
             output += [UInt8](repeating: 0x0a, count: n) + SJIS.encode(line, size: 132)
         }

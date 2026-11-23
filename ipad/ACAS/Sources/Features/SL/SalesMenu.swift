@@ -32,6 +32,10 @@ struct SalesMenu: View {
             Section(slText("sales.payment.section")) {
                 NavigationLink(slText("sales.payment.entry")) { SalesPaymentsView(workspace: workspace) }
                     .accessibilityIdentifier("sales.payment.entry")
+                NavigationLink(slText("sales.payment.amend")) { SalesPaymentAmendView(workspace: workspace) }
+                    .accessibilityIdentifier("sales.payment.amend")
+                NavigationLink(slText("sales.payment.proof")) { SalesPaymentProofView(workspace: workspace) }
+                    .accessibilityIdentifier("sales.payment.proof")
             }
             NavigationLink(String(localized: "sales.proof", table: "SL")) {
                 #if DEBUG
