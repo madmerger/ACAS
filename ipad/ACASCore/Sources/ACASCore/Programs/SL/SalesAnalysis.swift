@@ -1,6 +1,10 @@
+import Foundation
+
 public struct SalesAnalysis {
     public enum Error: Swift.Error {
         case invalidLayout, invalidInput, missingGroup, groupUsed, duplicate, missingCode, writeFailed
+        case invalidDescription, invalidPrintCode
+        case unsupportedDescription, unsupportedPrintCode
     }
 
     public struct Code: Identifiable {
@@ -21,10 +25,7 @@ public struct SalesAnalysis {
     }
 
     public static let exportPath = SalesProofReport.exportPath
-    static let layout = Layout("analysis-record", [
-        ("code", .x(3)), ("account", .n9(digits: 6, scale: 0, signed: false)),
-        ("description", .x(24)), ("print", .x(3)),
-    ])
+    static let layout = SalesAnalysisFiles.layout
     private let context: BusinessContext
     private var files: SalesInvoices { SalesInvoices(context) }
     private var store: FileStore { context.store }
@@ -36,26 +37,14 @@ public struct SalesAnalysis {
     public func prepare() throws {
         try store.withTransaction {
             var system = try files.settings()
-            var flags = system.raw("file-statuses")
-            guard flags[14] != 0x31 else { return }
-            guard flags[14] == 0x30 || flags[14] == 0x20 else { throw Error.invalidLayout }
-            if !store.exists(values.path) { flags[12] = 0x31 }
-            analysis.openOutput()
-            guard store.exists(analysis.path), store.all(analysis.path).isEmpty else { throw Error.writeFailed }
-            for (code, description, printCode) in Self.defaults {
-                var row = Record(Self.layout)
-                row["code"] = code
-                row["description"] = description
-                row["print"] = printCode
-                if values.read(key: code) == nil {
-                    var value = Record(SalesPostingRecords.value)
-                    value.bytes.replaceSubrange(0..<Self.layout.size, with: row.bytes)
-                    guard values.write(value) == "00" else { throw Error.writeFailed }
-                }
-                guard analysis.write(row) == "00" else { throw Error.writeFailed }
+            guard system.raw("file-statuses")[14] != 0x31 else { return }
+            do {
+                try SalesAnalysisFiles.initialize(store, system: &system)
+            } catch SalesPosting.Error.invalidAnalysisLayout {
+                throw Error.invalidLayout
+            } catch SalesPosting.Error.writeFailed {
+                throw Error.writeFailed
             }
-            flags[14] = 0x31
-            system.setRaw("file-statuses", flags)
             try files.systemFile.write(1, system.bytes)
         }
     }
@@ -69,6 +58,8 @@ public struct SalesAnalysis {
         let group = Cobol.rtrim(group)
         guard (1...2).contains(group.utf8.count), group.utf8.allSatisfy({ (0x21...0x7e).contains($0) }),
               (0...999_999).contains(account) else { throw Error.invalidInput }
+        try validate(description, width: 24, overflow: .invalidDescription, unsupported: .unsupportedDescription)
+        try validate(printCode, width: 3, overflow: .invalidPrintCode, unsupported: .unsupportedPrintCode)
         let key = "S" + group
         try store.withTransaction {
             try validAnalysis()
@@ -169,7 +160,8 @@ public struct SalesAnalysis {
 
     private func totalsReport(_ entries: [Totals], system: Record) throws {
         let printer = SalesProofRecords.Printer(store)
-        let limit = Int(system.int("page-lines"))
+        let configuredLines = Int(system.int("page-lines"))
+        let limit = configuredLines > 28 ? configuredLines : 48
         var lines = limit
         var page: Int64 = 0
         var ratio: Int64 = 0
@@ -235,18 +227,24 @@ public struct SalesAnalysis {
 
     private func fixed(_ text: String, _ size: Int) -> String { SJIS.decode(SJIS.encode(text, size: size)[...]) }
 
+    private func validate(_ text: String, width: Int, overflow: Error, unsupported: Error) throws {
+        let text = Cobol.rtrim(text)
+        var byteCount = 0
+        for character in text {
+            if let ascii = character.asciiValue, ascii >= 0x20 {
+                byteCount += 1
+            } else {
+                let value = String(character)
+                guard let bytes = value.data(using: .shiftJIS),
+                      SJIS.decode(Array(bytes)[...]) == value else { throw unsupported }
+                byteCount += bytes.count
+            }
+        }
+        guard byteCount <= width else { throw overflow }
+    }
+
     private func edited(_ picture: String, _ value: Int64, width: Int, scale: Int) -> String {
         value == 0 ? Cobol.x("", width) : Pic.edit(picture, value: value, scale: scale)
     }
 
-    private static let defaults = [
-        ("Sv ", "VAT Control", ""), ("Pv ", "VAT Control", ""),
-        ("Pvi", "VAT Input Invoices/CN's", ""), ("Pvj", "VAT Input Receipts", ""),
-        ("Sz ", "Computer Control", ""), ("Pz ", "Computer Control", ""),
-        ("Pza", "Purchase Carriage Charges", "P&P"), ("Pzb", "Purchase Late Charges", "LCG"),
-        ("Szc", "Sales Carriage Charges", "P&P"), ("Szd", "Sales Late Charges", "LCG"),
-        ("Svo", "VAT Output Invoices/CN's", ""), ("Svp", "VAT Output Receipts", ""),
-        ("Pa ", "Default Group", ""), ("Pa1", "Default Purchases", ""),
-        ("Sa ", "Default Group", ""), ("Sa1", "Default Sales", ""),
-    ]
 }

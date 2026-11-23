@@ -2,6 +2,29 @@ import XCTest
 @testable import ACASCore
 
 final class SalesDunningTests: XCTestCase {
+    func testMissingRegistrationMarksSortDirtyUnlessLegacySkipsSorting() throws {
+        let store = try FileStore()
+        let context = BusinessContext(store: store)
+        let files = SalesInvoices(context)
+        let service = SalesDunning(context)
+        let letter = SalesDunning.letterPaths[0]
+        try store.writeRaw(letter, [0x61])
+        try store.writeRaw(SalesOpenItemSort.path, [0x62])
+        for (initial, expected) in [(" ", "Y"), ("N", "N")] {
+            var system = Record(SystemLayout.layout)
+            system["oi-3-flag"] = initial
+            try files.systemFile.write(1, system.bytes)
+
+            XCTAssertThrowsError(try service.prepare()) {
+                XCTAssertEqual($0 as? SalesDunning.Error, .missingOpenItems)
+            }
+            system["oi-3-flag"] = expected
+            XCTAssertEqual(try files.settings().bytes, system.bytes)
+            XCTAssertEqual(store.readRaw(letter), [0x61])
+            XCTAssertEqual(store.readRaw(SalesOpenItemSort.path), [0x62])
+        }
+    }
+
     func testPreparesSortedOpenItemsButRejectsEvenAValidDate() throws {
         let store = try FileStore()
         let context = BusinessContext(store: store, timeZone: .gmt)

@@ -87,7 +87,8 @@ public struct SalesCustomerReport {
         let dateForm = Int(system.int("date-form"))
         let heading = Self.heading(filter, code: prefix, creationDay: creationDay, dateForm: dateForm)
         let date = Maps04.format(Maps04.toDate(Int(runDay)), dateForm: dateForm)
-        let pageLines = Int(system.int("page-lines"))
+        let configuredLines = Int(system.int("page-lines"))
+        let pageLines = configuredLines > 28 ? configuredLines : 48
         if kind == .turnover {
             try writeTurnover(matching, system: system, date: date, dateForm: dateForm, pageLines: pageLines)
             return matching.map(ledger.customer(from:))

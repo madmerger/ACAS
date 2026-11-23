@@ -2,6 +2,132 @@ import XCTest
 @testable import ACASCore
 
 final class SalesPostingTests: XCTestCase {
+    func testFirstPrintedInvoiceInitializesAnalysisAndWorkFiles() throws {
+        let (store, context, invoices) = try newCompany()
+        let invoice = try invoices.save(draft(in: invoices))
+        XCTAssertEqual(try invoices.printInvoices().map(\.id), [invoice.id])
+        XCTAssertFalse(store.exists(SalesPosting.analysisPath))
+        XCTAssertFalse(store.exists(SalesPosting.workPath))
+
+        let service = SalesPosting(context)
+        XCTAssertNoThrow(try service.checkAvailability())
+        XCTAssertEqual(try service.post().posted, [invoice.id.value])
+        XCTAssertEqual(store.all(SalesPosting.analysisPath).count, 16)
+        XCTAssertEqual(store.readRaw(SalesPosting.workPath), [])
+        XCTAssertEqual(try SalesLedger(context).systemRecord().int("s-flag-i"), 2)
+        XCTAssertFalse(try SalesPayments(context).allocations(customer: "CUST011", date: invoices.processingDate).isEmpty)
+    }
+
+    func testCreditTargetsInvoiceFromPersistedShortHeader() throws {
+        let (store, context, invoices) = try newCompany()
+        let service = SalesPosting(context)
+        let original = draft(in: invoices)
+        let first = try invoices.save(original)
+        let target = try invoices.save(original)
+        _ = try invoices.printInvoices()
+        _ = try service.post()
+        var credit = original
+        credit.kind = .creditNote
+        credit.creditedInvoice = target.id.value
+        let saved = try invoices.save(credit)
+        _ = try invoices.printInvoices()
+        XCTAssertEqual(store.read(invoices.file.path, key: invoices.key(saved.id))?.count, SalesInvoices.recordSize)
+
+        XCTAssertEqual(try service.post().posted, [saved.id.value])
+        let openItems = SalesOpenItems.file(store)
+        XCTAssertEqual(openItems.read(key: SalesOpenItems.key(customer: credit.customer, invoice: first.id.value))?.int("paid"), 0)
+        XCTAssertEqual(openItems.read(key: SalesOpenItems.key(customer: credit.customer, invoice: target.id.value))?.int("paid"), 1_000)
+        XCTAssertEqual(openItems.read(key: SalesOpenItems.key(customer: credit.customer, invoice: saved.id.value))?.int("credit"), target.id.value)
+    }
+
+    func testInvoiceOnlyReportIncludesBlankUnappliedCreditsTotal() throws {
+        let (store, context, invoices) = try newCompany()
+        _ = try invoices.save(draft(in: invoices))
+        _ = try invoices.printInvoices()
+        _ = try SalesPosting(context).post()
+
+        let report = try XCTUnwrap(store.readRaw(SalesPosting.exportPath))
+        let total = try XCTUnwrap(report.split(separator: 0x0a).last)
+        XCTAssertEqual(Array(total), Array(("                        Un-Applied Credits C/F"
+            + String(repeating: " ", count: 86)).utf8))
+        XCTAssertFalse(report.contains(0x0c))
+    }
+
+    func testFirstUnappliedCreditDoesNotAdvancePageWhenWorkFileIsRegistered() throws {
+        let (store, context, invoices) = try newCompany()
+        var credit = draft(in: invoices)
+        credit.kind = .creditNote
+        _ = try invoices.save(credit, confirmingUnknownCreditTarget: true)
+        _ = try invoices.printInvoices()
+        _ = try SalesPosting(context).post()
+
+        let report = try XCTUnwrap(store.readRaw(SalesPosting.exportPath))
+        let pages = report.split(separator: 0x0c).map { String(decoding: $0, as: UTF8.self) }
+        XCTAssertEqual(pages.count, 1)
+        XCTAssertFalse(pages.first?.contains("--Customer--   Invoice") ?? true)
+        XCTAssertTrue(pages.last?.contains("Un-Applied Credits C/F") ?? false)
+    }
+
+    func testUnappliedCreditDetailAndTotalPageBreakBoundaries() throws {
+        for (count, nextPageBeforeLastDetail, nextPageBeforeTotal) in [
+            (17, false, false), (18, false, true), (23, false, true), (24, false, true), (25, true, true),
+        ] {
+            let (store, context, invoices) = try newCompany()
+            var system = try invoices.settings()
+            system.setInt("page-lines", 29)
+            var flags = system.raw("file-statuses")
+            flags[18] = 0x31
+            system.setRaw("file-statuses", flags)
+            try invoices.systemFile.write(1, system.bytes)
+            _ = try invoices.save(draft(in: invoices))
+            _ = try invoices.printInvoices()
+            let items = SalesOpenItems.file(store)
+            for number in 101..<(101 + count) {
+                var credit = Record(SalesOpenItems.layout)
+                credit["customer"] = "CUST011"
+                credit.setInt("invoice", Int64(number))
+                credit.setInt("type", 3)
+                credit.setInt("net", -100)
+                XCTAssertEqual(items.write(credit), "00")
+            }
+
+            _ = try SalesPosting(context).post()
+            let report = try XCTUnwrap(store.readRaw(SalesPosting.exportPath))
+            let pages = report.split(separator: 0x0c).map { String(decoding: $0, as: UTF8.self) }
+            XCTAssertEqual(pages.count, nextPageBeforeTotal ? 2 : 1, "\(count)件")
+            let detail = "CUST011          \(100 + count)"
+            XCTAssertEqual(pages[0].contains(detail), !nextPageBeforeLastDetail, "\(count)件")
+            XCTAssertTrue(pages.last?.contains("Un-Applied Credits C/F") ?? false, "\(count)件")
+            if nextPageBeforeTotal {
+                XCTAssertTrue(pages.last?.contains("--Customer--   Invoice") ?? false, "\(count)件")
+                XCTAssertTrue(pages[0].contains("CUST011          124") || count < 24, "\(count)件")
+                XCTAssertEqual(pages.last?.contains(detail), nextPageBeforeLastDetail, "\(count)件")
+            }
+        }
+    }
+
+    private func newCompany() throws -> (FileStore, BusinessContext, SalesInvoices) {
+        let store = try FileStore()
+        let context = BusinessContext(store: store, timeZone: .gmt, now: { Date(timeIntervalSince1970: 1_700_000_000) })
+        try CompanySetup(context).save(name: "TEST COMPANY")
+        var customer = Record(SalesProofRecords.salesLayout)
+        customer["sales-key"] = "CUST011"
+        customer["sales-name"] = "TEST CUSTOMER"
+        customer.setInt("sales-status", 1)
+        XCTAssertEqual(SalesProofRecords.salesFile(store).write(customer), "00")
+        return (store, context, SalesInvoices(context))
+    }
+
+    private func draft(in invoices: SalesInvoices) -> SalesInvoices.Draft {
+        var draft = SalesInvoices.Draft(date: invoices.processingDate)
+        draft.customer = "CUST011"
+        draft.lines[0].product = "PRODUCT"
+        draft.lines[0].description = "PRODUCT NAME"
+        draft.lines[0].analysis = "a1"
+        draft.lines[0].unit = 1_000
+        return draft
+    }
+
     func testPrintedInvoicePostsOnceAndUnprintedInvoiceIsSkipped() throws {
         let store = try FileStore()
         let context = BusinessContext(store: store, timeZone: .gmt)
