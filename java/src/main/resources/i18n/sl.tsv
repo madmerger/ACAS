@@ -541,3 +541,21 @@ Credit Notes	貸方票
 Receipt	領収
 Invoice	請求書
 Cr. Note	貸方票
+Statement Production	取引明細書作成
+*Date    [  /  /    ]*                 *	*日付    [  /  /    ]*                 *
+*A/C Nos    [       ]*               ***	*顧客番号   [       ]*               ***
+*Value    [         ]*                 *	*金額     [         ]*                 *
+Notes	注記
+ (1)  -   <Date>  :  Appears on statement	 (1)  -   <日付>  :  明細書に印字する日付
+ (2)  -   <A/C>   :  A/C's to match for printing	 (2)  -   <顧客>  :  印刷対象とする顧客番号
+ (3)  -   <Value> :  Minimum O/S to print	 (3)  -   <金額>  :  印刷する最小未決済額
+Msg Line 1 - [	通信欄 1   - [
+Msg Line 2 - [	通信欄 2   - [
+Statement correctly aligned.... (Y/N) ? - [ ]	明細書の用紙位置は正しいですか (Y/N) ? - [ ]
+SL150 Re-align statement to top of form	SL150 明細書用紙を先頭位置に合わせ直してください
+Unapplied Credit Balance	未充当貸方残高
+Goods As Per - 	商品 - 
+Credit Note Re. Inv - 	貸方票 対象請求書 - 
+Unapplied Credit Allocated	未充当残高を充当
+Payment. Received With Thanks	ご入金ありがとうございました
+Goods	商品
