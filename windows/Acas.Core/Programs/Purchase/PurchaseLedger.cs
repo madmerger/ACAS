@@ -6,6 +6,7 @@ public sealed partial class PurchaseLedger(Db database, TimeProvider? clock = nu
 {
     public const string SystemFile = "ledgers/acas/system.dat";
     public const string SupplierFile = "ledgers/acas/purchled.dat";
+    private const string UnknownSupplierName = "Supplier Unknown";
     private const string DeliveryFile = "ledgers/acas/delivery.dat";
     private const string SystemKey = "00000001";
     private static readonly DateTime Epoch = new(1600, 12, 31);
@@ -76,6 +77,7 @@ public sealed partial class PurchaseLedger(Db database, TimeProvider? clock = nu
     public static bool FitsRecord(string value, int width) => value.Length <= width && value.All(c => c is >= ' ' and <= 'ÿ' && c is not (>= '\u007f' and <= '\u009f'));
 
     public Rec? GetSupplier(string key) => database.Read(SupplierFile, key) is { Length: 300 } value ? SupplierLayout.From(value) : null;
+    public static string DisplaySupplierName(string name) => name == UnknownSupplierName ? "不明な仕入先" : name;
     public IEnumerable<Rec> Suppliers() => database.Scan(SupplierFile).Where(row => row.Data.Length == 300)
         .Select(row => SupplierLayout.From(row.Data));
 

@@ -78,7 +78,7 @@ internal sealed partial class PurchaseScreens
                 foreach (var payment in payments)
                 {
                     if (lines + 2 > limit) Heading();
-                    body.AppendLine($"{payment.Supplier}　{_ledger.GetSupplier(payment.Supplier)?.St("name")}　{DateText(payment.Date)}");
+                    body.AppendLine($"{payment.Supplier}　{SupplierNameForDisplay(payment.Supplier)}　{DateText(payment.Date)}");
                     body.AppendLine(payment.BankTransfer
                         ? $"振込　銀行番号 {payment.SortCode:000000}　口座番号 {payment.Account:00000000}　{Money(payment.Gross)}"
                         : $"小切手番号 {payment.Cheque}　{Money(payment.Gross)}");
@@ -108,7 +108,7 @@ internal sealed partial class PurchaseScreens
         foreach (var remittance in remittances)
         {
             if (body.Length > 0) body.Append('\f');
-            string name = remittance.Name == "PL902 Missing data" ? "仕入先不明" : remittance.Name;
+            string name = remittance.Name == "PL902 Missing data" ? "仕入先不明" : PurchaseLedger.DisplaySupplierName(remittance.Name);
             body.AppendLine(title).AppendLine($"宛先　{name}");
             foreach (string address in remittance.Address.Where(address => address.Length > 0 && address != "PL902 Missing data"))
                 body.AppendLine(address);

@@ -86,7 +86,7 @@ public sealed partial class PurchaseLedger
         if (supplier != null) return supplier;
         supplier = SupplierLayout.New();
         supplier.Set("key", key);
-        supplier.Set("name", "Supplier Unknown");
+        supplier.Set("name", UnknownSupplierName);
         return supplier;
     }
 

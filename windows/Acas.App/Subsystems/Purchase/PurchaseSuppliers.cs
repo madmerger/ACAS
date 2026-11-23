@@ -53,7 +53,7 @@ internal sealed partial class PurchaseScreens
         {
             new ChoiceField("PurchaseSupplierSelectedCode", error ?? "仕入先コード", [new Choice(key, key)], key)
         };
-        fields.AddRange(SupplierText.Select(x => new TextField("PurchaseSupplier" + x.Id, x.Label, record.St(x.Name), x.Width)));
+        fields.AddRange(SupplierText.Select(x => new TextField("PurchaseSupplier" + x.Id, x.Label, SupplierTextForDisplay(record, x.Name), x.Width)));
         fields.AddRange(SupplierNumbers.Select(x => new TextField("PurchaseSupplier" + x.Id, x.Label,
             x.Name == "discount" ? record.N(x.Name).ToString("0.00", CultureInfo.InvariantCulture) :
             record.N(x.Name).ToString(new string('0', x.Width), CultureInfo.InvariantCulture), x.Width)));
@@ -65,6 +65,7 @@ internal sealed partial class PurchaseScreens
             foreach (var x in SupplierText)
             {
                 string value = values.Text("PurchaseSupplier" + x.Id);
+                if (x.Name == "name" && value == SupplierTextForDisplay(record, x.Name)) continue;
                 if (!PurchaseLedger.FitsRecord(value, x.Width)) return Notice(title, $"{x.Label}に台帳へ保存できない文字が含まれています。");
                 next.Set(x.Name, value);
             }
@@ -108,7 +109,7 @@ internal sealed partial class PurchaseScreens
     private static Screen ShowSupplier(string title, Rec record, string first, string second)
     {
         List<TableRow> rows = [new(["仕入先コード", record.St("key")]), new(["状態", record.I("status") == 0 ? "休止" : "有効"])];
-        rows.AddRange(SupplierText.Select(x => new TableRow([x.Label, record.St(x.Name)])));
+        rows.AddRange(SupplierText.Select(x => new TableRow([x.Label, SupplierTextForDisplay(record, x.Name)])));
         rows.AddRange(SupplierNumbers.Select(x => new TableRow([x.Label, record.N(x.Name).ToString(CultureInfo.InvariantCulture)])));
         rows.Add(new(["備考の前半", first]));
         rows.Add(new(["備考の後半", second]));
@@ -118,4 +119,10 @@ internal sealed partial class PurchaseScreens
         rows.Add(new(["最終支払日", DateText(PurchaseLedger.DecodeDate(record.I("lastPayment")))]));
         return new TableScreen(title, "PurchaseSupplierDetails", ["項目", "内容"], rows);
     }
+
+    private static string SupplierTextForDisplay(Rec record, string field) =>
+        field == "name" ? PurchaseLedger.DisplaySupplierName(record.St(field)) : record.St(field);
+
+    private string SupplierNameForDisplay(string key, string missing = "") =>
+        _ledger.GetSupplier(key) is { } supplier ? SupplierTextForDisplay(supplier, "name") : missing;
 }

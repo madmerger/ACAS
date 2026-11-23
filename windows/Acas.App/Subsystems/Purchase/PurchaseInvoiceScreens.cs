@@ -232,7 +232,7 @@ internal sealed partial class PurchaseScreens
         {
             if (!posting && line > pageSize) NewPage();
             decimal sign = invoice.Type == 3 ? -1 : 1;
-            string supplier = _ledger.GetSupplier(invoice.Supplier)?.St("name") ?? "仕入先不明";
+            string supplier = SupplierNameForDisplay(invoice.Supplier, "仕入先不明");
             body.AppendLine($"{invoice.Folio.TrimStart('0')}　{DateText(invoice.Date)}　{invoice.Supplier}　{supplier}　{InvoiceTypes[invoice.Type - 1].Label}");
             if (balances != null)
             {

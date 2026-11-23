@@ -125,6 +125,10 @@ public sealed class PurchaseLedgerTests
         Assert.Single(ledger.PostInvoices()!);
         var supplier = ledger.GetSupplier("SUPP018")!;
         Assert.Equal("Supplier Unknown", supplier.St("name"));
+        Assert.Equal("不明な仕入先", PurchaseLedger.DisplaySupplierName(supplier.St("name")));
+        Assert.Equal("Supplier Unknown".PadRight(30), System.Text.Encoding.ASCII.GetString(
+            db.Read(PurchaseLedger.SupplierFile, "SUPP018")!, 9, 30));
+        Assert.Equal("Supplier Unknown Ltd", PurchaseLedger.DisplaySupplierName("Supplier Unknown Ltd"));
         Assert.Equal(120m, supplier.N("current"));
         Assert.True(ledger.Invoice("00000001")!.Posted);
     }

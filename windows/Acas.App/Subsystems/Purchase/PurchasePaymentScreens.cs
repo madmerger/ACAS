@@ -123,7 +123,7 @@ internal sealed partial class PurchaseScreens
         {
             if (row + 2 > limit) WriteHeading();
             string kind = payment.UnappliedCredit ? "未消込残高の使用" : "支払";
-            report.AppendLine($"{payment.Batch}/{payment.Item}　{DateText(payment.Date)}　{payment.Supplier}　{kind}　{_ledger.GetSupplier(payment.Supplier)?.St("name")}");
+            report.AppendLine($"{payment.Batch}/{payment.Item}　{DateText(payment.Date)}　{payment.Supplier}　{kind}　{SupplierNameForDisplay(payment.Supplier)}");
             report.AppendLine($"　支払額 {Money(payment.Amount)}　消込額 {Money(payment.Applied)}　割引 {Money(payment.Discount)}");
             row += 2;
             if (posting)

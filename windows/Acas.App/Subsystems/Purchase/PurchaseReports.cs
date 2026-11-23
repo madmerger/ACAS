@@ -58,7 +58,7 @@ internal sealed partial class PurchaseScreens
             if (turnover) return SupplierTurnoverReport(title, records);
             var report = ReportHeading(title).AppendLine("仕入先コード　仕入先名　状態　支払猶予日数　現在残高　未消込残高");
             foreach (var record in records)
-                report.AppendLine($"{record.St("key")}　{record.St("name")}　{(record.I("status") == 1 ? "有効" : "休止")}　{record.I("credit")}　{Money(record.N("current"))}　{Money(record.N("unapplied"))}");
+                report.AppendLine($"{record.St("key")}　{SupplierTextForDisplay(record, "name")}　{(record.I("status") == 1 ? "有効" : "休止")}　{record.I("credit")}　{Money(record.N("current"))}　{Money(record.N("unapplied"))}");
             return _ledger.Report(title, report.ToString());
         });
     }
@@ -71,7 +71,7 @@ internal sealed partial class PurchaseScreens
         AddHeading();
         foreach (var row in records)
         {
-            body.AppendLine($"{row.St("key")}　{row.St("name")}")
+            body.AppendLine($"{row.St("key")}　{SupplierTextForDisplay(row, "name")}")
                 .AppendLine($"猶予日数 {Whole(row.N("credit"))}　与信限度 {Whole(row.N("limit"))}　請求件数 {Whole(row.N("activity"))}　平均額 {Whole(row.N("average"))}")
                 .AppendLine($"四半期別取引額　１ {Whole(row.N("q1"))}　２ {Whole(row.N("q2"))}　３ {Whole(row.N("q3"))}　４ {Whole(row.N("q4"))}")
                 .AppendLine($"現在残高 {Whole(row.N("current") - row.N("unapplied"))}　前回残高 {Whole(row.N("last"))}")
@@ -108,7 +108,7 @@ internal sealed partial class PurchaseScreens
         const string title = "買掛残高・明細照会";
         if (!OpenItemsAvailable()) return Notice(title, "未決済明細ファイルがありません。");
         return new TableScreen(title, "PurchaseBalances", ["仕入先コード", "仕入先名", "現在残高", "未消込残高"],
-            _ledger.Suppliers().Select(row => new TableRow([row.St("key"), row.St("name"), Money(row.N("current")), Money(row.N("unapplied"))],
+            _ledger.Suppliers().Select(row => new TableRow([row.St("key"), SupplierTextForDisplay(row, "name"), Money(row.N("current")), Money(row.N("unapplied"))],
                 () => ShowSupplier(title, row, "", ""), [row.St("key"), row.St("name"), row.N("current"), row.N("unapplied")])).ToArray());
     }
 
@@ -254,7 +254,7 @@ internal sealed partial class PurchaseScreens
                 string code = supplier.St("key");
                 var rows = groups[code].ToArray();
                 if (rows.Length == 0 && supplier.N("current") == 0 && supplier.N("unapplied") == 0) continue;
-                reportRows.Add([ $"{code}　{supplier.St("name")}",
+                reportRows.Add([ $"{code}　{SupplierTextForDisplay(supplier, "name")}",
                     $"前残高 {Money(supplier.N("last"))}　残高 {Money(supplier.N("current"))}　未消込 {Money(supplier.N("unapplied"))}" ]);
                 decimal[] balance = new decimal[4];
                 foreach (var item in rows)
@@ -345,7 +345,7 @@ internal sealed partial class PurchaseScreens
                 {
                     if (first)
                     {
-                        report.AppendLine($"{payment.Supplier}/{payment.Number:00}　{_ledger.GetSupplier(payment.Supplier)?.St("name") ?? "仕入先不明"}");
+                        report.AppendLine($"{payment.Supplier}/{payment.Number:00}　{SupplierNameForDisplay(payment.Supplier, "仕入先不明")}");
                         first = false;
                     }
                     balance += item.Amount;
