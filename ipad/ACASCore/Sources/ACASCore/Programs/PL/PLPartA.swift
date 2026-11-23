@@ -7,5 +7,6 @@ enum PLPartA {
         s.programs["pl000"] = PLA000.run
         s.programs["pl010"] = PLA010.run
         s.programs["pl015"] = PLA015.run
+        s.programs["pl020"] = PLA020.run
     }
 }

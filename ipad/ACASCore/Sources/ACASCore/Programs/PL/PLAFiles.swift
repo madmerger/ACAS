@@ -128,3 +128,103 @@ extension PLA {
     /// print-file (prt-1) への 1 行出力
     static func printPath(_ s: Session) -> String { s.ledgers + "prt-1" }
 }
+
+extension PLA {
+    /// fdanal.cob analysis-record (36 バイト)
+    static let analLayout: Layout = {
+        let l = Layout("analysis-record", [
+            ("pa-system", .x(1)), ("pa-group", .x(2)), ("pa-gl", d(6)), ("pa-desc", .x(24)), ("pa-print", .x(3)),
+        ])
+        l.redefine("pa-code", .x(3), at: 0)
+        return l
+    }()
+
+    /// wspinv.cob の invoice-line (75 バイト) を invoice-record (129 バイト) へ MOVE した形
+    static let wsLineLayout: Layout = {
+        let l = Layout("ws-invoice-line", [
+            ("il-invoice", d(8)), ("il-line", bc), ("il-product", .x(12)), ("il-pa", .x(2)), ("", .filler(3)),
+            ("il-qty", bs), ("il-type", .x(1)), ("il-description", .x(24)), ("", .filler(2)),
+            ("il-net", money()), ("il-unit", money()), ("il-discount", .comp(digits: 4, scale: 2, signed: false)),
+            ("il-vat", money()), ("il-vat-code", d(1)), ("il-update", .x(1)), ("", .filler(55)),
+        ])
+        l.redefine("invoice-key", .x(9), at: 0)
+        return l
+    }()
+
+    /// 索引ファイルのラッパ。既存ファイルのレコード長が FD と異なる場合、レガシー (GnuCOBOL) では OPEN が
+    /// 失敗し (39)、以後の READ は INVALID KEY にならないままレコード領域が変化しない。その挙動を再現する。
+    final class CheckedFile {
+        enum ReadResult { case ok(Record), invalidKey, notOpen }
+        let file: IndexedFile
+        let store: FileStore
+        private(set) var opened = false
+        var status = "00"
+        init(_ s: Session, _ file: IndexedFile) { self.file = file; store = s.store }
+
+        @discardableResult
+        func open() -> String {
+            let st = file.open()
+            if st != "00" { opened = false; status = st; return st }
+            if let first = store.seek(file.path, key: [], inclusive: true), first.data.count != file.layout.size {
+                file.close(); opened = false; status = "39"; return status
+            }
+            opened = true; status = "00"; return status
+        }
+        func openOutput() { file.openOutput(); opened = true; status = "00" }
+        func close() { file.close(); status = opened ? "00" : "42"; opened = false }
+        func read(key: [UInt8]) -> ReadResult {
+            guard opened else { status = "47"; return .notOpen }
+            if let r = file.read(key: key) { status = "00"; return .ok(r) }
+            status = "23"; return .invalidKey
+        }
+        func start(notLessThan key: [UInt8]) -> Bool? {
+            guard opened else { status = "47"; return nil }
+            let ok = file.start(notLessThan: key); status = file.status; return ok
+        }
+        func readNext() -> Record? {
+            guard opened else { status = "47"; return nil }
+            let r = file.readNext(); status = file.status; return r
+        }
+        @discardableResult func write(_ r: Record) -> String { guard opened else { status = "48"; return status }; status = file.write(r); return status }
+        @discardableResult func rewrite(_ r: Record) -> String { guard opened else { status = "49"; return status }; status = file.rewrite(r); return status }
+        @discardableResult func delete(key: [UInt8]) -> String { guard opened else { status = "49"; return status }; status = file.delete(key: key); return status }
+    }
+    static func analysisFile(_ s: Session) -> CheckedFile {
+        CheckedFile(s, IndexedFile(s.store, path: s.ledgers + "analysis.dat", layout: analLayout, keyLength: 3))
+    }
+
+    /// 9(n) "." v99 の集団項目を英数字として ACCEPT ... UPDATE する (accept-money)。値は scale 2。
+    static func acceptMoney(_ s: Session, at line: Int, _ col: Int, digits: Int, value: Int64) throws -> Int64 {
+        let c = s.console
+        let shown = Cobol.z(value / 100 % Cobol.pow10(digits), digits) + "." + Cobol.z(value % 100, 2)
+        c.display(shown, at: line, col, color: 3)
+        let a = Array(try c.accept(at: line, col, size: digits + 3, initial: shown, options: [.update], color: 3).unicodeScalars)
+        func num(_ r: Range<Int>) -> Int64 { r.reduce(Int64(0)) { $0 * 10 + Int64(a[$1].value & 0x0F) } }
+        return num(0..<digits) * 100 + num((digits + 1)..<(digits + 3))
+    }
+
+    /// 順編成 (固定長) の del-inv-nos-file 等
+    final class SeqFile {
+        let s: Session, path: String, recSize: Int
+        var pos = 0
+        var isOpen = false
+        init(_ s: Session, path: String, recSize: Int) { self.s = s; self.path = path; self.recSize = recSize }
+        func openInput() -> Bool { guard s.store.readRaw(path) != nil else { return false }; pos = 0; isOpen = true; return true }
+        func openOutput() { s.store.writeRaw(path, []); pos = 0; isOpen = true }
+        func openExtend() { if s.store.readRaw(path) == nil { s.store.writeRaw(path, []) }; isOpen = true }
+        func close() { isOpen = false }
+        func read() -> [UInt8]? {
+            guard isOpen, let d = s.store.readRaw(path), pos + recSize <= d.count else { return nil }
+            defer { pos += recSize }
+            return Array(d[pos..<(pos + recSize)])
+        }
+        func write(_ rec: [UInt8]) { s.store.appendRaw(path, rec) }
+    }
+}
+
+extension PLA {
+    /// 2 進ゼロ等の非表示文字を含む項目の DISPLAY (画面上は空白)
+    static func shown(_ raw: [UInt8]) -> String {
+        SJIS.decode(ArraySlice(raw.map { $0 < 0x20 ? 0x20 : $0 }))
+    }
+}

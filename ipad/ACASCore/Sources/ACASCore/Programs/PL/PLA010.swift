@@ -7,11 +7,9 @@ extension PLA {
     ])
     static func deliveryFile(_ s: Session) -> IndexedFile { IndexedFile(s.store, path: s.ledgers + "delivery.dat", layout: delivLayout, keyLength: 8) }
 
-    /// FD レコード領域の初期状態 (FILLER は 2 進ゼロ)
+    /// FD レコード領域の初期状態 (全バイト 2 進ゼロ)
     static func fdArea(_ layout: Layout) -> Record {
-        var r = Record(layout)
-        for f in layout.order { if case .filler(let n) = f.type { for i in 0..<n { r.bytes[f.offset + i] = 0 } } }
-        return r
+        Record(layout, bytes: [UInt8](repeating: 0, count: layout.size))
     }
     /// INITIALIZE: FILLER は変更しない
     static func initialize(_ r: inout Record) {
