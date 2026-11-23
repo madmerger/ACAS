@@ -102,15 +102,7 @@ struct PurchaseReportView: View {
         .navigationTitle(mode.title)
         .sheet(isPresented: $showingPreview) {
             if let output {
-                NavigationStack {
-                    PurchaseReportPreview(title: mode.title, bytes: output)
-                        .toolbar {
-                            ToolbarItem(placement: .confirmationAction) {
-                                Button("action.close") { showingPreview = false }
-                                    .accessibilityIdentifier("pl.report.preview.close")
-                            }
-                        }
-                }
+                PurchaseReportPreview(title: mode.title, bytes: output) { showingPreview = false }
             }
         }
         .onAppear { date = ledger.processingDate }
@@ -169,9 +161,11 @@ private struct PurchaseReportPreview: View {
 
     let title: String
     private let lines: [Line]
+    let close: () -> Void
 
-    init(title: String, bytes: Data) {
+    init(title: String, bytes: Data, close: @escaping () -> Void) {
         self.title = title
+        self.close = close
         var lines: [Line] = []
         var page = 1
         var start = bytes.startIndex
@@ -188,22 +182,29 @@ private struct PurchaseReportPreview: View {
     }
 
     var body: some View {
-        ScrollView([.horizontal, .vertical]) {
-            LazyVStack(alignment: .leading, spacing: 8) {
-                row(plString("purchase.report.preview.page"), plString("purchase.report.preview.line"),
-                    plString("purchase.report.preview.content"))
-                    .fontWeight(.semibold)
-                    .accessibilityAddTraits(.isHeader)
-                ForEach(lines) { line in
-                    row(String(line.page), String(line.id), line.text)
-                }
+        VStack(alignment: .leading, spacing: 0) {
+            HStack {
+                Text(title).font(.headline).accessibilityAddTraits(.isHeader)
+                Spacer()
+                Button("action.close", action: close)
+                    .accessibilityIdentifier("pl.report.preview.close")
             }
             .padding()
+            ScrollView([.horizontal, .vertical]) {
+                LazyVStack(alignment: .leading, spacing: 8) {
+                    row(plString("purchase.report.preview.page"), plString("purchase.report.preview.line"),
+                        plString("purchase.report.preview.content"))
+                        .fontWeight(.semibold)
+                        .accessibilityAddTraits(.isHeader)
+                    ForEach(lines) { line in
+                        row(String(line.page), String(line.id), line.text)
+                    }
+                }
+                .padding()
+            }
+            .defaultScrollAnchor(.topLeading)
+            .accessibilityIdentifier("pl.report.preview.lines")
         }
-        .contentMargins(.top, 24, for: .scrollContent)
-        .navigationTitle(title)
-        .navigationBarTitleDisplayMode(.inline)
-        .accessibilityIdentifier("pl.report.preview.lines")
     }
 
     private func row(_ page: String, _ line: String, _ content: String) -> some View {
