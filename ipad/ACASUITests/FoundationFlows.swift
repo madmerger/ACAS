@@ -52,6 +52,7 @@ final class FoundationFlows: XCTestCase {
         field.typeText("\n")
         XCTAssertEqual(app.buttons["action.save"].label, "保存")
         tap(app, "action.save")
+        tap(app, "system.settings.confirm-save")
         XCTAssertTrue(app.staticTexts["会社設定を保存しました"].waitForExistence(timeout: 5))
         finish(app, "SYS-001", verdict: "mismatch")
     }
