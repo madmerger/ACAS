@@ -10,14 +10,14 @@ struct PurchaseAnalysisMenu: View {
 
     var body: some View {
         List {
-            NavigationLink(plString("pl.analysis.add")) {
+            NavigationLink(plString("purchase.analysis.add")) {
                 PurchaseAnalysisEditor(workspace: workspace, value: .init(), creating: true)
             }
             .accessibilityIdentifier("pl.analysis.add")
             if failed {
-                ContentUnavailableView(plString("pl.error.analysis.format"), systemImage: "exclamationmark.circle")
+                ContentUnavailableView(plString("purchase.error.analysis.format"), systemImage: "exclamationmark.circle")
             }
-            Section(plString("pl.analysis.list")) {
+            Section(plString("purchase.analysis.list")) {
                 ForEach(codes) { code in
                     NavigationLink {
                         PurchaseAnalysisEditor(workspace: workspace, value: code, creating: false)
@@ -27,7 +27,7 @@ struct PurchaseAnalysisMenu: View {
                 }
             }
         }
-        .navigationTitle(plString("pl.analysis.menu"))
+        .navigationTitle(plString("purchase.analysis.menu"))
         .onAppear {
             do { codes = try ledger.analysisCodes(); failed = false }
             catch { failed = true }
@@ -52,20 +52,20 @@ private struct PurchaseAnalysisEditor: View {
 
     var body: some View {
         Form {
-            if creating { TextField(plString("pl.analysis.code"), text: $value.code) }
-            else { LabeledContent(plString("pl.analysis.code"), value: value.code) }
-            TextField(plString("pl.analysis.account"), value: $value.account, format: .number.grouping(.never))
-            TextField(plString("pl.analysis.name"), text: $value.name)
-            TextField(plString("pl.analysis.print"), text: $value.printGroup)
-            Button(plString("pl.action.save")) { commit(remove: false) }
+            if creating { TextField(plString("purchase.analysis.code"), text: $value.code) }
+            else { LabeledContent(plString("purchase.analysis.code"), value: value.code) }
+            TextField(plString("purchase.analysis.account"), value: $value.account, format: .number.grouping(.never))
+            TextField(plString("purchase.analysis.name"), text: $value.name)
+            TextField(plString("purchase.analysis.print"), text: $value.printGroup)
+            Button(plString("purchase.action.save")) { commit(remove: false) }
             if !creating {
-                Button(plString("pl.action.delete"), role: .destructive) { confirm = true }
+                Button(plString("purchase.action.delete"), role: .destructive) { confirm = true }
             }
         }
-        .navigationTitle(creating ? plString("pl.analysis.add") : plString("pl.analysis.edit"))
-        .confirmationDialog(plString("pl.analysis.confirm"), isPresented: $confirm, titleVisibility: .visible) {
-            Button(plString("pl.action.delete"), role: .destructive) { commit(remove: true) }
-            Button(plString("pl.action.cancel"), role: .cancel) {}
+        .navigationTitle(creating ? plString("purchase.analysis.add") : plString("purchase.analysis.edit"))
+        .confirmationDialog(plString("purchase.analysis.confirm"), isPresented: $confirm, titleVisibility: .visible) {
+            Button(plString("purchase.action.delete"), role: .destructive) { commit(remove: true) }
+            Button(plString("purchase.action.cancel"), role: .cancel) {}
         }
         .purchaseAlert($error)
     }

@@ -13,29 +13,29 @@ struct PurchaseMenu: View {
 
     var body: some View {
         List {
-            NavigationLink(plString("pl.date")) { PurchaseDateForm(workspace: workspace) }
+            NavigationLink(plString("purchase.date")) { PurchaseDateForm(workspace: workspace) }
                 .accessibilityIdentifier("pl.date")
-            NavigationLink(plString("pl.supplier.menu")) { PurchaseSupplierMenu(workspace: workspace) }
+            NavigationLink(plString("purchase.supplier.menu")) { PurchaseSupplierMenu(workspace: workspace) }
                 .accessibilityIdentifier("pl.suppliers")
-            NavigationLink(plString("pl.enquiry")) { PurchaseSupplierLookup(workspace: workspace, mode: .enquiry) }
+            NavigationLink(plString("purchase.enquiry")) { PurchaseSupplierLookup(workspace: workspace, mode: .enquiry) }
                 .accessibilityIdentifier("pl.enquiry")
-            NavigationLink(plString("pl.invoice.add")) {
+            NavigationLink(plString("purchase.invoice.add")) {
                 PurchaseTransactionForm(workspace: workspace, transaction: .init(date: ledger.processingDate))
             }
             .accessibilityIdentifier("pl.transaction.add")
-            NavigationLink(plString("pl.invoice.edit")) { PurchaseTransactionsView(workspace: workspace, mode: .edit) }
+            NavigationLink(plString("purchase.invoice.edit")) { PurchaseTransactionsView(workspace: workspace, mode: .edit) }
                 .accessibilityIdentifier("pl.transaction.edit")
-            NavigationLink(plString("pl.invoice.delete")) { PurchaseTransactionsView(workspace: workspace, mode: .delete) }
+            NavigationLink(plString("purchase.invoice.delete")) { PurchaseTransactionsView(workspace: workspace, mode: .delete) }
                 .accessibilityIdentifier("pl.transaction.delete")
-            NavigationLink(plString("pl.invoice.proof")) { PurchaseTransactionsView(workspace: workspace, mode: .proof) }
+            NavigationLink(plString("purchase.invoice.proof")) { PurchaseTransactionsView(workspace: workspace, mode: .proof) }
                 .accessibilityIdentifier("pl.transaction.proof")
-            NavigationLink(plString("pl.invoice.post")) { PurchaseTransactionsView(workspace: workspace, mode: .post) }
+            NavigationLink(plString("purchase.invoice.post")) { PurchaseTransactionsView(workspace: workspace, mode: .post) }
                 .accessibilityIdentifier("pl.transaction.post")
-            NavigationLink(plString("pl.analysis.menu")) { PurchaseAnalysisMenu(workspace: workspace) }
+            NavigationLink(plString("purchase.analysis.menu")) { PurchaseAnalysisMenu(workspace: workspace) }
                 .accessibilityIdentifier("pl.analysis")
-            NavigationLink(plString("pl.supplier.alphabetical")) { PurchaseSuppliersView(workspace: workspace, byName: true) }
+            NavigationLink(plString("purchase.supplier.alphabetical")) { PurchaseSuppliersView(workspace: workspace, byName: true) }
                 .accessibilityIdentifier("pl.suppliers.alphabetical")
-            NavigationLink(plString("pl.settings")) { SystemMenu(workspace: workspace) }
+            NavigationLink(plString("purchase.settings")) { SystemMenu(workspace: workspace) }
                 .accessibilityIdentifier("pl.settings")
         }
         .sheet(isPresented: $opening) {
@@ -53,9 +53,9 @@ private struct PurchaseDateForm: View {
 
     var body: some View {
         Form {
-            DatePicker(plString("pl.date.value"), selection: $date, displayedComponents: .date)
+            DatePicker(plString("purchase.date.value"), selection: $date, displayedComponents: .date)
                 .accessibilityIdentifier("pl.date.value")
-            Button(plString("pl.action.confirm")) {
+            Button(plString("purchase.action.confirm")) {
                 do {
                     try PurchaseLedger(workspace.context).setProcessingDate(date)
                     workspace.completed("pl.date")
@@ -65,7 +65,7 @@ private struct PurchaseDateForm: View {
             }
             .accessibilityIdentifier("pl.date.confirm")
         }
-        .navigationTitle(plString("pl.date"))
+        .navigationTitle(plString("purchase.date"))
         .onAppear { date = PurchaseLedger(workspace.context).processingDate }
         .purchaseAlert($error)
     }
@@ -77,19 +77,19 @@ struct PurchaseNotice: Identifiable {
 
     init(_ error: Error) {
         switch error as? PurchaseLedger.Error {
-        case .invalidDate: message = plString("pl.error.date")
-        case .invalidCode: message = plString("pl.error.code")
-        case .invalidAddress: message = plString("pl.error.address")
-        case .duplicateSupplier: message = plString("pl.error.supplier.duplicate")
-        case .supplierNotFound: message = plString("pl.error.supplier.missing")
-        case .supplierHasBalance: message = plString("pl.error.supplier.balance")
-        case .invalidTransaction: message = plString("pl.error.invoice")
-        case .transactionNotFound: message = plString("pl.error.invoice.missing")
-        case .alreadyPosted: message = plString("pl.error.invoice.posted")
-        case .duplicateTransaction: message = plString("pl.error.invoice.duplicate")
-        case .analysisCodeNotFound: message = plString("pl.error.analysis.missing")
-        case .analysisFileIncompatible: message = plString("pl.error.analysis.format")
-        case nil: message = plString("pl.error.generic")
+        case .invalidDate: message = plString("purchase.error.date")
+        case .invalidCode: message = plString("purchase.error.code")
+        case .invalidAddress: message = plString("purchase.error.address")
+        case .duplicateSupplier: message = plString("purchase.error.supplier.duplicate")
+        case .supplierNotFound: message = plString("purchase.error.supplier.missing")
+        case .supplierHasBalance: message = plString("purchase.error.supplier.balance")
+        case .invalidTransaction: message = plString("purchase.error.invoice")
+        case .transactionNotFound: message = plString("purchase.error.invoice.missing")
+        case .alreadyPosted: message = plString("purchase.error.invoice.posted")
+        case .duplicateTransaction: message = plString("purchase.error.invoice.duplicate")
+        case .analysisCodeNotFound: message = plString("purchase.error.analysis.missing")
+        case .analysisFileIncompatible: message = plString("purchase.error.analysis.format")
+        case nil: message = plString("purchase.error.generic")
         }
     }
 }
@@ -97,7 +97,7 @@ struct PurchaseNotice: Identifiable {
 extension View {
     func purchaseAlert(_ notice: Binding<PurchaseNotice?>) -> some View {
         alert(item: notice) {
-            Alert(title: Text($0.message), dismissButton: .default(Text(plString("pl.action.close"))))
+            Alert(title: Text($0.message), dismissButton: .default(Text(plString("purchase.action.close"))))
         }
     }
 }

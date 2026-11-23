@@ -6,18 +6,18 @@ struct PurchaseSupplierMenu: View {
 
     var body: some View {
         List {
-            NavigationLink(plString("pl.supplier.add")) {
+            NavigationLink(plString("purchase.supplier.add")) {
                 PurchaseSupplierForm(workspace: workspace, supplier: PurchaseLedger(workspace.context).newSupplier, creating: true)
             }
             .accessibilityIdentifier("pl.supplier.add")
-            NavigationLink(plString("pl.supplier.edit")) { PurchaseSupplierLookup(workspace: workspace, mode: .edit) }
+            NavigationLink(plString("purchase.supplier.edit")) { PurchaseSupplierLookup(workspace: workspace, mode: .edit) }
                 .accessibilityIdentifier("pl.supplier.edit")
-            NavigationLink(plString("pl.supplier.delete")) { PurchaseSupplierLookup(workspace: workspace, mode: .delete) }
+            NavigationLink(plString("purchase.supplier.delete")) { PurchaseSupplierLookup(workspace: workspace, mode: .delete) }
                 .accessibilityIdentifier("pl.supplier.delete")
-            NavigationLink(plString("pl.supplier.show")) { PurchaseSupplierLookup(workspace: workspace, mode: .show) }
+            NavigationLink(plString("purchase.supplier.show")) { PurchaseSupplierLookup(workspace: workspace, mode: .show) }
                 .accessibilityIdentifier("pl.supplier.show")
         }
-        .navigationTitle(plString("pl.supplier.menu"))
+        .navigationTitle(plString("purchase.supplier.menu"))
         .onAppear { workspace.completed("pl.suppliers") }
     }
 }
@@ -28,10 +28,10 @@ struct PurchaseSupplierLookup: View {
 
         var title: String {
             switch self {
-            case .edit: plString("pl.supplier.edit")
-            case .delete: plString("pl.supplier.delete")
-            case .show: plString("pl.supplier.show")
-            case .enquiry: plString("pl.enquiry")
+            case .edit: plString("purchase.supplier.edit")
+            case .delete: plString("purchase.supplier.delete")
+            case .show: plString("purchase.supplier.show")
+            case .enquiry: plString("purchase.enquiry")
             }
         }
     }
@@ -49,37 +49,37 @@ struct PurchaseSupplierLookup: View {
 
     var body: some View {
         Form {
-            Section(plString("pl.supplier.search")) {
-                TextField(plString("pl.supplier.code.full"), text: $code)
+            Section(plString("purchase.supplier.search")) {
+                TextField(plString("purchase.supplier.code.full"), text: $code)
                     .textInputAutocapitalization(.characters)
                     .autocorrectionDisabled()
                     .accessibilityIdentifier("pl.supplier.search.code")
                     .onSubmit(search)
-                Button(plString("pl.action.search"), action: search)
+                Button(plString("purchase.action.search"), action: search)
                     .disabled(code.isEmpty)
                     .accessibilityIdentifier("pl.supplier.search")
             }
             if let supplier {
-                Section(plString("pl.supplier.detail")) {
-                    LabeledContent(plString("pl.supplier.name"), value: supplier.name)
+                Section(plString("purchase.supplier.detail")) {
+                    LabeledContent(plString("purchase.supplier.name"), value: supplier.name)
                         .accessibilityIdentifier("pl.supplier.result")
                     let address = ledger.supplierAddressLines(supplier)
-                    LabeledContent(plString("pl.supplier.address"), value: [address.first, address.second].filter { !$0.isEmpty }.joined(separator: " "))
-                    LabeledContent(plString("pl.supplier.telephone"), value: supplier.telephone)
-                    LabeledContent(plString("pl.supplier.balance"), value: purchaseAmount(supplier.currentBalance))
-                    LabeledContent(plString("pl.supplier.unapplied"), value: purchaseAmount(supplier.unapplied))
+                    LabeledContent(plString("purchase.supplier.address"), value: [address.first, address.second].filter { !$0.isEmpty }.joined(separator: " "))
+                    LabeledContent(plString("purchase.supplier.telephone"), value: supplier.telephone)
+                    LabeledContent(plString("purchase.supplier.balance"), value: purchaseAmount(supplier.currentBalance))
+                    LabeledContent(plString("purchase.supplier.unapplied"), value: purchaseAmount(supplier.unapplied))
                     if mode == .edit {
-                        Button(plString("pl.action.change")) { edit = true }
+                        Button(plString("purchase.action.change")) { edit = true }
                             .accessibilityIdentifier("pl.supplier.edit.open")
                     }
                     if mode == .delete {
-                        Button(plString("pl.supplier.deactivate")) { deactivate = true; confirm = true }
-                        Button(plString("pl.action.delete"), role: .destructive) { deactivate = false; confirm = true }
+                        Button(plString("purchase.supplier.deactivate")) { deactivate = true; confirm = true }
+                        Button(plString("purchase.action.delete"), role: .destructive) { deactivate = false; confirm = true }
                             .accessibilityIdentifier("pl.supplier.delete.open")
                     }
                 }
                 if mode == .enquiry {
-                    Section(plString("pl.enquiry.items")) {
+                    Section(plString("purchase.enquiry.items")) {
                         ForEach(ledger.openItems(supplier: supplier.code)) { item in
                             LabeledContent(item.reference.isEmpty ? String(item.id) : item.reference,
                                            value: purchaseAmount(item.balance))
@@ -95,10 +95,10 @@ struct PurchaseSupplierLookup: View {
             }
         }
         .onAppear { if let supplier { self.supplier = try? ledger.supplier(code: supplier.code) } }
-        .confirmationDialog(plString("pl.supplier.confirm"), isPresented: $confirm, titleVisibility: .visible) {
-            Button(plString("pl.action.confirm"), role: deactivate ? nil : .destructive, action: remove)
+        .confirmationDialog(plString("purchase.supplier.confirm"), isPresented: $confirm, titleVisibility: .visible) {
+            Button(plString("purchase.action.confirm"), role: deactivate ? nil : .destructive, action: remove)
                 .accessibilityIdentifier("pl.supplier.delete.confirm")
-            Button(plString("pl.action.cancel"), role: .cancel) {}
+            Button(plString("purchase.action.cancel"), role: .cancel) {}
         }
         .purchaseAlert($error)
     }
@@ -138,41 +138,41 @@ struct PurchaseSupplierForm: View {
 
     var body: some View {
         Form {
-            Section(plString("pl.supplier.base")) {
+            Section(plString("purchase.supplier.base")) {
                 if creating {
-                    TextField(plString("pl.supplier.code.short"), text: $supplier.code)
+                    TextField(plString("purchase.supplier.code.short"), text: $supplier.code)
                         .textInputAutocapitalization(.characters)
                         .autocorrectionDisabled()
                         .accessibilityIdentifier("pl.supplier.code")
                 } else {
-                    LabeledContent(plString("pl.supplier.code"), value: supplier.code)
+                    LabeledContent(plString("purchase.supplier.code"), value: supplier.code)
                 }
-                TextField(plString("pl.supplier.name"), text: $supplier.name)
+                TextField(plString("purchase.supplier.name"), text: $supplier.name)
                     .accessibilityIdentifier("pl.supplier.name")
-                TextField(plString("pl.supplier.address.one"), text: $supplier.address1)
+                TextField(plString("purchase.supplier.address.one"), text: $supplier.address1)
                     .accessibilityIdentifier("pl.supplier.address")
-                TextField(plString("pl.supplier.address.two"), text: $supplier.address2)
-                TextField(plString("pl.supplier.telephone"), text: $supplier.telephone)
-                TextField(plString("pl.supplier.extension"), text: $supplier.extensionNumber)
-                TextField(plString("pl.supplier.fax"), text: $supplier.fax)
-                TextField(plString("pl.supplier.email"), text: $supplier.email)
+                TextField(plString("purchase.supplier.address.two"), text: $supplier.address2)
+                TextField(plString("purchase.supplier.telephone"), text: $supplier.telephone)
+                TextField(plString("purchase.supplier.extension"), text: $supplier.extensionNumber)
+                TextField(plString("purchase.supplier.fax"), text: $supplier.fax)
+                TextField(plString("purchase.supplier.email"), text: $supplier.email)
                     .keyboardType(.emailAddress)
             }
-            Section(plString("pl.supplier.payment")) {
-                TextField(plString("pl.supplier.bank"), value: $supplier.sortCode, format: .number.grouping(.never))
-                TextField(plString("pl.supplier.account"), value: $supplier.accountNumber, format: .number.grouping(.never))
-                TextField(plString("pl.supplier.paymentDays"), value: $supplier.paymentDays, format: .number)
-                TextField(plString("pl.supplier.limit"), value: $supplier.creditLimit, format: .number)
-                TextField(plString("pl.supplier.discount"), value: $supplier.discount, format: .number)
+            Section(plString("purchase.supplier.payment")) {
+                TextField(plString("purchase.supplier.bank"), value: $supplier.sortCode, format: .number.grouping(.never))
+                TextField(plString("purchase.supplier.account"), value: $supplier.accountNumber, format: .number.grouping(.never))
+                TextField(plString("purchase.supplier.paymentDays"), value: $supplier.paymentDays, format: .number)
+                TextField(plString("purchase.supplier.limit"), value: $supplier.creditLimit, format: .number)
+                TextField(plString("purchase.supplier.discount"), value: $supplier.discount, format: .number)
             }
-            Section(plString("pl.supplier.notes")) {
-                TextField(plString("pl.supplier.notes.one"), text: $supplier.note1)
-                TextField(plString("pl.supplier.notes.two"), text: $supplier.note2)
+            Section(plString("purchase.supplier.notes")) {
+                TextField(plString("purchase.supplier.notes.one"), text: $supplier.note1)
+                TextField(plString("purchase.supplier.notes.two"), text: $supplier.note2)
             }
-            Button(plString("pl.action.save"), action: save)
+            Button(plString("purchase.action.save"), action: save)
                 .accessibilityIdentifier("pl.supplier.save")
         }
-        .navigationTitle(creating ? plString("pl.supplier.add") : plString("pl.supplier.edit"))
+        .navigationTitle(creating ? plString("purchase.supplier.add") : plString("purchase.supplier.edit"))
         .purchaseAlert($error)
         .onAppear { workspace.completed(creating ? "pl.supplier.add.screen" : "pl.supplier.edit.screen") }
     }
@@ -192,11 +192,11 @@ struct PurchaseSuppliersView: View {
 
     var body: some View {
         Table(PurchaseLedger(workspace.context).suppliers(byName: byName)) {
-            TableColumn(plString("pl.supplier.code"), value: \.code)
-            TableColumn(plString("pl.supplier.name"), value: \.name)
-            TableColumn(plString("pl.supplier.balance")) { Text(purchaseAmount($0.currentBalance)) }
-            TableColumn(plString("pl.supplier.unapplied")) { Text(purchaseAmount($0.unapplied)) }
+            TableColumn(plString("purchase.supplier.code"), value: \.code)
+            TableColumn(plString("purchase.supplier.name"), value: \.name)
+            TableColumn(plString("purchase.supplier.balance")) { Text(purchaseAmount($0.currentBalance)) }
+            TableColumn(plString("purchase.supplier.unapplied")) { Text(purchaseAmount($0.unapplied)) }
         }
-        .navigationTitle(byName ? plString("pl.supplier.alphabetical") : plString("pl.supplier.list"))
+        .navigationTitle(byName ? plString("purchase.supplier.alphabetical") : plString("purchase.supplier.list"))
     }
 }
