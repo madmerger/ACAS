@@ -48,7 +48,9 @@ final class SystemInitializationFlows: XCTestCase {
     @MainActor
     private func checkInitialization(_ id: String, milestone: String) throws {
         let app = try initializeCompany(id, printReport: false, milestone: milestone)
+        XCTAssertTrue(app.staticTexts["system.settings.confirm-report"].waitForExistence(timeout: 5))
         XCTAssertFalse(app.buttons["system.settings.report"].exists)
+        XCTAssertFalse(app.staticTexts["会社設定を保存しました"].exists)
         XCTAssertTrue(app.staticTexts["case.verdict.match"].waitForExistence(timeout: 5))
         saveScreenshot(app, name: "\(id) 一致")
     }
@@ -129,7 +131,10 @@ final class SystemInitializationFlows: XCTestCase {
         if !printReport { flag(app, "include-report", false) }
         if milestone == "include-report" { saveScreenshot(app, name: "\(id) 設定帳票の出力確認") }
         tap(app, "action.save")
-        XCTAssertTrue(app.staticTexts["会社設定を保存しました"].waitForExistence(timeout: 5))
+        if milestone == nil {
+            tap(app, "system.settings.confirm-save")
+            XCTAssertTrue(app.staticTexts["会社設定を保存しました"].waitForExistence(timeout: 5))
+        }
         return app
     }
 

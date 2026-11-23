@@ -51,6 +51,13 @@ final class LedgerMenuReachabilityFlows: XCTestCase {
     }
 
     @MainActor
+    func testGL215() throws {
+        try check("GL-215", path: ["gl.batches.maintenance", "gl.batch.amend"], buttons: []) { app in
+            XCTAssertTrue(app.staticTexts["gl.batch.amend.empty"].waitForExistence(timeout: 5))
+        }
+    }
+
+    @MainActor
     func testGL216() throws {
         try check("GL-216", path: ["gl.batches.maintenance", "gl.batch.proof.all"], buttons: []) { app in
             let status = app.staticTexts["gl.batch.proof.status"]
