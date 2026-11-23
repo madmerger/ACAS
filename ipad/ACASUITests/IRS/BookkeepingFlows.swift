@@ -60,6 +60,21 @@ final class BookkeepingFlows: XCTestCase {
     func testReachIRS221() throws { try verifyRecalculate("IRS-221") }
 
     @MainActor
+    func testPrintIRS206() throws { try verifyReport("IRS-206", path: ["accounts", "accountPrint"]) }
+
+    @MainActor
+    func testPrintIRS213() throws { try verifyReport("IRS-213", path: ["defaults", "defaultPrint"]) }
+
+    @MainActor
+    private func verifyReport(_ id: String, path: [String]) throws {
+        try verifyReach(id, path: path) { app in
+            tap(app, "irs.generateReport")
+            XCTAssertTrue(app.staticTexts["irs.reportResult"].waitForExistence(timeout: 5), id)
+            XCTAssertEqual(app.staticTexts["irs.reportResult"].label, "帳票を作成しました。", id)
+        }
+    }
+
+    @MainActor
     private func verifyAccounts(_ id: String) throws {
         try verifyReach(id, path: ["accounts"]) { app in
             ["accountCreate", "accountEdit", "accountList", "accountPrint", "accountExport", "accountImport"]
