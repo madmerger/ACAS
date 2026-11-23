@@ -5,7 +5,10 @@ extension PurchaseLedger {
     private var lastPurchaseAnalysisPath: String { base + "last-purchase-analysis.prt" }
 
     public var closedPurchaseDayBook: Data? { store.readRaw(closingDayBookPath).map { Data($0) } }
-    public var lastPurchaseAnalysisReport: Data? { store.readRaw(lastPurchaseAnalysisPath).map { Data($0) } }
+    public var lastPurchaseAnalysisReport: Data? {
+        guard !periodCloseStatus.needsPurchaseAnalysis else { return nil }
+        return store.readRaw(lastPurchaseAnalysisPath).map { Data($0) }
+    }
 
     private func appearsInDayBook(_ header: Record) -> Bool {
         (1...3).contains(header.int("ih-type")) && ["z", "Z"].contains(header.str("ih-status"))

@@ -4,6 +4,33 @@ import XCTest
 @testable import ACASCore
 
 final class PurchaseLedgerTests: XCTestCase {
+    func testAdditionalPostingHidesSavedPurchaseAnalysisUntilRegenerated() throws {
+        let ledger = try makeLedger()
+        var invoice = PurchaseLedger.Transaction(date: ledger.processingDate)
+        invoice.supplier = try addSupplier(ledger)
+        var code = PurchaseLedger.AnalysisCode()
+        code.code = "a"
+        try ledger.saveAnalysisCode(code, creating: true)
+        code.code = "a1"
+        try ledger.saveAnalysisCode(code, creating: true)
+        invoice.lines[0].code = code.code
+        invoice.lines[0].net = 10_000
+        _ = try ledger.saveTransaction(invoice)
+        try ledger.postTransactions()
+        let original = try XCTUnwrap(ledger.purchaseAnalysisReport())
+        XCTAssertEqual(ledger.lastPurchaseAnalysisReport, original)
+
+        _ = try ledger.saveTransaction(invoice)
+        try ledger.postTransactions()
+        let reopened = PurchaseLedger(ledger.context)
+        XCTAssertTrue(reopened.periodCloseStatus.needsPurchaseAnalysis)
+        XCTAssertNil(reopened.lastPurchaseAnalysisReport)
+
+        let updated = try XCTUnwrap(reopened.purchaseAnalysisReport())
+        XCTAssertNotEqual(updated, original)
+        XCTAssertEqual(reopened.lastPurchaseAnalysisReport, updated)
+    }
+
     func testPeriodCloseCarriesPurchaseRecordsAndRetainsSalesValues() throws {
         let ledger = try makeLedger()
         let supplier = try addSupplier(ledger)
