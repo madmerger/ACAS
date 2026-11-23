@@ -33,6 +33,27 @@ final class SalesCustomerReportTests: XCTestCase {
         XCTAssertFalse(try XCTUnwrap(store.readRaw(SalesCustomerReport.exportPath)).contains(0x0c))
     }
 
+    func testDefaultPageBreakStartsImmediatelyBeforeFourteenthCustomer() throws {
+        let store = try FileStore()
+        let system = Record(SystemLayout.layout)
+        try RelativeFile(store, path: "ledgers/acas/system.dat", recordSize: 1024).write(1, system.bytes)
+        for index in 10..<24 {
+            var customer = Record(SalesProofRecords.salesLayout)
+            customer["sales-key"] = "CUST0\(index)"
+            XCTAssertEqual(SalesProofRecords.salesFile(store).write(customer), "00")
+        }
+
+        let service = SalesCustomerReport(BusinessContext(store: store))
+        XCTAssertEqual(try service.generate(.init()).count, 14)
+        let pages = try XCTUnwrap(store.readRaw(SalesCustomerReport.exportPath)).split(separator: 0x0c)
+        XCTAssertEqual(pages.count, 2)
+        let rows = pages.map { page in
+            page.split(separator: 0x0a).map { String(decoding: $0.prefix(7), as: UTF8.self) }
+                .filter { $0.hasPrefix("CUST") }
+        }
+        XCTAssertEqual(rows, [(10..<23).map { "CUST0\($0)" }, ["CUST023"]])
+    }
+
     func testFiltersAndPrintsInKeyOrderWithLegacyColumns() throws {
         let store = try FileStore()
         let context = BusinessContext(store: store, timeZone: .gmt)
