@@ -1,0 +1,99 @@
+package jp.co.acas.irs;
+
+import jp.co.acas.core.CobFile;
+import jp.co.acas.core.Layout;
+import jp.co.acas.core.Program;
+import jp.co.acas.core.Rec;
+
+import java.util.Locale;
+
+/** IRS 各プログラム共通の作業領域定義と補助処理（COPY 句・共通段落相当）。 */
+public abstract class IrsBase extends Program {
+    static final String CB = "incomplete_records_system/";
+
+    /** copy "wsfnctn.cob" (file-access)。 */
+    public static final class FileAccess {
+        public int fileFunction, accessType, weError;
+        public String fileNames = "";
+        public String file(int n) {
+            int[] off = {0, 9, 19, 27, 35, 47}; int[] len = {9, 10, 8, 8, 12, 1};
+            String s = (fileNames + " ".repeat(49)).substring(0, 49);
+            return s.substring(off[n - 1], off[n - 1] + len[n - 1]).trim();
+        }
+    }
+
+    public static Rec newSystemRecord() { return Layout.of(CB + "wssystem.cob", "system-record").newRec(); }
+    public static Rec newNlRecord() { return Layout.of(CB + "wsnl.cob", "nl-record").newRec(); }
+    public static Rec newDefaultRecord() { return Layout.of(CB + "wsdflt.cob", "default-record").newRec(); }
+    public static Rec newPostingRecord() { return Layout.of(CB + "wspost.cob", "posting-record").newRec(); }
+    public static Rec newFinalRecord() { return Layout.of(CB + "wsfinal.cob", "final-record").newRec(); }
+
+    protected FileAccess fa() {
+        return (FileAccess) ctx.shared.computeIfAbsent("irs.file-access", k -> new FileAccess());
+    }
+    protected CobFile sharedFile(String key) { return (CobFile) ctx.shared.get(key); }
+
+    protected static String pad(String s, int n) { return s.length() >= n ? s.substring(0, n) : s + " ".repeat(n - s.length()); }
+    protected static String up(String s) { return s.toUpperCase(Locale.ROOT); }
+    protected static boolean numeric(String s) { return !s.isEmpty() && s.chars().allMatch(c -> c >= '0' && c <= '9'); }
+
+    /** fsdispfe.cob: display-file-error。 */
+    protected void displayFileError(String fsReply) {
+        if (!fsReply.equals("00")) {
+            display(24, 30, "error code = ", 4);
+            show(24, 43, fsReply, 4);
+            display(24, 48, "Hit return to continue");
+            accept(24, 72, 2);
+        }
+    }
+
+    /**
+     * date-validate section（各プログラム共通）: dd/mm/yy の検査。区切り . , - は / に置換する。
+     * 戻り値 [0]=置換後の日付、[1]=u-bin（0 は不正）。
+     */
+    public static Object[] dateValidate(String date) {
+        final int[] days = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+        String u = pad(date, 8).replace('.', '/').replace(',', '/').replace('-', '/');
+        Object[] bad = {u, 0};
+        long q = u.chars().filter(c -> c == '/').count();
+        String dd = u.substring(0, 2), mm = u.substring(3, 5), yy = u.substring(6, 8);
+        if (q != 2 || !numeric(dd) || !numeric(mm) || !numeric(yy)) return bad;
+        int d = Integer.parseInt(dd), m = Integer.parseInt(mm), y = Integer.parseInt(yy);
+        if (d < 1 || d > 31 || m < 1 || m > 12) return bad;
+        if (d > 29 && m == 2) return bad;
+        if (d > days[m - 1] && m != 2) return bad;
+        if (m == 2 && d > 28 && y != (y / 4) * 4) return bad;
+        int w1 = 1, w2 = 0, bin = y * 365;
+        while (y > w2) { bin++; w2 += 4; }
+        if (y == w2 && m > 2) bin++;
+        while (m > w1) { bin += days[w1 - 1]; w1++; }
+        if (d <= days[w1 - 1]) bin += d;
+        else if (d == 29 && m == 2 && y == w2) bin += d;
+        else bin = 0;
+        return new Object[]{u, bin};
+    }
+
+    /** 印刷ファイル prt-1（行順）。レガシーの AFTER n / AFTER PAGE は空行・改ページ文字として出力する。 */
+    protected CobFile openPrint() {
+        CobFile f = CobFile.lineSequential(ctx.store, ctx.path("prt-1"));
+        f.open(CobFile.Mode.OUTPUT);
+        return f;
+    }
+    protected static void writeAfter(CobFile f, String line, int after) {
+        for (int i = 1; i < after; i++) f.writeLine("");
+        f.writeLine(line);
+    }
+    protected static void writeAfterPage(CobFile f, String line) { f.writeLine("\f" + line); }
+    /** call "SYSTEM" using Print-Report（lpr による印刷指示）。 */
+    protected void printReport(Rec sys, CobFile f) {
+        f.close();
+        ctx.spool("prt-1", "lpr -r -o 'orientation-requested=3 page-left=48 page-top=24 page-right=24 sides=two-sided-long-edge cpi=12 lpi=8' -P "
+                + sys.str("print-spool-name").trim() + " prt-1");
+    }
+    protected static final String[] NL_AMOUNTS = {"nl-dr", "nl-cr"};
+    /** nl-dr / nl-cr / nl-dr-last(1-4) / nl-cr-last(1-4) をゼロにする。 */
+    protected static void zeroAmounts(Rec nl) {
+        nl.setNum("nl-dr", 0); nl.setNum("nl-cr", 0);
+        for (int i = 1; i <= 4; i++) { nl.setNum("nl-dr-last", 0, i); nl.setNum("nl-cr-last", 0, i); }
+    }
+}

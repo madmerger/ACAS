@@ -137,7 +137,7 @@ public final class Terminal {
     public int acceptScreen(List<Field> fields, int fg) {
         if (fields.isEmpty()) { crtStatus = 0; return 0; }
         int f = 0, idx = 0;
-        for (Field x : fields) if ((x.flags & SECURE) == 0) displayData(x.line, x.col, x.value, fg);
+        for (Field x : fields) if ((x.flags & SECURE) == 0) displayData(x.line, x.col, prompt(x.value), fg);
         while (true) {
             Field cur = fields.get(f);
             String k = take(cur.line - 1, cur.col - 1 + idx);
@@ -149,9 +149,11 @@ public final class Terminal {
                 if ((cur.flags & UPPER) != 0) ch = Character.toUpperCase(ch);
                 buf[idx] = ch;
                 cur.value = new String(buf);
-                if ((cur.flags & SECURE) == 0) displayData(cur.line, cur.col, cur.value, fg);
+                if ((cur.flags & SECURE) == 0) displayData(cur.line, cur.col, prompt(cur.value), fg);
                 if (idx < cur.size - 1) idx++;
+                else if ((cur.flags & AUTO) == 0) { }
                 else if (f < fields.size() - 1) { f++; idx = 0; }
+                else { crtStatus = 0; return 0; }
                 continue;
             }
             Integer st = switch (k) {
@@ -171,18 +173,20 @@ public final class Terminal {
                     if (idx > 0) {
                         idx--; System.arraycopy(buf, idx + 1, buf, idx, cur.size - idx - 1); buf[cur.size - 1] = ' ';
                         cur.value = new String(buf);
-                        if ((cur.flags & SECURE) == 0) displayData(cur.line, cur.col, cur.value, fg);
+                        if ((cur.flags & SECURE) == 0) displayData(cur.line, cur.col, prompt(cur.value), fg);
                     }
                 }
                 case "DELETE" -> {
                     System.arraycopy(buf, idx + 1, buf, idx, cur.size - idx - 1); buf[cur.size - 1] = ' ';
                     cur.value = new String(buf);
-                    if ((cur.flags & SECURE) == 0) displayData(cur.line, cur.col, cur.value, fg);
+                    if ((cur.flags & SECURE) == 0) displayData(cur.line, cur.col, prompt(cur.value), fg);
                 }
                 default -> { }
             }
         }
     }
+    /** GnuCOBOL の SCREEN SECTION 入力域はプロンプト文字 '_' で空白を表示する。 */
+    private static String prompt(String v) { return v.replace(' ', '_'); }
 
     /** 入力キーを 1 つ取り出す（無ければ入力待ち状態を通知して待機）。 */
     private String take(int r, int c) {
