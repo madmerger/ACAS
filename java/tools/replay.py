@@ -54,6 +54,7 @@ def norm_screen(s):
 
 RESIDUE = None
 OS_OUTPUT = "nohup: appending output to 'nohup.out'"
+OS_ERROR = "nohup: failed to run command 'acasbkup.sh': No such file or directory"
 
 
 def mask_os_output(want, got):
@@ -63,20 +64,18 @@ def mask_os_output(want, got):
     これはアプリケーションの画面出力ではなく移行対象外なので、その文字が上書きした桁だけを両側で空白にする。"""
     want, got, n = list(want), list(got), 0
     for i, line in enumerate(list(want)):
-        col = line.find("nohup: appending output to")
-        if col < 0: continue
-        n += 1
-        cells = [(i, c) for c in range(col, 80)] + [(i + 1, c) for c in range(col + len(OS_OUTPUT) - 80)]
-        for side in (want, got):
-            for r, c in cells:
-                if r < len(side) and c < len(side[r]): side[r] = side[r][:c] + " " + side[r][c + 1:]
-    for i, line in enumerate(list(want)):
-        # 同じく nohup がスクリプトを起動できなかったときの OS エラー行（実行環境に acasbkup.sh が無い場合）
-        col = line.find("nohup: failed to run command")
-        if col < 0: continue
-        n += 1
-        for side in (want, got):
-            if i < len(side): side[i] = side[i][:col]
+        visible = line + (want[i + 1] if len(line) == 80 and i + 1 < len(want) else "")
+        for notice in (OS_OUTPUT, OS_ERROR):
+            col = visible.find(notice)
+            if not 0 <= col < len(line):
+                continue
+            n += 1
+            for pos in range(col, col + len(notice)):
+                row, c = divmod(pos, 80)
+                r = i + row
+                for side in (want, got):
+                    if r < len(side) and c < len(side[r]):
+                        side[r] = side[r][:c] + " " + side[r][c + 1:]
     if n:
         want, got = ["\n".join(l.rstrip() for l in x).rstrip("\n").split("\n") for x in (want, got)]
     return want, got, n
