@@ -85,6 +85,8 @@ public class St020 extends StProgram {
         String period = cur.equals("Q") ? "Quarter" : cur.equals("W") ? "Week" : "Month";
         String auditLit = "(5)  End of " + period + " Audit Reports";
         while (true) {
+            pageNos = 0;
+            lineCnt = 99;
             displayHeadings();
             // aa020-DH-End
             String pm = wsDate.substring(3, 5);
@@ -187,7 +189,6 @@ public class St020 extends StProgram {
 
     /** aa010-Display-Headings。 */
     private void displayHeadings() {
-        pageNos = 0; lineCnt = 99;
         String title; int col;
         switch (menuReply) {
             case 1 -> { title = "Stock Additions Entry"; col = 30; }
