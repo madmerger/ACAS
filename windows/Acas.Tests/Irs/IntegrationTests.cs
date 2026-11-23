@@ -24,7 +24,7 @@ public class IntegrationTests
         var report = new IrsBookkeeping(db).AuditReport("D", "3", new DateTime(2026, 11, 1), new DateTime(2026, 11, 30));
 
         Assert.Contains("INPUT RETURN　-100.00　-20.00", report.Body);
-        Assert.Contains("OUTPUT RETURN　　　-100.00　-20.00", report.Body);
+        Assert.Contains("OUTPUT RETURN　　　　-100.00　-20.00", report.Body);
         Assert.Contains("合計　0.00　0.00　-100.00　-20.00", report.Body);
         Assert.DoesNotContain("OUTSIDE", report.Body);
     }
