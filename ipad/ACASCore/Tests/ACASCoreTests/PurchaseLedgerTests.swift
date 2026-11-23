@@ -874,6 +874,8 @@ final class PurchaseLedgerTests: XCTestCase {
         XCTAssertEqual(try ledger.postTransactions().map(\.id), [number])
         XCTAssertEqual(try ledger.supplier(code: code).currentBalance, 12_000)
         XCTAssertEqual(ledger.openItems(supplier: code).first?.balance, 12_000)
+        let archived = try XCTUnwrap(ledger.store.all(ledger.base + "openitm5.dat").first?.data)
+        XCTAssertEqual(Record(PurchaseRecords.oiLayout, bytes: archived).raw("oi-unapl"), [0])
         XCTAssertTrue(try ledger.postTransactions().isEmpty)
         XCTAssertThrowsError(try ledger.removeTransaction(number: number))
         XCTAssertThrowsError(try ledger.removeSupplier(code: code, deactivate: false))

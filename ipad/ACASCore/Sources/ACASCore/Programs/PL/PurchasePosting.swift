@@ -137,6 +137,7 @@ private final class PurchasePosting {
             item.setInt("oi-" + field, header.int("ih-" + field))
         }
         for field in ["order", "ref"] { item["oi-" + field] = header.str("ih-" + field) }
+        item.setRaw("oi-unapl", [0])
         let sign: Int64 = header.int("ih-type") == 3 ? -1 : 1
         for field in ["net", "vat", "carriage", "c-vat"] {
             item.setInt("oi-" + field, sign * header.int("ih-" + field))
