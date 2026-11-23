@@ -105,7 +105,8 @@ final class SystemCompanyDataFlows: XCTestCase {
         let app = try openCompany(id)
         tap(app, "system.settings.company")
         let field = app.textFields["system.settings." + setting]
-        let form = app.collectionViews.containing(.textField, identifier: "system.settings.address-1").firstMatch
+        let form = app.collectionViews["system.settings.form.company"]
+        XCTAssertTrue(form.waitForExistence(timeout: 5))
         for _ in 0..<3 where !field.isHittable { form.swipeUp() }
         XCTAssertTrue(field.isHittable)
         field.tap()
