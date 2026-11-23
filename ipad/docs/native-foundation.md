@@ -23,6 +23,7 @@ SwiftUI のリスト、フォーム、テーブル等に専念させ、入力・
 UDID='<iPadのUUID>'
 DESTINATION="platform=iOS Simulator,id=$UDID"
 python3 ipad/scripts/generate_cases.py "$HOME/acas-ipad-oracle"
+python3 ipad/ACASUITests/IRS/generate_bookkeeping_fixtures.py "$HOME/acas-ipad-oracle"
 xcodegen generate --spec ipad/project.yml
 swift test --package-path ipad/ACASCore
 xcodebuild -project ipad/ACAS.xcodeproj -scheme ACAS \
