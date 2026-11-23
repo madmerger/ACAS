@@ -1,14 +1,52 @@
+import csv
+import importlib.util
 import json
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 from summarize_equivalence import (
-    compare_attempt, comparison_note, csv_cell, markdown_text, observed_summary, original_reports, read_run, video_start,
+    compare_attempt, comparison_note, csv_cell, main, markdown_text, observed_summary, original_reports, read_run,
+    video_start,
 )
 
 
 class RunHistoryTests(unittest.TestCase):
+    @unittest.skipUnless(importlib.util.find_spec("openpyxl"), "Excel 出力の検証には openpyxl が必要")
+    def test_excel_video_offsets_are_numeric_and_csv_offsets_keep_two_decimals(self):
+        from openpyxl import load_workbook
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            offsets = {"PL-003": 100.25, "PL-006": 20.5, "PL-007": 0.0}
+            cases = [{"id": case, "legacy_result": {"comparison_targets": {"report_files": []}}}
+                     for case in (*offsets, "PL-008")]
+            catalog = root / "scenarios/catalog.json"
+            catalog.parent.mkdir()
+            catalog.write_text(json.dumps({"cases": cases}))
+            (root / "recording.json").write_text(json.dumps({"startEpoch": 0}))
+            (root / "xcodebuild.log").write_text("".join(
+                f"Test Case '-[ACASUITests.PurchaseFlows testPL{case[3:]}]' started.\n"
+                f"ACAS_PL_RESULT|{case}|case.verdict.match|\n"
+                f"Test Case '-[ACASUITests.PurchaseFlows testPL{case[3:]}]' passed\n"
+                for case in offsets))
+            timeline = root / "timeline.json"
+            timeline.write_text(json.dumps([{"run": directory, "offset": 0, "caseStarts": offsets}]))
+            with patch("sys.argv", ["summarize_equivalence.py", directory, directory, str(timeline), "--xlsx"]):
+                main()
+            with (root / "ACAS-PL.csv").open(encoding="utf-8-sig", newline="") as handle:
+                self.assertEqual([row["動画開始時刻(秒)"] for row in csv.DictReader(handle)],
+                                 ["100.25", "20.50", "0.00", ""])
+            workbook = load_workbook(root / "ACAS-PL.xlsx")
+            try:
+                cells = workbook.active["F"][1:]
+                self.assertEqual([cell.value for cell in cells], [100.25, 20.5, 0, None])
+                self.assertEqual([cell.data_type for cell in cells[:3]], ["n"] * 3)
+                self.assertEqual([cell.number_format for cell in cells[:3]], ["0.00"] * 3)
+            finally:
+                workbook.close()
+
     def test_verified_frame_offset_takes_precedence_over_log_clock(self):
         part = {"offset": 30.0, "trim": 5.0, "caseStarts": {"PL-003": 0.0}}
         self.assertEqual(video_start(part, "PL-003", 8.0), 30.0)

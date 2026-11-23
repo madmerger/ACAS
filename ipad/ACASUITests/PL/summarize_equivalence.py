@@ -234,7 +234,9 @@ def main():
                     f"{seconds:.2f}" if seconds is not None else "", " / ".join(details)]
             writer.writerow(map(csv_cell, [case_id, f"【{title}】{summary}", *tail]))
             if args.xlsx:
-                sheet.append(list(map(csv_cell, [case_id, title, summary, *tail])))
+                sheet.append([*map(csv_cell, [case_id, title, summary, *tail[:2]]),
+                              float(tail[2]) if seconds is not None else None, csv_cell(tail[3])])
+                sheet.cell(row=sheet.max_row, column=6).number_format = "0.00"
             case_names.append(f"- {case_id}：{markdown_text(title)}")
             if case_id == "PL-090" and len(attempts) > 1 and seconds is not None:
                 supplier_rerun = ["## PL-090 再実行", f"- {markdown_text(summary)}。{markdown_text(diagnosis)}\n"
