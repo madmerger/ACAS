@@ -197,7 +197,7 @@ private struct PurchaseReportPreview: View {
                         .fontWeight(.semibold)
                         .accessibilityAddTraits(.isHeader)
                     ForEach(lines) { line in
-                        row(String(line.page), String(line.id), line.text)
+                        row(String(line.page), String(line.id), line.text, numbered: true)
                     }
                 }
                 .padding()
@@ -207,9 +207,10 @@ private struct PurchaseReportPreview: View {
         }
     }
 
-    private func row(_ page: String, _ line: String, _ content: String) -> some View {
+    private func row(_ page: String, _ line: String, _ content: String, numbered: Bool = false) -> some View {
         HStack(alignment: .firstTextBaseline, spacing: 16) {
             Text(page).frame(minWidth: 60, alignment: .leading)
+                .accessibilityIdentifier(numbered ? "pl.report.preview.page" : "pl.report.preview.page.heading")
             Text(line).frame(minWidth: 60, alignment: .leading)
             Text(content).font(.system(.body, design: .monospaced)).fixedSize()
         }
