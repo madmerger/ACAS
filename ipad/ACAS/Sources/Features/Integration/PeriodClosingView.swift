@@ -6,7 +6,7 @@ struct PeriodClosingLink: View {
     let ledger: PeriodClosing.Ledger
 
     var body: some View {
-        NavigationLink("期末処理") {
+        NavigationLink(intText("period.title")) {
             PeriodClosingView(workspace: workspace, initialLedger: ledger)
         }
         .accessibilityIdentifier(ledger == .sales ? "integration.salesPeriod" : "integration.purchasePeriod")
@@ -33,10 +33,10 @@ struct PeriodClosingView: View {
         Form {
             switch stage {
             case .backup:
-                Section("実行前の確認") {
-                    Text("期末日を確認し、すべての会計データをバックアップしてください。")
-                    DatePicker("期末日", selection: $date, displayedComponents: .date)
-                    Button("バックアップ済み・続ける") {
+                Section(intText("period.backup")) {
+                    Text(intText("period.backupNotice"))
+                    DatePicker(intText("period.date"), selection: $date, displayedComponents: .date)
+                    Button(intText("period.backupConfirmed")) {
                         do {
                             warning = try service.warning()
                             stage = .credentials
@@ -46,28 +46,28 @@ struct PeriodClosingView: View {
                     .accessibilityIdentifier("integration.confirmBackup")
                 }
             case .credentials:
-                Section("対象台帳") {
-                    Toggle("売掛元帳", isOn: $sales)
-                    Toggle("買掛元帳", isOn: $purchases)
+                Section(intText("period.ledgers")) {
+                    Toggle(intText("period.sales"), isOn: $sales)
+                    Toggle(intText("period.purchases"), isOn: $purchases)
                 }
-                Section("実行の確認") {
-                    SecureField("パスワード", text: $password)
+                Section(intText("period.confirmation")) {
+                    SecureField(intText("period.password"), text: $password)
                         .accessibilityIdentifier("integration.password")
                     if warning?.hasUnpostedInvoices == true {
-                        Toggle("未転記の請求書がある状態で続ける", isOn: $proceedWithUnposted)
+                        Toggle(intText("period.proceedUnposted"), isOn: $proceedWithUnposted)
                     }
                     if warning?.requiresQuarterChoice == true {
-                        Toggle("四半期末として処理する", isOn: $quarterEnd)
+                        Toggle(intText("period.quarter"), isOn: $quarterEnd)
                     }
-                    Button("期末処理を実行", role: .destructive, action: close)
+                    Button(intText("period.perform"), role: .destructive, action: close)
                         .disabled(!sales && !purchases)
                 }
             case .complete:
-                Text("期末処理が完了しました。")
+                Text(intText("period.completed"))
             }
             if !message.isEmpty { Text(message).accessibilityIdentifier("integration.result") }
         }
-        .navigationTitle("期末処理")
+        .navigationTitle(intText("period.title"))
         .onAppear {
             date = workspace.context.now()
             sales = initialLedger == .sales
@@ -90,11 +90,11 @@ struct PeriodClosingView: View {
 
     private func show(_ error: Error) {
         switch error as? PeriodClosing.Failure {
-        case .unconfigured: message = "期末処理に必要な会社設定がありません。"
-        case .missingLedger: message = "選択した台帳が利用できません。"
-        case .unfinishedUpdates: message = "未完了の更新があります。台帳を確認してください。"
-        case .wrongPassword: message = "パスワードが一致しません。"
-        default: message = "期末日を確認してください。"
+        case .unconfigured: message = intText("error.unconfigured")
+        case .missingLedger: message = intText("error.missingLedger")
+        case .unfinishedUpdates: message = intText("error.unfinished")
+        case .wrongPassword: message = intText("error.password")
+        default: message = intText("error.date")
         }
     }
 }

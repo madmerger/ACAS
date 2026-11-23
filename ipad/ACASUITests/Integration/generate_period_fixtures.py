@@ -6,7 +6,7 @@ from pathlib import Path
 
 IPAD = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(IPAD / "scripts"))
-from generate_cases import read_json, save, snapshot_seed
+from generate_cases import evidence_path, read_json, save, snapshot_seed
 
 
 def main():
@@ -14,22 +14,23 @@ def main():
     parser.add_argument("evidence", type=Path)
     parser.add_argument("--output", type=Path, default=IPAD / ".generated" / "fixtures")
     args = parser.parse_args()
+    evidence = args.evidence.resolve()
     args.output.mkdir(parents=True, exist_ok=True)
     cases = {"INT-402": "salesPeriod", "INT-403": "purchasePeriod"}
-    for case in read_json(args.evidence / "scenarios/catalog.json")["cases"]:
+    for case in read_json(evidence_path(evidence, Path("scenarios/catalog.json")))["cases"]:
         if case["id"] not in cases:
             continue
-        run = args.evidence / case["legacy_result"]["evidence"][0]
-        if read_json(run / "record-diff.json")["changes"]:
+        run = evidence_path(evidence, Path(case["legacy_result"]["evidence"][0]))
+        if read_json(evidence_path(evidence, run / "record-diff.json"))["changes"]:
             parser.error(f"{case['id']} は確認画面で終わる証跡ではありません")
-        with (run / "terminal.cast").open(encoding="utf-8") as recording:
+        with evidence_path(evidence, run / "terminal.cast").open(encoding="utf-8") as recording:
             date = json.loads(recording.readline())["timestamp"]
         save(args.output / (case["id"] + ".json"), {
             "id": case["id"],
             "title": "売掛元帳の期末処理確認" if case["id"] == "INT-402" else "買掛元帳の期末処理確認",
             "workflow": "integration." + cases[case["id"]],
             "dateSeconds": date,
-            "seed": snapshot_seed(run),
+            "seed": snapshot_seed(evidence, run),
             "changes": [],
             "reports": {},
         })

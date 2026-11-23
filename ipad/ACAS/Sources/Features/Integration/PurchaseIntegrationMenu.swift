@@ -6,7 +6,7 @@ struct PurchaseIntegrationMenu: View {
 
     var body: some View {
         List {
-            NavigationLink("仕入請求書の転記") { PurchasePostingView(workspace: workspace) }
+            NavigationLink(intText("purchase.title")) { PurchasePostingView(workspace: workspace) }
                 .accessibilityIdentifier("integration.purchasePosting")
             PeriodClosingLink(workspace: workspace, ledger: .purchases)
         }
@@ -20,26 +20,26 @@ private struct PurchasePostingView: View {
 
     var body: some View {
         Form {
-            Section("転記対象") {
-                Text("未転記の仕入請求書を買掛元帳と連携先へ転記します。")
-                Button("転記を確認") { confirming = true }
+            Section(intText("purchase.section")) {
+                Text(intText("purchase.notice"))
+                Button(intText("purchase.review")) { confirming = true }
                     .accessibilityIdentifier("integration.reviewPurchasePosting")
             }
             if !message.isEmpty { Text(message).accessibilityIdentifier("integration.purchaseResult") }
         }
-        .navigationTitle("仕入請求書の転記")
-        .confirmationDialog("仕入請求書を転記しますか？", isPresented: $confirming, titleVisibility: .visible) {
-            Button("転記を実行", action: post)
-            Button("取り消す", role: .cancel) {}
+        .navigationTitle(intText("purchase.title"))
+        .confirmationDialog(intText("purchase.confirm"), isPresented: $confirming, titleVisibility: .visible) {
+            Button(intText("purchase.perform"), action: post)
+            Button(intText("action.cancel"), role: .cancel) {}
         }
     }
 
     private func post() {
         do {
             let batches = try PurchaseTransfer(workspace.context).postPending()
-            message = batches.isEmpty ? "未転記の仕入請求書がありません。" : "転記バッチを作成しました：\(batches.joined(separator: "、"))"
+            message = batches.isEmpty ? intText("purchase.empty") : String(format: intText("purchase.completed"), batches.joined(separator: "、"))
         } catch {
-            message = "仕入先、請求書、会計設定を確認してください。転記できませんでした。"
+            message = intText("purchase.error")
         }
         workspace.completed("integration.purchasePosting")
     }

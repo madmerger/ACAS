@@ -43,7 +43,8 @@ public struct PeriodClosing {
         let statuses = system.raw("file-statuses")
         guard !ledgers.isEmpty,
               !ledgers.contains(.sales) || (statuses[18] == 0x31 && system.int("level-3") == 1),
-              !ledgers.contains(.purchases) || statuses[28] == 0x31 else { throw Failure.missingLedger }
+              !ledgers.contains(.purchases) || (statuses[28] == 0x31 && system.int("level-2") == 1)
+        else { throw Failure.missingLedger }
         guard proceedWithUnposted || (system.int("s-flag-i") != 1 && system.int("p-flag-i") != 1)
         else { throw Failure.unfinishedUpdates }
         guard system.str("pass-word") == Self.legacyPassword(password) else { throw Failure.wrongPassword }
@@ -66,9 +67,9 @@ public struct PeriodClosing {
         for ledger in [Ledger.sales, .purchases] where ledgers.contains(ledger) {
             let sales = ledger == .sales
             rollLedger(sales: sales, quarter: quarterEnd ? quarter : 0, yearEnd: yearEnd)
-            rollOpenItems(sales: sales, ownNumbers: system.str("sl-own-nos") == "Y")
+            try rollOpenItems(sales: sales, ownNumbers: system.str("sl-own-nos") == "Y")
             rollValues(sales: sales, yearEnd: yearEnd)
-            rollInvoices(sales: sales, closed: closed, retention: Int(system.int("pf-retention")),
+            try rollInvoices(sales: sales, closed: closed, retention: Int(system.int("pf-retention")),
                          ownNumbers: system.str("sl-own-nos") == "Y")
             let offset = sales ? 0 : 60
             balances.replaceSubrange(offset..<(offset + 6), with: Array(balances[(offset + 6)..<(offset + 12)]))
@@ -79,8 +80,8 @@ public struct PeriodClosing {
             system[sales ? "oi-3-flag" : "oi-5-flag"] = "Y"
             system.setInt(sales ? "s-end-cycle-date" : "bl-end-cycle-date", Int64(closed))
         }
-        file.write(1, system.bytes)
-        file.write(4, balances)
+        try file.write(1, system.bytes)
+        try file.write(4, balances)
     }
 
     private static func legacyPassword(_ password: String) -> String {
@@ -119,7 +120,7 @@ public struct PeriodClosing {
         }
     }
 
-    private func rollOpenItems(sales: Bool, ownNumbers: Bool) {
+    private func rollOpenItems(sales: Bool, ownNumbers: Bool) throws {
         let name = directory + (sales ? "openitm3.dat" : "openitm5.dat")
         let invoices = directory + (sales ? "invoice.dat" : "pinvoice.dat")
         let layout = sales ? PeriodRecords.soiLayout : PeriodRecords.poiLayout
@@ -139,7 +140,7 @@ public struct PeriodClosing {
                 store.rewrite(name, key: key, data: row.bytes)
             }
         }
-        store.writeRaw(directory + "oisort.wrk", [])
+        try store.writeRaw(directory + "oisort.wrk", [])
     }
 
     private func rollValues(sales: Bool, yearEnd: Bool) {
@@ -176,7 +177,7 @@ public struct PeriodClosing {
         }
     }
 
-    private func rollInvoices(sales: Bool, closed: Int, retention: Int, ownNumbers: Bool) {
+    private func rollInvoices(sales: Bool, closed: Int, retention: Int, ownNumbers: Bool) throws {
         let path = directory + (sales ? "invoice.dat" : "pinvoice.dat")
         let source = store.all(path)
         let targetSize = source.first?.data.count ?? (sales ? 134 : 129)
@@ -213,6 +214,6 @@ public struct PeriodClosing {
             let output = copied + [UInt8](repeating: 0x20, count: targetSize - copied.count)
             store.rewrite(path, key: key, data: output)
         }
-        store.writeRaw(directory + "work.tmp", [])
+        try store.writeRaw(directory + "work.tmp", [])
     }
 }

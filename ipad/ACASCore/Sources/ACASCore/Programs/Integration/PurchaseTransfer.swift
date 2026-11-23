@@ -154,7 +154,7 @@ public struct PurchaseTransfer {
                     record.setInt("vat-ac", system.int("vat-ac"))
                     record["post-vat-side"] = "DR"
                     record.setInt("vat-amount", invoice.tax)
-                    posting.write(rowNumber, record.bytes)
+                    try posting.write(rowNumber, record.bytes)
                     rowNumber += 1
                 }
             }
@@ -164,12 +164,12 @@ public struct PurchaseTransfer {
             if !useIRS, index < keys.count - 1 { rowNumber += 1 }
         }
         if useIRS {
-            store.appendRaw(bookkeepingDestination.rawValue + "postings2irs.dat", handedOff)
+            try store.appendRaw(bookkeepingDestination.rawValue + "postings2irs.dat", handedOff)
         } else {
             system.setInt("postings", Int64(rowNumber))
         }
         system.setInt("next-batch", beginning + Int64(count))
-        settings.write(1, system.bytes)
+        try settings.write(1, system.bytes)
         return keys
     }
 }
