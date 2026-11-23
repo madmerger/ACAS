@@ -69,6 +69,9 @@ final class SalesPaymentsTests: XCTestCase {
 
     func testProofSortsPaymentBeforeInvoiceAndAmendmentRestoresJournal() throws {
         let (store, context, date) = try setup()
+        var settings = try SalesLedger(context).systemRecord()
+        settings.setInt("s-flag-p", 1)
+        try RelativeFile(store, path: "ledgers/acas/system.dat", recordSize: 1024).write(1, settings.bytes)
         let service = SalesPayments(context)
         var draft = SalesPayments.Draft(date: date)
         draft.customer = "CUST011"
