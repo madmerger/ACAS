@@ -39,6 +39,24 @@ final class SalesInvoicesTests: XCTestCase {
         XCTAssertEqual(saved.proFormaDays, "090")
     }
 
+    func testDeletionReportIncludesDeletedInvoice() throws {
+        let (service, invoice) = try makeInvoice()
+        try service.delete(invoice.id)
+
+        XCTAssertTrue(service.invoices().isEmpty)
+        XCTAssertEqual(try service.printDeletedInvoices(), 1)
+        let report = try XCTUnwrap(service.context.store.readRaw(SalesInvoices.deletionReportPath))
+        guard report.count >= 133 else {
+            XCTFail("削除帳票に132バイトの明細がありません")
+            return
+        }
+        let detail = Array(report.suffix(133).dropLast())
+        XCTAssertEqual(detail.count, 132)
+        XCTAssertEqual(SJIS.decode(detail[3..<13]).trimmingCharacters(in: .whitespaces), String(invoice.id.value))
+        XCTAssertEqual(SJIS.decode(detail[31..<38]), invoice.customer)
+        XCTAssertEqual(report.last, 0x0a)
+    }
+
     func testInvoiceCanBeRegisteredForExistingDormantCustomer() throws {
         let (service, invoice) = try makeInvoice()
         let draft = try service.draft(for: invoice.id)
