@@ -36,14 +36,17 @@ public sealed partial class IrsScreens : ISubsystemScreens
         new("IrsAuditMenu", "監査証跡", 6, Open: () => Audit(books)),
         new("IrsFinalMenu", "決算書作成", 7, Open: () => FinalAccounts(books)),
         new("IrsAmendmentMenu", "転記修正", 8, Open: () => books.HasJournal
-            ? Guard("転記修正", () => Amendments(books)) : Root(books)),
+            ? Guard("転記修正", () => Amendments(books)) : MissingJournal(books, "転記修正")),
         new("IrsAnalysisMenu", "分析帳票", 9, Open: () => books.HasJournal
-            ? Guard("分析帳票", () => Analysis(books)) : Root(books)),
+            ? Guard("分析帳票", () => Analysis(books)) : MissingJournal(books, "分析帳票")),
         new("IrsRebuildMenu", "Ａ　勘定残高の再計算", Open: () => Rebuild(books)),
         new("IrsExitMenu", "Ｘ　終了", Open: () => new InformationScreen(RootTitle, "簡易記帳を終了しました。左側の業務メニューを選択してください。"))
     ];
 
     private Screen Root(IrsBookkeeping books) => new MenuScreen(RootTitle, RootItems(books));
+
+    private ConfirmationScreen MissingJournal(IrsBookkeeping books, string title) =>
+        new(title, "転記ファイルを開けません（状態番号35）。", "確認", () => Root(books), () => Root(books));
 
     private static Screen Guard(string title, Func<Screen> action)
     {
@@ -142,8 +145,14 @@ public sealed partial class IrsScreens : ISubsystemScreens
         [new ChoiceField("IrsKeepAccounts", "既存科目表に追加する", YesNo, "Y")],
         "次へ", v => v.Choice("IrsKeepAccounts") == "N"
             ? new ConfirmationScreen("科目表の置き換え確認", "既存の科目表を置き換えます。この操作は元に戻せません。",
-                "置き換える", () => AccountForm(books, false, reset: true), () => AccountCreate(books))
+                "置き換える", () => AuthorizeAccountReset(books), () => AccountCreate(books))
             : AccountForm(books, false));
+
+    private static FormScreen AuthorizeAccountReset(IrsBookkeeping books) => Form("科目表の置き換え",
+        [new PasswordField("IrsAccountResetPassword", "暗証番号", 4)], "認証", v =>
+            books.CheckPassword(v.Text("IrsAccountResetPassword"))
+                ? AccountForm(books, false, reset: true)
+                : throw new IrsException("暗証番号が一致しません。"));
 
     private static FormScreen AccountForm(IrsBookkeeping books, bool amend, IrsAccount? current = null, bool reset = false, bool loaded = false)
     {

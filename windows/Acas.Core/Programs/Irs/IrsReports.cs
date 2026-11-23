@@ -86,7 +86,8 @@ public sealed partial class IrsBookkeeping
     {
         string title = type switch { "L" => "元帳明細", "D" => "付加価値税日計帳", _ => "監査証跡" };
         IEnumerable<IrsJournalEntry> rows = Journal();
-        if (type == "D") rows = rows.Where(r => r.TaxDefault != 0);
+        if (type == "D") rows = rows.Where(r => r.TaxDefault is 31 or 32).Select(r =>
+            r.TaxSide == (r.TaxDefault == 31 ? "DR" : "CR") ? r : r with { Amount = -r.Amount, Tax = -r.Tax });
         rows = order switch
         {
             "1" => rows.OrderBy(r => r.Code, StringComparer.Ordinal).ThenBy(r => r.Number),
@@ -138,15 +139,23 @@ public sealed partial class IrsBookkeeping
         var accounts = db.Scan(AccountsFile).Select(x => ReadRecord(IrsRecords.Account, x.Data, IrsRecords.Account.Size))
             .Where(x => x.St("kind") == "O").ToArray();
         var report = new StringBuilder(Header(title)).AppendLine("区分　当期　比較年度");
+        var amounts = new decimal[26];
+        var priors = new decimal[26];
         foreach (var line in Headings())
         {
             string category = ((char)('A' + line.Slot - 1)).ToString();
             var group = accounts.Where(a => a.St("category") == category).ToArray();
-            if (group.Length == 0 && line.Title == "") continue;
             var amount = group.Sum(a => a.N("debit") - a.N("credit"));
             var prior = comparison == 0 ? 0 : group.Sum(a => a.N("debit" + comparison) - a.N("credit" + comparison));
             int sign = line.Sign == "-" ? -1 : 1;
-            report.AppendLine($"{(line.Title == "" ? $"区分 {category}" : line.Title)}　{Money(sign * amount)}　{Money(sign * prior)}");
+            amounts[line.Slot - 1] = amount;
+            priors[line.Slot - 1] = prior;
+            if (group.Length != 0 || line.Title != "")
+                report.AppendLine($"{(line.Title == "" ? $"区分 {category}" : line.Title)}　{Money(sign * amount)}　{Money(sign * prior)}");
+            if (category == "H")
+                report.AppendLine($"売上総利益　{Money(-amounts[..8].Sum())}　{Money(-priors[..8].Sum())}");
+            if (category == "T")
+                report.AppendLine($"資産合計　{Money(amounts[14..20].Sum())}　{Money(priors[14..20].Sum())}");
         }
         return new(title, report.ToString());
     }
@@ -157,19 +166,30 @@ public sealed partial class IrsBookkeeping
         foreach (var (_, data) in db.Scan(AccountsFile))
         {
             var row = ReadRecord(IrsRecords.Account, data, IrsRecords.Account.Size);
+            if (row.S("kind") != "O") continue;
+            var kind = row.I("child") == 0 ? "O" : "S";
             byte[] line = csv
-                ? IrsRecords.Encode($"C{row.S("owner")},{row.S("child")},\"{IrsRecords.Text(row, "name").Replace("\"", "\"\"")}\",{row.S("category")},{row.S("kind")}", 256)
-                : [(byte)'T', .. row.B[..35], row.B[^1]];
+                ? IrsRecords.Encode($"C{row.S("owner")},{row.S("child")},{CsvCell(IrsRecords.Text(row, "name"))},{row.S("category")},{kind}", 256)
+                : [(byte)'T', .. row.B[..10], (byte)kind[0], .. row.B[11..35], row.B[^1]];
             output.Write(line);
             output.WriteByte(10);
         }
         return output.ToArray();
     }
 
+    private static string CsvCell(string value)
+    {
+        var trimmed = value.TrimStart();
+        if ((trimmed.Length > 0 && trimmed[0] is '=' or '+' or '-' or '@') ||
+            (value.Length > 0 && value[0] is '\t' or '\r' or '\n'))
+            value = "'" + value;
+        return "\"" + value.Replace("\"", "\"\"") + "\"";
+    }
+
     public int ImportAccounts(byte[] archive)
     {
         var lines = global::System.Text.Encoding.Latin1.GetString(archive).Split('\n');
-        var accounts = new Dictionary<string, byte[]>(StringComparer.Ordinal);
+        var accounts = new Dictionary<string, Rec>(StringComparer.Ordinal);
         foreach (var raw in lines)
         {
             string line = raw.TrimEnd('\r');
@@ -179,13 +199,30 @@ public sealed partial class IrsBookkeeping
             var row = IrsRecords.Account.New();
             var bytes = global::System.Text.Encoding.Latin1.GetBytes(line);
             bytes.AsSpan(1, 35).CopyTo(row.B);
-            row.Set("kind", row.I("child") == 0 ? "O" : "S");
+            row.Set("kind", "O");
             row.B[^1] = bytes[^1];
-            accounts.TryAdd(line.Substring(1, 10), row.B);
+            if (!accounts.TryAdd(line.Substring(1, 10), row))
+                throw new IrsException("科目表に重複する勘定コードがあります。");
         }
         if (accounts.Count == 0) throw new IrsException("取り込む科目がありません。");
-        db.Recreate(AccountsFile);
-        foreach (var (key, row) in accounts) db.Write(AccountsFile, key, row);
-        return accounts.Count;
+        int count = accounts.Count;
+        foreach (var account in accounts.Values.Where(row => row.I("child") != 0).ToArray())
+        {
+            var reference = account.Clone();
+            int child = account.I("child");
+            reference.SetN("owner", child);
+            reference.SetN("child", 0);
+            reference.Set("kind", "S");
+            var pointer = global::System.Text.Encoding.ASCII.GetBytes(Cob.P9(account.I("owner"), 5));
+            pointer.CopyTo(reference.B, reference.L.F["name"].Off);
+            if (!accounts.TryAdd(Key(child), reference))
+                throw new IrsException("科目表に重複する補助勘定コードがあります。");
+        }
+        db.Atomic(() =>
+        {
+            db.Recreate(AccountsFile);
+            foreach (var (key, row) in accounts) db.Write(AccountsFile, key, row.B);
+        });
+        return count;
     }
 }

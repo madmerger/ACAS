@@ -91,6 +91,13 @@ public sealed class Db : IDisposable
 
     public void AddSpool(string name, string body) =>
         Exec("INSERT INTO spool(name,created,body) VALUES($n,$c,$b)", ("$n", name), ("$c", DateTime.UtcNow.ToString("o")), ("$b", body));
+
+    internal void Atomic(Action write)
+    {
+        using var tx = _c.BeginTransaction();
+        write();
+        tx.Commit();
+    }
     public List<(long Id, string Name, DateTimeOffset Created, string Body)> Spool()
     {
         var r = new List<(long, string, DateTimeOffset, string)>();

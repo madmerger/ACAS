@@ -25,6 +25,24 @@ public class IntegrationTests
     }
 
     [Fact]
+    public void 科目表の補助勘定を復元し書き出し時は数式を無効化する()
+    {
+        using var db = new Db();
+        var books = new IrsBookkeeping(db);
+        books.SaveAccount(30001, 0, "預金", "R", amend: false);
+        books.SaveAccount(30001, 30002, "=1+1", "R", amend: false);
+        byte[] archive = books.ExportAccounts(csv: false);
+        Assert.Contains("T3000130002S=1+1", Encoding.ASCII.GetString(archive));
+        Assert.DoesNotContain("T3000200000", Encoding.ASCII.GetString(archive));
+        Assert.Contains("\"'=1+1\"", Encoding.ASCII.GetString(books.ExportAccounts(csv: true)));
+
+        books.ImportAccounts(archive);
+
+        Assert.Contains(books.Accounts(), account => account.Code == 30001 && account.SubAccount == 30002);
+        Assert.Equal(archive, books.ExportAccounts(csv: false));
+    }
+
+    [Fact]
     public void 連携仕訳の取込は八十四バイトのレコードを使用する()
     {
         using var db = new Db();

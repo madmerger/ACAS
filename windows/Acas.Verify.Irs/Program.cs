@@ -87,9 +87,21 @@ return results.Any(r => r.Verdict == "不一致") ? 1 : 0;
 
 string Read(string name)
 {
+    const int MaxEntryBytes = 16 * 1024 * 1024;
     var entry = zip.GetEntry(name) ?? throw new InvalidDataException("証跡が見つかりません: " + name);
+    if (entry.Length > MaxEntryBytes) throw new InvalidDataException("証跡の展開サイズが上限を超えています: " + name);
     using var stream = entry.Open();
-    using var reader = new StreamReader(stream, Encoding.UTF8);
+    using var payload = new MemoryStream((int)entry.Length);
+    Span<byte> buffer = stackalloc byte[8192];
+    int read;
+    while ((read = stream.Read(buffer)) != 0)
+    {
+        if (payload.Length + read > MaxEntryBytes)
+            throw new InvalidDataException("証跡の展開サイズが上限を超えています: " + name);
+        payload.Write(buffer[..read]);
+    }
+    payload.Position = 0;
+    using var reader = new StreamReader(payload, Encoding.UTF8);
     return reader.ReadToEnd();
 }
 

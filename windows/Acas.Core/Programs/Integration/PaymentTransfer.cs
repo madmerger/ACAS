@@ -182,9 +182,7 @@ public sealed partial class LedgerTransfer
         StagePaymentBatches(staged, sys, date, false, destination, Prepare());
         ApplyDeductions(staged, false, deductionCount, deductions);
         report.AppendLine($"支払総額　{Money(total)}");
-        var result = SavePaymentTransfer(staged, sys, new(title, report.ToString()));
-        db.Recreate(PayFile);
-        return result;
+        return SavePaymentTransfer(staged, sys, new(title, report.ToString()), clearQueue: true);
     }
 
     private void StagePaymentBatches(Dictionary<(string File, string Key), byte[]> staged, Rec sys,
@@ -203,13 +201,17 @@ public sealed partial class LedgerTransfer
         int debit = sys.I(sales ? "SL-Pay-Ac" : "P-Creditors");
         int credit = sys.I(sales ? "S-Debtors" : "BL-Pay-Ac");
         int batchNumber = 0, count = 0, relative = 0, start = 0;
+        int nextRelative = irs ? sys.I("Postings") + 1 : FirstGlPosting(sys);
+        int sequence = irs ? IrsSequence(file) : 0;
         decimal total = 0;
 
         void Open()
         {
+            while (db.Read(BatchFile, ledger + Cob.P9(sys.I(batchField), 5)) is not null)
+                IncrementBatch(sys, batchField);
             batchNumber = sys.I(batchField);
             IncrementBatch(sys, batchField);
-            start = relative = sys.I("Postings") + 1;
+            start = relative = nextRelative;
             count = 0;
             total = 0;
         }
@@ -234,6 +236,7 @@ public sealed partial class LedgerTransfer
             {
                 if (relative > short.MaxValue) throw new IrsException("転記番号を割り当てられません。");
                 sys.SetN("Postings", relative);
+                nextRelative = relative + 1;
             }
         }
 
@@ -256,7 +259,7 @@ public sealed partial class LedgerTransfer
                 posting.Set("taxSide", side);
                 IrsRecords.Signed(posting, "tax", 0);
                 string batchKey = Cob.P9(batchNumber, 5);
-                StageNew(staged, file, batchKey + "/" + Cob.P9(count, 5), [.. Encoding.ASCII.GetBytes(batchKey), .. posting.B]);
+                StageNew(staged, file, IrsSequenceKey(++sequence), [.. Encoding.ASCII.GetBytes(batchKey), .. posting.B]);
             }
             else
             {
@@ -316,11 +319,16 @@ public sealed partial class LedgerTransfer
         system.SetN(field, value + 1);
     }
 
-    private IrsReport SavePaymentTransfer(Dictionary<(string File, string Key), byte[]> staged, Rec system, IrsReport report)
+    private IrsReport SavePaymentTransfer(Dictionary<(string File, string Key), byte[]> staged, Rec system, IrsReport report,
+        bool clearQueue = false)
     {
         staged[(SystemFile, SystemKey)] = system.B;
-        foreach (var ((file, key), data) in staged) db.Put(file, key, data);
-        db.AddSpool(Directory + "prt-1", report.Body);
+        db.Atomic(() =>
+        {
+            foreach (var ((file, key), data) in staged) db.Put(file, key, data);
+            if (clearQueue) db.Recreate(PayFile);
+            db.AddSpool(Directory + "prt-1", report.Body);
+        });
         return report;
     }
 }

@@ -31,7 +31,7 @@ public sealed partial class LedgerTransfer
             throw new IrsException("未転記の請求書が残っています。");
         var system = Settings();
         bool sales = ledger == TransferLedger.Sales;
-        if (system.I(sales ? "File-Status-19" : "File-Status-29") != 1)
+        if (system.I(sales ? "File-Status-19" : "File-Status-29") != 1 && !db.Exists(ItemFile(sales)))
             throw new IrsException("未決済明細ファイルがありません。");
         if (!CryptographicOperations.FixedTimeEquals(Encoding.ASCII.GetBytes(system.S("Pass-Word")), LegacyPassword(password)))
             throw new IrsException("暗証番号が一致しません。");

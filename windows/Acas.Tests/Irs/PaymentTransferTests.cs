@@ -63,6 +63,45 @@ public class PaymentTransferTests
     }
 
     [Fact]
+    public void 請求書の後に売掛入金と買掛支払を総勘定元帳へ連続転記できる()
+    {
+        using var db = new Db();
+        db.LoadBaseline("sl-printed");
+        var system = Prepare(db, false, true);
+        system.SetN("P-Flag-P", 2);
+        db.Put(SystemFile, "00000001", system.B);
+        db.Put(Directory + "openitm3.dat", "CUST011/00000007", OpenItem(true, "CUST011", 7, 5, 80m, 100m).B);
+        db.Put(Directory + "openitm5.dat", "SUPP018/00000007", OpenItem(false, "SUPP018", 7, 5, 80m, 100m).B);
+
+        var transfer = new LedgerTransfer(db);
+        transfer.TransferInvoices(TransferLedger.Sales, Date, TransferDestination.Dedicated);
+        transfer.TransferPayments(TransferLedger.Sales, Date, TransferDestination.Dedicated);
+        transfer.TransferPayments(TransferLedger.Purchases, Date, TransferDestination.Dedicated);
+
+        Assert.Equal(new[] { "00000001", "00000003", "00000005" }, db.Scan(Directory + "posting.dat").Select(x => x.Key));
+        Assert.Equal(6, Layouts.System.From(db.Read(SystemFile, "00000001")!).I("Postings"));
+    }
+
+    [Fact]
+    public void 同じ伝票番号の売掛入金と買掛支払を簡易記帳へ順番に転記できる()
+    {
+        using var db = new Db();
+        db.LoadBaseline("biz");
+        var system = Prepare(db, true, true);
+        system.SetN("P-Flag-P", 2);
+        db.Put(SystemFile, "00000001", system.B);
+        db.Put(Directory + "openitm3.dat", "CUST011/00000007", OpenItem(true, "CUST011", 7, 5, 80m, 100m).B);
+        db.Put(Directory + "openitm5.dat", "SUPP018/00000007", OpenItem(false, "SUPP018", 7, 5, 80m, 100m).B);
+
+        var transfer = new LedgerTransfer(db);
+        transfer.TransferPayments(TransferLedger.Sales, Date, TransferDestination.Dedicated);
+        transfer.TransferPayments(TransferLedger.Purchases, Date, TransferDestination.Dedicated);
+
+        Assert.Equal(new[] { "0001000001SL", "0001000001PL" },
+            db.Scan(IrsBookkeeping.Directory + "postings2irs.dat").Select(row => Encoding.ASCII.GetString(row.Data, 0, 12)));
+    }
+
+    [Fact]
     public void 小切手台帳から支払総額を転記して請求書を消し込む()
     {
         using var db = new Db();

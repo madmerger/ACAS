@@ -63,8 +63,17 @@ public sealed partial class LedgerTransfer(Db db)
     private static string PartyFile(bool sales) => Directory + (sales ? "salesled.dat" : "purchled.dat");
     private static string ItemFile(bool sales) => Directory + (sales ? "openitm3.dat" : "openitm5.dat");
     private static string TransferTitle(bool sales) => sales ? "売掛請求の転記" : "買掛請求の転記";
+    private int FirstGlPosting(Rec system)
+    {
+        int last = db.Scan(PostingFile).Select(row => Cob.ToInt(row.Key)).DefaultIfEmpty(0).Max();
+        return Math.Max(system.I("Postings") + 1, last == 0 ? 1 : last + 2);
+    }
 
-    private static decimal Net(Rec invoice) => invoice.N("goods") + invoice.N("shipping");
+    private int IrsSequence(string file) => db.Scan(file, "~").Select(row => Cob.ToInt(row.Key[1..])).DefaultIfEmpty(0).Max();
+    private static string IrsSequenceKey(int sequence) => "~" + Cob.P9(sequence, 8);
+
+    private static decimal Net(Rec invoice, bool sales) => invoice.N("goods") + invoice.N("shipping") +
+        (sales ? invoice.N("extra") + invoice.N("discount") + invoice.N("deductAmount") : 0);
     private static decimal Tax(Rec invoice, bool sales) => invoice.N("tax") + invoice.N("shippingtax") +
         (sales ? invoice.N("extratax") : 0);
     private static DateTime DateOf(int day, DateTime fallback) =>
@@ -89,6 +98,7 @@ public sealed partial class LedgerTransfer(Db db)
         bool toNominal = sys.I("Level-1") == 1 || sys.S("Irs-Instead") == "Y";
         bool toIrs = sys.S("Irs-Instead") == "Y";
         string handoff = (destination == TransferDestination.Shared ? Directory : IrsBookkeeping.Directory) + "postings2irs.dat";
+        int sequence = toIrs ? IrsSequence(handoff) : 0;
         var staged = new Dictionary<(string File, string Key), byte[]>();
         var report = new StringBuilder().AppendLine(title).AppendLine($"{IrsRecords.Text(sys, "Usera")}　{date:yyyy年M月d日}")
             .AppendLine("番号　日付　取引先　区分　旧残高　新残高　税抜額　付加価値税　合計");
@@ -99,11 +109,14 @@ public sealed partial class LedgerTransfer(Db db)
             .Append(" Number     Date    <------------Supplier------------>    Type  ".PadRight(64))
             .Append(" Old Balance  New Balance            Net         Vat       Gross\n\n");
         var totals = new (decimal Net, decimal Tax)[4];
+        int batchLedger = sales ? 3 : 2;
         int firstBatch = sys.I("Next-Batch"), relative = sys.I("Postings") + 1, quarter = sys.I("Current-Quarter");
         if (toNominal)
         {
-            firstBatch = Math.Max(firstBatch, db.Scan(BatchFile).Select(x => Cob.ToInt(x.Key[1..]) + 1).DefaultIfEmpty(0).Max());
-            relative = Math.Max(relative, db.Scan(PostingFile).Select(x => Cob.ToInt(x.Key) + 1).DefaultIfEmpty(0).Max());
+            firstBatch = Math.Max(firstBatch, db.Scan(BatchFile)
+                .Where(x => x.Key.StartsWith(batchLedger.ToString(Invariant), StringComparison.Ordinal))
+                .Select(x => Cob.ToInt(x.Key[1..]) + 1).DefaultIfEmpty(1).Max());
+            if (!toIrs) relative = FirstGlPosting(sys);
         }
         string marker = sales ? "SL" : "PL";
         string[] names = ["", "入金", "請求書", "貸方票"];
@@ -116,9 +129,9 @@ public sealed partial class LedgerTransfer(Db db)
         for (int batchIndex = 0; batchIndex < Math.Max(batchCount, 1); batchIndex++)
         {
             int batchNumber = firstBatch + batchIndex;
-            string batchKey = (int)ledger + Cob.P9(batchNumber, 5);
+            string batchKey = batchLedger + Cob.P9(batchNumber, 5);
             var batch = Layouts.Batch.New();
-            batch.SetN("ledger", (int)ledger);
+            batch.SetN("ledger", batchLedger);
             batch.SetN("batch-nos", batchNumber);
             batch.SetN("bcycle", sys.I("Cyclea"));
             batch.SetN("entered", DayOf(date));
@@ -139,18 +152,23 @@ public sealed partial class LedgerTransfer(Db db)
                     : db.Read(partyFile, partyKey) is { } bytes ? Read(parties, bytes)
                     : throw new IrsException($"取引先 {partyKey} が見つかりません。");
                 string name = IrsRecords.Text(party, "name");
-                decimal net = Net(invoice), tax = Tax(invoice, sales), gross = net + tax;
+                var openItem = OpenItem(sales, invoice, batchNumber, itemNumber + 1);
+                decimal net = Net(openItem, sales), postingTax = Tax(openItem, sales);
+                decimal tax = postingTax + (sales ? openItem.N("deductTax") : 0), gross = net + tax;
+                decimal goods = openItem.N("goods") + (sales ? openItem.N("extra") : 0);
                 decimal balance = party.N("current") - party.N("unapplied");
                 if (type is 1 or 2)
                 {
                     int count = party.I("activity");
                     party.SetN("activity", count + 1);
-                    party.SetN("average", (count * party.N("average") + invoice.N("goods")) / (count + 1));
+                    party.SetN("average", (count * party.N("average") + goods) / (count + 1));
                 }
                 if (quarter is >= 1 and <= 4)
-                    party.SetN("quarter" + quarter, party.N("quarter" + quarter) + invoice.N("goods"));
+                    party.SetN("quarter" + quarter, party.N("quarter" + quarter) + goods);
                 if (type != 1)
                     party.SetN("current", party.N("current") + gross);
+                if (type == 3)
+                    party.SetN("current", party.N("current") - ApplyCredit(staged, sales, openItem, Math.Abs(gross)));
                 if (type is 1 or 2) party.SetN("lastInvoice", invoice.I("date"));
                 if (type is 1 or 3) party.SetN("lastPayment", invoice.I("date"));
                 if (party.N("current") < 0)
@@ -174,11 +192,10 @@ public sealed partial class LedgerTransfer(Db db)
                 invoice.Set("status", "z");
                 if (!sales) invoice.Set("updated", "z");
                 staged[(invoiceFile, invoiceKey)] = invoice.B;
-                string openKey = partyKey + "/" + Cob.P9(number, 8);
-                staged[(ItemFile(sales), openKey)] = OpenItem(sales, invoice, batchNumber, itemNumber + 1).B;
+                staged[(ItemFile(sales), OpenItemKey(partyKey, number))] = openItem.B;
                 if (!toNominal) continue;
                 batchNet += net;
-                batchTax += tax;
+                batchTax += postingTax;
                 string legend = $"{number} : {name}";
                 legend = IrsRecords.Fit(legend, 32);
                 itemNumber++;
@@ -194,8 +211,8 @@ public sealed partial class LedgerTransfer(Db db)
                     IrsRecords.Text(post, "legend", legend);
                     post.SetN("taxDefault", sales ? 32 : 31);
                     post.Set("taxSide", sales ? "CR" : "DR");
-                    IrsRecords.Signed(post, "tax", tax);
-                    staged[(handoff, batchKey + "/" + Cob.P9(itemNumber, 5))] =
+                    IrsRecords.Signed(post, "tax", postingTax);
+                    staged[(handoff, IrsSequenceKey(++sequence))] =
                         [.. Encoding.ASCII.GetBytes(Cob.P9(batchNumber, 5)), .. post.B];
                 }
                 else
@@ -209,7 +226,7 @@ public sealed partial class LedgerTransfer(Db db)
                     post.SetN("post-cr", credit);
                     post.SetN("vat-ac", sys.I("Vat-Ac"));
                     post.SetN("post-amount", net);
-                    post.SetN("vat-amount", tax);
+                    post.SetN("vat-amount", postingTax);
                     post.Set("post-vat-side", sales ? "CR" : "DR");
                     IrsRecords.Text(post, "post-legend", legend);
                     string postKey = Cob.P9(relative++, 8);
@@ -228,7 +245,12 @@ public sealed partial class LedgerTransfer(Db db)
             staged[(BatchFile, batchKey)] = batch.B;
             if (!toIrs && batchIndex < batchCount - 1) relative++;
         }
-        foreach (var ((file, key), data) in staged) db.Put(file, key, data);
+        if (toNominal && !toIrs && relative > short.MaxValue)
+            throw new IrsException("転記番号を割り当てられません。");
+        db.Atomic(() =>
+        {
+            foreach (var ((file, key), data) in staged) db.Put(file, key, data);
+        });
         foreach (int type in Enumerable.Range(1, 3))
         {
             var (net, tax) = totals[type];
@@ -260,10 +282,54 @@ public sealed partial class LedgerTransfer(Db db)
         row.SetN("invoice", invoice.N("number"));
         row.SetN("batch", batch);
         row.SetN("item", item);
-        foreach (string field in new[] { "date", "type", "goods", "extra", "shipping", "tax", "discount", "extratax",
-            "shippingtax", "deductDays", "deductAmount", "deductTax", "days" })
+        foreach (string field in new[] { "date", "type", "deductDays", "days" })
             row.SetN(field, invoice.N(field));
-        if (!sales) row.SetN("creditInvoice", invoice.N("creditInvoice"));
+        foreach (string field in new[] { "goods", "shipping", "tax", "shippingtax" })
+            row.SetN(field, row.I("type") == 3 ? -invoice.N(field) : invoice.N(field));
+        foreach (string field in new[] { "extra", "discount", "extratax", "deductAmount", "deductTax" })
+            row.SetN(field, sales && row.I("type") == 3 ? -invoice.N(field) : invoice.N(field));
+        if (!sales) row.SetN("creditInvoice", invoice.I("creditInvoice"));
         return row;
+    }
+
+    private decimal ApplyCredit(Dictionary<(string File, string Key), byte[]> staged, bool sales, Rec credit, decimal remaining)
+    {
+        string file = ItemFile(sales), prefix = credit.S("party") + "/";
+        string reference = OpenItemKey(credit.S("party"), credit.I("creditInvoice"));
+        var layout = OpenItemLayout(sales);
+        var keys = db.Scan(file, prefix).Select(row => row.Key)
+            .Concat(staged.Keys.Where(x => x.File == file).Select(x => x.Key))
+            .Distinct(StringComparer.Ordinal).Where(k => k.StartsWith(prefix, StringComparison.Ordinal))
+            .OrderBy(k => k != reference).ThenBy(k => k, StringComparer.Ordinal).ToArray();
+        decimal deducted = 0;
+        foreach (string key in keys)
+        {
+            if (remaining == 0) break;
+            var invoice = ReadStaged(staged, layout, file, key)!;
+            if (invoice.I("type") != 2 || invoice.I("status") == 1) continue;
+            decimal outstanding = Net(invoice, sales) + Tax(invoice, sales) - invoice.N("paid") +
+                (sales ? invoice.N("deductTax") : 0);
+            if (outstanding < 0) continue;
+            decimal deduction = sales && invoice.I("date") + 1 + invoice.I("deductDays") > credit.I("date")
+                ? invoice.N("deductAmount") + invoice.N("deductTax") : 0;
+            decimal applied = Math.Min(remaining, Math.Max(0, outstanding - deduction));
+            invoice.SetN("paid", invoice.N("paid") + applied);
+            invoice.SetN("current", invoice.N("current") + applied);
+            credit.SetN("paid", credit.N("paid") + applied);
+            remaining -= applied;
+            if (applied == outstanding - deduction)
+            {
+                invoice.SetN("status", 1);
+                if (deduction > 0)
+                {
+                    invoice.SetN("deductAmount", 0);
+                    invoice.SetN("deductTax", 0);
+                    deducted += deduction;
+                }
+            }
+            staged[(file, key)] = invoice.B;
+        }
+        if (remaining == 0) credit.SetN("status", 1);
+        return deducted;
     }
 }

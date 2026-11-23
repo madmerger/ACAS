@@ -62,6 +62,15 @@ internal sealed class Scenario(Db db, DateTime date, JsonElement item)
         }, int.TryParse(path[0], out int number) ? number : null);
         if (path[0] == "2" && current is ConfirmationScreen initial)
             Show(initial.Cancel());
+        if (path[0] is "8" or "9" && path.Length == 1)
+        {
+            bool amendment = path[0] == "8";
+            Require(references, amendment ? "error code = 35" : "Error opening postings = 35",
+                amendment ? "転記修正" : "分析帳票", typeof(ConfirmationScreen));
+            if (current is not ConfirmationScreen { Message: "転記ファイルを開けません（状態番号35）。", ConfirmLabel: "確認" })
+                throw new InvalidOperationException("転記ファイルのオープンエラーが一致しません。");
+            Confirm();
+        }
         if (path.Length == 1)
         {
             var (anchor, title, type) = path[0] switch
@@ -140,6 +149,7 @@ internal sealed class Scenario(Db db, DateTime date, JsonElement item)
         Open("IrsAccountCreate", 1);
         Submit(("IrsKeepAccounts", "N"));
         Confirm();
+        Submit(("IrsAccountResetPassword", ""));
         var input = Input();
         var accounts = input.Single(s => s.EndsWith("00000\r", StringComparison.Ordinal)).Split('\r');
         for (int i = 0; i < accounts.Length && accounts[i] != "00000"; i += 4)
