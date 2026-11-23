@@ -70,6 +70,26 @@ public static class StockVerify
         return null;
     }
 
+    private static string? SafeEvidenceDir(string root, string relative)
+    {
+        try
+        {
+            if (Path.IsPathRooted(relative) || relative.StartsWith(@"\\", StringComparison.Ordinal)) return null;
+            string baseDir = Path.GetFullPath(root).TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
+            string full = Path.GetFullPath(Path.Combine(baseDir, relative));
+            if (!full.StartsWith(baseDir, StringComparison.OrdinalIgnoreCase)) return null;
+            for (var d = new DirectoryInfo(full); d != null && d.FullName.Length >= baseDir.Length - 1; d = d.Parent)
+                if (d.Exists && d.Attributes.HasFlag(FileAttributes.ReparsePoint)) return null;
+            if (Directory.Exists(full) && Directory.EnumerateFileSystemEntries(full, "*", SearchOption.AllDirectories)
+                    .Any(e => File.GetAttributes(e).HasFlag(FileAttributes.ReparsePoint))) return null;
+            return full;
+        }
+        catch (Exception e) when (e is ArgumentException or IOException or NotSupportedException or UnauthorizedAccessException)
+        {
+            return null;
+        }
+    }
+
     public static List<Result> Run(string ledgerPath, string evidenceRoot, string prefix = "ST-")
     {
         using var doc = JsonDocument.Parse(File.ReadAllText(ledgerPath));
@@ -93,10 +113,8 @@ public static class StockVerify
             LegacyVerdict = lr.GetProperty("verdict").GetString() ?? "",
         };
         var evidence = lr.TryGetProperty("evidence", out var ev) ? ev.EnumerateArray().Select(e => e.GetString()!).ToList() : [];
-        string full = evidence.Count == 0 ? "" : Path.GetFullPath(Path.Combine(root, evidence[0]));
-        bool inside = evidence.Count > 0 && !Path.IsPathRooted(evidence[0]) && !evidence[0].StartsWith(@"\\", StringComparison.Ordinal)
-            && full.StartsWith(Path.GetFullPath(root).TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase);
-        if (!inside) { r.Verdict = "対象外"; r.Diffs.Add(evidence.Count == 0 ? "レガシー未実施（証跡なし）" : "証跡パスが証跡ルート外のため読み込まない"); return r; }
+        string? full = evidence.Count == 0 ? null : SafeEvidenceDir(root, evidence[0]);
+        if (full == null) { r.Verdict = "対象外"; r.Diffs.Add(evidence.Count == 0 ? "レガシー未実施（証跡なし）" : "証跡パスが証跡ルート外、またはリンクを含むため読み込まない"); return r; }
         if (!Directory.Exists(full)) { r.Verdict = "対象外"; r.Diffs.Add("レガシー未実施（証跡なし）"); return r; }
         string dir = full;
         try
