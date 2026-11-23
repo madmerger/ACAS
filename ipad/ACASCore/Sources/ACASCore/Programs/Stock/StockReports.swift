@@ -41,8 +41,12 @@ extension StockService {
         let periodTitle = system.str("stk-period-dat") == "Q" ? "Quarter" : "Year"
         let width = byAbbreviation ? 7 : 13
         let lower = from.isEmpty ? nil : try key(from.uppercased(), width)
-        let upper = through.isEmpty ? nil : try key(through.uppercased(), width)
-        if let lower, let upper, upper.lexicographicallyPrecedes(lower) { throw Failure.invalidInput }
+        let endKey = through.isEmpty ? nil : try key(through.uppercased(), width)
+        if let lower, let endKey, endKey.lexicographicallyPrecedes(lower) { throw Failure.invalidInput }
+        let upper = endKey.map { key in
+            guard byAbbreviation, let end = key.lastIndex(where: { $0 != 0x20 }) else { return key }
+            return Array(key.prefix(through: end)) + Array(repeating: UInt8(ascii: "z"), count: width - end - 1)
+        }
         let useAbbreviation = byAbbreviation || (lower == nil && upper == nil)
         let orderKey = useAbbreviation ? "stock-abrev-key" : "stock-key"
         let time = context.calendar.dateComponents([.hour, .minute], from: today)
