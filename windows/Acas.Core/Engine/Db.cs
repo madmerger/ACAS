@@ -137,4 +137,11 @@ public sealed class Db : IDisposable
     }
 
     public void Dispose() => _c.Dispose();
+
+    internal void Atomic(Action update)
+    {
+        using var tx = _c.BeginTransaction();
+        update();
+        tx.Commit();
+    }
 }

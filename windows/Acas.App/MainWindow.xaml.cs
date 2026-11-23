@@ -29,10 +29,12 @@ public partial class MainWindow : Window
         _database = new Db(path);
         Closed += (_, _) => _database.Dispose();
 
-        foreach (var item in SubsystemScreens.Load(typeof(MainWindow).Assembly, _database)
+        var accounting = new AccountingScreens(_database);
+        foreach (var item in accounting.Navigation()
+            .Concat(SubsystemScreens.Load(typeof(MainWindow).Assembly, _database))
             .Append(new NavigationItem("MenuReports", "帳票", Open: OpenReports)))
             Navigation.Items.Add(CreateMenuItem(item));
-        ShowScreen(new InformationScreen("業務メニュー", "左側のメニューから操作を選択してください。"));
+        ShowScreen(accounting.Start());
     }
 
     private static T Identify<T>(T control, string id, string? name = null) where T : FrameworkElement
@@ -44,7 +46,7 @@ public partial class MainWindow : Window
 
     private static TreeViewItem CreateMenuItem(NavigationItem item)
     {
-        var node = Identify(new TreeViewItem { Header = item.Caption, Tag = item, IsExpanded = true }, item.Id);
+        var node = Identify(new TreeViewItem { Header = item.Caption, Tag = item }, item.Id);
         if (item.Children != null)
             foreach (var child in item.Children) node.Items.Add(CreateMenuItem(child));
         return node;
@@ -119,6 +121,7 @@ public partial class MainWindow : Window
         };
         if (screen is ConfirmationScreen confirmation)
             ShowScreen(Confirm(confirmation) ? confirmation.Confirm() : confirmation.Cancel());
+        if (screen is FormScreen formWithError && formWithError.Error != null) Status.Text = formWithError.Error;
     }
 
     private Button ActionButton(string id, string label, Action action)
@@ -178,6 +181,8 @@ public partial class MainWindow : Window
         }
         if (table.Rows.Count == 0)
             actions.Children.Add(Identify(new TextBlock { Text = table.EmptyMessage }, table.Id + "Empty"));
+        if (table.Back != null)
+            actions.Children.Add(ActionButton(table.Id + "Back", "戻る", () => ShowScreen(table.Back())));
         DockPanel.SetDock(actions, Dock.Bottom);
         panel.Children.Add(actions);
         panel.Children.Add(grid);
@@ -198,9 +203,17 @@ public partial class MainWindow : Window
                     readers.Add(field.Id, () => textBox.Text);
                     control = textBox;
                     break;
+                case PasswordField password:
+                    var passwordBox = new PasswordBox { MaxLength = password.MaxLength };
+                    readers.Add(field.Id, () => passwordBox.Password);
+                    control = passwordBox;
+                    break;
                 case DateField date:
                     var datePicker = new DatePicker { SelectedDate = date.Value, SelectedDateFormat = DatePickerFormat.Short };
-                    readers.Add(field.Id, () => datePicker.SelectedDate);
+                    bool invalid = false;
+                    datePicker.SelectedDateChanged += (_, _) => invalid = false;
+                    datePicker.DateValidationError += (_, args) => { args.ThrowException = false; invalid = true; };
+                    readers.Add(field.Id, () => invalid ? null : datePicker.SelectedDate);
                     control = datePicker;
                     break;
                 case ChoiceField choice:
@@ -225,8 +238,11 @@ public partial class MainWindow : Window
         var submit = ActionButton("FormSubmit", form.SubmitLabel, () =>
             ShowScreen(form.Submit(new FormValues(readers.ToDictionary(pair => pair.Key, pair => pair.Value())))));
         submit.IsDefault = true;
-        submit.HorizontalAlignment = HorizontalAlignment.Left;
-        fields.Children.Add(submit);
+        var actions = new StackPanel { Orientation = Orientation.Horizontal };
+        actions.Children.Add(submit);
+        if (form.Back != null)
+            actions.Children.Add(ActionButton("FormBack", "戻る", () => ShowScreen(form.Back())));
+        fields.Children.Add(actions);
         return Identify(new ScrollViewer { Content = fields, VerticalScrollBarVisibility = ScrollBarVisibility.Auto }, "Form");
     }
 
@@ -264,7 +280,7 @@ public partial class MainWindow : Window
         var panel = new DockPanel();
         var buttons = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 0, 0, 12) };
         if (report.Back != null)
-            buttons.Children.Add(ActionButton("ReportBack", "帳票一覧へ戻る", () => ShowScreen(report.Back())));
+            buttons.Children.Add(ActionButton("ReportBack", report.BackLabel, () => ShowScreen(report.Back())));
         buttons.Children.Add(ActionButton("ReportSave", "保存", () =>
         {
             var picker = new SaveFileDialog { Title = "帳票を保存", FileName = "帳票.txt", Filter = "テキスト文書 (*.txt)|*.txt" };
