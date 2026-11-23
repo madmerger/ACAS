@@ -72,6 +72,27 @@ public class IntegrationTests
     }
 
     [Fact]
+    public void 両元帳を同時に締めても会計期間と四半期は一度しか進まない()
+    {
+        using var db = new Db();
+        const string file = "ledgers/acas/system.dat";
+        var system = Layouts.System.New();
+        foreach (string field in new[] { "Level-2", "Level-3", "File-Status-15", "File-Status-19", "File-Status-29", "Current-Quarter" })
+            system.SetN(field, 1);
+        system.SetN("Period", 3);
+        system.SetN("Cyclea", 3);
+        db.Put(file, "00000001", system.B);
+        var date = new DateTime(2026, 11, 30);
+
+        new LedgerTransfer(db).ClosePeriod([TransferLedger.Sales, TransferLedger.Purchases], date, "", true, false);
+
+        var result = Layouts.System.From(db.Read(file, "00000001")!);
+        int day = (date - new DateTime(1600, 12, 31)).Days;
+        Assert.Equal((4, 2, day, day, "Y", "Y"), (result.I("Cyclea"), result.I("Current-Quarter"),
+            result.I("S-End-Cycle-Date"), result.I("BL-End-Cycle-Date"), result.S("Oi-3-Flag"), result.S("Oi-5-Flag")));
+    }
+
+    [Fact]
     public void 売掛期末処理は請求書の百二十九バイト以降を消去する()
     {
         using var db = new Db();

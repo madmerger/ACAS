@@ -60,7 +60,7 @@ public sealed class IntegrationScreens : ISubsystemScreens
         if (!sales)
             items.Add(new("IntegrationPurchaseChequeMenu", "Ｓ　小切手処理", Open: () => Cheques(transfer, date, Back)));
         items.Add(new(sales ? "IntegrationSalesClose" : "IntegrationPurchaseClose", sales ? "Ｕ　期末処理" : "Ｔ　期末処理",
-            Open: () => Close(database, transfer, title, date, ledger)));
+            Open: () => Close(database, transfer, date, ledger)));
         return new(title, items);
     }
 
@@ -82,16 +82,19 @@ public sealed class IntegrationScreens : ISubsystemScreens
             return new ReportScreen(report.Title, report.Body, back);
         }), back);
 
-    private Screen Close(Db db, LedgerTransfer service, string title, DateTime date, TransferLedger ledger)
+    private Screen Close(Db db, LedgerTransfer service, DateTime date, TransferLedger ledger)
     {
         const string name = "期末処理";
         var back = () => Menu(db, ledger, date);
         return new ConfirmationScreen(name,
-            $"{title}の期末に実行してください。すべてのデータのバックアップを確認して続行しますか。",
+            "元帳の期末に実行してください。すべてのデータのバックアップを確認して続行しますか。",
             "続行", () => Guard(name, () =>
             {
                 var options = service.ClosingWarning(ledger);
                 var fields = new List<Field> { new PasswordField("IntegrationClosingPassword", "暗証番号", 4) };
+                if (options.HasSales && options.HasPurchases)
+                    fields.Add(new ChoiceField("IntegrationClosingLedgers", "処理する元帳",
+                        [new("B", "売掛と買掛"), new("S", "売掛のみ"), new("P", "買掛のみ")], "B"));
                 if (options.HasUnpostedInvoices)
                     fields.Add(new ChoiceField("IntegrationClosingUnposted", "請求書が未転記でも処理する",
                         [new("N", "いいえ"), new("Y", "はい")], "N"));
@@ -100,7 +103,14 @@ public sealed class IntegrationScreens : ISubsystemScreens
                         [new("N", "いいえ"), new("Y", "はい")], "N"));
                 return new FormScreen(name, fields, "期末処理を実行", v => Guard(name, () =>
                 {
-                    service.ClosePeriod(ledger, date, v.Text("IntegrationClosingPassword"),
+                    TransferLedger[] ledgers = v.Choice("IntegrationClosingLedgers") switch
+                    {
+                        "B" => [TransferLedger.Sales, TransferLedger.Purchases],
+                        "S" => [TransferLedger.Sales],
+                        "P" => [TransferLedger.Purchases],
+                        _ => [ledger]
+                    };
+                    service.ClosePeriod(ledgers, date, v.Text("IntegrationClosingPassword"),
                         !options.HasUnpostedInvoices || v.Choice("IntegrationClosingUnposted") == "Y",
                         options.RequiresQuarterChoice && v.Choice("IntegrationQuarterEnd") == "Y");
                     return new InformationScreen(name, "期末処理が完了しました。");
