@@ -73,6 +73,46 @@ enum SLA {
         IndexedFile(s.store, path: s.ledgers + "delivery.dat", layout: deliveryLayout, keyLength: 8)
     }
 
+    private static let fig = FieldType.comp3(digits: 9, scale: 2, signed: true)
+
+    /// wsoi.cob (oi-header) = openitm3.dat のレコード (114 バイト)
+    static let oiLayout = Layout("oi-header", [
+        ("oi-customer", .x(7)), ("oi-invoice", bl), ("oi-date", bl),
+        ("oi-b-nos", .comp(digits: 5, scale: 0, signed: false)), ("oi-b-item", .comp(digits: 3, scale: 0, signed: false)),
+        d("oi-type"), ("oi-description", .x(25)), ("oi-hold-flag", .x(1)), ("oi-unapl", .x(1)),
+        ("oi-p-c", fig), ("oi-net", fig), ("oi-extra", fig), ("oi-carriage", fig), ("oi-vat", fig),
+        ("oi-discount", fig), ("oi-e-vat", fig), ("oi-c-vat", fig), ("oi-paid", fig),
+        d("oi-status"), ("oi-deduct-days", .native(bytes: 1, signed: true)),
+        ("oi-deduct-amt", .comp(digits: 5, scale: 2, signed: true)), ("oi-deduct-vat", .comp(digits: 5, scale: 2, signed: true)),
+        ("oi-days", .native(bytes: 1, signed: true)), ("oi-cr", bl), ("oi-applied", .x(1)), ("oi-date-cleared", bl),
+    ])
+    static func openItemFile3(_ s: Session) -> IndexedFile {
+        IndexedFile(s.store, path: s.ledgers + "openitm3.dat", layout: oiLayout, keyLength: 11)
+    }
+    /// oi3-key (customer x7 + invoice binary-long)
+    static func oiKey(_ customer: String, _ invoice: Int64) -> [UInt8] {
+        var r = Record(oiLayout)
+        r["oi-customer"] = customer; r.setInt("oi-invoice", invoice)
+        return Array(r.bytes[0..<11])
+    }
+
+    /// fdinv2.cob invoice-header
+    static let ihLayout = Layout("invoice-header", [
+        ("ih-invoice", .n9(digits: 8, scale: 0, signed: false)), ("ih-letter", .x(1)), ("ih-test", .native(bytes: 1, signed: true)),
+        ("ih-customer", .x(7)), ("ih-date", bl), ("ih-order", .x(10)), d("ih-type"), ("ih-ref", .x(10)),
+        ("ih-description", .x(32)),
+        ("ih-p-c", fig), ("ih-net", fig), ("ih-extra", fig), ("ih-carriage", fig), ("ih-vat", fig),
+        ("ih-discount", fig), ("ih-e-vat", fig), ("ih-c-vat", fig),
+        ("ih-status", .x(1)), ("ih-status-p", .x(1)), ("ih-status-l", .x(1)), ("ih-status-c", .x(1)),
+        ("ih-status-a", .x(1)), ("ih-status-i", .x(1)),
+        ("ih-lines", .native(bytes: 1, signed: true)), ("ih-deduct-days", .native(bytes: 1, signed: true)),
+        ("ih-deduct-amt", .comp(digits: 5, scale: 2, signed: false)), ("ih-deduct-vat", .comp(digits: 5, scale: 2, signed: false)),
+        ("ih-days", .native(bytes: 1, signed: true)), ("ih-cr", bl), ("ih-day-book-flag", .x(1)), ("ih-update", .x(1)),
+    ])
+    static func invoiceFile(_ s: Session) -> IndexedFile {
+        IndexedFile(s.store, path: s.ledgers + "invoice.dat", layout: ihLayout, keyLength: 10)
+    }
+
     /// INITIALIZE record: 英数字は空白、数値は 0、FILLER は変更しない
     static func initialize(_ rec: inout Record) {
         var n = Record(rec.layout)

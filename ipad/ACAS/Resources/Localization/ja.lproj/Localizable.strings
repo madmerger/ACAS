@@ -212,6 +212,55 @@
 "report.sl010.days_overdue" = " 日(延滞)";
 "report.sl010.entry_date" = " 登録日";
 "report.sl010.keys_matching" = " コード照合    - ";
+
+/* sl020 */
+"sl020.title" = "売掛元帳照会";
+"sl020.box1" = "*得意先  [       ]*残高                *";
+"sl020.box2" = "*年累計           *未消込              *";
+"sl020.box3" = "*与信限度         *未転記              *";
+"sl020.customer" = "得意先  :";
+"sl020.address" = "住所    :";
+"sl020.col_number" = "番号";
+"sl020.col_date" = "日付";
+"sl020.col_desc" = "摘要";
+"sl020.col_invoiced" = "請求額";
+"sl020.col_paid" = "入金";
+"sl020.col_balance" = "残高";
+"sl020.select" = "選択: 'P'印刷, 'N'次の照会, 'T'照会中ﾌﾗｸﾞ切替, ";
+"sl020.more_end" = "'M'続き,'E'終了 [ ]";
+"sl020.or_end" = "'E'終了  [ ]";
+"sl020.toggle" = "得意先     :        . 切替える請求書番号を入力   [        ]";
+"sl020.sl111" = "SL111 作業ファイル書込エラー。Return で中止";
+"sl020.sl112" = "SL112 OPEN できません";
+"sl020.sl113" = "SL113 該当なし";
+"sl020.sl114" = "SL114 レコードなし";
+"sl020.sl115" = "SL115 更新エラー";
+"sl020.sl116" = "SL116 確認後 Return で続行";
+"sl020.sl117" = "SL117 作業ファイル未作成(データ無)";
+"sl020.sl118" = "SL118 作業ファイル作成";
+"report.sl020.title" = "売掛元帳照会";
+"report.sl020.customer" = "得意先  :";
+"report.sl020.address" = "住所    :";
+"report.sl020.ac_nos" = "* 得意先";
+"report.sl020.balance" = "*残高";
+"report.sl020.ytd" = "* 累";
+"report.sl020.unapplied" = "*未消込";
+"report.sl020.credit" = "* 与信";
+"report.sl020.unposted" = "*未転記";
+"report.sl020.col_number" = "番号";
+"report.sl020.col_date" = "日付";
+"report.sl020.col_desc" = "摘要";
+"report.sl020.col_invoiced" = "請求額";
+"report.sl020.col_paid" = "入金";
+"report.sl020.col_balance" = "残高";
+"report.sl020.inv_no" = "件数";
+"report.sl020.total_os" = "未決済計";
+"report.sl020.current" = "当月";
+"report.sl020.receipt" = "領収    ";
+"report.sl020.goods" = "商品 -  ";
+"report.sl020.cn" = "返品 請求 -";
+"report.sl020.payment" = "入金";
+"report.sl020.journal" = "振替入金";
 /* ---- sys.ja.strings ---- */
 /* ACAS.cbl — システムメニュー (日本語) */
 "sys.sy006" = "SY006 プログラム引数は2個までです。指定された数: ";
