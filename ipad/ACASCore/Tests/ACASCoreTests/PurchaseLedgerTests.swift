@@ -553,6 +553,50 @@ final class PurchaseLedgerTests: XCTestCase {
         }
     }
 
+    func testPaymentPostingUpdatesExistingDeductionAnalysis() throws {
+        let ledger = try makeLedger()
+        let code = try addSupplier(ledger)
+        var invoice = PurchaseLedger.Transaction(date: ledger.processingDate)
+        invoice.supplier = code
+        invoice.lines[0].code = "a1"
+        invoice.lines[0].net = 10_000
+        invoice.deduction = 500
+        invoice.deductionDays = 10
+        let folio = try ledger.saveTransaction(invoice)
+        try ledger.postTransactions()
+        let path = ledger.base + "value.dat"
+        for code in ["Pzb", "Pz "] {
+            var value = Record(PurchaseRecords.valueLayout)
+            value["code"] = code
+            value.setInt("this-count", 10)
+            value.setInt("year-count", 20)
+            value.setInt("this-net", 4_000)
+            value.setInt("year-net", 8_000)
+            let key = Array(code.utf8)
+            if ledger.store.read(path, key: key) == nil {
+                XCTAssertTrue(ledger.store.write(path, key: key, data: value.bytes))
+            } else {
+                XCTAssertTrue(ledger.store.rewrite(path, key: key, data: value.bytes))
+            }
+        }
+        var payment = PurchaseLedger.Payment(date: ledger.processingDate)
+        payment.supplier = code
+        payment.amount = 11_500
+        payment.allocations = [.init(invoice: folio, amount: 11_500, discount: 500)]
+        try ledger.savePayment(payment)
+        try ledger.proofPayments()
+        try ledger.postPayments()
+
+        for code in ["Pzb", "Pz "] {
+            let bytes = try XCTUnwrap(ledger.store.read(path, key: Array(code.utf8)))
+            let value = Record(PurchaseRecords.valueLayout, bytes: bytes)
+            XCTAssertEqual(value.int("this-count"), 9)
+            XCTAssertEqual(value.int("year-count"), 19)
+            XCTAssertEqual(value.int("this-net"), 3_500)
+            XCTAssertEqual(value.int("year-net"), 7_500)
+        }
+    }
+
     func testOrphanedPaymentDoesNotBlockOtherSupplierPosting() throws {
         let ledger = try makeLedger()
         let removed = try addSupplier(ledger)
@@ -645,7 +689,7 @@ final class PurchaseLedgerTests: XCTestCase {
         XCTAssertThrowsError(try ledger.postPayments())
         XCTAssertEqual(try ledger.proofPayments().map(\.number), [paymentNumber])
         let report = try XCTUnwrap(ledger.store.readRaw(PurchaseLedger.reportPath))
-        let detail = try XCTUnwrap(String(bytes: report, encoding: .ascii)?.split(separator: "\n")
+        let detail = try XCTUnwrap(report.split(separator: 10).map(SJIS.decode)
             .first { $0.hasPrefix(String(repeating: " ", count: 90) + Pic.edit("z(7)9", value: number, scale: 0)) })
         XCTAssertTrue(detail.contains("50.00"))
         XCTAssertTrue(detail.contains("70.00"))

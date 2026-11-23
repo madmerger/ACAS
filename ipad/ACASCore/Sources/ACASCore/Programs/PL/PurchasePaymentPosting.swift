@@ -66,6 +66,7 @@ extension PurchaseLedger {
             + " Old Balance    New Balance    Payment   Deduction   Apportioned"
         reportHeading(printer, id: "PL100 (3.01.14)", title: "Cash Posting Report", columns: heading)
         var summary = [[Int64]](repeating: [0, 0, 0], count: 2)
+        var deductionCount: Int64 = 0
         var rrn = max(1, Int(settings.int("postings") + 1))
         var batch = Record(PurchaseRecords.batchLayout)
         for (offset, payment) in payments.enumerated() {
@@ -77,6 +78,7 @@ extension PurchaseLedger {
             let amount = item.int("oi-paid")
             let applied = item.int("oi-net")
             let deduction = item.int("oi-deduct-amt")
+            if deduction != 0 { deductionCount += 1 }
             var old: Int64 = 0
             var new: Int64 = 0
             if var supplier = supplierRecord(payment.supplier) {
@@ -141,6 +143,7 @@ extension PurchaseLedger {
         printer.write(Cobol.x("", 29) + Cobol.x("Payment Totals", 25) + Cobol.x("", 41) + paymentFigures(summary[0]), after: 3)
         printer.write(Cobol.x("", 29) + Cobol.x("Journal Totals", 25) + Cobol.x("", 41) + paymentFigures(summary[1]), after: 2)
         try printer.close()
+        try recordPaymentDeductions(count: deductionCount, amount: summary[0][1] + summary[1][1])
         if gl && !irs { settings.setInt("postings", Int64(rrn)) }
         if gl { settings.setInt("bl-next-batch", nextBatch) }
         settings["oi-5-flag"] = "Y"
@@ -149,6 +152,23 @@ extension PurchaseLedger {
         totalsBytes.replaceSubrange(0..<totals.bytes.count, with: totals.bytes)
         try systemFile.write(4, totalsBytes)
         return payments
+    }
+
+    private func recordPaymentDeductions(count: Int64, amount: Int64) throws {
+        guard amount != 0 else { return }
+        let path = base + "value.dat"
+        for code in ["Pzb", "Pz "] {
+            let key = Array(code.utf8)
+            guard let bytes = store.read(path, key: key), bytes.count == PurchaseRecords.valueLayout.size else { return }
+            var record = Record(PurchaseRecords.valueLayout, bytes: bytes)
+            for period in ["this", "year"] {
+                let countField = period + "-count"
+                let netField = period + "-net"
+                record.setInt(countField, Cobol.truncate(record.int(countField) - count, digits: 5, signed: false))
+                record.setInt(netField, Cobol.truncate(record.int(netField) - amount, digits: 10))
+            }
+            try requirePostingWrite(store.rewrite(path, key: key, data: record.bytes), path: path)
+        }
     }
 
     private func writePaymentEntry(_ entry: Record, rrn: Int, irs: Bool) throws {
