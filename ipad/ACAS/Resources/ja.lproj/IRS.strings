@@ -104,6 +104,11 @@
 "bookkeeping.statement.comparison" = "比較対象";
 "bookkeeping.statement.noComparison" = "比較なし";
 "bookkeeping.statement.comparisonSlot" = "比較枠%d";
+"bookkeeping.statement.continue" = "表題入力へ進む";
+"bookkeeping.statement.title" = "損益計算書の表題";
+"bookkeeping.statement.defaultTitle" = "既定の表題";
+"bookkeeping.statement.generateAnnual" = "年次報告を作成";
+"bookkeeping.statement.interrupted" = "科目分類の照合で中断しました。中断までの帳票を書き出せます。";
 "bookkeeping.trialBalance.scope" = "集計範囲";
 "bookkeeping.trialBalance.summary" = "集計";
 "bookkeeping.trialBalance.detail" = "明細";

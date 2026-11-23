@@ -97,19 +97,24 @@ final class BookkeepingFlows: XCTestCase {
     func testReachIRS007() throws { try verifyStatementEntry("IRS-007") }
 
     @MainActor
-    func testReachIRS218() throws { try verifyStatementEntry("IRS-218") }
+    func testReachIRS218() throws {
+        try verifyStatementEntry("IRS-218") { app in
+            tap(app, "irs.statementContinue")
+            XCTAssertTrue(app.textFields["irs.statementTitle"].waitForExistence(timeout: 5))
+            tap(app, "irs.generateAnnualStatement")
+            XCTAssertEqual(app.staticTexts["irs.annualStatementResult"].label,
+                           "科目分類の照合で中断しました。中断までの帳票を書き出せます。")
+            XCTAssertTrue(app.buttons["irs.exportReport"].exists)
+        }
+    }
 
     @MainActor
-    private func verifyStatementEntry(_ id: String) throws {
+    private func verifyStatementEntry(_ id: String, complete: (XCUIApplication) -> Void = { _ in }) throws {
         try verifyReach(id, path: ["statements"]) { app in
             let selection = app.buttons["irs.statementComparison"]
             XCTAssertTrue(selection.waitForExistence(timeout: 5))
             XCTAssertEqual(selection.value as? String, "比較なし")
-            if id == "IRS-218" {
-                selection.tap()
-                tap(app, "比較なし")
-                XCTAssertFalse(app.textFields["損益計算書の表題"].exists)
-            }
+            complete(app)
         }
     }
 
