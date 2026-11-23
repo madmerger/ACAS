@@ -373,3 +373,19 @@
 "pl070.pl009" = "PL009 分類コードなし!!";
 "pl070.pl010" = "PL010 分類コードが明細として使用済!!";
 "pl070.pl011" = "PL011 分析コードなし!!";
+/* pl080.cbl — Payment Data Entry */
+"pl080.title" = "支払入力";
+"pl080.box_date" = "*日付  [  /  /    ]*仕入先    [       ]*";
+"pl080.box_value" = "*金額  [          ]*バッチ  [     /   ]*";
+"pl080.batch_full" = "バッチ終了........満杯!    ";
+"pl080.current_balance" = "現在残高        - ";
+"pl080.unapplied_balance" = "未充当残高        - ";
+"pl080.allocate_unapplied" = "未充当残高をこの仕入先の支払に充当しますか?                     [Y]";
+"pl080.batch_total" = "バッチ合計  - ";
+"pl080.further" = "続けて入力しますか? (Y/N)      [Y]";
+"pl080.col_1" = "整理番号  --日付--  ---金額---";
+"pl080.col_2" = "割引可能額  --支払額---";
+"pl080.col_3" = "割引適用";
+"pl080.fully_paid" = "....全額支払済  ";
+"pl080.no_change" = "....変更なし   ";
+"pl080.too_high" = "支払額が過大";

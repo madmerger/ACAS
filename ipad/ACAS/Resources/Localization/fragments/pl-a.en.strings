@@ -373,3 +373,19 @@
 "pl070.pl009" = "PL009 P.A. Group Code Does Not Exist!!";
 "pl070.pl010" = "PL010 P.A. Group Code Used As Analysis Code!!";
 "pl070.pl011" = "PL011 P.A. Code Does Not Exist!!";
+/* pl080.cbl — Payment Data Entry */
+"pl080.title" = "Payment Data Entry";
+"pl080.box_date" = "*Date  [  /  /    ]*A/C Nos   [       ]*";
+"pl080.box_value" = "*Value [          ]*Batch   [     /   ]*";
+"pl080.batch_full" = "Batch Closed........Full!  ";
+"pl080.current_balance" = "Current Balance - ";
+"pl080.unapplied_balance" = "Unapplied Balance - ";
+"pl080.allocate_unapplied" = "Do you wish to allocate the unapplied Balance to this account?  [Y]";
+"pl080.batch_total" = "Batch Total - ";
+"pl080.further" = "Enter further payments? (Y/N)  [Y]";
+"pl080.col_1" = "Folio No  --Date--  --Amount--";
+"pl080.col_2" = "Deductable  ---Paid----";
+"pl080.col_3" = "Deduction taken";
+"pl080.fully_paid" = "....Fully Paid  ";
+"pl080.no_change" = "....no change  ";
+"pl080.too_high" = "Payment Too High";
