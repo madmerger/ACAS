@@ -73,6 +73,25 @@ final class StockServiceTests: XCTestCase {
         XCTAssertNil(store.readRaw("ledgers/acas/prt-1"))
     }
 
+    func testMissingMovementItemClearsReportWithoutChangingStock() throws {
+        let store = try FileStore()
+        let service = StockService(BusinessContext(store: store))
+        var item = StockService.Item()
+        item.code = "ITEM001"
+        item.abbreviation = "ITEM"
+        item.name = "品目"
+        try service.save(item)
+        let original = EvidenceComparison.snapshot(store)
+        for direction in [StockService.Direction.receipt, .issue] {
+            try store.writeRaw("ledgers/acas/prt-1", [0x20])
+            XCTAssertThrowsError(try service.move(direction, code: "MISSING", quantity: 1, date: service.today)) {
+                guard case StockService.Failure.missing = $0 else { return XCTFail("\($0)") }
+            }
+            XCTAssertEqual(store.readRaw("ledgers/acas/prt-1"), [])
+            XCTAssertEqual(EvidenceComparison.snapshot(store), original)
+        }
+    }
+
     func testManualMovementPrefersAbbreviationAndBarcodeUsesPrimaryCode() throws {
         let service = StockService(BusinessContext(store: try FileStore()))
         var item = StockService.Item()

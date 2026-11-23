@@ -1,6 +1,72 @@
 import XCTest
 
 final class StockFlows: XCTestCase {
+    private struct MovementFixture: Decodable {
+        struct Input: Decodable {
+            let code: String
+            let quantity: String
+            let price: String?
+        }
+
+        let workflow: String
+        let input: Input
+    }
+
+    @MainActor
+    func testStockReceipt() throws {
+        try verifyMovement("ST-400")
+    }
+
+    @MainActor
+    func testStockReceiptMissingItem() throws {
+        try verifyMovement("ST-401")
+    }
+
+    @MainActor
+    func testStockIssue() throws {
+        try verifyMovement("ST-402")
+    }
+
+    @MainActor
+    func testStockIssueMissingItem() throws {
+        try verifyMovement("ST-403")
+    }
+
+    @MainActor
+    private func verifyMovement(_ id: String) throws {
+        continueAfterFailure = false
+        let url = try XCTUnwrap(Bundle(for: Self.self).url(forResource: id, withExtension: "json", subdirectory: "fixtures"))
+        let data = try Data(contentsOf: url)
+        let fixture = try JSONDecoder().decode(MovementFixture.self, from: data)
+        let app = XCUIApplication()
+        app.launchEnvironment["ACAS_FIXTURE"] = data.base64EncodedString()
+        app.launchArguments += ["-AppleLanguages", "(ja)", "-AppleLocale", "ja_JP"]
+        XCUIDevice.shared.orientation = .landscapeLeft
+        app.launch()
+        XCTAssertTrue(app.staticTexts[id].waitForExistence(timeout: 10))
+        for identifier in ["section.stock", "stock.confirmDate", "stock.movements", fixture.workflow] {
+            tap(app, identifier)
+        }
+        enter(app, "stock.code", fixture.input.code)
+        enter(app, "stock.quantity", fixture.input.quantity)
+        if let price = fixture.input.price {
+            enter(app, "stock.price", price)
+        }
+        tap(app, "stock.action")
+        let result = app.staticTexts["stock.result"]
+        XCTAssertTrue(result.waitForExistence(timeout: 5))
+        if fixture.input.code == "MISSING" {
+            XCTAssertEqual(result.label, "指定した在庫品目がありません。")
+        } else {
+            XCTAssertTrue(result.label.hasPrefix("在庫数："), result.label)
+        }
+        let screenshot = XCTAttachment(screenshot: app.screenshot())
+        screenshot.name = id
+        screenshot.lifetime = .keepAlways
+        add(screenshot)
+        XCTAssertTrue(app.staticTexts["case.verdict.match"].waitForExistence(timeout: 5), id)
+    }
+
     @MainActor
     func testStockAuditReports() throws {
         continueAfterFailure = false
