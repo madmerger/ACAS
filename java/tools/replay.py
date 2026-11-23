@@ -67,6 +67,13 @@ def mask_os_output(want, got):
         for side in (want, got):
             for r, c in cells:
                 if r < len(side) and c < len(side[r]): side[r] = side[r][:c] + " " + side[r][c + 1:]
+    for i, line in enumerate(list(want)):
+        # 同じく nohup がスクリプトを起動できなかったときの OS エラー行（実行環境に acasbkup.sh が無い場合）
+        col = line.find("nohup: failed to run command")
+        if col < 0: continue
+        n += 1
+        for side in (want, got):
+            if i < len(side): side[i] = side[i][:col]
     if n:
         want, got = ["\n".join(l.rstrip() for l in x).rstrip("\n").split("\n") for x in (want, got)]
     return want, got, n
