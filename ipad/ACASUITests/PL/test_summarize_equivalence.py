@@ -3,10 +3,15 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from summarize_equivalence import comparison_note, observed_summary, original_reports, read_run
+from summarize_equivalence import comparison_note, csv_cell, observed_summary, original_reports, read_run
 
 
 class RunHistoryTests(unittest.TestCase):
+    def test_csv_cells_escape_formula_prefixes(self):
+        for cell in ("=文字列", "+1", "-1", "@例", "\t =例"):
+            self.assertEqual(csv_cell(cell), "'" + cell)
+        self.assertEqual(csv_cell("原本と一致"), "原本と一致")
+
     def test_report_source_must_stay_in_evidence_root(self):
         case = {"id": "PL-222", "legacy_result": {"comparison_targets": {
             "report_files": ["../files/ledgers/report"],

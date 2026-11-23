@@ -135,6 +135,10 @@ def observed_summary(case, current, reports):
     return f"「{screen}」画面に到達"
 
 
+def csv_cell(value):
+    return "'" + value if value.lstrip().startswith(("=", "+", "-", "@")) else value
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("evidence", type=Path)
@@ -181,8 +185,8 @@ def main():
                 details.append(diagnosis)
             seconds = current["start"]
             summary = observed_summary(case, current, reports)
-            writer.writerow([case_id, summary, verdict, VIDEO if seconds is not None else "",
-                             f"{seconds:.2f}" if seconds is not None else "", " / ".join(details)])
+            writer.writerow(map(csv_cell, [case_id, summary, verdict, VIDEO if seconds is not None else "",
+                                           f"{seconds:.2f}" if seconds is not None else "", " / ".join(details)]))
             if case_id == "PL-090" and len(attempts) > 1 and seconds is not None:
                 supplier_rerun = ["## PL-090 再実行", f"- {summary}。{diagnosis}\n"
                                   f"- 動画 `{VIDEO}` の最終再実行開始は **{seconds:.2f}秒**。各試行の履歴はCSVに記録。"]
