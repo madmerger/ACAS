@@ -42,7 +42,7 @@ public partial class MainWindow : Window
         _db = new Db(_dbFile);
         if (fresh) _db.LoadBaseline("biz");
         DbPath.Text = _dbFile;
-        foreach (var b in new[] { "biz", "company", "empty", "irs-biz", "sl-ready", "sl-invoice", "sl-printed", "pl-invoice" }) Baselines.Items.Add(b);
+        foreach (var b in new[] { "biz", "empty", "irs-biz", "sl-ready", "sl-invoice", "sl-printed", "pl-invoice" }) Baselines.Items.Add(b);
         Baselines.SelectedIndex = 0;
         Cases.ItemsSource = _shown;
         Terms.ItemsSource = I18n.Table.OrderBy(k => k.Key, StringComparer.Ordinal).ToList();

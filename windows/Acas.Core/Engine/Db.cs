@@ -103,9 +103,9 @@ public sealed class Db : IDisposable
     /// <summary>全データを消去し、同梱ベースライン(レガシーの初期データ)を読み込む。</summary>
     public void LoadBaseline(string name)
     {
-        Exec("DELETE FROM rec"); Exec("DELETE FROM files"); Exec("DELETE FROM spool");
         using var s = typeof(Db).Assembly.GetManifestResourceStream("Acas.Core.Baselines." + name + ".json");
-        if (s == null) return;
+        if (s == null) throw new ArgumentException("初期データ「" + name + "」は同梱されていません。", nameof(name));
+        Exec("DELETE FROM rec"); Exec("DELETE FROM files"); Exec("DELETE FROM spool");
         using var doc = JsonDocument.Parse(s);
         using var tx = _c.BeginTransaction();
         foreach (var f in doc.RootElement.GetProperty("files").EnumerateArray()) Create(f.GetString()!);
