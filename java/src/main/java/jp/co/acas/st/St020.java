@@ -242,7 +242,11 @@ public class St020 extends StProgram {
         data1:
         while (true) {
             i++;
-            if (i > L22) additions(barcode);
+            if (i > L22) {
+                displayHeadings();
+                drawAdditionLines();
+                i = 5;
+            }
             St.initialize(audit);
             String key = upper(acceptUpdate(i, 2, 13, St.x("", 13)));
             if (key.isBlank() || crtStatus() == 2005) return;
@@ -402,8 +406,7 @@ public class St020 extends StProgram {
         return BigDecimal.valueOf(St.digits(s.substring(0, n)) * 100 + St.digits(s.substring(n + 1)), 2);
     }
 
-    /** ca000-Process-Manual-Deductions。 */
-    private void deductions() {
+    private void drawDeductionLines() {
         displayHeadings();
         display(3, 1, " Stock Number    Description         Quantity    Stk Qty");
         for (int lin = 5; lin <= L22; lin++) {
@@ -413,12 +416,20 @@ public class St020 extends StProgram {
             display(lin, 38, "[       ]");
             display(lin, 47, "{      }");
         }
+    }
+
+    /** ca000-Process-Manual-Deductions。 */
+    private void deductions() {
+        drawDeductionLines();
         i = 4;
         boolean auditUsed = sys.intv("stk-audit-used") == 1;
         data1:
         while (true) {
             i++;
-            if (i > L22) deductions();
+            if (i > L22) {
+                drawDeductionLines();
+                i = 5;
+            }
             St.initialize(audit);
             String key = upper(acceptUpdate(i, 2, 13, St.x("", 13)));
             if (key.isBlank() || crtStatus() == 2005) return;
@@ -491,8 +502,7 @@ public class St020 extends StProgram {
         }
     }
 
-    /** fa000-Process-Orders。 */
-    private void orders() {
+    private void drawOrderLines() {
         displayHeadings();
         display(3, 1, " Stock Number   Description          Qty Ord Date Ordered  Date Due  Back Qty");
         for (int lin = 5; lin <= L22; lin++) {
@@ -504,11 +514,19 @@ public class St020 extends StProgram {
             display(lin, 58, "[          ]");
             display(lin, 70, "[      ]");
         }
+    }
+
+    /** fa000-Process-Orders。 */
+    private void orders() {
+        drawOrderLines();
         i = 4;
         data1:
         while (true) {
             i++;
-            if (i > L22) orders();
+            if (i > L22) {
+                drawOrderLines();
+                i = 5;
+            }
             String key = upper(acceptUpdate(i, 2, 13, St.x("", 13)));
             if (key.isBlank() || crtStatus() == 2005) return;
             show(i, 2, key);
