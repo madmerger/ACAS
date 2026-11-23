@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>ACAS 会計システム（日本語 Web 版）</title>
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<header>
+  <h1>ACAS 会計システム <small>日本語 Web 版</small></h1>
+  <nav>
+    <button id="btn-acas">ACAS を起動</button>
+    <button id="btn-irs">IRS（簡易会計）を起動</button>
+    <a href="reports.html" target="_blank">帳票一覧</a>
+    <a href="messages.html" target="_blank">文言対応表</a>
+  </nav>
+</header>
+<div id="case-banner" hidden></div>
+<main>
+  <div id="screen" tabindex="0" aria-label="業務画面"></div>
+  <div id="status">「ACAS を起動」または「IRS を起動」を押してください。</div>
+  <div id="keys">
+    <span>キー操作: 文字入力 / Enter=確定 / Esc=取消・戻る / ↑↓←→ / Tab / F1〜F12 / BackSpace</span>
+  </div>
+</main>
+<script src="app.js"></script>
+</body>
+</html>

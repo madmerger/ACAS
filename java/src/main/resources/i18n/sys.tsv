@@ -1,0 +1,16 @@
+ACAS System Menu	ACAS システムメニュー
+at	時刻
+on	日付
+Select one of the following by letter	次の機能を英字で選択してください
+(A)  General Ledger	(A)  総勘定元帳
+(B)  Sales Ledger	(B)  売掛元帳
+(C)  Purchase Ledger	(C)  買掛元帳
+(D)  Stock Control	(D)  在庫管理
+(E)  Order Entry	(E)  受注入力
+(F)  Payroll	(F)  給与計算
+(G)  Epos	(G)  POS
+(X)  Exit To system	(X)  終了
+(Z)  System Setup	(Z)  システム設定
+Sorry, not yet available	未提供の機能です
+Sorry, not available	利用できない機能です
+SY009 Environment variables not yet set up : ABORTING	SY009 環境が未設定のため中止します

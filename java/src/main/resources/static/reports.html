@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="UTF-8"><title>ACAS 帳票一覧</title><link rel="stylesheet" href="app.css"></head>
+<body><div class="page">
+<h2>帳票一覧</h2>
+<p>印刷ファイル（prt-*）と印刷指示済みスプールを表示します。<label><input type="checkbox" id="orig"> レガシー原文（英語）で表示</label></p>
+<table id="list"><thead><tr><th>帳票ファイル</th><th>行数</th></tr></thead><tbody></tbody></table>
+<h3 id="name"></h3><pre class="report" id="content" hidden></pre>
+</div>
+<script>
+(async function () {
+  const tb = document.querySelector('#list tbody'), content = document.getElementById('content'), nameEl = document.getElementById('name');
+  let current = null;
+  async function show(name) {
+    current = name;
+    const lang = document.getElementById('orig').checked ? 'en' : 'ja';
+    const r = await (await fetch('api/reports/content?lang=' + lang + '&name=' + encodeURIComponent(name))).json();
+    nameEl.textContent = r.name; content.hidden = false; content.textContent = r.lines.join('\n');
+  }
+  document.getElementById('orig').addEventListener('change', () => current && show(current));
+  const list = await (await fetch('api/reports')).json();
+  if (!list.length) tb.innerHTML = '<tr><td colspan="2">帳票はまだ出力されていません</td></tr>';
+  list.forEach(f => {
+    const tr = document.createElement('tr'), td = document.createElement('td'), a = document.createElement('a'), n = document.createElement('td');
+    a.href = '#'; a.textContent = f.name; a.addEventListener('click', e => { e.preventDefault(); show(f.name); });
+    td.appendChild(a); n.textContent = f.lines; tr.appendChild(td); tr.appendChild(n); tb.appendChild(tr);
+  });
+})();
+</script></body></html>
