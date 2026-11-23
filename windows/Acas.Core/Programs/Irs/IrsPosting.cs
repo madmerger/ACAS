@@ -4,9 +4,11 @@ namespace Acas.Core.Programs.Irs;
 
 public sealed partial class IrsBookkeeping
 {
+    public bool HasJournal => db.Exists(PostingFile);
+
     private void EnsureJournal()
     {
-        if (!db.Exists(PostingFile))
+        if (!HasJournal)
             throw new IrsException("転記ファイルを開けません（状態番号35）。");
     }
 

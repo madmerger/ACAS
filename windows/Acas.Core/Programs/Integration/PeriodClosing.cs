@@ -124,7 +124,7 @@ public sealed partial class LedgerTransfer
                     delete = expired || (applied && (type is 1 or 3 ||
                         sales && ownNumbers && type == 2 && row.I("lines") == 0 && days - 92 > row.I("date")));
                     if (delete || applied && type == 2) count = Math.Max(0, row.I("lines"));
-                    if (applied && type < 4) row.Set("dayBook", "B");
+                    if (!sales && applied && type < 4) row.Set("dayBook", "B");
                     if (applied && type == 2) row.SetN("lines", 0);
                     header.Data = row.B;
                 }

@@ -36,7 +36,8 @@ public sealed partial class LedgerTransfer(Db db)
             .X("status", 1);
         if (sales) layout.X("printFlags", 5);
         layout.BChar("lines").BChar("deductDays").Comp("deductAmount", 3, 2)
-            .Comp("deductTax", 3, 2).BChar("days").BLong("creditInvoice").X("dayBook", 1).X("updated", 1);
+            .Comp("deductTax", 3, 2).BChar("days");
+        if (!sales) layout.BLong("creditInvoice").X("dayBook", 1).X("updated", 1);
         return layout.Fill((sales ? 134 : 129) - layout.Size);
     }
 
@@ -171,7 +172,7 @@ public sealed partial class LedgerTransfer(Db db)
                     .Append(PicMoney(net, 10)).Append(PicMoney(tax, 10)).Append(PicMoney(gross, 10)).Append('\n');
 
                 invoice.Set("status", "z");
-                invoice.Set("updated", sales ? "Z" : "z");
+                if (!sales) invoice.Set("updated", "z");
                 staged[(invoiceFile, invoiceKey)] = invoice.B;
                 string openKey = partyKey + "/" + Cob.P9(number, 8);
                 staged[(ItemFile(sales), openKey)] = OpenItem(sales, invoice, batchNumber, itemNumber + 1).B;
@@ -245,7 +246,7 @@ public sealed partial class LedgerTransfer(Db db)
     }
 
     private static Layout OpenItemLayout(bool sales) => new Layout().X("party", 7).BLong("invoice").BLong("date")
-        .N9("batch", 5).N9("item", 3).N9("type", 1).X("description", sales ? 25 : 20).X("held", 1).X("unapplied", 1)
+        .Comp("batch", 5).Comp("item", 3).N9("type", 1).X("description", sales ? 25 : 20).X("held", 1).X("unapplied", 1)
         .C3("current", 7, 2).C3("goods", 7, 2).C3("extra", 7, 2).C3("shipping", 7, 2).C3("tax", 7, 2)
         .C3("discount", 7, 2).C3("extratax", 7, 2).C3("shippingtax", 7, 2).C3("paid", 7, 2)
         .N9("status", 1).BChar("deductDays").Comp("deductAmount", 3, 2, true)
@@ -260,8 +261,9 @@ public sealed partial class LedgerTransfer(Db db)
         row.SetN("batch", batch);
         row.SetN("item", item);
         foreach (string field in new[] { "date", "type", "goods", "extra", "shipping", "tax", "discount", "extratax",
-            "shippingtax", "deductDays", "deductAmount", "deductTax", "days", "creditInvoice" })
+            "shippingtax", "deductDays", "deductAmount", "deductTax", "days" })
             row.SetN(field, invoice.N(field));
+        if (!sales) row.SetN("creditInvoice", invoice.N("creditInvoice"));
         return row;
     }
 }

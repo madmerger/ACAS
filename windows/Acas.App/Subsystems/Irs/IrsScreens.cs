@@ -35,8 +35,10 @@ public sealed partial class IrsScreens : ISubsystemScreens
         new("IrsTrialBalanceMenu", "試算表", 5, Open: () => TrialBalance(books)),
         new("IrsAuditMenu", "監査証跡", 6, Open: () => Audit(books)),
         new("IrsFinalMenu", "決算書作成", 7, Open: () => FinalAccounts(books)),
-        new("IrsAmendmentMenu", "転記修正", 8, Open: () => Guard("転記修正", () => Amendments(books))),
-        new("IrsAnalysisMenu", "分析帳票", 9, Open: () => Guard("分析帳票", () => Analysis(books))),
+        new("IrsAmendmentMenu", "転記修正", 8, Open: () => books.HasJournal
+            ? Guard("転記修正", () => Amendments(books)) : Root(books)),
+        new("IrsAnalysisMenu", "分析帳票", 9, Open: () => books.HasJournal
+            ? Guard("分析帳票", () => Analysis(books)) : Root(books)),
         new("IrsRebuildMenu", "Ａ　勘定残高の再計算", Open: () => Rebuild(books)),
         new("IrsExitMenu", "Ｘ　終了", Open: () => new InformationScreen(RootTitle, "簡易記帳を終了しました。左側の業務メニューを選択してください。"))
     ];

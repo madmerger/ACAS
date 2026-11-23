@@ -47,26 +47,40 @@ public sealed class IntegrationScreens : ISubsystemScreens
         bool sales = ledger == TransferLedger.Sales;
         var transfer = new LedgerTransfer(database);
         string title = sales ? "売掛元帳" : "買掛元帳";
-        return new(title,
-            [new(sales ? "IntegrationSalesPost" : "IntegrationPurchasePost", sales ? "Ｇ　請求書の転記" : "Ｈ　請求書の転記",
-                Open: () => Post(database, transfer, title, date, ledger)),
-             new(sales ? "IntegrationSalesClose" : "IntegrationPurchaseClose", sales ? "Ｕ　期末処理" : "Ｔ　期末処理",
-                Open: () => Close(database, transfer, title, date, ledger))]);
+        Screen Back() => Menu(database, ledger, date);
+        var items = new List<MenuItem>
+        {
+            new(sales ? "IntegrationSalesPost" : "IntegrationPurchasePost", sales ? "Ｇ　請求書の転記" : "Ｈ　請求書の転記",
+                Open: () => Post(title + "の請求書転記", "転記対象の請求書を処理しますか。",
+                    target => transfer.TransferInvoices(ledger, date, target), Back)),
+            new(sales ? "IntegrationSalesPaymentPost" : "IntegrationPurchasePaymentPost", sales ? "Ｋ　入金の転記" : "Ｌ　支払の転記",
+                Open: () => Post(sales ? "入金の転記" : "支払の転記", "照合済みの入出金を転記しますか。",
+                    target => transfer.TransferPayments(ledger, date, target), Back))
+        };
+        if (!sales)
+            items.Add(new("IntegrationPurchaseChequeMenu", "Ｓ　小切手処理", Open: () => Cheques(transfer, date, Back)));
+        items.Add(new(sales ? "IntegrationSalesClose" : "IntegrationPurchaseClose", sales ? "Ｕ　期末処理" : "Ｔ　期末処理",
+            Open: () => Close(database, transfer, title, date, ledger)));
+        return new(title, items);
     }
 
-    private ConfirmationScreen Post(Db database, LedgerTransfer service, string title, DateTime date, TransferLedger ledger)
-    {
-        string name = title + "の請求書転記";
-        return new(name, "転記対象の請求書を処理しますか。", "転記する", () => Guard(name, () =>
+    private MenuScreen Cheques(LedgerTransfer service, DateTime date, Func<Screen> back) =>
+        new("小切手処理",
+            [new("IntegrationPurchaseChequeRegister", "小切手台帳の印刷", 5,
+                Open: () => Post("小切手台帳", "未決済明細を更新して、小切手台帳を作成しますか。",
+                    target => service.TransferChequeRegister(date, target), () => Cheques(service, date, back))),
+             new("IntegrationPurchaseChequeBack", "買掛元帳へ戻る", 9, Open: back)]);
+
+    private ConfirmationScreen Post(string title, string question, Func<TransferDestination, IrsReport> transfer, Func<Screen> back) =>
+        new(title, question, "実行する", () => Guard(title, () =>
         {
             string? setting = Environment.GetEnvironmentVariable("ACAS_IRS");
             var target = destination ?? (IrsBookkeeping.UsesSharedTransferDirectory(setting)
                 ? TransferDestination.Shared : TransferDestination.Dedicated);
-            var report = service.TransferInvoices(ledger, date, target);
+            var report = transfer(target);
             onReport?.Invoke(report);
-            return new ReportScreen(report.Title, report.Body, () => Menu(database, ledger, date));
-        }), () => Menu(database, ledger, date));
-    }
+            return new ReportScreen(report.Title, report.Body, back);
+        }), back);
 
     private Screen Close(Db db, LedgerTransfer service, string title, DateTime date, TransferLedger ledger)
     {
