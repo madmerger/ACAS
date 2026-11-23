@@ -106,6 +106,9 @@ final class ReplayTests: XCTestCase {
                 }
                 // 帳票・一時ファイルは別途比較
                 got = got.filter { $0.contains(".dat|") }
+                // レガシー側でレコード分解していないファイル (unsupported_files: staudit.dat 等) は差分に現れないため比較対象外
+                let unsupported = Set(o["unsupported_files"] as? [String] ?? [])
+                got = got.filter { !unsupported.contains(String($0.split(separator: "|", omittingEmptySubsequences: false)[0])) }
                 if want != got {
                     diffs.append("レコード差分 相違: legacyのみ \(want.subtracting(got).sorted().map { String($0.prefix(160)) }) / ipadのみ \(got.subtracting(want).sorted().map { String($0.prefix(160)) })")
                 }
