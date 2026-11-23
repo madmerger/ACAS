@@ -3,6 +3,32 @@ import XCTest
 @testable import ACASCore
 
 final class SalesLedgerTests: XCTestCase {
+    func testInitialCustomerSetupCreatesLedgersAndSetsCompanyFlags() throws {
+        let store = try FileStore()
+        let context = BusinessContext(store: store)
+        let ledger = SalesLedger(context)
+        var system = Record(SystemLayout.layout)
+        system["usera"] = "ACAS"
+        system["sales-ledger"] = "N"
+        system["file-statuses"] = String(repeating: "0", count: 32)
+        try SalesInvoices(context).systemFile.write(1, system.bytes)
+        XCTAssertFalse(store.exists(SalesProofRecords.salesFile(store).path))
+        XCTAssertFalse(store.exists(ledger.deliveryFile.path))
+        var contact = InitialCustomerSetup.Contact()
+        contact.code = "TEST01"
+        contact.name = "得意先"
+        try InitialCustomerSetup(context).add(contact)
+        XCTAssertEqual(store.kind(SalesProofRecords.salesFile(store).path), "indexed")
+        XCTAssertEqual(store.kind(ledger.deliveryFile.path), "indexed")
+        XCTAssertEqual(try ledger.customer(code: contact.code + String(XCTUnwrap(Maps09.checkDigit(contact.code)))).name, contact.name)
+        system["sales-ledger"] = "Y"
+        var flags = system.raw("file-statuses")
+        flags[11] = 0x31
+        flags[13] = 0x31
+        system.setRaw("file-statuses", flags)
+        XCTAssertEqual(try ledger.systemRecord().bytes, system.bytes)
+    }
+
     func testAgeingRefusesOnlyPendingPaymentFlagOneWhenOpenItemsAreRegistered() throws {
         let store = try FileStore()
         let context = BusinessContext(store: store)
