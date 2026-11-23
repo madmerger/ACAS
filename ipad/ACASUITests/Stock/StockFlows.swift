@@ -2,6 +2,30 @@ import XCTest
 
 final class StockFlows: XCTestCase {
     @MainActor
+    func testStockAuditReports() throws {
+        continueAfterFailure = false
+        let id = "ST-214"
+        guard let url = Bundle(for: Self.self).url(forResource: id, withExtension: "json", subdirectory: "fixtures") else {
+            throw XCTSkip("在庫の実画面用データを生成してください。")
+        }
+        let app = XCUIApplication()
+        app.launchEnvironment["ACAS_FIXTURE"] = try Data(contentsOf: url).base64EncodedString()
+        app.launchArguments += ["-AppleLanguages", "(ja)", "-AppleLocale", "ja_JP"]
+        XCUIDevice.shared.orientation = .landscapeLeft
+        app.launch()
+        XCTAssertTrue(app.staticTexts[id].waitForExistence(timeout: 10))
+        for identifier in ["section.stock", "stock.confirmDate", "stock.movements", "stock.audit", "stock.generateAudit"] {
+            tap(app, identifier)
+        }
+        let matches = app.staticTexts["case.verdict.match"].waitForExistence(timeout: 5)
+        let screenshot = XCTAttachment(screenshot: app.screenshot())
+        screenshot.name = id
+        screenshot.lifetime = .keepAlways
+        add(screenshot)
+        XCTAssertTrue(matches, id + " の監査帳票原本が一致しません")
+    }
+
+    @MainActor
     func testRegisterAndReceive() throws {
         continueAfterFailure = false
         let app = XCUIApplication()
