@@ -18,7 +18,7 @@ public struct CompanySettings {
 
     private static let uppercaseFields: Set<String> = [
         "p-c", "p-c-level", "p-c-grouped", "comps", "ledger-2nd-index", "m-v", "arch", "vat",
-        "irs-instead", "sl-own-nos", "sl-stock-link", "sl-comp-head-inv", "sl-comp-head-stat",
+        "irs-instead", "sl-own-nos", "sl-stock-link", "sl-vat-printed", "sl-comp-head-inv", "sl-comp-head-stat",
         "sl-comp-head-lets", "sl-comp-head-pick", "pl-stock-link", "stk-period-cur", "stk-period-dat",
     ]
 
