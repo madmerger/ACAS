@@ -102,9 +102,14 @@ final class CalculationFlows: XCTestCase {
     func testCALCIdenticalToLegacy() throws {
         let fixture = try XCTUnwrap(Bundle(for: Self.self).url(
             forResource: "calc-suite", withExtension: "json", subdirectory: "fixtures"
-        ), "generate_calc_fixtures.py を実行してください")
+        ), """
+        CALC のテスト台帳（calc-suite.json）がありません。基盤の台帳生成の後、リポジトリのルートから次のコマンドを実行し、テスト用に再ビルドしてください。
+        python3 ipad/ACASUITests/CALC/generate_calc_fixtures.py ipad/.generated/cases.json
+        """)
         let scenarios = try JSONDecoder().decode([Scenario].self, from: Data(contentsOf: fixture))
-        XCTAssertFalse(scenarios.isEmpty)
+        guard !scenarios.isEmpty else {
+            return XCTFail("CALC のテスト台帳が空です。再生成してテスト用に再ビルドしてください。")
+        }
         let app = XCUIApplication()
         app.launchEnvironment["ACAS_CALC_EVIDENCE"] = try JSONEncoder().encode(scenarios.map(\.evidence)).base64EncodedString()
         app.launchArguments += ["-AppleLanguages", "(ja)", "-AppleLocale", "ja_JP"]
