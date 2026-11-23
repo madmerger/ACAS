@@ -1,13 +1,34 @@
 import Foundation
+import SQLite3
 import XCTest
 @testable import ACASCore
 
 final class PurchaseLedgerTests: XCTestCase {
+    func testPurchaseProofReportsSQLiteWriteFailure() throws {
+        let url = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: url) }
+        let store = try FileStore(path: url.path)
+        let context = BusinessContext(store: store)
+        try CompanySetup(context).save(name: "試験会社")
+        let ledger = PurchaseLedger(context)
+
+        var db: OpaquePointer?
+        defer { sqlite3_close(db) }
+        XCTAssertEqual(sqlite3_open(url.path, &db), SQLITE_OK)
+        let sql = "CREATE TRIGGER reject_report BEFORE INSERT ON files WHEN NEW.name = '\(PurchaseLedger.reportPath)' BEGIN SELECT RAISE(ABORT, 'blocked'); END"
+        XCTAssertEqual(sqlite3_exec(db, sql, nil, nil, nil), SQLITE_OK)
+
+        XCTAssertThrowsError(try ledger.purchaseProof()) { error in
+            XCTAssertEqual((error as? FileStore.DatabaseError)?.code, SQLITE_CONSTRAINT)
+        }
+        XCTAssertNil(store.readRaw(PurchaseLedger.reportPath))
+    }
+
     func testPostingFileUsesEvidenceRecordWidthForConsecutiveEntries() throws {
         let ledger = try makeLedger()
         var system = ledger.system
         system.setInt("level-1", 1)
-        ledger.systemFile.write(1, system.bytes)
+        try ledger.systemFile.write(1, system.bytes)
         var value = PurchaseLedger.Transaction(date: ledger.processingDate)
         value.supplier = try addSupplier(ledger)
         value.lines[0].code = "a1"
@@ -59,7 +80,7 @@ final class PurchaseLedgerTests: XCTestCase {
         old.setInt("oi-type", 2)
         old.setInt("oi-net", 4_000)
         let path = ledger.base + "openitm4.dat"
-        ledger.store.writeRaw(path, old.bytes)
+        try ledger.store.writeRaw(path, old.bytes)
         var new = PurchaseLedger.Transaction(date: ledger.processingDate)
         new.supplier = code
         new.lines[0].code = "a1"
@@ -176,7 +197,7 @@ final class PurchaseLedgerTests: XCTestCase {
         XCTAssertEqual(header.int("ih-vat"), 2_000)
         let line = try XCTUnwrap(ledger.store.read(ledger.invoicePath, key: ledger.invoiceKey(number, 1)))
         XCTAssertEqual(Record(PurchaseRecords.invLineLayout, bytes: line).raw("il-description"), Array(repeating: 0, count: 24))
-        XCTAssertEqual(ledger.purchaseProof().map(\.id), [number])
+        XCTAssertEqual(try ledger.purchaseProof().map(\.id), [number])
         let proof = try XCTUnwrap(ledger.store.readRaw(PurchaseLedger.reportPath))
         XCTAssertTrue(String(decoding: proof, as: UTF8.self).contains("Unapplied Purchase Transaction Report"))
         XCTAssertEqual(try ledger.postTransactions().map(\.id), [number])
@@ -198,7 +219,7 @@ final class PurchaseLedgerTests: XCTestCase {
             let lengths = ["purchled.dat": 7, "pinvoice.dat": 9, "analysis.dat": 3, "batch.dat": 6, "openitm5.dat": 11]
             for (name, records) in fixture {
                 if name.hasSuffix("/system.dat") {
-                    ledger.store.writeRaw(name, Array(try Data(contentsOf: url.appendingPathComponent("before-files/" + name))))
+                    try ledger.store.writeRaw(name, Array(Data(contentsOf: url.appendingPathComponent("before-files/" + name))))
                 } else if let length = lengths[URL(fileURLWithPath: name).lastPathComponent] {
                     for bytes in records { ledger.store.write(name, key: Array(bytes.prefix(length)), data: bytes) }
                 }
@@ -219,7 +240,7 @@ final class PurchaseLedgerTests: XCTestCase {
                 transaction.lines[0].net = 10_000
                 transaction.lines[0].tax = 2_000
                 try ledger.saveTransaction(transaction)
-            case "PL-413-normal-exit-fixture": ledger.purchaseProof()
+            case "PL-413-normal-exit-fixture": try ledger.purchaseProof()
             default: try ledger.postTransactions()
             }
             let diff = try decode(Diff.self, in: url.appendingPathComponent("record-diff.json"))
@@ -244,13 +265,13 @@ final class PurchaseLedgerTests: XCTestCase {
     }
 
     private func makeLedger() throws -> PurchaseLedger {
-        let context = BusinessContext(store: FileStore(), timeZone: .gmt, now: { Date(timeIntervalSince1970: 1_795_400_000) })
+        let context = BusinessContext(store: try FileStore(), timeZone: .gmt, now: { Date(timeIntervalSince1970: 1_795_400_000) })
         try CompanySetup(context).save(name: "試験会社")
         let ledger = PurchaseLedger(context)
         var record = ledger.system
         record.setInt("vat-rate-1", 2_000)
         record["pl-delim"] = "\\"
-        ledger.systemFile.write(1, record.bytes)
+        try ledger.systemFile.write(1, record.bytes)
         return ledger
     }
 

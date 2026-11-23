@@ -36,7 +36,7 @@ public struct PurchaseLedger {
         var record = system
         record.setInt("run-date", try legacyDate(date))
         if !(1...3).contains(record.int("date-form")) { record.setInt("date-form", 1) }
-        systemFile.write(1, record.bytes)
+        try systemFile.write(1, record.bytes)
     }
 
     func setFileFlag(_ number: Int, in record: inout Record) {

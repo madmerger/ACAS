@@ -25,7 +25,7 @@ final class PurchaseProof {
     }
     func add(_ a: inout Int64, _ v: Int64) { a = Cobol.truncate(a + v, digits: 10) }
 
-    func generate() {
+    func generate() throws {
         let p = PurchasePrinter(ledger)
         l1Date = ledger.reportDate(system.int("run-date"))
         j = 0
@@ -163,7 +163,7 @@ final class PurchaseProof {
             p.write(line8, after: 1)
             lineCnt += 1
         }
-        p.close()
+        try p.close()
     }
 }
 
@@ -185,7 +185,7 @@ final class PurchasePrinter {
         bytes += [12] + SJIS.encode(line, size: 132)
     }
 
-    func close() { ledger.store.writeRaw(PurchaseLedger.reportPath, bytes + [10]) }
+    func close() throws { try ledger.store.writeRaw(PurchaseLedger.reportPath, bytes + [10]) }
 }
 
 extension PurchaseLedger {
@@ -196,8 +196,8 @@ extension PurchaseLedger {
     }
 
     @discardableResult
-    public func purchaseProof() -> [Transaction] {
-        PurchaseProof(self).generate()
+    public func purchaseProof() throws -> [Transaction] {
+        try PurchaseProof(self).generate()
         return transactions().filter { !$0.posted }
     }
 }

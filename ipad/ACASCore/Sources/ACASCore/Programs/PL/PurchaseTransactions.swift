@@ -232,9 +232,9 @@ extension PurchaseLedger {
         } else {
             if let reusable, var deleted {
                 deleted.removeSubrange(reusable.offset..<(reusable.offset + 19))
-                store.writeRaw(deletedPath, deleted)
+                try store.writeRaw(deletedPath, deleted)
             } else {
-                if deleted != nil { store.writeRaw(deletedPath, []) }
+                if deleted != nil { try store.writeRaw(deletedPath, []) }
                 configuration.setInt("next-folio", number + 1)
             }
             setFileFlag(26, in: &configuration)
@@ -245,7 +245,7 @@ extension PurchaseLedger {
         }
         configuration.setInt("p-flag-i", 1)
         configuration.setInt("pass-value", 0)
-        systemFile.write(1, configuration.bytes)
+        try systemFile.write(1, configuration.bytes)
         return number
     }
 
@@ -255,6 +255,6 @@ extension PurchaseLedger {
         for i in 0..<(Int(max(0, header.int("ih-lines"))) + 1) {
             store.delete(invoicePath, key: invoiceKey(number, i))
         }
-        store.appendRaw(base + "delfolio.dat", Array(header.bytes.prefix(8)) + header.raw("ih-date") + header.raw("ih-supplier"))
+        try store.appendRaw(base + "delfolio.dat", Array(header.bytes.prefix(8)) + header.raw("ih-date") + header.raw("ih-supplier"))
     }
 }

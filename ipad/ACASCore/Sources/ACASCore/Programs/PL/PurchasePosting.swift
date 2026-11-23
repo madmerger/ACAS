@@ -78,7 +78,7 @@ private final class PurchasePosting {
         PurchaseAnalysisPosting(ledger).accumulate(headers: items.compactMap { $0.staged ? nil : $0.header })
         for (header, storedItem, staged) in items {
             var item = storedItem
-            if usesGL { writePosting(item) }
+            if usesGL { try writePosting(item) }
             if item.int("oi-type") == 3 { allocateCredit(&item) }
             updateSupplier(item, tally: !staged)
             store.write(archivePath, key: openKey(item), data: item.bytes)
@@ -98,16 +98,16 @@ private final class PurchasePosting {
             printer.write(text, after: i == 1 ? 3 : 2)
         }
         finishUnappliedCredits()
-        printer.close()
-        store.writeRaw(stagingPath, [])
+        try printer.close()
+        try store.writeRaw(stagingPath, [])
         system.setInt("p-flag-i", 2)
         system.setInt("p-flag-a", 1)
         system["oi-5-flag"] = "Y"
         ledger.setFileFlag(29, in: &system)
-        ledger.systemFile.write(1, system.bytes)
+        try ledger.systemFile.write(1, system.bytes)
         var retained = ledger.systemFile.read(4) ?? SystemAuxRecords.initialRecord4()
         retained.replaceSubrange(0..<totals.bytes.count, with: totals.bytes)
-        ledger.systemFile.write(4, retained)
+        try ledger.systemFile.write(4, retained)
         return items.compactMap { item in
             guard item.header != nil else { return nil }
             return ledger.header(item.item.int("oi-invoice")).flatMap(ledger.decodeTransaction)
@@ -271,7 +271,7 @@ private final class PurchasePosting {
         self.batch = nil
     }
 
-    private func writePosting(_ item: Record) {
+    private func writePosting(_ item: Record) throws {
         var batch = batch ?? startBatch()
         let count = batch.int("items") + 1
         batch.setInt("items", count)
@@ -296,9 +296,9 @@ private final class PurchasePosting {
             bytes += Array(Cobol.z(row.int("post-dr") % 100_000, 5).utf8) + Array(Cobol.z(row.int("post-cr") % 100_000, 5).utf8)
             bytes += R.signLeading(net(item), digits: 9) + row.raw("post-legend")
             bytes += Array("31DR".utf8) + R.signLeading(tax(item), digits: 9)
-            store.appendRaw(ledger.base + "postings2irs.dat", bytes)
+            try store.appendRaw(ledger.base + "postings2irs.dat", bytes)
         } else {
-            RelativeFile(store, path: ledger.base + "posting.dat", recordSize: R.postLayout.size).write(postingNumber, row.bytes)
+            try RelativeFile(store, path: ledger.base + "posting.dat", recordSize: R.postLayout.size).write(postingNumber, row.bytes)
             postingNumber += 1
         }
         self.batch = batch
