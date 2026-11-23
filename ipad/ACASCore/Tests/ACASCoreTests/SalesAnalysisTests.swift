@@ -22,6 +22,9 @@ final class SalesAnalysisTests: XCTestCase {
         try service.prepare()
         let name = String(repeating: "売", count: 12)
         try service.save(group: "A", account: 1, description: name, printCode: "売A")
+        let saved = try XCTUnwrap(service.codes().first { $0.group == "A" })
+        XCTAssertEqual(saved.description, name)
+        XCTAssertEqual(saved.printCode, "売A")
 
         let before = store.snapshot()
         let invalidFields: [(String, String, SalesAnalysis.Error)] = [
