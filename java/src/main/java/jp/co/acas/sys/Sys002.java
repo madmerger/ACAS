@@ -224,8 +224,11 @@ public class Sys002 extends Program implements ScreenDef.Binder {
         if (n("file-system-used") == 0) return;
         do {
             banner(3, "OPS  Data 2");
+            ws.put("new-rdbms-passwd", "");
             displayScreen("ops-data-3");
             acceptScreen("ops-data-3");
+            String newPassword = ws.remove("new-rdbms-passwd");
+            if (!newPassword.isBlank()) sys.set("rdbms-passwd", newPassword);
             if (!s("rdbms-db-name").isBlank()) display(7, 46, " DB name, set as requested", 3);
             if (!s("rdbms-user").isBlank()) display(8, 46, " DB User, set as requested", 3);
             if (!s("rdbms-passwd").isBlank()) { display(9, 46, " DB User pwd, set as requested", 3); show(9, 22, "************"); }
