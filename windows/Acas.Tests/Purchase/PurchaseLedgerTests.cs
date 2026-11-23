@@ -116,6 +116,19 @@ public sealed class PurchaseLedgerTests
     }
 
     [Fact]
+    public void 仕入転記は削除された仕入先を旧版と同様に再作成する()
+    {
+        using var db = Fixture("pl-invoice");
+        var ledger = new PurchaseLedger(db);
+        Assert.True(db.Delete(PurchaseLedger.SupplierFile, "SUPP018"));
+        Assert.Single(ledger.PostInvoices()!);
+        var supplier = ledger.GetSupplier("SUPP018")!;
+        Assert.Equal("Supplier Unknown", supplier.St("name"));
+        Assert.Equal(120m, supplier.N("current"));
+        Assert.True(ledger.Invoice("00000001")!.Posted);
+    }
+
+    [Fact]
     public void 投稿済みの掛仕入の未決済レコードは旧バイト列と一致する()
     {
         using var db = Fixture("pl-invoice");

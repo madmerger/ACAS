@@ -38,8 +38,7 @@ public sealed partial class PurchaseLedger
                 if (general && !WriteBatch(system, batch, nextBatch, nextPosting)) return false;
                 foreach (var invoice in batch)
                 {
-                    var supplier = GetSupplier(invoice.Supplier);
-                    if (supplier == null) return false;
+                    var supplier = PostingSupplier(invoice.Supplier, out bool createSupplier);
                     string invoiceKey = InvoiceKey(invoice.Folio, 0);
                     var raw = database.Read(InvoiceFile, invoiceKey);
                     if (raw is null) return false;
@@ -47,7 +46,7 @@ public sealed partial class PurchaseLedger
                     header.Set("status", "z");
                     header.Set("update", "z");
                     if (!database.Rewrite(InvoiceFile, invoiceKey, header.B)) return false;
-                    if (!ApplySupplierInvoice(supplier, invoice, quarter)) return false;
+                    if (!ApplySupplierInvoice(supplier, invoice, quarter, createSupplier)) return false;
                     var item = NewOpenItem(invoice);
                     if (invoice.Type == 3 && !ApplyCredit(item)) return false;
                     if (!database.Write(OpenItemFile, $"{invoice.Supplier}/{invoice.Folio}", item.B)) return false;
@@ -77,7 +76,18 @@ public sealed partial class PurchaseLedger
         return succeeded ? posted : null;
     }
 
-    private bool ApplySupplierInvoice(Rec supplier, PurchaseInvoice invoice, int quarter)
+    private Rec PostingSupplier(string key, out bool create)
+    {
+        var supplier = GetSupplier(key);
+        create = supplier is null;
+        if (supplier != null) return supplier;
+        supplier = SupplierLayout.New();
+        supplier.Set("key", key);
+        supplier.Set("name", "Supplier Unknown");
+        return supplier;
+    }
+
+    private bool ApplySupplierInvoice(Rec supplier, PurchaseInvoice invoice, int quarter, bool create)
     {
         int count = supplier.I("activity");
         bool credit = invoice.Type == 3;
@@ -100,7 +110,8 @@ public sealed partial class PurchaseLedger
         supplier.SetN("current", Math.Max(0, balance));
         supplier.SetN("unapplied", unapplied);
         supplier.SetN("status", 1);
-        return database.Rewrite(SupplierFile, invoice.Supplier, supplier.B);
+        return create ? database.Write(SupplierFile, invoice.Supplier, supplier.B)
+            : database.Rewrite(SupplierFile, invoice.Supplier, supplier.B);
     }
 
     private static Rec NewOpenItem(PurchaseInvoice invoice)
@@ -163,7 +174,7 @@ public sealed partial class PurchaseLedger
             int sign = invoice.Type == 3 ? -1 : 1;
             net += sign * (invoice.Net + invoice.Carriage);
             tax += sign * (invoice.Tax + invoice.CarriageTax);
-            if (GetSupplier(invoice.Supplier) is not { } supplier) return false;
+            var supplier = PostingSupplier(invoice.Supplier, out _);
             var posting = Layouts.Posting.New();
             posting.SetN("batch", batch);
             posting.SetN("post-number", i + 1);
