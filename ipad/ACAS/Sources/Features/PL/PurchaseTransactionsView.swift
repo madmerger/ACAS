@@ -16,6 +16,7 @@ struct PurchaseTransactionsView: View {
 
     let workspace: Workspace
     let mode: Mode
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @State private var rows: [PurchaseLedger.Transaction] = []
     @State private var selection: PurchaseLedger.Transaction?
     @State private var error: PurchaseNotice?
@@ -53,6 +54,18 @@ struct PurchaseTransactionsView: View {
             if mode == .proof && !generated {
                 ContentUnavailableView(plString("pl.invoice.proof"), systemImage: "doc.text",
                                        description: Text(plString("pl.invoice.proof.description")))
+            } else if horizontalSizeClass == .compact && (mode == .edit || mode == .delete) {
+                List(rows) { row in
+                    HStack {
+                        VStack(alignment: .leading) {
+                            Text(String(row.id))
+                            Text(row.supplier).foregroundStyle(.secondary)
+                        }
+                        Spacer()
+                        action(for: row)
+                    }
+                }
+                .accessibilityIdentifier("pl.transactions.table")
             } else {
                 Table(rows) {
                     TableColumn(plString("pl.invoice.number")) { Text(String($0.id)) }
@@ -67,11 +80,7 @@ struct PurchaseTransactionsView: View {
                     }
                     TableColumn(plString("pl.invoice.state")) { row in
                         if mode == .edit || mode == .delete {
-                            Button(mode == .edit ? plString("pl.action.edit") : plString("pl.action.delete"), role: mode == .delete ? .destructive : nil) {
-                                selection = row
-                                if mode == .edit { edited = true } else { confirm = true }
-                            }
-                            .buttonStyle(.borderless)
+                            action(for: row)
                         } else {
                             Text(row.posted ? plString("pl.invoice.posted") : plString("pl.invoice.pending"))
                         }
@@ -103,6 +112,15 @@ struct PurchaseTransactionsView: View {
             Button(plString("pl.action.cancel"), role: .cancel) {}
         }
         .purchaseAlert($error)
+    }
+
+    private func action(for row: PurchaseLedger.Transaction) -> some View {
+        Button(mode == .edit ? plString("pl.action.edit") : plString("pl.action.delete"),
+               role: mode == .delete ? .destructive : nil) {
+            selection = row
+            if mode == .edit { edited = true } else { confirm = true }
+        }
+        .buttonStyle(.borderless)
     }
 
     private func remove() {
