@@ -13,6 +13,13 @@ extension BookkeepingService {
     }
 
     public func post(defaultSlot: Int, side: Side, account: Int, date: Date, amount: Int64, description: String) throws {
+        try store.transaction {
+            try savePosting(defaultSlot: defaultSlot, side: side, account: account, date: date,
+                            amount: amount, description: description)
+        }
+    }
+
+    private func savePosting(defaultSlot: Int, side: Side, account: Int, date: Date, amount: Int64, description: String) throws {
         guard (1...32).contains(defaultSlot), amount != 0, (-999_999_999...999_999_999).contains(amount),
               Cobol.rtrim(SJIS.decode(SJIS.encode(description, size: 32)[...])) == Cobol.rtrim(description)
         else { throw Failure.invalidInput }
@@ -48,7 +55,7 @@ extension BookkeepingService {
         var target = targetRecord
         let field = receiving ? "cr" : "dr"
         target.setInt(field, (target.int(field) + abs(amount)) % 10_000_000_000)
-        store.rewrite(accountsPath, key: target.raw("key"), data: target.bytes)
+        guard store.rewrite(accountsPath, key: target.raw("key"), data: target.bytes) else { throw Failure.missingAccount }
 
         var balance = defaultRecord
         let opening = balance.int("dr") - balance.int("cr")
@@ -56,13 +63,14 @@ extension BookkeepingService {
         let closing = opening + adjustment
         balance.setInt("dr", max(0, closing) % 10_000_000_000)
         balance.setInt("cr", max(0, -closing) % 10_000_000_000)
-        store.rewrite(accountsPath, key: balance.raw("key"), data: balance.bytes)
+        guard store.rewrite(accountsPath, key: balance.raw("key"), data: balance.bytes) else { throw Failure.missingAccount }
         system.setInt("next-post", Int64(sequence))
         system.setInt("save-sequ", 0)
         try writeLine(systemPath, system.bytes)
     }
 
-    public func recalculate() throws {
+    public func recalculate(password: String) throws {
+        try verifyPassword(password, against: system)
         let journal = postings
         guard store.exists(postPath) else { throw Failure.missingPosting }
         var debits: [[UInt8]: Int64] = [:]

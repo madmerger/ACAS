@@ -4,6 +4,7 @@ import SwiftUI
 struct BookkeepingConfigurationForm: View {
     let workspace: Workspace
     @State private var value: BookkeepingService.Configuration
+    @State private var password = ""
     @State private var message = ""
 
     init(workspace: Workspace) {
@@ -28,11 +29,14 @@ struct BookkeepingConfigurationForm: View {
                     .keyboardType(.decimalPad)
                 TextField(irsText("settings.printDestination"), text: $value.printDestination)
             }
+            SecureField(irsText("field.password"), text: $password)
+                .accessibilityIdentifier("irs.settingsPassword")
             Button(irsText("action.save")) {
                 do {
-                    try BookkeepingService(workspace.context).save(value)
+                    try BookkeepingService(workspace.context).save(value, password: password)
                     message = irsText("result.settingsSaved")
                 } catch { message = bookkeepingError(error) }
+                password = ""
                 workspace.completed("irs.settings")
             }
             .accessibilityIdentifier("irs.saveSettings")

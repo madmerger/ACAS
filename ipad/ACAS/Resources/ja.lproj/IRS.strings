@@ -24,6 +24,7 @@
 "bookkeeping.error.accountCode" = "科目番号を確認してください。";
 "bookkeeping.error.duplicateAccount" = "この勘定科目は既に登録されています。";
 "bookkeeping.error.invalid" = "入力内容を確認してください。";
+"bookkeeping.error.wrongPassword" = "パスワードが一致しません。";
 "bookkeeping.error.missingAccount" = "勘定科目が見つかりません。";
 "bookkeeping.error.missingDefault" = "選択した番号の既定勘定がありません。";
 "bookkeeping.error.missingPosting" = "転記データがありません。";
@@ -41,6 +42,7 @@
 "bookkeeping.field.creditAccount" = "貸方科目";
 "bookkeeping.field.date" = "取引日";
 "bookkeeping.field.debit" = "借方";
+"bookkeeping.field.password" = "現在のパスワード";
 "bookkeeping.field.debitAccount" = "借方科目";
 "bookkeeping.field.defaultAccount" = "既定勘定";
 "bookkeeping.field.defaultType" = "既定勘定の区分";

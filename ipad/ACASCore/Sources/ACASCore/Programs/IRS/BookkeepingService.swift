@@ -1,7 +1,7 @@
 import Foundation
 
 public struct BookkeepingService {
-    public enum Failure: Error { case invalidInput, duplicateAccount, missingAccount, missingDefault, missingPosting }
+    public enum Failure: Error { case invalidInput, duplicateAccount, missingAccount, missingDefault, missingPosting, wrongPassword }
 
     public struct Configuration {
         public var operatorName = ""
@@ -98,8 +98,9 @@ public struct BookkeepingService {
         return value
     }
 
-    public func save(_ configuration: Configuration) throws {
+    public func save(_ configuration: Configuration, password: String) throws {
         var row = system
+        try verifyPassword(password, against: row)
         guard !configuration.client.isEmpty, configuration.start <= configuration.end,
               (0...9999).contains(configuration.taxRate) else { throw Failure.invalidInput }
         for (field, text) in [
@@ -121,6 +122,12 @@ public struct BookkeepingService {
         row.setInt("vat", configuration.taxRate)
         for field in ["pass-value", "save-sequ", "first-time-flag"] { row.setInt(field, 0) }
         try writeLine(systemPath, row.bytes)
+    }
+
+    func verifyPassword(_ password: String, against row: Record) throws {
+        let encoded = SJIS.encode(password, size: 4)
+        guard Cobol.rtrim(SJIS.decode(encoded[...])) == Cobol.rtrim(password),
+              encoded == row.raw("pass-word") else { throw Failure.wrongPassword }
     }
 
     func accountKey(_ base: Int, _ child: Int = 0) -> [UInt8] {

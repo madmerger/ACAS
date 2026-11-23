@@ -56,7 +56,11 @@ struct BookkeepingMenu: View {
             TableColumn(irsText("field.accountCode")) { account in
                 VStack(alignment: .leading) {
                     Text(verbatim: String(account.code))
-                    if horizontalSizeClass == .compact { Text(account.name) }
+                    if horizontalSizeClass == .compact {
+                        Text(account.name)
+                        LabeledContent(irsText("field.debit"), value: (Decimal(account.debit) / 100).formatted())
+                        LabeledContent(irsText("field.credit"), value: (Decimal(account.credit) / 100).formatted())
+                    }
                 }
             }
             TableColumn(irsText("field.accountName"), value: \.name)
@@ -97,10 +101,12 @@ struct BookkeepingMenu: View {
 private struct BookkeepingRecalculate: View {
     let service: BookkeepingService
     @State private var confirming = false
+    @State private var password = ""
     @State private var status = ""
 
     var body: some View {
         Form {
+            SecureField(irsText("field.password"), text: $password)
             Button(irsText("action.recalculate"), role: .destructive) { confirming = true }
             if !status.isEmpty { Text(status) }
         }
@@ -108,9 +114,10 @@ private struct BookkeepingRecalculate: View {
         .confirmationDialog(irsText("recalculate.confirm"), isPresented: $confirming, titleVisibility: .visible) {
             Button(irsText("action.confirmRecalculate"), role: .destructive) {
                 do {
-                    try service.recalculate()
+                    try service.recalculate(password: password)
                     status = irsText("result.recalculated")
                 } catch { status = bookkeepingError(error) }
+                password = ""
             }
         }
     }
@@ -134,6 +141,7 @@ func bookkeepingError(_ error: Error) -> String {
     case .missingAccount: irsText("error.missingAccount")
     case .missingDefault: irsText("error.missingDefault")
     case .missingPosting: irsText("error.missingPosting")
+    case .wrongPassword: irsText("error.wrongPassword")
     default: irsText("error.invalid")
     }
 }
