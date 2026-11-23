@@ -68,6 +68,7 @@ struct SalesInvoiceMenu: View {
                 .accessibilityIdentifier("sales.invoice.print")
         }
         .navigationTitle(slText("sales.invoice.menuTitle"))
+        .task { workspace.completed("sales-invoice-menu-view") }
     }
 }
 
@@ -165,6 +166,11 @@ struct SalesInvoiceEditor: View {
             .background(.bar)
         }
         .navigationTitle(title)
+        .task {
+            if existing == nil {
+                workspace.completed(immediate ? "sales-invoice-immediate-view" : "sales-invoice-entry-view")
+            }
+        }
         .fullScreenCover(item: $editingLine) { selection in
             lineEditor(selection.id)
         }
@@ -349,6 +355,8 @@ struct SalesInvoiceList: View {
         entries = service.invoices()
         if action == .print {
             report = workspace.context.store.readRaw(SalesInvoices.printPath).map(SalesReportDocument.init)
+        } else {
+            workspace.completed(action == .edit ? "sales-invoice-edit-list-view" : "sales-invoice-delete-list-view")
         }
     }
 

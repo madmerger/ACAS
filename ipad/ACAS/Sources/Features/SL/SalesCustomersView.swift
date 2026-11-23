@@ -53,6 +53,7 @@ struct SalesCustomersMenu: View {
             }
         }
         .navigationTitle(slText("sales.customer.menu"))
+        .task { workspace.completed("sales-customers-menu-view") }
     }
 }
 
@@ -122,6 +123,7 @@ private struct SalesCustomerView: View {
             if mode == .register && draft == nil {
                 do { setDraft(try ledger.newCustomer()) } catch { result = SalesMessage.text(for: error) }
             }
+            workspace.completed("sales-customer-screen-\(mode.rawValue)")
         }
         .navigationTitle(mode.title)
         .toolbar {
