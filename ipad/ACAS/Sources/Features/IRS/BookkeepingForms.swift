@@ -261,12 +261,16 @@ struct BookkeepingPostingForm: View {
     @State private var message = ""
 
     private var service: BookkeepingService { BookkeepingService(workspace.context) }
+    private var requiresTaxPosting: Bool {
+        service.defaults.contains { $0.id == slot && $0.account != 0 && $0.tax != .none }
+    }
 
     var body: some View {
         Form {
             Picker(irsText("field.defaultAccount"), selection: $slot) {
                 ForEach(service.defaults.filter { $0.account != 0 }) { Text($0.label).tag($0.id) }
             }
+            if requiresTaxPosting { Text(irsText("error.taxPostingUnavailable")) }
             Picker(irsText("field.defaultType"), selection: $side) {
                 Text(irsText("field.debit")).tag(BookkeepingService.Side.debit)
                 Text(irsText("field.credit")).tag(BookkeepingService.Side.credit)
@@ -291,6 +295,7 @@ struct BookkeepingPostingForm: View {
                 workspace.completed("irs.post")
             }
             .accessibilityIdentifier("irs.submitPost")
+            .disabled(requiresTaxPosting)
             if !message.isEmpty { Text(message).accessibilityIdentifier("irs.result") }
         }
         .navigationTitle(irsText("menu.post"))

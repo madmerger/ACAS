@@ -529,6 +529,36 @@ final class BookkeepingFlows: XCTestCase {
     }
 
     @MainActor
+    func testTaxedDefaultAccountShowsPostingLimitation() throws {
+        let url = try XCTUnwrap(Bundle(for: Self.self).url(forResource: "IRS-400", withExtension: "json", subdirectory: "fixtures"))
+        var fixture = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(contentsOf: url)) as? [String: Any])
+        let seedData = try XCTUnwrap((fixture["seed"] as? String).flatMap { Data(base64Encoded: $0) })
+        var seed = try XCTUnwrap(JSONSerialization.jsonObject(with: seedData) as? [String: Any])
+        var files = try XCTUnwrap(seed["files"] as? [String: [String: Any]])
+        let path = "ledgers/irs/dflt.dat"
+        var defaults = try XCTUnwrap(files[path])
+        var hex = Array(try XCTUnwrap(defaults["hex"] as? String))
+        let firstTaxOffset = 224 * 2
+        hex.replaceSubrange(firstTaxOffset..<(firstTaxOffset + 2), with: "49")
+        defaults["hex"] = String(hex)
+        files[path] = defaults
+        seed["files"] = files
+        fixture["seed"] = try JSONSerialization.data(withJSONObject: seed).base64EncodedString()
+
+        let app = XCUIApplication()
+        app.launchEnvironment["ACAS_FIXTURE"] = try JSONSerialization.data(withJSONObject: fixture).base64EncodedString()
+        app.launchArguments += ["-AppleLanguages", "(ja)", "-AppleLocale", "ja_JP"]
+        XCUIDevice.shared.orientation = .landscapeLeft
+        app.launch()
+        tap(app, "section.incomplete")
+        tap(app, "irs.post")
+        tap(app, "irs.postAppend")
+        XCTAssertTrue(app.staticTexts["仕入・売上の付加価値税が設定された既定勘定からの転記には対応していません。"]
+            .waitForExistence(timeout: 5))
+        XCTAssertFalse(app.buttons["irs.submitPost"].isEnabled)
+    }
+
+    @MainActor
     func testPostFromDefaultBankAccount() throws {
         continueAfterFailure = false
         let id = "IRS-400"

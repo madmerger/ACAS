@@ -51,6 +51,7 @@
 "bookkeeping.error.missingPosting" = "転記データがありません。";
 "bookkeeping.error.openPosting" = "転記ファイルがないため開けませんでした（状態コード35）。";
 "bookkeeping.error.posting" = "科目番号と金額を確認してください。";
+"bookkeeping.error.taxPostingUnavailable" = "仕入・売上の付加価値税が設定された既定勘定からの転記には対応していません。";
 "bookkeeping.field.abbreviation" = "略号";
 "bookkeeping.field.account" = "勘定科目";
 "bookkeeping.field.accountCode" = "科目番号";
