@@ -145,6 +145,29 @@ final class BookkeepingFlows: XCTestCase {
     }
 
     @MainActor
+    func testKeepsDefaultDraftWhenRegistrationPickerIsCancelled() throws {
+        let id = "IRS-211"
+        let url = try XCTUnwrap(Bundle(for: Self.self).url(forResource: id, withExtension: "json", subdirectory: "fixtures"))
+        let app = XCUIApplication()
+        app.launchEnvironment["ACAS_FIXTURE"] = try Data(contentsOf: url).base64EncodedString()
+        app.launchArguments += ["-AppleLanguages", "(ja)", "-AppleLocale", "ja_JP"]
+        XCUIDevice.shared.orientation = .landscapeLeft
+        app.launch()
+        tap(app, "section.incomplete")
+        tap(app, "irs.defaults")
+        tap(app, "irs.defaultEdit")
+        enter(app, "irs.defaultLabel", "XX")
+        let draft = try XCTUnwrap(app.textFields["irs.defaultLabel"].value as? String)
+        XCTAssertTrue(draft.hasSuffix("XX"))
+        tap(app, "irs.defaultSlot")
+        app.navigationBars.buttons.firstMatch.tap()
+        XCTAssertEqual(app.textFields["irs.defaultLabel"].value as? String, draft)
+        tap(app, "irs.defaultSlot")
+        tap(app, "2")
+        XCTAssertNotEqual(app.textFields["irs.defaultLabel"].value as? String, draft)
+    }
+
+    @MainActor
     func testRegisterIRS091() throws {
         struct Fixture: Decodable {
             struct Input: Decodable {

@@ -142,6 +142,7 @@ struct BookkeepingDefaultForm: View {
     let workspace: Workspace
     let editing: Bool
     @State private var slot = 1
+    @State private var loadedSlot: Int?
     @State private var account = ""
     @State private var label = ""
     @State private var tax = false
@@ -183,6 +184,8 @@ struct BookkeepingDefaultForm: View {
     }
 
     private func load() {
+        guard loadedSlot != slot else { return }
+        loadedSlot = slot
         let row = service.defaults[slot - 1]
         account = row.account == 0 ? "" : String(row.account)
         label = row.label
