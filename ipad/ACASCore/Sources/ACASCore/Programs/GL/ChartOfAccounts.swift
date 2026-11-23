@@ -8,6 +8,8 @@ public struct LedgerAccount: Identifiable {
     public let placement: String
     public let level: Int
     public let balance: Int64
+    public let previousBalance: Int64
+    public let quarterBalances: [Int64]
 
     public var id: String { code + branch }
 
@@ -19,6 +21,8 @@ public struct LedgerAccount: Identifiable {
         placement = Cobol.rtrim(record.str("placement"))
         level = Int(record.int("level"))
         balance = record.int("balance")
+        previousBalance = record.int("last")
+        quarterBalances = (1...4).map { record.int("q\($0)") }
     }
 }
 
