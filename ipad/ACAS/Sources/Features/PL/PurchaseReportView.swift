@@ -81,6 +81,10 @@ struct PurchaseReportView: View {
                 Button(plString("purchase.report.generate"), action: generate)
                     .accessibilityIdentifier("pl.report.generate")
                 if let output {
+                    NavigationLink(plString("purchase.report.preview")) {
+                        PurchaseReportPreview(title: mode.title, bytes: output)
+                    }
+                    .accessibilityIdentifier("pl.report.preview")
                     ShareLink(item: output, preview: SharePreview(mode.title)) {
                         Label(plString("purchase.report.share"), systemImage: "square.and.arrow.up")
                     }
@@ -134,5 +138,58 @@ struct PurchaseReportView: View {
             }
             empty = output == nil
         } catch { notice = PurchaseNotice(error) }
+    }
+}
+
+private struct PurchaseReportPreview: View {
+    private struct Line: Identifiable {
+        let id: Int
+        let page: Int
+        let text: String
+    }
+
+    let title: String
+    private let lines: [Line]
+
+    init(title: String, bytes: Data) {
+        self.title = title
+        var lines: [Line] = []
+        var page = 1
+        var start = bytes.startIndex
+        let raw = Array(bytes)
+        for (index, byte) in raw.enumerated() where byte == 10 || byte == 12 {
+            lines.append(Line(id: lines.count + 1, page: page, text: SJIS.decode(raw[start..<index])))
+            if byte == 12 { page += 1 }
+            start = index + 1
+        }
+        if start < raw.count {
+            lines.append(Line(id: lines.count + 1, page: page, text: SJIS.decode(raw[start...])))
+        }
+        self.lines = lines
+    }
+
+    var body: some View {
+        ScrollView([.horizontal, .vertical]) {
+            LazyVStack(alignment: .leading, spacing: 8) {
+                row(plString("purchase.report.preview.page"), plString("purchase.report.preview.line"),
+                    plString("purchase.report.preview.content"))
+                    .fontWeight(.semibold)
+                    .accessibilityAddTraits(.isHeader)
+                ForEach(lines) { line in
+                    row(String(line.page), String(line.id), line.text)
+                }
+            }
+            .padding()
+        }
+        .navigationTitle(title)
+        .accessibilityIdentifier("pl.report.preview.lines")
+    }
+
+    private func row(_ page: String, _ line: String, _ content: String) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: 16) {
+            Text(page).frame(minWidth: 60, alignment: .leading)
+            Text(line).frame(minWidth: 60, alignment: .leading)
+            Text(content).font(.system(.body, design: .monospaced)).fixedSize()
+        }
     }
 }

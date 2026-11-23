@@ -194,12 +194,21 @@ final class PurchaseFlows: XCTestCase {
         XCTAssertTrue(app.navigationBars["仕入先ファイル帳票"].waitForExistence(timeout: 5))
         tap(app, "pl.report.generate", scrolling: true)
         XCTAssertTrue(app.descendants(matching: .any)["pl.report.share"].firstMatch.waitForExistence(timeout: 5))
+        tap(app, "pl.report.preview")
+        XCTAssertTrue(app.staticTexts["原本の内容"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts.containing(NSPredicate(format: "label CONTAINS %@", "Purchase Ledger Dump")).firstMatch.exists)
+        let preview = XCTAttachment(screenshot: app.screenshot())
+        preview.name = "買掛帳票プレビュー"
+        preview.lifetime = .keepAlways
+        add(preview)
+        app.navigationBars.buttons.firstMatch.tap()
         app.swipeDown()
         enter(app, "pl.report.supplier", "MISS001")
         dismissKeyboard(app)
         tap(app, "pl.report.generate", scrolling: true)
         XCTAssertTrue(app.staticTexts["pl.report.empty"].waitForExistence(timeout: 5))
         XCTAssertFalse(app.descendants(matching: .any)["pl.report.share"].firstMatch.exists)
+        XCTAssertFalse(app.descendants(matching: .any)["pl.report.preview"].firstMatch.exists)
     }
 
     func testEmptyPaymentProofCannotGenerateReport() throws {
