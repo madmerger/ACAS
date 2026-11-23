@@ -108,6 +108,35 @@ enum PLB {
         s.sysRecord4 = r.bytes
     }
 
+    static func sys4Int(_ s: Session, _ name: String) -> Int64 { Record(sys4, bytes: s.sysRecord4).int(name) }
+    static func setSys4(_ s: Session, _ name: String, _ v: Int64) {
+        var r = Record(sys4, bytes: s.sysRecord4)
+        r.setInt(name, Cobol.truncate(v, digits: 10))
+        s.sysRecord4 = r.bytes
+    }
+
+    /// 帳票行などの固定長集団項目。部分項目を位置で上書きする (REDEFINES の再現用)。
+    struct Buf {
+        var c: [Character]
+        init(_ size: Int) { c = [Character](repeating: " ", count: size) }
+        mutating func clear() { c = [Character](repeating: " ", count: c.count) }
+        /// offset (0 起点) から size 桁へ左詰め・空白埋めで MOVE
+        mutating func put(_ offset: Int, _ size: Int, _ text: String) {
+            let t = Array(Cobol.x(text, size))
+            for i in 0..<size { c[offset + i] = t[i] }
+        }
+        func str(_ offset: Int, _ size: Int) -> String { String(c[offset..<(offset + size)]) }
+        var text: String { String(c) }
+        func prefix(_ n: Int) -> String { String(c[0..<n]) }
+    }
+
+    /// COMPUTE ... ROUNDED の除算: num / den を四捨五入 (0 から遠い方へ)。den は 0 でないこと。
+    static func divRounded(_ num: Int64, _ den: Int64) -> Int64 {
+        let q = num / den, r = num % den
+        if abs(r) * 2 >= abs(den) { return q + ((num < 0) != (den < 0) ? -1 : 1) }
+        return q
+    }
+
     // MARK: ファイル
 
     static func purchFile(_ s: Session) -> IndexedFile {
