@@ -33,8 +33,8 @@ class WebSecurity {
             if (!datasourceUrl.startsWith("jdbc:h2:mem:")) {
                 throw new IllegalStateException("同一性検証はインメモリの H2 データベースで実行してください");
             }
-            if (testToken.length() < 32 || testToken.isBlank()) {
-                throw new IllegalStateException("同一性検証には 32 文字以上の ACAS_TEST_API_TOKEN が必要です");
+            if (!testToken.matches("[!-~]{32,}")) {
+                throw new IllegalStateException("ACAS_TEST_API_TOKEN に空白を含まない半角英数字・記号を32文字以上指定してください");
             }
             byte[] token = testToken.getBytes(StandardCharsets.UTF_8);
             http.authorizeHttpRequests(auth -> auth.anyRequest().access((authentication, context) -> {
