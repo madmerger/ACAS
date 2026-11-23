@@ -401,7 +401,7 @@ internal sealed partial class PurchaseScreens
                 if (!_ledger.HasConfiguredCyclePassword)
                     return Notice(title, "旧版の共通設定で初期暗証文字を変更した台帳を使用してください。");
                 if (!_ledger.MatchesCyclePassword(values.Text("PurchaseClosingPassword")))
-                    return Notice(title, "締め処理の暗証文字が一致しません。");
+                    return Notice(title, "暗証文字が一致しないか、試行回数の上限に達しました。上限に達した場合は５分後に再試行してください。");
                 return Notice(title, _ledger.ClosePeriod(date, buy && values.Choice("PurchaseClosingPurchases") == "yes",
                     sell && values.Choice("PurchaseClosingSales") == "yes", customQuarter && values.Choice("PurchaseClosingQuarter") == "yes", allowUnposted)
                     ? "期間締めが完了しました。" : "締め対象と未決済明細の状態を確認してください。");

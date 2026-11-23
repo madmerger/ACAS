@@ -2,7 +2,7 @@ using Acas.Core.Engine;
 
 namespace Acas.Core.Programs.Purchase;
 
-public sealed partial class PurchaseLedger(Db database)
+public sealed partial class PurchaseLedger(Db database, TimeProvider? clock = null)
 {
     public const string SystemFile = "ledgers/acas/system.dat";
     public const string SupplierFile = "ledgers/acas/purchled.dat";

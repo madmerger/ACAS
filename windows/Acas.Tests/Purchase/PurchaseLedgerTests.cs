@@ -460,6 +460,30 @@ public sealed class PurchaseLedgerTests
     }
 
     [Fact]
+    public void 期間締めの暗証文字は五回の失敗後に台帳を開き直しても一時的に拒否する()
+    {
+        using var db = Fixture("pl-invoice");
+        var clock = new CycleClock();
+        var ledger = new PurchaseLedger(db, clock);
+        var system = ledger.System();
+        system.Set("Pass-Word", "CCPI");
+        Assert.True(ledger.SaveSystem(system));
+        Assert.True(ledger.MatchesCyclePassword("WQZE"));
+        for (int i = 0; i < 5; i++)
+            Assert.False(ledger.MatchesCyclePassword("WQZA"));
+        var reopened = new PurchaseLedger(db, clock);
+        Assert.False(reopened.MatchesCyclePassword("WQZE"));
+        clock.Now = clock.Now.AddMinutes(5);
+        Assert.True(reopened.MatchesCyclePassword("WQZE"));
+    }
+
+    private sealed class CycleClock : TimeProvider
+    {
+        public DateTimeOffset Now { get; set; } = new(2026, 11, 23, 0, 0, 0, TimeSpan.Zero);
+        public override DateTimeOffset GetUtcNow() => Now;
+    }
+
+    [Fact]
     public void 途中で失敗した複数台帳の変更はロールバックする()
     {
         using var db = new Db();

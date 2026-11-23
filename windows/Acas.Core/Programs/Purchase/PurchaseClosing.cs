@@ -23,6 +23,10 @@ public sealed partial class PurchaseLedger
         layout.C3("last" + i, 8, 2).Group(7, (record, j) => record.C3($"total{i}_{j}", 8, 2)).Fill(12)).Fill(904);
 
     private const string LegacyInitialCyclePasswordEncoding = "CEJE";
+    private const string CycleAttemptsFile = "windows/purchase-cycle-attempts";
+    private const string CycleAttemptsKey = "state";
+    private const int CycleAttemptLimit = 5;
+    private static readonly Layout CycleAttempts = new Layout().N9("failures", 1).N9("expires", 12);
 
     public bool HasConfiguredCyclePassword => IsConfiguredCyclePassword(System().S("Pass-Word"));
 
@@ -31,9 +35,35 @@ public sealed partial class PurchaseLedger
 
     public bool MatchesCyclePassword(string password)
     {
+        bool matched = false;
+        return database.ExecuteAtomically(() =>
+        {
+            string stored = System().S("Pass-Word");
+            if (!IsConfiguredCyclePassword(stored)) return false;
+            long now = (clock ?? TimeProvider.System).GetUtcNow().ToUnixTimeSeconds();
+            var bytes = database.Read(CycleAttemptsFile, CycleAttemptsKey);
+            var attempts = bytes == null ? CycleAttempts.New() : CycleAttempts.From(bytes);
+            int failures = attempts.N("expires") > now ? attempts.I("failures") : 0;
+            if (failures >= CycleAttemptLimit) return false;
+            matched = MatchesLegacyCyclePassword(password, stored);
+            if (matched)
+            {
+                if (bytes != null) database.Delete(CycleAttemptsFile, CycleAttemptsKey);
+            }
+            else
+            {
+                attempts.SetN("failures", failures + 1);
+                attempts.SetN("expires", now + 300);
+                database.Put(CycleAttemptsFile, CycleAttemptsKey, attempts.B);
+            }
+            return true;
+        }) && matched;
+    }
+
+    private static bool MatchesLegacyCyclePassword(string password, string stored)
+    {
         const string alphabet = "CKQUAELSMWYIZJRPBXFVGNODTH";
-        string stored = System().S("Pass-Word");
-        if (!IsConfiguredCyclePassword(stored) || password.Length is < 1 or > 4) return false;
+        if (password.Length is < 1 or > 4) return false;
         char[] encoded = [' ', ' ', ' ', ' '];
         for (int i = 0; i < password.Length; i++)
         {
