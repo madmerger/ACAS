@@ -280,6 +280,7 @@ func stockError(_ error: Error) -> String {
     case .hasStockOrOrders: stockText("error.hasStockOrOrders")
     case .auditRequired: stockText("error.auditRequired")
     case .missingRecovery: stockText("error.missingRecovery")
+    case .invalidAnalysisRecordLength: stockText("error.invalidAnalysisRecordLength")
     default: stockText("error.invalid")
     }
 }

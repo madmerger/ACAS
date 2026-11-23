@@ -4,6 +4,28 @@ import XCTest
 @testable import ACASCore
 
 final class StockServiceTests: XCTestCase {
+    func testItemEditRejectsWrongAnalysisRecordLengthWithoutUpdatingStock() throws {
+        let store = try FileStore()
+        let service = StockService(BusinessContext(store: store))
+        let analysis = "ledgers/acas/analysis.dat"
+        let key = Array("Pa1".utf8)
+        XCTAssertTrue(store.write(analysis, key: key, data: key + Array(repeating: 0x20, count: 63)))
+        var item = StockService.Item()
+        item.code = "ITEM001"
+        item.abbreviation = "ITEM"
+        item.name = "元の品目"
+        try service.save(item)
+        let before = store.all("ledgers/acas/stockctl.dat").map(\.data)
+        item.name = "変更後の品目"
+        XCTAssertThrowsError(try service.save(item, editing: item.code)) {
+            XCTAssertEqual($0 as? StockService.Failure, .invalidAnalysisRecordLength)
+        }
+        XCTAssertEqual(store.all("ledgers/acas/stockctl.dat").map(\.data), before)
+        XCTAssertTrue(store.rewrite(analysis, key: key, data: key + Array(repeating: 0x20, count: 33)))
+        try service.save(item, editing: item.code)
+        XCTAssertEqual(try service.find(item.code).name, item.name)
+    }
+
     func testAuditReportEnablesPeriodClosingAndIncludesMovements() throws {
         let store = try FileStore()
         let service = StockService(BusinessContext(store: store))
