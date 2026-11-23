@@ -83,6 +83,9 @@ final class PeriodClosingFlows: XCTestCase {
         tap(app, "section.incomplete")
         tap(app, "irs.settings")
         let client = app.textFields["irs.client"]
+        XCTAssertFalse(client.exists)
+        XCTAssertFalse(app.textFields["irs.operatorName"].exists)
+        tap(app, "irs.authenticateSettings")
         XCTAssertTrue(client.waitForExistence(timeout: 5))
         let original = try XCTUnwrap(client.value as? String)
         client.tap()
