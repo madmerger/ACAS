@@ -156,9 +156,21 @@ struct PurchaseTransactionForm: View {
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
                         .accessibilityIdentifier("pl.invoice.line.\(i).code")
-                    currency(plString("pl.invoice.netAmount"), $transaction.lines[i].net)
+                    currency(plString("pl.invoice.netAmount"), Binding(
+                        get: { transaction.lines[i].net },
+                        set: {
+                            if $0 != transaction.lines[i].net { transaction.lines[i].tax = nil }
+                            transaction.lines[i].net = $0
+                        }
+                    ))
                         .accessibilityIdentifier("pl.invoice.line.\(i).net")
-                    Picker(plString("pl.invoice.taxCode"), selection: $transaction.lines[i].taxCode) {
+                    Picker(plString("pl.invoice.taxCode"), selection: Binding(
+                        get: { transaction.lines[i].taxCode },
+                        set: {
+                            if $0 != transaction.lines[i].taxCode { transaction.lines[i].tax = nil }
+                            transaction.lines[i].taxCode = $0
+                        }
+                    )) {
                         Text(plString("pl.invoice.taxCode.none")).tag(Int64(0))
                         ForEach(Int64(1)...3, id: \.self) { Text(String(format: plString("pl.invoice.taxCode.value"), Int($0))).tag($0) }
                     }
@@ -172,7 +184,15 @@ struct PurchaseTransactionForm: View {
             Button(plString("pl.invoice.line.add"), systemImage: "plus") { transaction.lines.append(.init()) }
                 .disabled(transaction.lines.count >= 40)
             Section(plString("pl.invoice.additional")) {
-                currency(plString("pl.invoice.carriage"), $transaction.carriage)
+                currency(plString("pl.invoice.carriage"), Binding(
+                    get: { transaction.carriage },
+                    set: {
+                        if $0 != transaction.carriage { transaction.carriageTax = nil }
+                        transaction.carriage = $0
+                    }
+                ))
+                LabeledContent(plString("pl.invoice.carriageTax"), value: purchaseAmount(
+                    transaction.carriageTax ?? ledger.tax(net: transaction.carriage, code: 1)))
                 currency(plString("pl.invoice.deduction"), $transaction.deduction)
                 TextField(plString("pl.invoice.deductionDays"), value: $transaction.deductionDays, format: .number)
             }

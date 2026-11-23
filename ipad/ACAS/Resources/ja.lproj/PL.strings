@@ -36,6 +36,7 @@
 "pl.invoice.add" = "仕入取引入力";
 "pl.invoice.additional" = "追加金額";
 "pl.invoice.carriage" = "送料";
+"pl.invoice.carriageTax" = "送料の税額";
 "pl.invoice.date" = "日付";
 "pl.invoice.deduction" = "早期支払割引額";
 "pl.invoice.deductionDays" = "割引適用日数";
