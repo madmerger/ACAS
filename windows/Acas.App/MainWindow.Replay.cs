@@ -135,8 +135,8 @@ public partial class MainWindow
             CalcOut.Text = CalcKind.SelectedIndex switch
             {
                 0 => Calc.Maps09(p[0].ToUpperInvariant()) is { } cd ? $"チェックディジット = {cd}" : "コード不正 (使用できない文字)",
-                1 => Common.Maps04(p[0]) is var b && b != 0 ? $"有効な日付です (通算日 {b})" : "日付不正",
-                2 => $"VAT 額 = {Calc.LineVat(p[0], p[1]).Split('|')[1]}",
+                1 => Common.Maps04(CalcIn.Text.Trim()) is var b && b != 0 ? $"有効な日付です (通算日 {b})" : "日付不正",
+                2 => $"VAT 額 = {decimal.Parse(Calc.LineVat(p[0], p[1]).Split('|')[1], System.Globalization.CultureInfo.InvariantCulture):0.00}",
                 3 => $"年齢区分 = {Calc.AgeBucket(int.Parse(p[0]))} 日",
                 _ => $"平均原価 = {Calc.LineAvg(p[0], p[1]).Split('|')[1].Trim()}",
             };
