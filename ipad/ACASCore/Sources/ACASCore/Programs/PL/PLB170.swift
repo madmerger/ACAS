@@ -2,7 +2,7 @@ import Foundation
 
 /// pl170.cbl: 仕入先別取引高帳票 (Purchase Ledger Turnover Report)
 enum PLB170 {
-    static let progName = "PL170 (3.01.04)"
+    static let progName = "PL170 (3.01.06)"
 
     final class State {
         let s: Session
