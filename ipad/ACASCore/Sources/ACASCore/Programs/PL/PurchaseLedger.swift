@@ -140,7 +140,8 @@ public struct PurchaseLedger {
         ] { record["purch-" + field] = value }
         let delimiter = system.str("pl-delim").first.flatMap { $0 == " " ? nil : $0 } ?? "\\"
         let address = record.raw("purch-address").prefix(92)
-        let parts = SJIS.decode(address).split(separator: delimiter, omittingEmptySubsequences: false)
+        let delimiterByte = SJIS.encode(String(delimiter), size: 1)[0]
+        let parts = address.split(separator: delimiterByte, omittingEmptySubsequences: false)
         guard (2...5).contains(parts.count), parts[0].count <= 30 else { throw Error.invalidAddress }
         for (field, value, modulus) in [
             ("sortcode", supplier.sortCode, 1_000_000), ("accountno", supplier.accountNumber, 100_000_000),

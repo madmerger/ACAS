@@ -3,6 +3,16 @@ import XCTest
 @testable import ACASCore
 
 final class PurchaseLedgerTests: XCTestCase {
+    func testSupplierAddressLimitIsMeasuredInStoredBytes() throws {
+        let ledger = try makeLedger()
+        var supplier = ledger.newSupplier
+        supplier.code = "SUPP01"
+        supplier.address1 = String(repeating: "市", count: 16) + "\\町"
+        XCTAssertThrowsError(try ledger.saveSupplier(supplier, creating: true))
+        supplier.address1 = String(repeating: "市", count: 15) + "\\町"
+        XCTAssertNoThrow(try ledger.saveSupplier(supplier, creating: true))
+    }
+
     func testEnquiryAppliesLegacyOpenItemBalances() throws {
         let ledger = try makeLedger()
         let code = try addSupplier(ledger)
