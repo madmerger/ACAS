@@ -71,11 +71,21 @@ private struct SalesCustomerView: View {
 
     private enum Field { case code, name, address }
     private var ledger: SalesLedger { SalesLedger(workspace.context) }
+    private var codeInput: Binding<String> {
+        Binding(get: { code }, set: { value in
+            if mode != .register && value.uppercased() != code.uppercased() {
+                draft = nil
+                result = nil
+                confirmDelete = false
+            }
+            code = value
+        })
+    }
 
     var body: some View {
         Form {
             Section {
-                TextField(mode == .register ? "得意先コード（6桁）" : "得意先コード（7桁）", text: $code)
+                TextField(mode == .register ? "得意先コード（6桁）" : "得意先コード（7桁）", text: codeInput)
                     .textInputAutocapitalization(.characters)
                     .autocorrectionDisabled()
                     .focused($focused, equals: .code)

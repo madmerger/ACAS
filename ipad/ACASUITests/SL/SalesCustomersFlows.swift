@@ -2,6 +2,19 @@ import XCTest
 
 final class SalesCustomersFlows: XCTestCase {
     @MainActor
+    func testChangingLookupCodeDiscardsEditSelection() throws {
+        let (app, input) = try launch("SL-400", operation: "edit")
+        let code = app.textFields["sales.customer.code"]
+        enter(input["code"], in: code)
+        tap("sales.customer.search", in: app)
+        let save = app.buttons["sales.customer.save"]
+        XCTAssertTrue(save.waitForExistence(timeout: 5))
+        code.tap()
+        code.typeText(XCUIKeyboardKey.delete.rawValue)
+        XCTAssertTrue(save.waitForNonExistence(timeout: 5))
+    }
+
+    @MainActor
     func testSL400() throws {
         let (app, input) = try launch("SL-400", operation: "edit")
         enter(input["code"], in: app.textFields["sales.customer.code"])
