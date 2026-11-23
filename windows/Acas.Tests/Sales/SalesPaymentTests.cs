@@ -16,6 +16,29 @@ public sealed class SalesPaymentTests
     }
 
     [Fact]
+    public void PaymentCorrectionClearsBatchAndAllocationButKeepsCobolClearingDate()
+    {
+        using var db = new Db();
+        var ledger = PostedSale(db);
+        var date = new DateTime(2026, 11, 23);
+        ledger.RecordPaymentBatch([new("CUST011", date, 120m, false, [new(0, 120m)])]);
+        var menu = new SalesScreens(ledger).MainMenu();
+        var lookup = Assert.IsType<FormScreen>(menu.Items.Single(i => i.Id == "SalesPaymentAmend").Open!());
+        var payments = Assert.IsType<TableScreen>(lookup.Submit(new FormValues(new Dictionary<string, object?>
+        {
+            ["SalesPaymentAmendCustomer"] = "CUST011"
+        })));
+        var confirm = Assert.IsType<ConfirmationScreen>(Assert.Single(payments.Rows).Open!());
+        Assert.IsType<InformationScreen>(confirm.Confirm());
+        Assert.Null(db.Read(SalesLedger.OpenItemFile, "CUST011/E9030000"));
+        Assert.Equal(Convert.FromHexString(
+            "4355535430313100000000a35f0200000000000000324f5244455230303120202020202020202020202020202020202020" +
+            "000000000c000010000c000000000c000000000c000002000c000000000c000000000c000000000c000000000c30000000000000000000000000000020a35f0200"),
+            db.Read(SalesLedger.OpenItemFile, "CUST011/00000000"));
+        Assert.Equal(1, ledger.SystemRecord().I("S-Flag-P"));
+    }
+
+    [Fact]
     public void PaymentEntryMatchesCobolAllocatedInvoiceAndPaymentRecords()
     {
         using var db = new Db();

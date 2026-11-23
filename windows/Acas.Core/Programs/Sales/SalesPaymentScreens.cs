@@ -3,6 +3,35 @@ namespace Acas.Core.Programs.Sales;
 public sealed partial class SalesScreens
 {
     private const string PaymentTitle = "入金入力・消込";
+    private const string PaymentAmendTitle = "入金修正";
+
+    private Screen PaymentAmend()
+    {
+        if (!sales.HasOpenItems() || sales.SystemRecord().I("S-Flag-P") == 0)
+            return Missing(PaymentAmendTitle, "入金明細");
+        return CustomerLookup(PaymentAmendTitle, "SalesPaymentAmendCustomer", customer =>
+            new TableScreen(PaymentAmendTitle, "SalesPendingPayments", ["バッチ", "明細番号", "入金額", "早期支払値引額"],
+                sales.PendingPayments(customer.Code).Select(p => new TableRow(
+                    [p.Batch.ToString(), p.Item.ToString(), SalesLedger.Amount(p.Amount), SalesLedger.Amount(p.Deducted)],
+                    () => PaymentCancellation(customer.Code, p))).ToArray()));
+    }
+
+    private Screen PaymentCancellation(string customer, PendingSalesPayment payment)
+    {
+        Screen ConfirmCancellation(IReadOnlyDictionary<int, decimal> deductions) =>
+            Confirm(PaymentAmendTitle, $"入金 {payment.Batch}／{payment.Item} を取り消し、消込を元に戻しますか。", "入金を取り消す",
+                () =>
+                {
+                    sales.CancelPayment(customer, payment.Number, deductions);
+                    return new InformationScreen(PaymentAmendTitle, "入金を取り消しました。");
+                }, PaymentAmend);
+        if (payment.Deducted == 0) return ConfirmCancellation(new Dictionary<int, decimal>());
+        var fields = payment.InvoicesWithoutLateCharge.Select(i => AmountField("SalesPaymentRestore" + i,
+            $"請求書 {i} に戻す早期支払値引額（合計 {SalesLedger.Amount(payment.Deducted)}）", 0, 6)).ToArray();
+        return Form(PaymentAmendTitle, fields, "取消内容を確認", values => ConfirmCancellation(
+            payment.InvoicesWithoutLateCharge.ToDictionary(i => i,
+                i => Decimal(values, "SalesPaymentRestore" + i, "早期支払値引額", 999.99m))));
+    }
 
     private Screen PaymentEntry()
     {

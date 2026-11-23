@@ -6,6 +6,8 @@ public sealed record PaymentAllocation(int Invoice, decimal Amount, bool WaiveLa
 public sealed record SalesPaymentInput(string Customer, DateTime Date, decimal Amount, bool FromUnapplied,
     IReadOnlyList<PaymentAllocation> Allocations);
 public sealed record SalesPaymentItem(int Number, int Date, decimal Outstanding, decimal LateCharge);
+public sealed record PendingSalesPayment(int Number, int Batch, int Item, decimal Amount, decimal Deducted,
+    IReadOnlyList<int> InvoicesWithoutLateCharge);
 
 public sealed partial class SalesLedger
 {
@@ -32,6 +34,67 @@ public sealed partial class SalesLedger
         SaveSystem(system);
         return batch;
     });
+
+    public IReadOnlyList<PendingSalesPayment> PendingPayments(string customer)
+    {
+        var items = ReadOpenItems(customer);
+        return items.Where(item => item.I("type") is 5 or 6 && item.I("closed") == 0 && item.I("batchNumber") != 0)
+            .Select(item => new PendingSalesPayment(item.I("number"), item.I("batchNumber"), item.I("batchItem"),
+                item.N("paid"), item.N("deductAmount"), items.Where(invoice => SamePaymentBatch(invoice, item) &&
+                    invoice.N("deductAmount") == 0).Select(invoice => invoice.I("number")).ToArray())).ToArray();
+    }
+
+    public void CancelPayment(string customer, int number, IReadOnlyDictionary<int, decimal> deductions) => db.Atomic(() =>
+    {
+        var system = SystemRecord();
+        if (system.I("S-Flag-P") == 0) throw new SalesRuleException("未転記の入金がありません。");
+        var client = CustomerRecord(customer);
+        string code = client.S("key");
+        string key = OpenItemKey(code, number);
+        if (db.Read(OpenItemFile, key) is not { } data)
+            throw new SalesRuleException("指定された未転記の入金が見つかりません。");
+        var payment = DecodePostingItem(data);
+        if (payment.I("type") is not (5 or 6) || payment.I("closed") != 0 || payment.I("batchNumber") == 0)
+            throw new SalesRuleException("指定された未転記の入金が見つかりません。");
+
+        decimal remainingAllocation = payment.N("net"), remainingDeduction = payment.N("deductAmount");
+        var used = new HashSet<int>();
+        foreach (var (invoiceKey, invoiceBytes) in db.Scan(OpenItemFile, code).TakeWhile(r => r.Key.StartsWith(code, StringComparison.Ordinal)))
+        {
+            var invoice = DecodePostingItem(invoiceBytes);
+            if (!SamePaymentBatch(invoice, payment)) continue;
+            decimal allocated = invoice.N("creditFor") / 100;
+            remainingAllocation -= allocated;
+            invoice.SetN("paid", invoice.N("paid") - allocated);
+            invoice.SetN("pc", invoice.N("pc") - allocated);
+            foreach (string field in new[] { "batchNumber", "batchItem", "creditFor", "closed" }) invoice.SetN(field, 0);
+            if (deductions.TryGetValue(invoice.I("number"), out decimal restored))
+            {
+                if (!ValidPaymentAmount(restored) || restored > remainingDeduction ||
+                    invoice.N("deductAmount") != 0 && restored != 0)
+                    throw new SalesRuleException("戻す早期支払値引額を確認してください。");
+                remainingDeduction -= restored;
+                used.Add(invoice.I("number"));
+                if (restored != 0) invoice.SetN("deductAmount", restored);
+            }
+            db.Rewrite(OpenItemFile, invoiceKey, invoice.B);
+        }
+        if (remainingAllocation != 0 || remainingDeduction != 0 || deductions.Keys.Any(k => !used.Contains(k)))
+            throw new SalesRuleException("消込額または早期支払値引額を全額戻せません。");
+        db.Delete(OpenItemFile, key);
+        if (payment.I("type") == 6)
+        {
+            client.SetN("unapplied", client.N("unapplied") + payment.N("paid"));
+            db.Rewrite(CustomerFile, code, client.B);
+        }
+        system.Set("Oi-3-Flag", "Y");
+        SaveSystem(system);
+        return true;
+    });
+
+    private static bool SamePaymentBatch(Rec invoice, Rec payment) =>
+        invoice.I("type") == 2 && invoice.I("batchNumber") == payment.I("batchNumber") &&
+        invoice.I("batchItem") == payment.I("batchItem");
 
     private void SavePayment(SalesPaymentInput input, int batch, int sequence)
     {
