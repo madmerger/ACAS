@@ -168,6 +168,37 @@ final class SalesReachFlows: XCTestCase {
         }
     }
 
+    func testCompactSalesExitReturnsToSalesMenu() throws {
+        try XCTSkipUnless(UIDevice.current.userInterfaceIdiom == .phone, "コンパクト幅の端末で実行してください")
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        app.launchEnvironment["ACAS_FIXTURE"] = try Data(contentsOf: fixtureURL("SL-241")).base64EncodedString()
+        app.launchArguments += ["-AppleLanguages", "(ja)", "-AppleLocale", "ja_JP"]
+        XCUIDevice.shared.orientation = .portrait
+        app.launch()
+        XCTAssertTrue(app.staticTexts["SL-241"].waitForExistence(timeout: 10))
+        let sales = app.buttons["section.sales"]
+        if !sales.isHittable {
+            app.navigationBars.buttons.firstMatch.tap()
+        }
+        XCTAssertTrue(sales.waitForExistence(timeout: 5))
+        sales.tap()
+        let confirm = app.buttons["sales.date.save"]
+        XCTAssertTrue(confirm.waitForExistence(timeout: 5))
+        confirm.tap()
+        XCTAssertFalse(app.buttons["section.system"].isHittable)
+        let exit = app.buttons["sales.exit"]
+        for _ in 0..<5 where !exit.isHittable { app.swipeUp() }
+        XCTAssertTrue(exit.isHittable)
+        exit.tap()
+        XCTAssertTrue(app.navigationBars["売掛元帳"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["sales.customers"].isHittable)
+        XCTAssertFalse(app.buttons["system.company"].isHittable)
+        XCTAssertTrue(app.staticTexts["sales.exit.noBackup"].exists)
+        XCTAssertTrue(app.staticTexts["case.verdict.match"].waitForExistence(timeout: 5))
+        attach(app, name: "SL-241-コンパクト幅")
+    }
+
     func testSL242() throws {
         try reach("SL-242", through: ["section.system", "system.company"], title: "会社設定", verdict: nil) { app in
             XCTAssertEqual(app.textFields["system.company.name"].value as? String, "EQUIVALENCE BUSINESS")
