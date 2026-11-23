@@ -31,6 +31,36 @@ public class DatabaseTests
     }
 
     [Fact]
+    public void 作成日時が不正でも帳票を読み込める()
+    {
+        var directory = Directory.CreateTempSubdirectory();
+        try
+        {
+            var path = Path.Combine(directory.FullName, "acas.db");
+            using var db = new Db(path);
+            using var connection = new SqliteConnection(new SqliteConnectionStringBuilder { DataSource = path }.ToString());
+            connection.Open();
+            using var command = connection.CreateCommand();
+            command.CommandText = """
+                INSERT INTO spool(name, created, body) VALUES
+                    ('期限帳票', 'invalid', '期限の集計'),
+                    ('残高帳票', '2025-04-01T12:34:56+09:00', '残高の集計')
+                """;
+            command.ExecuteNonQuery();
+
+            var entries = db.Spool();
+            Assert.Equal("期限の集計", entries[0].Body);
+            Assert.Equal(DateTimeOffset.MinValue, entries[0].Created);
+            Assert.Equal(new DateTimeOffset(2025, 4, 1, 12, 34, 56, TimeSpan.FromHours(9)), entries[1].Created);
+        }
+        finally
+        {
+            SqliteConnection.ClearAllPools();
+            directory.Delete(true);
+        }
+    }
+
+    [Fact]
     public void 存在しない初期データを指定してもデータを消さない()
     {
         using var db = new Db();

@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text;
 using System.Text.Json;
 using Microsoft.Data.Sqlite;
@@ -90,13 +91,18 @@ public sealed class Db : IDisposable
 
     public void AddSpool(string name, string body) =>
         Exec("INSERT INTO spool(name,created,body) VALUES($n,$c,$b)", ("$n", name), ("$c", DateTime.UtcNow.ToString("o")), ("$b", body));
-    public List<(long Id, string Name, string Created, string Body)> Spool()
+    public List<(long Id, string Name, DateTimeOffset Created, string Body)> Spool()
     {
-        var r = new List<(long, string, string, string)>();
+        var r = new List<(long, string, DateTimeOffset, string)>();
         using var cmd = _c.CreateCommand();
         cmd.CommandText = "SELECT id,name,created,body FROM spool ORDER BY id";
         using var rd = cmd.ExecuteReader();
-        while (rd.Read()) r.Add((rd.GetInt64(0), rd.GetString(1), rd.GetString(2), rd.GetString(3)));
+        while (rd.Read())
+        {
+            var created = DateTimeOffset.TryParse(rd.GetString(2), CultureInfo.InvariantCulture, DateTimeStyles.None, out var timestamp)
+                ? timestamp : DateTimeOffset.MinValue;
+            r.Add((rd.GetInt64(0), rd.GetString(1), created, rd.GetString(3)));
+        }
         return r;
     }
 

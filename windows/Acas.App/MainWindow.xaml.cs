@@ -1,4 +1,3 @@
-using System.Globalization;
 using System.IO;
 using System.Windows;
 using System.Windows.Automation;
@@ -56,7 +55,7 @@ public partial class MainWindow : Window
     {
         var rows = _database.Spool().Select(entry =>
         {
-            var created = DateTimeOffset.Parse(entry.Created, CultureInfo.InvariantCulture).ToLocalTime();
+            var created = entry.Created == DateTimeOffset.MinValue ? entry.Created : entry.Created.ToLocalTime();
             var title = $"帳票 {entry.Id}";
             return new TableRow([title, created.ToString("yyyy年M月d日 HH:mm")],
                 () => new ReportScreen(title, entry.Body, OpenReports), [entry.Id, created]);
