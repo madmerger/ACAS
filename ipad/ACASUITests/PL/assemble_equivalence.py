@@ -27,6 +27,14 @@ def fallback_rotation(stream):
     return "transpose=cclock," if stream["height"] > stream["width"] else ""
 
 
+def recording_video(run):
+    root = run.resolve()
+    source = (root / "simulator.mp4").resolve()
+    if not source.is_relative_to(root):
+        raise ValueError(f"試行フォルダー外の録画です: {run}")
+    return source
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("deliverables", type=Path)
@@ -42,7 +50,7 @@ def main():
         if not start:
             raise ValueError(f"ケース開始時刻がありません: {run}")
         recording = json.loads((run / "recording.json").read_text())
-        source = run / "simulator.mp4"
+        source = recording_video(run)
         duration, stream = probe(source)
         trim = max(0, float(start[1]) - recording["startEpoch"] - 0.5)
         if trim >= duration:
