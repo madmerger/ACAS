@@ -108,8 +108,8 @@ public static class Calc
     {
         var ev = c.GetProperty("legacy_result").GetProperty("evidence");
         if (ev.GetArrayLength() == 0) return null;
-        var p = Path.Combine(evidenceRoot, ev[0].GetString()!.Replace('/', Path.DirectorySeparatorChar), "00-output.txt");
-        if (!File.Exists(p)) return null;
+        var p = Acas.Core.Engine.CaseRunner.SafePath(evidenceRoot, ev[0].GetString()! + "/00-output.txt");
+        if (p == null || !File.Exists(p)) return null;
         return File.ReadAllText(p).Split('\n').Select(x => x.TrimEnd('\r')).FirstOrDefault(x => x.Trim().Length > 0);
     }
 }

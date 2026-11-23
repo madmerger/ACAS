@@ -65,6 +65,14 @@ public static class CaseRunner
         return new DateTime(2026, 11, 23, 4, 20, 0);
     }
 
+    /// <summary>台帳由来の相対パスを root 配下に限定して解決する。配下でなければ null。</summary>
+    public static string? SafePath(string root, string rel)
+    {
+        string r = Path.GetFullPath(root).TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
+        string full = Path.GetFullPath(Path.Combine(r, rel.Replace('/', Path.DirectorySeparatorChar)));
+        return full.StartsWith(r, StringComparison.OrdinalIgnoreCase) ? full : null;
+    }
+
     /// <param name="onStep">UI 再生用: 各キー送出前に呼ばれる(待ち時間を入れる)。</param>
     public static async Task<CaseResult> Run(JsonElement c, string evidenceRoot, Ctx? ctx = null, Func<int, Task>? onStep = null)
     {
@@ -73,10 +81,8 @@ public static class CaseRunner
         string? runDir = null;
         if (legacy.TryGetProperty("evidence", out var ev) && ev.GetArrayLength() > 0)
         {
-            // 台帳の証跡パスは証跡ルート配下に限定する
-            string root = Path.GetFullPath(evidenceRoot).TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
-            string full = Path.GetFullPath(Path.Combine(root, ev[0].GetString()!.Replace('/', Path.DirectorySeparatorChar)));
-            if (full.StartsWith(root, StringComparison.OrdinalIgnoreCase)) runDir = full;
+            runDir = SafePath(evidenceRoot, ev[0].GetString()!);
+            if (runDir == null) { res.Error = "台帳の証跡パスが証跡フォルダー外を指しています: " + ev[0].GetString(); return res; }
         }
         var runner = c.GetProperty("runner");
         var app = runner.GetProperty("app").GetString();
@@ -101,7 +107,8 @@ public static class CaseRunner
             if (runDir != null)
             {
                 var name = step.TryGetProperty("name", out var n) ? n.GetString() : "screen";
-                var f = Path.Combine(runDir, $"{i:00}-{name}.txt");
+                var f = SafePath(runDir, $"{i:00}-{name}.txt");
+                if (f == null) { res.Error = "台帳のステップ名が証跡フォルダー外を指しています: " + name; break; }
                 if (File.Exists(f))
                 {
                     res.ScreensCompared++;
