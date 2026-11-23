@@ -13,7 +13,10 @@ public sealed record InformationScreen(string Title, string Message) : Screen(Ti
 public sealed record TableScreen(string Title, string Id, IReadOnlyList<string> Columns,
     IReadOnlyList<TableRow> Rows, string EmptyMessage = "表示するデータがありません。") : Screen(Title);
 
-public sealed record TableRow(IReadOnlyList<string> Cells, Func<Screen>? Open = null);
+public sealed record TableRow(IReadOnlyList<string> Cells, Func<Screen>? Open = null, IReadOnlyList<object>? SortValues = null)
+{
+    public IReadOnlyList<object> SortCells => SortValues ?? Cells;
+}
 
 public abstract record Field(string Id, string Label);
 public sealed record TextField(string Id, string Label, string Value = "", int MaxLength = 0) : Field(Id, Label);

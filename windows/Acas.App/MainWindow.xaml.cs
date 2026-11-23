@@ -59,7 +59,7 @@ public partial class MainWindow : Window
             var created = DateTimeOffset.Parse(entry.Created, CultureInfo.InvariantCulture).ToLocalTime();
             var title = $"帳票 {entry.Id}";
             return new TableRow([title, created.ToString("yyyy年M月d日 HH:mm")],
-                () => new ReportScreen(title, entry.Body, OpenReports));
+                () => new ReportScreen(title, entry.Body, OpenReports), [entry.Id, created]);
         }).ToArray();
         return new TableScreen("帳票一覧", "ReportList", ["帳票", "作成日時"], rows, "保存された帳票はありません。");
     }
@@ -98,7 +98,10 @@ public partial class MainWindow : Window
             HeadersVisibility = DataGridHeadersVisibility.Column, GridLinesVisibility = DataGridGridLinesVisibility.Horizontal
         }, table.Id, table.Title);
         for (int i = 0; i < table.Columns.Count; i++)
-            grid.Columns.Add(new DataGridTextColumn { Header = table.Columns[i], Binding = new Binding($"Cells[{i}]") });
+            grid.Columns.Add(new DataGridTextColumn
+            {
+                Header = table.Columns[i], Binding = new Binding($"Cells[{i}]"), SortMemberPath = $"SortCells[{i}]"
+            });
 
         var actions = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 12, 0, 0) };
         if (table.Rows.Any(row => row.Open != null))
