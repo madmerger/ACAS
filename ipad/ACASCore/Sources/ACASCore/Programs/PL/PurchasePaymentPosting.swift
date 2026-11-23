@@ -209,19 +209,22 @@ extension PurchaseLedger {
         let printer = PurchasePrinter(self)
         reportHeading(printer, id: id, title: title, columns: " Number   ---Date--- Supplier                         Payment      Deduction   Apportioned")
         printer.write(Cobol.x("", 90) + "Folio     Date      Approp.     Balance", after: 1)
-        let invoicesByPayment = Dictionary(grouping: items.filter { $0.int("oi-type") == 2 && $0.int("oi-cr") != 0 }) {
+        let invoicesByPayment = Dictionary(grouping: items.filter { $0.int("oi-type") == 2 && $0.int("oi-paid") != 0 }) {
             $0.int("oi-b-nos") * 1000 + $0.int("oi-b-item")
         }
         for payment in payments {
             let name = supplierRecord(payment.supplier)?.str("purch-name") ?? "Supplier Unknown"
-            let values = [payment.amount, payment.discount, payment.allocated]
-            printer.write(Cobol.z(payment.number ?? 0, 8) + " " + Maps04.toDate(Int((try? legacyDate(payment.date)) ?? 0))
+            guard let number = payment.number,
+                  let bytes = store.read(openItemsPath, key: openItemKey(supplier: payment.supplier, number: number)) else { continue }
+            let allocated = Record(PurchaseRecords.oiLayout, bytes: bytes).int("oi-approp")
+            let values = [payment.amount, payment.discount, allocated]
+            printer.write(Cobol.z(number, 8) + " " + Maps04.toDate(Int((try? legacyDate(payment.date)) ?? 0))
                           + " " + Cobol.x(payment.supplier, 9) + Cobol.x(name, 25) + paymentFigures(values), after: 1)
-            for item in invoicesByPayment[payment.number ?? 0] ?? []
+            for item in invoicesByPayment[number] ?? []
                 where Cobol.rtrim(item.str("oi-supplier")) == payment.supplier {
                 let reference = Pic.edit("z(7)9", value: item.int("oi-invoice"), scale: 0) + "  "
                 let date = reportDate(item.int("oi-date"))
-                let appropriation = item.int("oi-cr") / 100
+                let appropriation = min(item.int("oi-paid"), allocated)
                 let amount = appropriation == 0 ? Cobol.x("", 9) : Pic.edit("z(5)9.99", value: appropriation, scale: 2)
                 let balance = PurchaseRecords.cr("z(7)9.99cr", itemGross(item) - item.int("oi-paid"), int: 8)
                 printer.write(Cobol.x("", 90) + reference + date + amount + balance, after: 1)

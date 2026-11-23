@@ -828,7 +828,7 @@ final class PurchaseLedgerTests: XCTestCase {
         XCTAssertEqual(ledger.store.read(ledger.openItemsPath, key: key), item.bytes)
     }
 
-    func testPaymentProofReportsOnlyThisPaymentAcrossMultipleInvoices() throws {
+    func testPaymentProofCapsCumulativePaidAtStoredAppropriation() throws {
         let ledger = try makeLedger()
         let code = try addSupplier(ledger)
         var invoice = PurchaseLedger.Transaction(date: ledger.processingDate)
@@ -850,9 +850,13 @@ final class PurchaseLedgerTests: XCTestCase {
         payment.amount = 6_000
         payment.allocations = [.init(invoice: first, amount: 2_000), .init(invoice: second, amount: 4_000)]
         try ledger.savePayment(payment)
-        try ledger.proofPayments()
+        let key = ledger.openItemKey(supplier: code, number: first)
+        var partiallyPaid = Record(PurchaseRecords.oiLayout, bytes: try XCTUnwrap(ledger.store.read(ledger.openItemsPath, key: key)))
+        partiallyPaid.setInt("oi-cr", 0)
+        XCTAssertTrue(ledger.store.rewrite(ledger.openItemsPath, key: key, data: partiallyPaid.bytes))
+        XCTAssertEqual(try ledger.proofPayments().first?.allocated, 4_000)
         let report = try XCTUnwrap(ledger.store.readRaw(PurchaseLedger.reportPath))
-        for (folio, appropriated, balance) in [(first, "20.00", "50.00"), (second, "40.00", "80.00")] {
+        for (folio, appropriated, balance) in [(first, "60.00", "50.00"), (second, "40.00", "80.00")] {
             let prefix = String(repeating: " ", count: 90) + Pic.edit("z(7)9", value: folio, scale: 0)
             let detail = try XCTUnwrap(report.split(separator: 10).map(SJIS.decode).first { $0.hasPrefix(prefix) })
             XCTAssertEqual(detail.dropFirst(110).prefix(9).trimmingCharacters(in: .whitespaces), appropriated)
