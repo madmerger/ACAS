@@ -3,6 +3,30 @@ import XCTest
 @testable import ACASCore
 
 final class PurchaseLedgerTests: XCTestCase {
+    func testCreditRejectsReceiptAndOtherSuppliersInvoice() throws {
+        let ledger = try makeLedger()
+        let code = try addSupplier(ledger)
+        var secondSupplier = ledger.newSupplier
+        secondSupplier.code = "SUPP02"
+        secondSupplier.address1 = "住所\\市"
+        let second = try ledger.saveSupplier(secondSupplier, creating: true)
+        var value = PurchaseLedger.Transaction(date: ledger.processingDate)
+        value.supplier = code
+        value.lines[0].code = "a1"
+        value.lines[0].net = 100
+        let invoice = try ledger.saveTransaction(value)
+        value.type = .receipt
+        let receipt = try ledger.saveTransaction(value)
+        value.type = .creditNote
+        value.creditReference = receipt
+        XCTAssertThrowsError(try ledger.saveTransaction(value))
+        value.supplier = second
+        value.creditReference = invoice
+        XCTAssertThrowsError(try ledger.saveTransaction(value))
+        value.supplier = code
+        XCTAssertNoThrow(try ledger.saveTransaction(value))
+    }
+
     func testSupplierAddressLimitIsMeasuredInStoredBytes() throws {
         let ledger = try makeLedger()
         var supplier = ledger.newSupplier

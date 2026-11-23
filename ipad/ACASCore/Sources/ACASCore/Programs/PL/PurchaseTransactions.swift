@@ -176,6 +176,13 @@ extension PurchaseLedger {
         if value.number != nil && previous == nil { throw Error.transactionNotFound }
         if value.number == nil && previous != nil { throw Error.duplicateTransaction }
         if previous?.str("ih-status").uppercased() == "Z" { throw Error.alreadyPosted }
+        if value.type == .creditNote, value.creditReference != 0 {
+            guard value.creditReference != number, value.creditReference != 99_999_999 else { throw Error.invalidTransaction }
+            if let target = self.header(value.creditReference) {
+                guard target.int("ih-type") == TransactionType.invoice.rawValue,
+                      target.raw("ih-supplier") == supplier.raw("purch-key") else { throw Error.invalidTransaction }
+            }
+        }
         var header = previous ?? Record(PurchaseRecords.invHeaderLayout)
         header.setInt("ih-invoice", number)
         header["ih-supplier"] = supplier.str("purch-key")
