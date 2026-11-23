@@ -23,6 +23,9 @@ enum General {
             s.toDay = Maps04.toDate(Int(s.sys.int("run-date")))
             if s.sys.int("date-form") == 0 { s.sys.setInt("date-form", 1) }
             if s.sys.int("level-1") != 1 {
+                s.shared["error-code"] = 1
+                try s.call("maps99")
+                s.shared["error-code"] = 15
                 try s.call("maps99")
                 return
             }
@@ -92,6 +95,9 @@ enum General {
                         if try load(s, "gl100") { return }
                         if s.termCode == 5 { continue accept }
                         if s.termCode == 4 {
+                            s.shared["error-code"] = 31
+                            try s.call("maps99")
+                            s.shared["error-code"] = 15
                             try s.call("maps99")
                             continue menu
                         }

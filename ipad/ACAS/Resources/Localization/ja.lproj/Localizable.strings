@@ -28,6 +28,67 @@
 "gl000.enter_date_usa" = "本日の日付を入力 mm/dd/yyyy     - [          ]";
 "gl000.enter_date_intl" = "本日の日付を入力 yyyy/mm/dd     - [          ]";
 "gl000.gl009" = "GL009 日付が不正";
+/* ---- gl2.ja.strings ---- */
+/* maps99.cbl — error.txt */
+"maps99.not_found" = "Error not in error.txt. Hit return to close";
+"maps99.e001" = "**Unauthorised Usage Aborting**";
+"maps99.e002" = "**Sales Ledger Not Yet Set-Up**";
+"maps99.e003" = "!!Customer Record Not Found!!";
+"maps99.e004" = "!!Delivery Data Missing!!";
+"maps99.e005" = "!!Customer Record Already Exists!!";
+"maps99.e006" = "!!P.A. Code Already Exists!!";
+"maps99.e007" = "!!P.A. Group Code Does Not Exist!!";
+"maps99.e008" = "!!P.A. Group Code Used As Analysis Code!!";
+"maps99.e009" = "!!P.A. Code Does Not Exist!!";
+"maps99.e010" = "**No Proofed Sales Transactions**";
+"maps99.e011" = "**Payments Not Proofed**";
+"maps99.e012" = "**Purchase Ledger Not Yet Set-Up**";
+"maps99.e013" = "** No Transactions Have Been Posted **";
+"maps99.e014" = "** No Invoices To Proof/Post **";
+"maps99.e015" = "Press Return To Continue";
+"maps99.e016" = "!!Unidentified Error!!";
+"maps99.e017" = "**Invoice File Does Not Exist**";
+"maps99.e018" = "** Response Must Be (Y or N) **";
+"maps99.e019" = "**Sales Transactions Not Posted**";
+"maps99.e020" = "!!Unidentified Error!!";
+"maps99.e021" = "!!Supplier Record Not Found!!";
+"maps99.e022" = "!!Supplier Record Already Exists!!";
+"maps99.e023" = "**No Proofed Purchase Transactions**";
+"maps99.e024" = "**Payments Proofed Not Posted**";
+"maps99.e025" = "**Purchase Transactions Not Posted**";
+"maps99.e026" = "**Value.Dat Missing**";
+"maps99.e027" = "**Unprinted Invoices Exist..Correct & Run Again**";
+"maps99.e028" = "Invoices Not Posted; Payment Entry Not Allowed";
+"maps99.e029" = "**P.A. File Does Not Exist**";
+"maps99.e030" = "**No Payments To Correct/Proof/Post**";
+"maps99.e031" = "**No Archive File, Aborted**";
+"maps99.e032" = "!!Notes data missing on Delivery File!!";
+"maps99.e033" = "!!Missing System record in System File!!";
+"maps99.e045" = "Press Return For Menu";
+"maps99.e099" = "??Operator Selected Abort??";
+
+/* gl020.cbl */
+"gl020.title" = "Default File Utilities";
+"gl020.gl100" = "GL100 Chart of Accounts not set up";
+"gl020.gl010" = "GL010 Hit Return";
+"gl020.select" = "Select the required function by number    [ ]";
+"gl020.opt1" = "(1)  Set-Up Default Accounts";
+"gl020.opt2" = "(2)  Amend  Default Accounts";
+"gl020.opt3" = "(3)  Display The Defaults";
+"gl020.opt9" = "(9)  Return To System Menu";
+"gl020.setup_title" = "Default Accounts Set-Up";
+"gl020.add_existing" = "Add To Existing Defaults (Y/N) ? - [ ]";
+"gl020.nb1" = "N.B. (1) If first time set-up for this client answer no (N)";
+"gl020.nb2" = "(2) Answering no (N)";
+"gl020.destroys" = "destroys";
+"gl020.existing_defaults" = "the existing defaults";
+"gl020.amend_title" = "Default Accounts Amendment";
+"gl020.enter_number" = "Enter Number To Alter (Return to exit)  :- [  ]";
+"gl020.show_title" = "default accounts display";
+"gl020.end_listing" = "End of listing. Hit return for Menu.";
+"gl020.enter_password" = "Enter Password  - [    ]";
+"gl020.h_acnos" = "A/C Nos";
+"gl020.h_codevat" = "Code Vat";
 /* ---- sys.ja.strings ---- */
 /* ACAS.cbl — システムメニュー (日本語) */
 "sys.sy006" = "SY006 プログラム引数は2個までです。指定された数: ";

@@ -5,5 +5,8 @@ public enum GLPrograms {
     public static func register(_ s: Session) {
         s.programs["general"] = General.run
         s.programs["gl000"] = GL000.run
+        s.programs["gl020"] = GL020.run
+        s.programs["gl030"] = GL030.run
+        if s.programs["maps99"] == nil { s.programs["maps99"] = GLMaps99.run }
     }
 }
