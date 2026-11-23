@@ -7,7 +7,6 @@ ST020 (3.01.29)	ST020 (3.01.29)
 ST030 (3.01.22)	ST030 (3.01.22)
 ST040 (3.01.06)	ST040 (3.01.06)
 ST050 (3.01.06)	ST050 (3.01.06)
-ST060 (3.01.06)	ST060 (3.01.06)
 # --- FILE STATUS 説明（FileStat-Msgs.cpy） ---
 Success	正常
 Success Duplicate	正常（重複キー）
@@ -359,3 +358,16 @@ ST503 Error opening temp file	ST503 一時ファイルが開けない
 ST504 Error writing to temp file	ST504 一時ファイル書込エラー
 ST505 Error: Length of Stock File not same as Temp File	ST505 在庫ファイルと一時ファイルの長さ不一致
 ST506 Error opening Stock File	ST506 在庫ファイルを開けません
+# --- st060（在庫品目一括取込） ---
+ST060 (3.01.00)	ST060 (3.01.00)
+Stock File Importer	在庫品目一括取込
+Provide full path and file name of file to be imported	取込むファイルのパスとファイル名を入力
+Records Imported	取込件数
+Records Written	書込件数
+Problem with amount	金額データ不正
+Has invalid quotes or other!	引用符などが不正です
+Has become	変換結果
+ST601 Error on Open/Reading Import File	ST601 取込ファイルのオープン/読込エラー
+ST602 Note error and hit return	ST602 エラーを控えて Enter
+ST603 Note total and hit return	ST603 件数を控えて Enter
+ST604 Note error and hit return to quit	ST604 エラーを控えて Enter で終了
