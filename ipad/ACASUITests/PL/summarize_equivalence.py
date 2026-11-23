@@ -165,6 +165,12 @@ def markdown_text(value):
                    for char in " ".join(value.splitlines()))
 
 
+def video_start(part, case, start):
+    if case in part.get("caseStarts", {}):
+        return part["offset"] + part["caseStarts"][case]
+    return None if start is None else part["offset"] + start - part["trim"]
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("evidence", type=Path)
@@ -182,8 +188,7 @@ def main():
     for part in json.loads(args.timeline.read_text()):
         run = Path(part["run"])
         for case, result in read_run(run).items():
-            if result["start"] is not None:
-                result["start"] += part["offset"] - part["trim"]
+            result["start"] = video_start(part, case, result["start"])
             history[case].append({**result, "run": run})
 
     fields = ["ケースID", "移行後結果", "一致判定", "動画ファイル名", "動画開始時刻(秒)", "不一致原因・対処履歴"]

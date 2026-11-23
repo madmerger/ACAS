@@ -4,11 +4,17 @@ import unittest
 from pathlib import Path
 
 from summarize_equivalence import (
-    compare_attempt, comparison_note, csv_cell, markdown_text, observed_summary, original_reports, read_run,
+    compare_attempt, comparison_note, csv_cell, markdown_text, observed_summary, original_reports, read_run, video_start,
 )
 
 
 class RunHistoryTests(unittest.TestCase):
+    def test_verified_frame_offset_takes_precedence_over_log_clock(self):
+        part = {"offset": 30.0, "trim": 5.0, "caseStarts": {"PL-003": 0.0}}
+        self.assertEqual(video_start(part, "PL-003", 8.0), 30.0)
+        self.assertEqual(video_start(part, "PL-006", 22.0), 47.0)
+        self.assertIsNone(video_start(part, "PL-007", None))
+
     def test_markdown_evidence_is_rendered_as_literal_inline_text(self):
         self.assertEqual(
             markdown_text("![記録](画像)\n# <記録> & `原本` **確認**"),
