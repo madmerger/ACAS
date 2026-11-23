@@ -193,3 +193,21 @@ Narrative      [	摘要           [
 Invalid Date	日付不正
 Invalid A/C number	勘定番号が不正
 Invalid code	区分不正
+Batch Amendment / Reporting Functions	バッチ修正・帳票機能
+(1)  Amend existing Batch	(1)  既存バッチの修正
+(2)  Print Proof Reports - All Batches	(2)  検証帳票の印刷 - 全バッチ
+(3)  Print Proof Reports - One Batch	(3)  検証帳票の印刷 - 指定バッチ
+(4)  Print all Transactions	(4)  全仕訳の印刷
+Enter Batch Number :- [     ]	バッチ番号を入力   :- [     ]
+General Ledger - Proof Report	総勘定元帳 - 検証帳票
+Printing......please wait	印刷中......お待ちください
+Transaction Proof Report	仕訳検証帳票
+Page	頁
+Batch -	バッチ -
+Date Entered -	入力日 -
+Number  Code  ---Date--- --Debit--   --Credit-    Net Amount    VAT Amount  VAT Account  VAT Side   ------------Narative------------	番号    区分  ---日付--- --借方--    --貸方--     正味金額      税額        税勘定       税貸借     --------------摘要--------------
+------  ----              A/C  P/C    A/C  P/C    ----------    ----------    A/C  P/C   --------	------  ----              勘定 P/C    勘定 P/C    ----------    ----------    勘定 P/C   --------
+Batch              ----Net----    ----VAT----	バッチ             ----正味---    ----税額---
+Actual	実績
+* Batch Verified Ok *	* バッチ検証 正常   *
+*  Batch In ERROR   *	*  バッチ エラー    *
