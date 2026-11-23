@@ -229,6 +229,7 @@ private enum SalesMessage {
     static func text(for error: Error) -> String {
         switch error as? SalesLedger.Error {
         case .missingCompany: "先に会社設定を保存してください"
+        case .deliveryWriteFailed: "納品先または備考を保存できませんでした"
         case .invalidDate: "処理日を確認してください"
         case .invalidCode: "得意先コードは半角の英数字またはハイフン6桁で入力してください"
         case .duplicateCustomer: "この得意先はすでに登録されています"

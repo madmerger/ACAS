@@ -3,7 +3,7 @@ import Foundation
 public struct SalesLedger {
     public enum Error: Swift.Error {
         case missingCompany, invalidDate, invalidCode, duplicateCustomer, missingCustomer
-        case invalidField, invalidAddress, outstandingBalance
+        case invalidField, invalidAddress, outstandingBalance, deliveryWriteFailed
     }
 
     public struct Customer: Identifiable {
@@ -117,7 +117,7 @@ public struct SalesLedger {
         }
         context.store.createIndexed(deliveryFile.path)
         guard file.write(record) == "00" else { throw Error.duplicateCustomer }
-        saveDelivery(of: customer, key: key)
+        try saveDelivery(of: customer, key: key)
         return self.customer(from: record)
     }
 
@@ -125,7 +125,7 @@ public struct SalesLedger {
         var record = try customerRecord(customer.code)
         try apply(customer, to: &record, system: systemRecord())
         guard salesFile.rewrite(record) == "00" else { throw Error.missingCustomer }
-        saveDelivery(of: customer, key: Cobol.rtrim(record.str("sales-key")))
+        try saveDelivery(of: customer, key: Cobol.rtrim(record.str("sales-key")))
     }
 
     public func closeCustomer(code: String, permanently: Bool) throws {
@@ -136,7 +136,12 @@ public struct SalesLedger {
             let key = file.key(of: record)
             guard file.delete(key: key) == "00" else { throw Error.missingCustomer }
             let delivery = deliveryFile
-            for type: UInt8 in [0x44, 0x4e] { delivery.delete(key: [type] + key) }
+            for type: UInt8 in [0x44, 0x4e] {
+                let deliveryKey = [type] + key
+                if delivery.read(key: deliveryKey) != nil, delivery.delete(key: deliveryKey) != "00" {
+                    throw Error.deliveryWriteFailed
+                }
+            }
         } else {
             record.setInt("sales-status", 0)
             guard file.rewrite(record) == "00" else { throw Error.missingCustomer }
@@ -220,22 +225,24 @@ public struct SalesLedger {
         !(Cobol.rtrim(customer.notes1).isEmpty && Cobol.rtrim(customer.notes2).isEmpty)
     }
 
-    private func saveDelivery(of customer: Customer, key: String) {
+    private func saveDelivery(of customer: Customer, key: String) throws {
         let file = deliveryFile
         for (type, exists, name, first, second) in [
             ("D", hasDelivery(customer), customer.deliveryName, customer.deliveryAddress1, customer.deliveryAddress2),
             ("N", hasNotes(customer), "", customer.notes1, customer.notes2),
         ] {
             let fullKey = type + key
+            let stored = file.read(key: fullKey) != nil
             if exists {
                 var record = Record(Self.deliveryLayout)
                 record["key"] = fullKey
                 record["name"] = name
                 record["address1"] = first
                 record["address2"] = second
-                if file.write(record) == "22" { file.rewrite(record) }
-            } else {
-                file.delete(key: SJIS.encode(fullKey, size: 8))
+                let status = stored ? file.rewrite(record) : file.write(record)
+                guard status == "00" else { throw Error.deliveryWriteFailed }
+            } else if stored {
+                guard file.delete(key: SJIS.encode(fullKey, size: 8)) == "00" else { throw Error.deliveryWriteFailed }
             }
         }
     }
