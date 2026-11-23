@@ -106,7 +106,7 @@ public class Pl030 extends Pl020 {
             getData1();
             if (crtStatus() == 2005) return;
             if (newScreen == 1) continue;
-            if (!lines.str("il-description", i).isBlank() && i != 40 && !escapeCode.equals("Q")) continue;
+            if (i < 40 && !lines.str("il-description", i).isBlank() && !escapeCode.equals("Q")) continue;
             return;
         }
     }
@@ -117,6 +117,7 @@ public class Pl030 extends Pl020 {
         while (true) {
             lin = j + 15;
             if (lin > 23) {
+                if (i > 40) { newScreen = 0; return; }
                 i--;
                 newScreen = 1;
                 return;
