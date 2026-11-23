@@ -42,7 +42,7 @@ public class SessionManager {
                     try {
                         ctx.term.clear();
                         ctx.term.display(2, 1, "end of program, please press a key to exit", 7);
-                        ctx.term.accept(2, 43, 1, null, Terminal.AUTO, 7);
+                        ctx.term.accept(2, 79, 1, null, Terminal.AUTO, 7);
                     } catch (RuntimeException ignored) { }
                 }
                 ctx.term.end(msg);
