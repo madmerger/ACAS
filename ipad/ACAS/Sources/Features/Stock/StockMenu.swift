@@ -39,8 +39,6 @@ struct StockMenu: View {
                     .onAppear { workspace.completed("stock.settings.open") }
             }
                 .accessibilityIdentifier("stock.settings")
-            NavigationLink(stockText("import.title")) { StockImportView(workspace: workspace) }
-                .accessibilityIdentifier("stock.import")
             Button(stockText("action.closeStock"), action: closeStock)
                 .accessibilityIdentifier("stock.closeStock")
         }
@@ -54,6 +52,7 @@ struct StockMenu: View {
                         processingDate = proposedDate
                         showDate = false
                         workspace.completed("stock.date")
+                        workspace.completed("stock.menu.open")
                     }
                     .accessibilityIdentifier("stock.confirmDate")
                 }
