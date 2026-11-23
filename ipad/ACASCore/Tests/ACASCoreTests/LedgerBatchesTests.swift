@@ -3,6 +3,29 @@ import SQLite3
 import XCTest
 
 final class LedgerBatchesTests: XCTestCase {
+    func testDefaultAndLineKeepTheirOwnBranches() throws {
+        let store = try FileStore()
+        let context = BusinessContext(store: store)
+        let setup = CompanySetup(context)
+        var settings = setup.settings
+        try settings.setText("TEST", for: "usera")
+        try settings.setText("B", for: "p-c")
+        try settings.setNumber(1, for: "scycle")
+        try setup.save(settings)
+        let chart = ChartOfAccounts(context)
+        for branch in ["00", "01", "02"] {
+            try chart.add(code: "300000", branch: branch, name: "CONTROL", type: 0, placement: "S", level: 1)
+        }
+        try GeneralLedgerSetup(context).saveDefault(number: 1, account: "300000", transactionCode: "GL", tax: .noTax)
+        let date = DateComponents(year: 2026, month: 11, day: 23)
+        var draft = LedgerBatchDraft(cycle: 1, defaultNumber: 1, direction: .credit, date: date)
+        draft.defaultBranch = "01"
+        let line = JournalLine(date: date, account: "300000", branch: "02", amount: 10, memo: "")
+        XCTAssertEqual(try LedgerBatches(context).add(draft, lines: [line]), 1)
+        let posting = try XCTUnwrap(RelativeFile(store, path: "ledgers/acas/posting.dat", recordSize: 98).read(2))
+        XCTAssertEqual(String(decoding: posting[20..<36], as: UTF8.self), "3000000130000002")
+    }
+
     func testFailedCounterWriteRollsBackBatchAndPostings() throws {
         let path = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         defer {

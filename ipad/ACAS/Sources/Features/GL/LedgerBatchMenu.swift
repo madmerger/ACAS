@@ -44,6 +44,7 @@ private struct LedgerBatchEditor: View {
         let id = UUID()
         var date: Date
         var account = ""
+        var branch = "00"
         var amount = ""
         var memo = ""
     }
@@ -52,6 +53,7 @@ private struct LedgerBatchEditor: View {
     @Environment(\.dismiss) private var dismiss
     @State private var entries: [Entry] = []
     @State private var selectedDefault = 0
+    @State private var defaultBranch = "00"
     @State private var direction = LedgerDirection.credit
     @State private var cycle = ""
     @State private var description = ""
@@ -62,7 +64,12 @@ private struct LedgerBatchEditor: View {
 
     private var defaults: [LedgerDefault] {
         let chart = ChartOfAccounts(workspace.context)
-        return GeneralLedgerSetup(workspace.context).defaults.filter { chart.account(code: $0.account) != nil }
+        let codes = Set(chart.accounts.filter { usesBranches || $0.branch == "00" }.map(\.code))
+        return GeneralLedgerSetup(workspace.context).defaults.filter { $0.id <= 32 && codes.contains($0.account) }
+    }
+
+    private var usesBranches: Bool {
+        ["P", "B"].contains(CompanySetup(workspace.context).settings.text("p-c"))
     }
 
     var body: some View {
@@ -73,6 +80,7 @@ private struct LedgerBatchEditor: View {
                     ForEach(defaults) { item in Text("\(item.id)：\(item.account)").tag(item.id) }
                 }
                 .accessibilityIdentifier("gl.batch.default")
+                if usesBranches { field("batch-default-branch", $defaultBranch, type: .numberPad) }
                 Picker(ledgerText("batch-direction"), selection: $direction) {
                     Text(ledgerText("batch-debit")).tag(LedgerDirection.debit)
                     Text(ledgerText("batch-credit")).tag(LedgerDirection.credit)
@@ -87,6 +95,7 @@ private struct LedgerBatchEditor: View {
                 Section(ledgerText("batch-line")) {
                     datePicker("batch-line-date", $entry.date)
                     field("account-code", $entry.account, type: .numberPad)
+                    if usesBranches { field("batch-line-branch", $entry.branch, type: .numberPad) }
                     field("batch-amount", $entry.amount, type: .numbersAndPunctuation)
                     field("batch-memo", $entry.memo)
                     Button(ledgerText("batch-remove-line"), role: .destructive) { entries.removeAll { $0.id == entry.id } }
@@ -132,7 +141,11 @@ private struct LedgerBatchEditor: View {
             draft.description = description
             draft.expectedItems = Int(count.isEmpty ? "0" : count) ?? -1
             draft.gross = try money(gross)
-            let lines = try entries.map { JournalLine(date: parts($0.date), account: $0.account, amount: try money($0.amount), memo: $0.memo) }
+            draft.defaultBranch = defaultBranch
+            let lines = try entries.map {
+                JournalLine(date: parts($0.date), account: $0.account, branch: $0.branch,
+                            amount: try money($0.amount), memo: $0.memo)
+            }
             _ = try LedgerBatches(workspace.context).add(draft, lines: lines)
             workspace.completed("gl-batch")
             dismiss()

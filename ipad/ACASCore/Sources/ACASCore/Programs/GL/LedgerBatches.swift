@@ -31,6 +31,7 @@ public struct LedgerBatchDraft {
     public var expectedItems = 0
     public var gross: Int64 = 0
     public var tax: Int64 = 0
+    public var defaultBranch = "00"
 
     public init(cycle: Int, defaultNumber: Int, direction: LedgerDirection, date: DateComponents) {
         self.cycle = cycle
@@ -125,9 +126,11 @@ public struct LedgerBatches {
         let cycle = Int(settings.int("scycle"))
         guard (cycle...cycle + 1).contains(draft.cycle) else { throw Error.cycle }
         let chart = ChartOfAccounts(context)
+        let branchEnabled = ["P", "B"].contains(settings.str("p-c"))
+        let defaultBranch = branchEnabled ? draft.defaultBranch : "00"
         guard (1...32).contains(draft.defaultNumber),
               let template = GeneralLedgerSetup(context).defaults.first(where: { $0.id == draft.defaultNumber }),
-              chart.account(code: template.account) != nil else { throw Error.missingDefault }
+              chart.account(code: template.account, branch: defaultBranch) != nil else { throw Error.missingDefault }
         guard (0...99).contains(draft.expectedItems), (1...99).contains(lines.count) else { throw Error.items }
         guard (0..<100_000_000_000).contains(draft.gross), (0...draft.gross).contains(draft.tax) else { throw Error.amount }
         let entered = try Self.date(draft.date)
@@ -135,7 +138,6 @@ public struct LedgerBatches {
         let start = Int(settings.int("postings")) + 1
         guard (1..<32_767).contains(number), (1..<32_767).contains(start),
               start + lines.count <= 32_767 else { throw Error.capacity }
-        let branchEnabled = ["P", "B"].contains(settings.str("p-c"))
 
         var batch = Record(Self.batchLayout)
         for (field, value): (String, Int64) in [
@@ -145,6 +147,7 @@ public struct LedgerBatches {
             ("default-account", Int64(template.account) ?? 0),
         ] { batch.setInt(field, value) }
         batch["default-code"] = template.transactionCode
+        batch["default-branch"] = defaultBranch
         batch["default-vat"] = template.tax?.rawValue ?? ""
         batch["direction"] = draft.direction.rawValue
         batch["description"] = try Self.checked(draft.description, width: 24)
@@ -162,8 +165,8 @@ public struct LedgerBatches {
             let debit = draft.direction == .debit
             posting["debit"] = debit ? line.account : template.account
             posting["credit"] = debit ? template.account : line.account
-            posting["debit-branch"] = debit ? branch : "00"
-            posting["credit-branch"] = debit ? "00" : branch
+            posting["debit-branch"] = debit ? branch : defaultBranch
+            posting["credit-branch"] = debit ? defaultBranch : branch
             posting.setInt("amount", line.amount)
             posting["memo"] = try Self.checked(line.memo, width: 32)
             posting["vat-side"] = draft.direction.rawValue

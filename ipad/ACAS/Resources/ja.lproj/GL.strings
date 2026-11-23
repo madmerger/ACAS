@@ -32,6 +32,8 @@
 "gl.batch-error.text" = "摘要の文字数と使用文字を確認してください";
 "gl.batch-error.capacity" = "登録可能なバッチ番号または明細数を超えました";
 "gl.batch-error.storage" = "バッチを保存できませんでした";
+"gl.batch-default-branch" = "既定勘定の拠点・部門コード";
+"gl.batch-line-branch" = "明細勘定の拠点・部門コード";
 "gl.year" = "年";
 "gl.month" = "月";
 "gl.day" = "日";
