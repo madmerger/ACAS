@@ -175,7 +175,7 @@ public struct SalesPosting {
                 continue
             }
             if !transferred {
-                let item = extractItem(header)
+                let item = extractItem(header, storedLength: row.data.count)
                 records.append(item)
                 if type == 2 || type == 3 {
                     let field = type == 2 ? "invoices" : "credit-notes"
@@ -203,14 +203,20 @@ public struct SalesPosting {
         return (records, unprinted)
     }
 
-    private func extractItem(_ header: Record) -> Record {
+    private func extractItem(_ header: Record, storedLength: Int) -> Record {
         var item = Record(SalesOpenItems.layout)
         item.setRaw("customer", header.raw("ih-customer"))
         item["description"] = header.str("ih-order")
         for (field, source) in [("paid-current", "p-c"), ("invoice", "invoice"), ("date", "date"), ("type", "type"),
-                                ("credit", "cr"), ("deduction-days", "deduct-days")] {
+                                ("deduction-days", "deduct-days")] {
             item.setInt(field, header.int("ih-" + source))
         }
+        let credit = header.layout.fields["ih-cr"]!
+        let available = max(0, min(credit.type.size, storedLength - credit.offset))
+        let creditNumber = available == credit.type.size
+            ? header.int("ih-cr")
+            : header.int("ih-cr") & ((1 << (8 * available)) - 1)
+        item.setInt("credit", creditNumber)
         let sign: Int64 = header.int("ih-type") == 3 ? -1 : 1
         for (field, source) in [("net", "net"), ("extra", "extra"), ("carriage", "carriage"), ("discount", "discount"),
                                 ("tax", "vat"), ("extra-tax", "e-vat"), ("carriage-tax", "c-vat"),

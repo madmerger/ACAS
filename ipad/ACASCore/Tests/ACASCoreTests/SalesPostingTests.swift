@@ -18,6 +18,28 @@ final class SalesPostingTests: XCTestCase {
         XCTAssertFalse(try SalesPayments(context).allocations(customer: "CUST011", date: invoices.processingDate).isEmpty)
     }
 
+    func testCreditTargetsInvoiceFromPersistedShortHeader() throws {
+        let (store, context, invoices) = try newCompany()
+        let service = SalesPosting(context)
+        let original = draft(in: invoices)
+        let first = try invoices.save(original)
+        let target = try invoices.save(original)
+        _ = try invoices.printInvoices()
+        _ = try service.post()
+        var credit = original
+        credit.kind = .creditNote
+        credit.creditedInvoice = target.id.value
+        let saved = try invoices.save(credit)
+        _ = try invoices.printInvoices()
+        XCTAssertEqual(store.read(invoices.file.path, key: invoices.key(saved.id))?.count, SalesInvoices.recordSize)
+
+        XCTAssertEqual(try service.post().posted, [saved.id.value])
+        let openItems = SalesOpenItems.file(store)
+        XCTAssertEqual(openItems.read(key: SalesOpenItems.key(customer: credit.customer, invoice: first.id.value))?.int("paid"), 0)
+        XCTAssertEqual(openItems.read(key: SalesOpenItems.key(customer: credit.customer, invoice: target.id.value))?.int("paid"), 1_000)
+        XCTAssertEqual(openItems.read(key: SalesOpenItems.key(customer: credit.customer, invoice: saved.id.value))?.int("credit"), target.id.value)
+    }
+
     private func newCompany() throws -> (FileStore, BusinessContext, SalesInvoices) {
         let store = try FileStore()
         let context = BusinessContext(store: store, timeZone: .gmt, now: { Date(timeIntervalSince1970: 1_700_000_000) })
