@@ -1,6 +1,6 @@
-using Acas.Core;
+using Acas.Core.Programs.Calculation;
 
-namespace Acas.Tests;
+namespace Acas.Tests.Calculation;
 
 public sealed class CalculationTests
 {

@@ -1,6 +1,6 @@
 using System.Globalization;
 
-namespace Acas.Core;
+namespace Acas.Core.Programs.Calculation;
 
 public static class Calculations
 {

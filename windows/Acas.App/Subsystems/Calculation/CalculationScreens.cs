@@ -1,9 +1,10 @@
 using Acas.Core;
 using Acas.Core.Engine;
+using Acas.Core.Programs.Calculation;
 
-[assembly: SubsystemScreensAttribute<Acas.App.CalculationScreens>(70)]
+[assembly: SubsystemScreensAttribute<Acas.App.Subsystems.Calculation.CalculationScreens>(70)]
 
-namespace Acas.App;
+namespace Acas.App.Subsystems.Calculation;
 
 internal sealed class CalculationScreens : ISubsystemScreens
 {
