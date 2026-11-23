@@ -172,7 +172,7 @@ public struct StockService {
                 let audit = directory + "staudit.dat"
                 var statuses = system.raw("file-statuses")
                 if statuses[9] != 0x31 {
-                    try store.writeRaw(audit, [])
+                    if !store.exists(audit) { try store.writeRaw(audit, []) }
                     statuses[9] = 0x31
                     system.setRaw("file-statuses", statuses)
                     try settings.write(1, system.bytes)
