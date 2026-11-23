@@ -11,4 +11,3 @@ public static partial class Gl030
     private static Task Alpha(Ctx c, string toDay) => Task.CompletedTask;
     private static Task PcReport(Ctx c, string toDay) => Task.CompletedTask;
 }
-public static class Maps01 { public static string Pass(string pw) => pw; /* TODO: port common/maps01.cbl */ }

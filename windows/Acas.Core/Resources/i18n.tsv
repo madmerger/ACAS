@@ -917,3 +917,13 @@ P & L Appropriation Account [00000]	損益処分勘定                [00000]
 Sundry Income Accounts	雑収入勘定
 Trading and Profit & Loss Account	売上総利益・損益計算書
 Give password [    ]	パスワード入力[    ]
+ACAS System Setup Routine - Level 1	ACAS システム初期設定 - レベル 1
+Enter the Company Name :- [	会社名を入力してください:-
+Please verify that name is correct (Y/N) :- [ ]	名称が正しいか確認してください (Y/N) :-     [ ]
+Using General  Ledger (Y/N) ? :- [ ]	総勘定元帳を使用  (Y/N) ? :-     [ ]
+Using Purchase Ledger (Y/N) ? :- [ ]	買掛元帳を使用    (Y/N) ? :-     [ ]
+Using Sales    Ledger (Y/N) ? :- [ ]	売掛元帳を使用    (Y/N) ? :-     [ ]
+Using Invoicing       (Y/N) ? :- [ ]	請求書発行を使用  (Y/N) ? :-     [ ]
+Using Stock Control   (Y/N) ? :- [ ]	在庫管理を使用    (Y/N) ? :-     [ ]
+Using Order Entry     (Y/N) ? :- [ ]	受注入力を使用    (Y/N) ? :-     [ ]
+Please confirm (Y/N) :- [ ] 	確認してください (Y/N):-[ ] 

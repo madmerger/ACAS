@@ -26,6 +26,7 @@ public static partial class Launcher
         try
         {
         openSystem:
+            if (!c.LoadSys()) await Mapser.Run(c);
             if (!c.LoadSys() || c.Sys.I("Cyclea") == 0)
             {
                 int term = await Sys002.Run(c, "ACAS");
