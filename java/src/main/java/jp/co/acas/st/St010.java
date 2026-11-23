@@ -497,13 +497,8 @@ public class St010 extends StProgram {
         }
         if (!open(stockFile, CobFile.Mode.IO).equals("00")) {
             stockFile.close();
-            stockFile.open(CobFile.Mode.OUTPUT);
-            stockFile.close();
-            stockFile.open(CobFile.Mode.IO);
-            sys.set("stock-control", "Y");
-            sys.setNum("file-status", 1, 11);
             display(L23, 1, "ST106 Stock File not found, nothing to do", 4);
-            stockFile.close(); analFile.close(); purchFile.close();
+            purchFile.close();
             return;
         }
         if (!open(analFile, CobFile.Mode.INPUT).equals("00")) {
@@ -584,7 +579,7 @@ public class St010 extends StProgram {
                 outline = false; continue;
             }
             testEscape("D");
-            if (escapeCode.equals("Q") || esc()) return;
+            if (escapeCode.equals("Q") || esc()) { stockFile.close(); return; }
             if (escapeCode.equals("B") || escapeCode.equals("S") || back()) { outline = false; continue; }
             if (!escapeCode.equals("D")) continue;
             // da040-Accept-Delete
@@ -696,7 +691,7 @@ public class St010 extends StProgram {
                 next = 0;
                 break;
             }
-            if (next == 2) return;
+            if (next == 2) { stockFile.close(); return; }
             if (next == 1) outline = false;
         }
     }
