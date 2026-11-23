@@ -31,6 +31,8 @@ struct GeneralLedgerMenu: View {
                     .accessibilityIdentifier("gl.cycle-close")
                 NavigationLink(ledgerText("trial-balance")) { TrialBalanceMenu(workspace: workspace) }
                     .accessibilityIdentifier("gl.trial-balance")
+                NavigationLink(ledgerText("financial-statements")) { FinancialStatementsForm(workspace: workspace) }
+                    .accessibilityIdentifier("gl.financial-statements")
                 NavigationLink("section.system") { SystemMenu(workspace: workspace) }
                     .accessibilityIdentifier("gl.company-settings")
                 Button(ledgerText("close-ledger"), action: close)
