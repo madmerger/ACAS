@@ -3,7 +3,6 @@ package jp.co.acas.st;
 import jp.co.acas.core.CobFile;
 import jp.co.acas.core.Layout;
 import jp.co.acas.core.Num;
-import jp.co.acas.core.Program;
 import jp.co.acas.core.Rec;
 import jp.co.acas.sys.Maps04;
 import jp.co.acas.sys.SystemFile;
@@ -13,7 +12,7 @@ import java.math.RoundingMode;
 import java.time.LocalDateTime;
 
 /** st020.cbl: 在庫移動（入庫・出庫・バーコード入庫・発注入力・期末監査帳票）。 */
-public class St020 extends Program {
+public class St020 extends StProgram {
     static final String PROG_NAME = "ST020 (3.01.29)";
     static final BigDecimal MAX_VALUE = new BigDecimal("99999999.99");
     private static final BigDecimal E8 = BigDecimal.valueOf(100_000_000L);
@@ -64,7 +63,7 @@ public class St020 extends Program {
         toDay = St.x((String) ctx.shared.getOrDefault("to-day", ""), 10);
         if (sys.intv("file-status", 11) != 1) {
             display(L23, 1, "ST219 Stock File not yet created", 4);
-            call("maps99", 45);
+            maps99(45);
             return;
         }
         stock = Layout.of("copybooks/fdstock.cob", "Stock-Record").newRec();
@@ -75,7 +74,7 @@ public class St020 extends Program {
             stockFile.close();
             display(L23, 1, "ST201 Stock File not found", 4);
             show(L23, 28, stockFile.status, 2);
-            call("maps99", 45);
+            maps99(45);
             return;
         }
         auditFile = CobFile.sequential(ctx.store, ctx.path("staudit.dat"));
@@ -93,7 +92,7 @@ public class St020 extends Program {
                 display(L23, 1, "ST213 Bad month in date", 4);
                 show(L23, 25, pm, 2);
                 show(L23, 28, wsDate, 2);
-                call("maps99", 45);
+                maps99(45);
                 return;
             }
             procMth = Integer.parseInt(pm);
@@ -123,7 +122,7 @@ public class St020 extends Program {
             if (fs.charAt(0) != '0') {
                 display(L23, 1, "ST202 Audit File not found", 4);
                 show(L23, 28, fs, 2);
-                call("maps99", 45);
+                maps99(45);
                 stockFile.close();
                 return;
             }
@@ -287,7 +286,7 @@ public class St020 extends Program {
                     qty = unit6;
                     if (sign6.equals("-")) { audit.setNum("audit-reverse-transaction", 1); qty = -qty; }
                     if (qty + stock.longv("stock-held") < 0) { err("ST206 Quantity in Stock cannot be less than zero"); continue; }
-                    if (qty + stock.longv("stock-held") == 0) { err("ST208 CAUTION: Stock quantity will be zero"); call("maps99", 15); }
+                    if (qty + stock.longv("stock-held") == 0) { err("ST208 CAUTION: Stock quantity will be zero"); maps99(15); }
                 }
                 // ba030-Accept-Price
                 if (barcode) {
@@ -375,7 +374,7 @@ public class St020 extends Program {
         if (fs.charAt(0) == '0') return true;
         display(L23, 1, "ST002 Error on Writing to Audit File", 4);
         show(L23, 38, fs, 2);
-        call("maps99", 45);
+        maps99(45);
         return false;
     }
     private boolean rewriteStock() {
@@ -383,7 +382,7 @@ public class St020 extends Program {
         if (fs.charAt(0) == '0') return true;
         display(L23, 1, "ST000 Error on Writing to Stock File", 4);
         show(L23, 38, fs, 2);
-        call("maps99", 45);
+        maps99(45);
         return false;
     }
     private void printLine(String line) {
@@ -458,7 +457,7 @@ public class St020 extends Program {
             }
             if (stock.longv("stock-held") - qty == 0) {
                 err("ST208 CAUTION: Stock quantity will be zero");
-                call("maps99", 15);
+                maps99(15);
                 eraseEos(L23, 1);
             }
             long newQty = stock.longv("stock-held") - qty;

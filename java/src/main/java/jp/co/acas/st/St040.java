@@ -2,12 +2,11 @@ package jp.co.acas.st;
 
 import jp.co.acas.core.CobFile;
 import jp.co.acas.core.Layout;
-import jp.co.acas.core.Program;
 import jp.co.acas.core.Rec;
 import jp.co.acas.sys.SystemFile;
 
 /** st040.cbl: 期末処理（在庫移動累計のクリア）。 */
-public class St040 extends Program {
+public class St040 extends StProgram {
     static final String PROG_NAME = "ST040 (3.01.06)";
     private static final int L23 = 23;
 
@@ -47,7 +46,7 @@ public class St040 extends Program {
             // aa030-U-Sure
             if (sys.intv("stk-activity-rep-run") == 0) {
                 display(L23, 1, "You have NOT run audit reports", 6);
-                call("maps99", 45);
+                maps99(45);
                 return;
             }
             display(12, 10, "Have you made backups of your data and are you sure?  [ ] (N/Y)");
@@ -63,7 +62,7 @@ public class St040 extends Program {
         if (!fs.equals("00")) {
             display(L23, 1, "ST401 Stock File not found", 4);
             show(L23, 28, fs, 2);
-            call("maps99", 45);
+            maps99(45);
             return;
         }
         eraseEol(12, 10);
@@ -77,7 +76,7 @@ public class St040 extends Program {
             if (!f.rewrite(stock).equals("00")) {
                 display(L23, 1, "ST000 Error on Writing to Stock File", 4);
                 show(L23, 38, f.status, 2);
-                call("maps99", 45);
+                maps99(45);
                 break;
             }
         }

@@ -1,7 +1,6 @@
 package jp.co.acas.st;
 
 import jp.co.acas.core.Num;
-import jp.co.acas.core.Program;
 import jp.co.acas.core.Rec;
 import jp.co.acas.sys.Maps04;
 import jp.co.acas.sys.SystemFile;
@@ -9,7 +8,7 @@ import jp.co.acas.sys.SystemFile;
 import java.time.LocalDateTime;
 
 /** stock.cbl: 在庫管理システムメニュー。 */
-public class Stock extends Program {
+public class Stock extends StProgram {
     static final String PROG_NAME = "Stock (3.01.19)";
     private Rec sys;
     private String toDay = "";
@@ -33,8 +32,8 @@ public class Stock extends Program {
             toDay = Maps04.toDate(sys.longv("run-date"));
             ctx.shared.put("to-day", toDay);
             if (sys.intv("level-4") != 1) {
-                call("maps99", 1);
-                call("maps99", 15);
+                maps99(1);
+                maps99(15);
                 return;
             }
             String opDisplay = switch (sys.intv("op-system")) {

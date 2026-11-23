@@ -3,7 +3,6 @@ package jp.co.acas.st;
 import jp.co.acas.core.CobFile;
 import jp.co.acas.core.Layout;
 import jp.co.acas.core.Num;
-import jp.co.acas.core.Program;
 import jp.co.acas.core.Rec;
 import jp.co.acas.core.Terminal;
 import jp.co.acas.sys.Maps04;
@@ -14,7 +13,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /** st030.cbl: 在庫帳票（評価・活動・発注点・履歴・在庫一覧）。 */
-public class St030 extends Program {
+public class St030 extends StProgram {
     static final String PROG_NAME = "ST030 (3.01.22)";
     private static final int L23 = 23;
     private static final String H13 = "<------- Stock ------>                                      Average       Replace     Stock     ";
@@ -60,7 +59,7 @@ public class St030 extends Program {
         averaging = sys.intv("stk-averaging") == 1;
         if (sys.intv("file-status", 11) != 1) {
             display(L23, 1, "ST300 Stock File not yet created", 4);
-            call("maps99", 45);
+            maps99(45);
             return;
         }
         stock = Layout.of("copybooks/fdstock.cob", "Stock-Record").newRec();
@@ -68,7 +67,7 @@ public class St030 extends Program {
         if (!stockFile.open(CobFile.Mode.INPUT).equals("00")) {
             display(L23, 1, "ST301 Stock File not found", 4);
             show(L23, 28, stockFile.status, 2);
-            call("maps99", 45);
+            maps99(45);
             return;
         }
         menuReply = 0;
@@ -87,7 +86,7 @@ public class St030 extends Program {
                 display(L23, 1, "ST313 Bad month in date", 4);
                 show(L23, 25, pm, 2);
                 show(L23, 28, td, 2);
-                call("maps99", 45);
+                maps99(45);
                 return;
             }
             // aa100-Main-Menu
@@ -235,7 +234,7 @@ public class St030 extends Program {
             else if (af && at && abrevFrom.compareTo(abrevTo) > 0) err = "ST308 Abrev From MUST be less than Abrev To";
             if (err != null) {
                 display(L23, 1, err, 4);
-                call("maps99", 15);
+                maps99(15);
                 continue;
             }
             partial = sf || st || af || at ? 1 : 0;
@@ -254,7 +253,7 @@ public class St030 extends Program {
             stock.set("stock-key", stockFrom);
             if (!stockFile.start(stock, ">=").equals("00")) {
                 display(L23, 1, "ST306 Stock Number not found", 4);
-                call("maps99", 15);
+                maps99(15);
                 return false;
             }
         }
@@ -263,7 +262,7 @@ public class St030 extends Program {
             stock.set("stock-abrev-key", k);
             if (!stockFile.startAlt(stock, 0, ">=").equals("00")) {
                 display(L23, 1, "ST305 Abbreviated Stock number not present", 4);
-                call("maps99", 15);
+                maps99(15);
                 return false;
             }
         }

@@ -1,7 +1,6 @@
 package jp.co.acas.st;
 
 import jp.co.acas.core.Num;
-import jp.co.acas.core.Program;
 import jp.co.acas.core.Rec;
 import jp.co.acas.sys.Maps04;
 import jp.co.acas.sys.SystemFile;
@@ -9,7 +8,7 @@ import jp.co.acas.sys.SystemFile;
 import java.time.LocalDateTime;
 
 /** st000.cbl: 在庫管理 業務開始（日付入力）。 */
-public class St000 extends Program {
+public class St000 extends StProgram {
     static final String PROG_NAME = "ST000 (3.01.03)";
 
     @Override

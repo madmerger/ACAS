@@ -2,7 +2,6 @@ package jp.co.acas.st;
 
 import jp.co.acas.core.CobFile;
 import jp.co.acas.core.Layout;
-import jp.co.acas.core.Program;
 import jp.co.acas.core.Rec;
 import jp.co.acas.sys.SystemFile;
 
@@ -10,7 +9,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 
 /** st050.cbl: 在庫ファイル圧縮（削除済みレコードの整理と在庫金額の再計算）。 */
-public class St050 extends Program {
+public class St050 extends StProgram {
     static final String PROG_NAME = "ST050 (3.01.06)";
     private static final int L23 = 23;
     private Rec stock;
@@ -94,6 +93,6 @@ public class St050 extends Program {
         display(L23, 1, msg, 4);
         show(L23, col, fs, 2);
         display(L23, col + 3, St.evalStatus(fs), 2);
-        call("maps99", 45);
+        maps99(45);
     }
 }
