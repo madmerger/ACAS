@@ -1,0 +1,373 @@
+# レガシー英語文言⇥日本語文言（在庫管理 stock/*.cbl）。日本語の表示幅（全角=2）は原文の長さ以下にすること。
+# --- プログラム名（そのまま表示） ---
+Stock (3.01.19)	Stock (3.01.19)
+ST000 (3.01.03)	ST000 (3.01.03)
+ST010 (3.01.37)	ST010 (3.01.37)
+ST020 (3.01.29)	ST020 (3.01.29)
+ST030 (3.01.22)	ST030 (3.01.22)
+ST040 (3.01.06)	ST040 (3.01.06)
+ST050 (3.01.06)	ST050 (3.01.06)
+# --- FILE STATUS 説明（FileStat-Msgs.cpy） ---
+Success	正常
+Success Duplicate	正常（重複キー）
+Success Incomplete	正常（不完全）
+Success Optional	正常（任意）
+Success No Unit	正常（装置無）
+End Of File	終端
+Out Of Key Range	キー範囲外
+Key Invalid	キー不正
+Key Exists	キー重複
+Key Not Exists	キーなし
+Permanent Error	永続エラー
+Inconsistent Filename	ファイル名不整合
+Boundary Violation	境界違反
+File Not Found	ファイルなし
+Permission Denied	権限なし
+Closed With Lock	ロック付閉鎖
+Conflict Attribute	属性不一致
+Already Open	オープン済み
+Not Open	未開
+Read Not Done	未読込み
+Record Overflow	レコード超過
+Read Error	読込エラー
+Input Denied	入力不可
+Output Denied	出力不可
+I/O Denied	入出力不可
+Record Locked	ロック中
+End-Of-Page	ページ終端
+I/O Linage	行数異常
+File Sharing Failure	ファイル共有失敗
+File Not Available	ファイル使用不可
+Error not in error.txt. Hit return to close	error.txt に未登録のエラー。Enter で閉じる
+# --- stock（メニュー） ---
+Client -	顧客 -
+Stock Control	在庫管理
+Stock Control System Menu	在庫管理メニュー
+Select one of the following by letter	次の機能を英字で選択してください
+Select one of the following by number	次の機能を番号で選択してください
+Date Entry	処理日入力
+Stock Item Maintenance	在庫品目マスター管理
+Stock Movements	入出庫・発注
+Reports	帳票
+End of Cycle Processing	期間締め処理
+Exit to	終了:
+Using	使用:
+Stock File Compression	在庫ファイル圧縮
+System Set Up	システム設定
+Sorry not yet available	未提供の機能です
+ST001 System 1 read err =	ST001 システム読込異常 =
+ST004 Problem with opening system file. Hit return to clear	ST004 システムファイルを開けません。Enter で消去
+Dos	Dos
+Windows	Windows
+Mac	Mac
+Unix	Unix
+Linux	Linux
+OS/2	OS/2
+O/S	O/S
+to Linux	Linux へ
+# --- st000（処理日入力） ---
+Start Of Day	業務開始
+Enter todays date as dd/mm/yyyy	本日の日付 dd/mm/yyyy
+Enter todays date as mm/dd/yyyy	本日の日付 mm/dd/yyyy
+Enter todays date as yyyy/mm/dd	本日の日付 yyyy/mm/dd
+ST005 Invalid Date	ST005 日付不正
+# --- st010（品目マスター管理） ---
+Set-up Stock records	在庫品目の登録
+Amend Stock records	在庫品目の変更
+Delete Stock records	在庫品目の削除
+Renumber Stock records	在庫コードの変更
+Display Stock records	在庫品目の照会
+Print Stock records	在庫品目の印刷
+Return to system menu	メニューへ戻る
+Return to System Menu	メニューへ戻る
+Return to Main Menu	メニューへ戻る
+Stock File Set-Up & Maintenance	在庫ファイル登録・保守
+Function	機能
+Menu	一覧
+Stock Record Creation	在庫品目登録
+Stock Record Amendment	在庫品目変更
+Stock Record Deletion	在庫品目削除
+Stock Record Display	在庫品目照会
+Stock Number	在庫番号
+PL Fast key	略称キー
+Desc	品名
+Stock Location	保管場所
+Supplier: 1	仕入先: 1
+Stock Qty	在庫数量
+Qty Ordered	発注数量
+Re-Order Point	発注点
+Back Ordered	入荷待ち
+Re-Order Qty	発注単位
+Sales Orders O/S	受注残
+Sales Anal. Code	売上分析コード
+Purch Anal.Code	仕入分析コード
+Services only Flag	サービス品区分
+Date Ordered	発注日
+Date Due	納期
+* Escape Code	* 操作コード
+* <B> = Back	* <B> = 戻る
+* <S> = Save	* <S> = 保存
+* <Q> = Quit	* <Q> = 終了
+* <D> = Delete	* <D> = 削除
+* <R> = Renumber	* <R> = 番号変更
+N> = Next	N> = 次へ
+Retail Price	販売単価
+Cost	原価
+Price	単価
+Stock Value	在庫金額
+Optional	任意
+Work In Progress (BOMP) Data	仕掛品（BOMP）データ
+Construct Bundle	構成数量
+Construction	製作中数量
+Work In Progress	仕掛数量
+Construct Item	構成先品目
+Supplier not found :	仕入先なし :
+Deleting Stock Item record, are you sure?	在庫品目を削除します。よろしいですか?
+Renumbering Stock Item record, are you sure?	在庫番号を変更します。よろしいですか?
+ST000 Error on Writing to Stock File	ST000 在庫ファイル書込エラー
+ST003 Hit return for Menu	ST003 Enter でメニュー
+ST101 Supplier not found	ST101 仕入先なし
+ST102 Abbreviated Stock number Must be present	ST102 略称在庫番号は必須です
+ST103 Abbreviated Stock number Invalid	ST103 略称在庫番号が不正です
+ST104 Purchase Ledger not yet set up, Aborting	ST104 買掛元帳が未設定のため中止
+ST105 Purchase Ledger File not found, Aborting	ST105 買掛元帳ファイルなし、中止
+ST106 Stock File not found, nothing to do	ST106 在庫ファイルなし、処理なし
+ST107 Cannot Delete record as non zero values exist	ST107 数量が残っているため削除できません
+ST108 Delete failed on Stock File =	ST108 在庫ファイル削除失敗 =
+ST109 Cannot Renumber record as Order values exist	ST109 発注残があるため番号変更できません
+ST110 Cannot find Sales Ledger Analysis Code	ST110 売上分析コードがありません
+ST111 Cannot find Purchase Ledger Analysis Code	ST111 仕入分析コードがありません
+ST112 Analysis File not found, Aborting	ST112 分析ファイルなし、中止
+ST113 Abbreviated Stock Number is already on file	ST113 略称在庫番号は登録済みです
+ST114 Stock Number not found	ST114 在庫番号なし
+ST115 Construct Stock Number not found	ST115 構成先在庫番号なし
+ST116 Stock Number is already on file	ST116 在庫番号は登録済みです
+ST117 Stock Number/Abrev No. is already on file	ST117 在庫番号／略称は登録済みです
+ST118 Service Flag is set, so unused values cleared	ST118 サービス品のため不要項目をクリア
+ST119 No more records to display	ST119 表示するレコードなし
+# --- st010 / st030 帳票 ---
+Stock File Report	在庫品目一覧表
+Page	頁
+<------ Stock ------> Supplier	<------ 在庫 -------> 仕入先
+<------ Stock ------>	<------ 在庫 ------->
+<------- Stock ------>	<------- 在庫 ------->
+<------ Stock ------> Description	<------ 在庫 -------> 品名
+<- ReOrder -> <------- Date ------>	<-- 発注 ---> <------- 日付 ------>
+Number <- ReOrder -> <------- Date ------>	数量   <-- 発注 ---> <------- 日付 ------>
+<------- Date ------>	<------- 日付 ------>
+Stock < ReOrder >	在庫  <  発注   >
+This <----------------------------- History for the Year ------------------------------->	当期 <------------------------------- 年間の履歴 -------------------------------------->
+Location	保管場所
+Unit	単位
+Value	金額
+Number	番号
+Quantity On	数量
+Abrev	略称
+in Stk	在庫
+Point	点
+Qty	数
+Ordered	発注日
+Due	納
+Order	発注
+B/Ord	入待
+Secondary Suppliers	副仕入先
+SA Code:	売上CD:
+PA Code:	仕入CD:
+Pre Sales :	受注残 :
+Description:	品名:
+Description	品名
+Construction Bundle :	構成数量 :
+WIP :	WIP :
+WIP:	WIP:
+WIP	WIP
+Under Construction :	製作中 :
+For Constructed Item :	構成先品目 :
+Services only Product	サービス品
+ST217 Services only Product	ST217 サービス品です
+Total Stock Records	在庫品目件数
+Total stock records Printed	印刷した在庫品目件数
+# --- st020（入出庫・発注記録） ---
+Stock Movements Menu	在庫移動メニュー
+Stock Additions Entry	入庫入力
+Stock Deductons Entry	出庫入力
+Stock Deductions Entry	出庫入力
+Stock Additions from Barcode Readers	バーコード入庫
+Stock Barcode Additions Entry	バーコード入庫入力
+Stock Order Entry	在庫発注記録
+Stock End of Month Processing	在庫月末処理
+End of	期末:
+Quarter	四半期
+Week	週
+Month	月
+Audit Reports	監査帳票
+Quantity	数量
+Stk Qty	在庫数
+Stk Value	在庫金額
+Qty Ord Date Ordered	発注数 発注日
+Back Qty	入待数
+(Order Date)	(発注日)
+(Due Date)	(納期)
+Missing Stock Record	在庫品目なし
+Printing	印刷中
+Can I Delete the Audit File Now?	監査ファイルを削除しますか?
+Making sure that Sales Invoicing and Purchase Ledger are NOT running	販売請求・買掛元帳が稼働していないことを確認してください
+Check that Reports are complete first, before responding	回答の前に帳票が出力済みか確認してください
+Stock Addition Report	入庫報告書
+Stock Deduction Report	出庫報告書
+Stock Orders Update	在庫発注更新
+Additions Stock Audit Report	入庫監査報告書
+Deductions Stock Audit Report	出庫監査報告書
+Proc. Date	処理日
+Order Date	発注日
+Order Status	発注状況
+Change in	増減
+B'Qty	入待
+Batch	一括
+Days Late	日遅延
+Days Early	日早着
+Source/PO.no.	元/発注番号
+Source/Inv.no.	元/請求番号
+Purchasing/	仕入/
+Invoicing/	請求/
+Credit note/	赤伝/
+for	分
+Total Additions	入庫合計
+Total Deductions	出庫合計
+Total Changes	増減合計
+ST002 Error on Writing to Audit File	ST002 監査ファイル書込エラー
+ST201 Stock File not found	ST201 在庫ファイルなし
+ST202 Audit File not found	ST202 監査ファイルなし
+ST203 Abbreviated Stock number not present	ST203 略称在庫番号が存在しません
+ST204 Quantity cannot equal or exceed 999,999	ST204 数量は 999,999 未満で入力
+ST205 Quantity in Stock cannot exceed 999,999	ST205 在庫数量が 999,999 を超えます
+ST206 Quantity in Stock cannot be less than zero	ST206 在庫数量が 0 未満になります
+ST207 Quantity can only end with space or -	ST207 数量の末尾は空白か - のみ
+ST208 CAUTION: Stock quantity will be zero	ST208 注意: 在庫数量が 0 になります
+ST210 Current Deductions at Zero or < 0	ST210 当期出庫数が 0 以下です
+ST211 To Date Deductions at Zero or < 0	ST211 累計出庫数が 0 以下です
+ST212 Stock Value set to Maximum. (99,999,999.99)	ST212 在庫金額を上限値に設定 (99,999,999.99)
+ST213 Bad month in date	ST213 日付の月が不正
+ST214 Stock Number not found	ST214 在庫番号なし
+ST215 Current Additions at Zero or < 0	ST215 当期入庫数が 0 以下です
+ST216 To Date Additions at Zero or < 0	ST216 累計入庫数が 0 以下です
+ST219 Stock File not yet created	ST219 在庫ファイル未作成
+# --- st030（在庫帳票） ---
+Reports Menu	帳票メニュー
+Valuation Report	在庫評価帳票
+Activity Report	在庫活動帳票
+Re-Order Report	発注点帳票
+Stock History Report	在庫履歴帳票
+Stock Report	在庫一覧帳票
+Stock Valuation Report	在庫評価帳票
+Stock Activity Report	在庫活動帳票
+Stock Re-Order Report	発注点帳票
+Report Attributes	帳票の条件
+Select an Report Option Number :	帳票オプション番号を選択 :
+All Stock Items	全品目
+A Range of Items	品目範囲指定
+Range of Items	品目範囲指定
+Items that are Understocked	在庫不足の品目
+Range of Understocked Items	在庫不足の品目（範囲）
+Items, Not in Stock	在庫なしの品目
+Range of Items, Not in Stock	在庫なしの品目（範囲）
+Items on Order	発注中の品目
+Range of Items on Order	発注中の品目（範囲）
+Items Active in current	当期に動きのある品目:
+Items Active in	動きのある品目:
+Range of active Items in Current	当期に動きのある品目（範囲）:
+Range of active Items in	動きのある品目（範囲）:
+Month To Date	月初来
+Quarter To Date	四半期初来
+Year To Date	年初来
+Leave fields blank to select All	空欄のままなら全件選択
+Select Stock no. or Abrev Stock no. but NOT both	在庫番号か略称のどちらか一方を指定
+From Stock Number	開始 在庫番号
+To Stock Number	終了 在庫番号
+From Abrev Number	開始 略称番号
+To Abrev Number	終了 略称番号
+Enter characters in positions to match	照合する文字を桁位置に入力
+OR	OR
+Average	平均
+Replace	再調達
+Stock	在庫
+Value in	金額
+Retail	販売
+Stockroom	倉庫
+Current	現在
+Add	入
+Ded	出
+Net	差
+Supp	仕入
+On	発
+Bk	待
+Flg Description	区 品名
+Pnt	点
+Ord	注
+Total Value:	合計金額:
+Work in Progress:	仕掛品:
+WIP records were present but none had data	仕掛レコードはデータなし
+Items ranging from	品目範囲:
+Start	先頭
+through	～
+End	終
+All	全
+Active in Current	当期に動きあり:
+Active in	動きあり:
+To Date	初来
+Items	品目
+Understocked	在庫不足
+Not in Stock	在庫なし
+On Order	発注中
+All Items	全品目
+< Current Quarter >	<   当四半期    >
+<- Current Week -->	<----- 当週 ----->
+<- Current Month ->	<----- 当月 ----->
+< Quarter to Date >	<  四半期初来   >
+<- Year to Date -->	<---- 年初来 ---->
+ST300 Stock File not yet created	ST300 在庫ファイル未作成
+ST301 Stock File not found	ST301 在庫ファイルなし
+ST302 There were no Stock numbers within the specified range	ST302 指定範囲に在庫番号がありません
+ST303 There were no Abrev Stock numbers within the specified range	ST303 指定範囲に略称在庫番号がありません
+ST304 You cannot specify both Stock AND Abrev numbers	ST304 在庫番号と略称は同時に指定不可
+ST305 Abbreviated Stock number not present	ST305 略称在庫番号が存在しません
+ST306 Stock Number not found	ST306 在庫番号なし
+ST307 Stock From MUST be less than Stock To	ST307 在庫番号の開始は終了以下で指定
+ST308 Abrev From MUST be less than Abrev To	ST308 略称の開始は終了以下で指定
+ST313 Bad month in date	ST313 日付の月が不正
+# --- st040（期間締め） ---
+Stock Activity Reset	在庫活動リセット
+Can I clear this	クリア可否:
+Totals?	累計?
+Can I clear End of Year Totals on Stock records	在庫品目の年度末累計をクリアしますか
+Will Clear Period totals	期間累計をクリアします
+Will Clear Year totals	年度累計をクリアします
+You have NOT run audit reports	監査帳票が未出力です
+Have you made backups of your data and are you sure?	バックアップ済みですか。実行しますか?
+Updating your Stock file as requested	在庫ファイルを更新しています
+ST401 Stock File not found	ST401 在庫ファイルなし
+ST402 Y or N only	ST402 Y か N のみ
+# --- st050（在庫ファイル圧縮） ---
+Stock Compression Utility	在庫ファイル圧縮
+This process will clean up the Stock File of deleted records	在庫ファイルから削除済みレコードを整理します
+Is this a recovery from a previous run of this process	前回実行分の復旧処理ですか
+Confirm you wish this to happen & that you have a backup	バックアップ済みで、実行してよいですか
+recreating Stock file from temp file as requested	一時ファイルから在庫ファイルを再作成中
+ST501 Stock File not found	ST501 在庫ファイルなし
+ST502 Y or N only	ST502 Y か N のみ
+ST503 Error opening temp file	ST503 一時ファイルが開けない
+ST504 Error writing to temp file	ST504 一時ファイル書込エラー
+ST505 Error: Length of Stock File not same as Temp File	ST505 在庫ファイルと一時ファイルの長さ不一致
+ST506 Error opening Stock File	ST506 在庫ファイルを開けません
+# --- st060（在庫品目一括取込） ---
+ST060 (3.01.00)	ST060 (3.01.00)
+Stock File Importer	在庫品目一括取込
+Provide full path and file name of file to be imported	取込むファイルのパスとファイル名を入力
+Records Imported	取込件数
+Records Written	書込件数
+Problem with amount	金額データ不正
+Has invalid quotes or other!	引用符などが不正です
+Has become	変換結果
+ST601 Error on Open/Reading Import File	ST601 取込ファイルのオープン/読込エラー
+ST602 Note error and hit return	ST602 エラーを控えて Enter
+ST603 Note total and hit return	ST603 件数を控えて Enter
+ST604 Note error and hit return to quit	ST604 エラーを控えて Enter で終了

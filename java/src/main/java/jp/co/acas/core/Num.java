@@ -38,7 +38,7 @@ public final class Num {
         boolean cr = p.endsWith("cr"), db = p.endsWith("db");
         String body = cr || db ? p.substring(0, p.length() - 2) : p;
         int dot = body.indexOf('.');
-        int scale = dot < 0 ? 0 : (int) body.substring(dot + 1).chars().filter(c -> "9z*+-".indexOf(c) >= 0).count();
+        int scale = dot < 0 ? 0 : (int) body.substring(dot + 1).replaceAll("[+-]$", "").chars().filter(c -> "9z*+-".indexOf(c) >= 0).count();
         boolean neg = v.signum() < 0;
         String digits = v.abs().setScale(scale, RoundingMode.DOWN).unscaledValue().toString();
         // 数字位置の数

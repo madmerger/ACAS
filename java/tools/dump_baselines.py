@@ -23,6 +23,13 @@ INDEXED = {
     "irs/acnts.dat": ("incomplete_records_system/fdwsnl.cob", "nominal-ledger", "record-1", "key-1", "", "fd nominal-ledger."),
 }
 
+# FD の定義では開けない（FILE STATUS 39）ファイルを、実際に書かれているレコード定義で読むための代替定義。
+# analysis.dat: 在庫メニュー（stock/wsnames.cob の file-defs）から sl070 を呼ぶと、sl070（sales/wsnames.cob）の
+# file-13（value-file）が在庫側の 5 番目 = analysis.dat を指すため、value-record（66 バイト）が書かれている。
+PHYSICAL = {
+    "acas/analysis.dat": ("copybooks/fdval.cob", "value-file", "value-record", "va-code", "", ""),
+}
+
 def build(tmp, name, spec):
     copybook, file, record, key, alt, pre = spec
     code = f'''       >>source free
@@ -88,6 +95,7 @@ def main():
     with tempfile.TemporaryDirectory() as t:
         tmp = Path(t)
         exes = {n: build(tmp, n, s) for n, s in INDEXED.items()}
+        phys = {n: build(tmp, n + ".phys", s) for n, s in PHYSICAL.items()}
         for base in sorted((EVID / "baselines").iterdir()):
             data = {}
             root = base / "ledgers"
@@ -97,6 +105,11 @@ def main():
                 if "temp-backups" in rel or rel.endswith("nohup.out") or rel[-2:] in (".1", ".2"): continue
                 if rel in exes:
                     out = subprocess.run([str(exes[rel]), str(p)], capture_output=True, text=True, errors="replace")
+                    if out.returncode and rel in phys:
+                        # 宣言と実レコード長が違うファイルは実レコード長のまま取り込む（CobFile.open が 39 を返す）
+                        alt = subprocess.run([str(phys[rel]), str(p)], capture_output=True, text=True, errors="replace")
+                        if not alt.returncode:
+                            data[rel] = dict(line.split("|") for line in alt.stdout.splitlines() if "|" in line); continue
                     if out.returncode and rel == "acas/analysis.dat":
                         # 分析ファイルは作成時の属性差で cobc から開けない(39)ため、36 バイト固定レコードを直接抽出する
                         recs = {}
