@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Acas.Core", "Acas.Core\Acas.Core.csproj", "{EDDB085F-D318-4645-921B-A1E4EBE29665}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Acas.App", "Acas.App\Acas.App.csproj", "{F62BA8D4-A422-44E6-9AF1-A4415D0F4F84}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Acas.Tests", "Acas.Tests\Acas.Tests.csproj", "{BD0811A9-796A-4C33-A054-6917EFDCF6FC}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{EDDB085F-D318-4645-921B-A1E4EBE29665}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EDDB085F-D318-4645-921B-A1E4EBE29665}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EDDB085F-D318-4645-921B-A1E4EBE29665}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EDDB085F-D318-4645-921B-A1E4EBE29665}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F62BA8D4-A422-44E6-9AF1-A4415D0F4F84}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F62BA8D4-A422-44E6-9AF1-A4415D0F4F84}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F62BA8D4-A422-44E6-9AF1-A4415D0F4F84}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F62BA8D4-A422-44E6-9AF1-A4415D0F4F84}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BD0811A9-796A-4C33-A054-6917EFDCF6FC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BD0811A9-796A-4C33-A054-6917EFDCF6FC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BD0811A9-796A-4C33-A054-6917EFDCF6FC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BD0811A9-796A-4C33-A054-6917EFDCF6FC}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
