@@ -11,6 +11,7 @@ enum SLPartB {
         s.programs["sl165"] = SLB165.run
         s.programs["sl170"] = SLB170.run
         s.programs["sl180"] = SLB180.run
+        s.programs["sl200"] = SLB200.run
         s.programs["sl900"] = SLB900.run
         SLBDevMenu.registerIfMissing(s)
     }

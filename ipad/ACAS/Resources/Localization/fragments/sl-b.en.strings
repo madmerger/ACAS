@@ -230,3 +230,8 @@
 "report.sl170.statements" = "Statements. ";
 "report.sl170.c_dunning" = ", Dunning. ";
 "report.sl170.dunning_dot" = "Dunning. ";
+/* sl200 */
+"report.sl200.none" = "       None to report";
+"report.sl200.page" = "Page";
+"report.sl200.title" = "Invoice Deletion Report";
+"report.sl200.head" = "   Invoice No       Date         Cust No";

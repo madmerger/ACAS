@@ -230,3 +230,8 @@
 "report.sl170.statements" = "取引明細. ";
 "report.sl170.c_dunning" = ", 督促状. ";
 "report.sl170.dunning_dot" = "督促状. ";
+/* sl200 */
+"report.sl200.none" = "       該当なし";
+"report.sl200.page" = "頁";
+"report.sl200.title" = "請求書削除リスト";
+"report.sl200.head" = "   請求書番号       日付         得意先";

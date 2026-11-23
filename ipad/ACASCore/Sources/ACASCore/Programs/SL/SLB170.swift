@@ -167,6 +167,7 @@ enum SLB170 {
             }
         }
         salesFile.close()
+        prt.close()
         if recCnt != 0 { prt.spool() }
     }
 }

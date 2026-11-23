@@ -90,21 +90,34 @@ enum SLB {
         let s: Session
         let path: String
         let size: Int
-        init(_ s: Session, _ name: String = "prt-1", size: Int = 132) {
-            self.s = s; self.path = s.ledgers + name; self.size = size
+        let variable: Bool
+        private var needsNL = false
+        private var closed = false
+        /// variable: FD に長さの異なる 01 が複数ある場合 (可変長形式: 各レコード前に 4 バイトのレコード長ヘッダ)
+        init(_ s: Session, _ name: String = "prt-1", size: Int = 132, variable: Bool = false) {
+            self.s = s; self.path = s.ledgers + name; self.size = size; self.variable = variable
         }
-        func openOutput() { s.store.writeRaw(path, []) }
-        private func rec(_ text: String) -> [UInt8] { SJIS.encode(text, size: size) }
+        func openOutput() { s.store.writeRaw(path, []); needsNL = false; closed = false }
+        private func rec(_ text: String) -> [UInt8] {
+            let hdr: [UInt8] = variable ? [UInt8(size >> 8), UInt8(size & 0xFF), 0, 0] : []
+            return hdr + SJIS.encode(text, size: size)
+        }
         func after(_ text: String, _ n: Int) {
-            s.store.appendRaw(path, [UInt8](repeating: 0x0A, count: n) + rec(text))
+            s.store.appendRaw(path, [UInt8](repeating: 0x0A, count: n) + rec(text)); needsNL = true
         }
         func before(_ text: String, _ n: Int) {
-            s.store.appendRaw(path, rec(text) + [UInt8](repeating: 0x0A, count: n))
+            s.store.appendRaw(path, rec(text) + [UInt8](repeating: 0x0A, count: n)); needsNL = false
         }
-        func afterPage(_ text: String) { s.store.appendRaw(path, [0x0C] + rec(text)) }
-        func beforePage(_ text: String) { s.store.appendRaw(path, rec(text) + [0x0C]) }
-        /// call "SYSTEM" using print-report
-        func spool() { s.onReport?(path) }
+        func afterPage(_ text: String) { s.store.appendRaw(path, [0x0C] + rec(text)); needsNL = true }
+        func beforePage(_ text: String) { s.store.appendRaw(path, rec(text) + [0x0C]); needsNL = false }
+        /// CLOSE (最後の WRITE が AFTER ADVANCING なら改行を補う)
+        func close() {
+            if closed { return }
+            if needsNL { s.store.appendRaw(path, [0x0A]) }
+            needsNL = false; closed = true
+        }
+        /// call "SYSTEM" using print-report (CLOSE 済みでなければ先に閉じる)
+        func spool() { close(); s.onReport?(path) }
     }
 
     /// z(n)9.99 形式 (符号なし編集)。value は小数 2 桁のスケール付き整数。
