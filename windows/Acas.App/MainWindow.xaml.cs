@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.IO;
 using System.Windows;
 using System.Windows.Automation;
@@ -188,9 +189,11 @@ public partial class MainWindow : Window
     {
         var fields = new StackPanel { MaxWidth = 540, HorizontalAlignment = HorizontalAlignment.Left };
         var readers = new Dictionary<string, Func<object?>>();
+        var dateValidators = new List<Func<bool>>();
         foreach (var field in form.Fields)
         {
             Control control;
+            TextBlock? error = null;
             switch (field)
             {
                 case TextField text:
@@ -198,9 +201,65 @@ public partial class MainWindow : Window
                     readers.Add(field.Id, () => textBox.Text);
                     control = textBox;
                     break;
+                case PasswordField password:
+                    var passwordBox = new PasswordBox { MaxLength = password.MaxLength };
+                    readers.Add(field.Id, () => passwordBox.Password);
+                    control = passwordBox;
+                    break;
                 case DateField date:
                     var datePicker = new DatePicker { SelectedDate = date.Value, SelectedDateFormat = DatePickerFormat.Short };
-                    readers.Add(field.Id, () => datePicker.SelectedDate);
+                    var dateError = Identify(new TextBlock
+                    {
+                        Text = $"{date.Label}に有効な日付を入力してください。",
+                        Foreground = Brushes.DarkRed,
+                        Margin = new Thickness(0, 0, 0, 12),
+                        Visibility = Visibility.Collapsed
+                    }, field.Id + "Error");
+                    error = dateError;
+                    bool invalidDate = false;
+                    string? resetText = null;
+                    void SetDateError(bool invalid)
+                    {
+                        invalidDate = invalid;
+                        dateError.Visibility = invalid ? Visibility.Visible : Visibility.Collapsed;
+                    }
+                    datePicker.DateValidationError += (_, args) =>
+                    {
+                        args.ThrowException = false;
+                        resetText = datePicker.SelectedDate?.ToString("d", CultureInfo.CurrentCulture) ?? "";
+                        SetDateError(true);
+                        datePicker.Dispatcher.InvokeAsync(() =>
+                        {
+                            if (!invalidDate) return;
+                            datePicker.SelectedDate = null;
+                            datePicker.Text = "";
+                        }, System.Windows.Threading.DispatcherPriority.Normal);
+                    };
+                    datePicker.AddHandler(TextBox.TextChangedEvent, new TextChangedEventHandler((sender, args) =>
+                    {
+                        if (args.OriginalSource is not TextBox entry) return;
+                        if (resetText is not null)
+                        {
+                            bool reset = entry.Text == resetText;
+                            resetText = null;
+                            if (reset) return;
+                        }
+                        if (invalidDate && DateTime.TryParse(entry.Text, CultureInfo.CurrentCulture, out _))
+                            SetDateError(false);
+                    }));
+                    datePicker.SelectedDateChanged += (_, _) =>
+                    {
+                        if (datePicker.SelectedDate.HasValue) SetDateError(false);
+                    };
+                    dateValidators.Add(() =>
+                    {
+                        if (!invalidDate && (string.IsNullOrWhiteSpace(datePicker.Text) ||
+                            DateTime.TryParse(datePicker.Text, CultureInfo.CurrentCulture, out _))) return true;
+                        SetDateError(true);
+                        return false;
+                    });
+                    readers.Add(field.Id, () => DateTime.TryParse(datePicker.Text, CultureInfo.CurrentCulture, out var value)
+                        ? value.Date : null);
                     control = datePicker;
                     break;
                 case ChoiceField choice:
@@ -221,9 +280,13 @@ public partial class MainWindow : Window
             control.Margin = new Thickness(0, 0, 0, 12);
             fields.Children.Add(label);
             fields.Children.Add(Identify(control, field.Id));
+            if (error is not null) fields.Children.Add(error);
         }
         var submit = ActionButton("FormSubmit", form.SubmitLabel, () =>
-            ShowScreen(form.Submit(new FormValues(readers.ToDictionary(pair => pair.Key, pair => pair.Value())))));
+        {
+            if (dateValidators.All(validate => validate()))
+                ShowScreen(form.Submit(new FormValues(readers.ToDictionary(pair => pair.Key, pair => pair.Value()))));
+        });
         submit.IsDefault = true;
         submit.HorizontalAlignment = HorizontalAlignment.Left;
         fields.Children.Add(submit);
@@ -306,7 +369,16 @@ public partial class MainWindow : Window
         }));
         DockPanel.SetDock(buttons, Dock.Top);
         panel.Children.Add(buttons);
-        panel.Children.Add(Identify(new FlowDocumentScrollViewer { Document = Document(), IsToolBarVisible = false }, "ReportDocument", report.Title));
+        panel.Children.Add(Identify(new TextBox
+        {
+            Text = report.Body.Replace("\f", Environment.NewLine + Environment.NewLine),
+            FontFamily = new FontFamily("ＭＳ ゴシック"),
+            FontSize = 14,
+            IsReadOnly = true,
+            TextWrapping = TextWrapping.NoWrap,
+            HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
+            VerticalScrollBarVisibility = ScrollBarVisibility.Auto
+        }, "ReportDocument", report.Title));
         return panel;
     }
 }

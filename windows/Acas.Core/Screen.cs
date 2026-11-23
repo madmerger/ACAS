@@ -22,6 +22,7 @@ public sealed record TableRow(IReadOnlyList<string> Cells, Func<Screen>? Open = 
 
 public abstract record Field(string Id, string Label);
 public sealed record TextField(string Id, string Label, string Value = "", int MaxLength = 0) : Field(Id, Label);
+public sealed record PasswordField(string Id, string Label, int MaxLength) : Field(Id, Label);
 public sealed record DateField(string Id, string Label, DateTime? Value = null) : Field(Id, Label);
 public sealed record ChoiceField(string Id, string Label, IReadOnlyList<Choice> Options, string? Value = null) : Field(Id, Label);
 public sealed record Choice(string Value, string Label);
