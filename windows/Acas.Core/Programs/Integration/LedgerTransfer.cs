@@ -250,10 +250,6 @@ public sealed partial class LedgerTransfer(Db db)
         }
         if (toNominal && !toIrs && relative > short.MaxValue)
             throw new IrsException("転記番号を割り当てられません。");
-        db.Atomic(() =>
-        {
-            foreach (var ((file, key), data) in staged) db.Put(file, key, data);
-        });
         foreach (int type in Enumerable.Range(1, 3))
         {
             var (net, tax) = totals[type];
@@ -266,7 +262,11 @@ public sealed partial class LedgerTransfer(Db db)
         }
         legacy.Append('\n');
         var result = new IrsReport(title, report.ToString(), legacy.ToString());
-        db.AddSpool(Directory + "prt-1", result.Body);
+        db.Atomic(() =>
+        {
+            foreach (var ((file, key), data) in staged) db.Put(file, key, data);
+            db.AddSpool(Directory + "prt-1", result.Body);
+        });
         return result;
     }
 
