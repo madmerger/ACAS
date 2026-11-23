@@ -150,6 +150,33 @@ final class SystemCompanyDataFlows: XCTestCase {
     }
 
     @MainActor
+    func testDiscardInitialConfirmationKeepsOnlyBootstrapSettings() throws {
+        let app = try openCompany("SYS-001")
+        let name = app.textFields["system.company.name"]
+        name.tap()
+        name.typeText("TEST COMPANY\n")
+        tap(app, "system.settings.company")
+        let address = app.textFields["system.settings.address-1"]
+        address.tap()
+        address.typeText("DRAFT STREET\n")
+        app.navigationBars.buttons.firstMatch.tap()
+        tap(app, "action.save")
+        XCTAssertTrue(app.staticTexts["system.settings.confirm-report"].waitForExistence(timeout: 5))
+        tap(app, "system.company.cancel")
+        tap(app, "system.company")
+
+        XCTAssertTrue(name.waitForExistence(timeout: 5))
+        XCTAssertEqual(name.value as? String, "TEST COMPANY")
+        XCTAssertTrue(name.isEnabled)
+        XCTAssertFalse(app.staticTexts["system.settings.confirm-report"].exists)
+        XCTAssertTrue(app.buttons["action.save"].exists)
+        XCTAssertFalse(app.buttons["system.settings.report"].exists)
+        tap(app, "system.settings.company")
+        XCTAssertTrue(address.waitForExistence(timeout: 5))
+        XCTAssertNotEqual(address.value as? String, "DRAFT STREET")
+    }
+
+    @MainActor
     private func openCompany(_ id: String) throws -> XCUIApplication {
         continueAfterFailure = false
         let fixture = try XCTUnwrap(Bundle(for: Self.self).url(forResource: id, withExtension: "json",
