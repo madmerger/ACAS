@@ -337,22 +337,29 @@ public sealed class PurchaseLedgerTests
     [Fact]
     public void アイアールエスの仕入と支払は同じ採番でも別バッチになる()
     {
+        const string postings = "ledgers/acas/postings2irs.dat";
+        const string batches = "ledgers/acas/batch.dat";
         using var db = Fixture("pl-invoice");
         var ledger = new PurchaseLedger(db);
         var system = ledger.System();
         system.Set("Irs-Instead", "Y");
-        system.SetN("Next-Batch", 1);
+        system.SetN("Next-Batch", 2);
         system.SetN("BL-Next-Batch", 1);
         Assert.True(ledger.SaveSystem(system));
         Assert.Single(ledger.PostInvoices()!);
+        var existingPosting = db.Read(postings, "0000200001");
+        var existingBatch = db.Read(batches, "200002");
+        Assert.NotNull(existingPosting);
+        Assert.NotNull(existingBatch);
         Assert.True(ledger.SavePayment("SUPP018", new DateTime(2026, 11, 23), 50m, false,
             new Dictionary<int, decimal> { [1] = 50m }));
         Assert.Single(ledger.ProvePayments()!);
+        Assert.Equal(2, ledger.System().I("BL-Next-Batch"));
         Assert.Single(ledger.PostPayments()!);
-        Assert.Equal(new[] { "0000100001", "0000200001" },
-            db.Scan("ledgers/acas/postings2irs.dat").Select(row => row.Key));
-        Assert.NotNull(db.Read("ledgers/acas/batch.dat", "200001"));
-        Assert.NotNull(db.Read("ledgers/acas/batch.dat", "200002"));
+        Assert.Equal(new[] { "0000200001", "0000300001" }, db.Scan(postings).Select(row => row.Key));
+        Assert.Equal(existingPosting, db.Read(postings, "0000200001"));
+        Assert.Equal(existingBatch, db.Read(batches, "200002"));
+        Assert.NotNull(db.Read(batches, "200003"));
     }
 
     [Fact]
