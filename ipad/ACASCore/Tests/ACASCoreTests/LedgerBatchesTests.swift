@@ -3,6 +3,24 @@ import SQLite3
 import XCTest
 
 final class LedgerBatchesTests: XCTestCase {
+    func testCycleOutsideCurrentAndNextIsRejectedWithoutWrites() throws {
+        let store = try FileStore()
+        let context = BusinessContext(store: store)
+        let setup = CompanySetup(context)
+        var settings = setup.settings
+        try settings.setText("TEST", for: "usera")
+        try settings.setNumber(1, for: "scycle")
+        try setup.save(settings)
+        let before = store.snapshot()
+        for (cycle, expected) in [(0, LedgerBatches.Error.cycleTooEarly), (3, .cycleTooLate)] {
+            let draft = LedgerBatchDraft(cycle: cycle, defaultNumber: 0, direction: .debit, date: DateComponents())
+            XCTAssertThrowsError(try LedgerBatches(context).add(draft, lines: [])) { error in
+                XCTAssertEqual(error as? LedgerBatches.Error, expected)
+            }
+        }
+        XCTAssertEqual(store.snapshot(), before)
+    }
+
     func testTaxAmountsAndAccountAreWrittenToTheBatchAndPosting() throws {
         let store = try FileStore()
         let context = BusinessContext(store: store)
