@@ -62,7 +62,7 @@ public class St060 extends StProgram {
         if (sys.intv("file-status", 15) != 1) {
             ctx.shared.put("ws-process-func", 1);
             ctx.shared.put("ws-sub-function", 1);
-            call("sl070");
+            call("sl070", (Object) St.FILE_DEFS);
         }
         if (name.isEmpty() || !importFile.open(CobFile.Mode.INPUT).equals("00")) {
             fileError("ST601 Error on Open/Reading Import File - ", 37, name.isEmpty() ? "31" : importFile.status);

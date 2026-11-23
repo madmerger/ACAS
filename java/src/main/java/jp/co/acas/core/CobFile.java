@@ -55,6 +55,8 @@ public final class CobFile {
     /** optional=true は SELECT OPTIONAL 相当（無ければ I-O/EXTEND で作成し "05"）。 */
     public String open(Mode m, boolean optional) {
         if (open) return status = "41";
+        // ファイル名が空（呼出し元 file-defs の範囲外スロットなど）: GnuCOBOL は FILE STATUS 31 で失敗し、ファイルを作らない。
+        if (name == null || name.isBlank()) return status = "31";
         boolean ex = store.exists(name);
         // GnuCOBOL（BDB）の索引ファイルは、実ファイルのレコードが FD の宣言より長いと OPEN が FILE STATUS 39 になる。
         // 例: 在庫側から呼ばれた sl070 が analysis.dat へ value-record（66 バイト）を書いた後、36 バイト定義で開く場合。

@@ -106,8 +106,29 @@ public abstract class SlProgram extends Program {
     }
     protected static Rec analysisRec() { return fdRec("copybooks/fdanal.cob", "analysis-record"); }
     protected static Rec valueRec() { return fdRec("copybooks/fdval.cob", "value-record"); }
-    protected CobFile analysisFile(Rec r) { return CobFile.indexed(ctx.store, ctx.path(F_ANALYSIS), r, "pa-code"); }
-    protected CobFile valueFile(Rec r) { return CobFile.indexed(ctx.store, ctx.path(F_VALUE), r, "va-code"); }
+    /** sales/wsnames.cob の file-defs（System-File-Names 1〜13）。SL のプログラムはこの並びでスロットを参照する。 */
+    public static final String[] SALES_FILE_DEFS = {"system.dat", F_POSTING, F_BATCH, F_SALES, F_VALUE, F_DELIVERY, F_ANALYSIS, F_INVOICE,
+        F_DELINV, F_OI2, F_OI3, F_OISORT, F_WORK};
+    /** file-13（value-file）と file-15（analysis-file）の sales/wsnames.cob 上のスロット番号。 */
+    protected static final int SLOT_VALUE = 5, SLOT_ANALYSIS = 7;
+    /** CALL ... USING file-defs で受け取った呼出し元の file-defs。既定は売掛（sales/wsnames.cob）。 */
+    protected String[] fileDefs = SALES_FILE_DEFS;
+
+    /**
+     * 呼出し元が CALL の引数で渡した file-defs（String[]）を受け取る。他サブシステム（在庫など）の wsnames は
+     * 並びも個数も違うため、同じスロット番号が別のファイル名を指す（レガシーの挙動をそのまま再現する）。
+     */
+    protected void linkFileDefs(Object... args) {
+        for (Object a : args) if (a instanceof String[] d) fileDefs = d;
+    }
+    /** スロットのファイル名。呼出し元 file-defs の範囲外なら null（レガシーでは OPEN が FILE STATUS 31 で失敗しファイルは作られない）。 */
+    protected String slotName(int slot) { return slot >= 1 && slot <= fileDefs.length ? fileDefs[slot - 1] : null; }
+    private CobFile slotIndexed(int slot, Rec r, String key) {
+        String n = slotName(slot);
+        return CobFile.indexed(ctx.store, n == null ? "" : ctx.path(n), r, key);
+    }
+    protected CobFile analysisFile(Rec r) { return slotIndexed(SLOT_ANALYSIS, r, "pa-code"); }
+    protected CobFile valueFile(Rec r) { return slotIndexed(SLOT_VALUE, r, "va-code"); }
     protected static Rec oiHeader() { return Layout.of("sales/wsoi.cob", "oi-header").newRec(); }
     protected static Rec oi3Rec() { return fdRec("sales/fdoi3.cob", "open-item-record-3"); }
     protected static Rec invoiceRec() { return fdRec("sales/fdinv2.cob", "invoice-record"); }

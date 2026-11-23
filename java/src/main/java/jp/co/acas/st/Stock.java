@@ -27,7 +27,7 @@ public class Stock extends StProgram {
             if (sys.intv("scycle") == 0) { callSystemSetup(); continue; }
             if (sys.intv("file-status", 14) == 0) {
                 ctx.shared.put("ws-process-func", 1);
-                call("sl070");
+                call("sl070", (Object) St.FILE_DEFS);
             }
             toDay = Maps04.toDate(sys.longv("run-date"));
             ctx.shared.put("to-day", toDay);

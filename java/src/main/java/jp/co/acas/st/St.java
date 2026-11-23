@@ -4,6 +4,12 @@ package jp.co.acas.st;
 final class St {
     private St() { }
 
+    /**
+     * stock/wsnames.cob の file-defs（System-File-Names 1〜6）。在庫から CALL する他サブシステムのプログラム（sl070）へ
+     * USING file-defs として渡す。売掛の wsnames とは並びが違い、sl070 側のスロット解決はこの並びで行われる。
+     */
+    static final String[] FILE_DEFS = {"system.dat", "tmp-stock.dat", "staudit.dat", "stockctl.dat", "analysis.dat", "purchled.dat"};
+
     /** UK 形式 dd/mm/ccyy → 設定形式（1=UK, 2=USA, 3=Intl）。 */
     static String fromUk(String d, int form) {
         d = String.format("%-10s", d);

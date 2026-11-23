@@ -19,6 +19,7 @@ public class Sl070 extends SlProgram {
     @Override
     public void run(Object... args) {
         sys = sys();
+        linkFileDefs(args);
         pa = analysisRec(); va = valueRec();
         analysisFile = analysisFile(pa); valueFile = valueFile(va);
         print = new Prt(ctx, "prt-1");

@@ -157,7 +157,7 @@ def run_case(api, evid, case, verbose=False):
         m = re.search(r"files/ledgers/(.+)$", rp) or re.search(r"files/(spool/.+)$", rp)
         p = evid / rp
         if not m or not p.exists() or p.name == "command.json": continue
-        want = norm_report(p.read_text(errors="replace"))
+        want = norm_report(p.read_bytes().decode("latin1"))
         name = m.group(1)
         if name.startswith("spool/"):
             cands = [f for f in after if f.startswith("spool/") and Path(f).name == Path(name).name and f not in before]
