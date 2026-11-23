@@ -46,8 +46,8 @@ public sealed partial class SalesLedger
         system.SetN("Next-Invoice", number);
         SetText(system, "Extra-Desc", description, "追加料金・値引きの摘要");
         system.Set("Extra-Type", kind);
-        system.Set("Extra-Print", print ? "Y" : "N");
-        system.SetN("Extra-Rate", rate);
+        system.Set("Extra-Print", kind == "" ? "" : print ? "Y" : "N");
+        system.SetN("Extra-Rate", kind == "" ? 0 : rate);
         system.SetN("Invoicer", level);
         system.Set("SL-Stock-Link", link ? "Y" : "N");
         system.Set("SL-Stock-Audit", audit ? "Y" : "N");
