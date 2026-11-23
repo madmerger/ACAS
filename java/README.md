@@ -12,6 +12,8 @@ Migration plan: `docs/migration/java-ipad-pr-plan.md`.
 
 ## Build and run
 
+Requires JDK 21 and `unzip`: `./mvnw` checks the Maven distribution it downloads against `distributionSha256Sum` in `.mvn/wrapper/maven-wrapper.properties`.
+
 ```sh
 cd java
 ./mvnw verify                                  # build and run all tests
