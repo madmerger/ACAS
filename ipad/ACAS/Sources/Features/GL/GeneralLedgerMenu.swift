@@ -22,6 +22,8 @@ struct GeneralLedgerMenu: View {
                     .accessibilityIdentifier("gl.batches")
                 NavigationLink(ledgerText("batch-status")) { LedgerBatchStatusMenu(workspace: workspace) }
                     .accessibilityIdentifier("gl.batch-status")
+                NavigationLink(ledgerText("posting")) { LedgerPostingForm(workspace: workspace) }
+                    .accessibilityIdentifier("gl.posting")
                 NavigationLink(ledgerText("trial-balance")) { TrialBalanceMenu(workspace: workspace) }
                     .accessibilityIdentifier("gl.trial-balance")
                 NavigationLink("section.system") { SystemMenu(workspace: workspace) }
@@ -103,6 +105,7 @@ private struct LedgerAccountsMenu: View {
                     .accessibilityIdentifier("gl.accounts.edit." + account.id)
                 }
                 .navigationTitle(ledgerText("account-edit"))
+                .onAppear { workspace.completed("gl-account-edit-menu") }
                 .sheet(item: $selected, onDismiss: reload) { account in
                     NavigationStack { LedgerAccountEditor(workspace: workspace, initial: account) }
                 }
@@ -183,12 +186,14 @@ private struct LedgerAccountEditor: View {
                 .accessibilityIdentifier("gl.account.save")
             if initial != nil {
                 Button(ledgerText("account-delete"), role: .destructive) { deleteConfirm = true }
+                    .accessibilityIdentifier("gl.account.delete")
             }
             if let status { Text(status) }
         }
         .navigationTitle(ledgerText(initial == nil ? "account-add" : "account-edit"))
         .confirmationDialog(ledgerText("delete-confirm"), isPresented: $deleteConfirm) {
             Button(ledgerText("account-delete"), role: .destructive) { remove() }
+                .accessibilityIdentifier("gl.account.delete.confirm")
         }
         .onAppear {
             code = initial?.code ?? ""
@@ -209,6 +214,7 @@ private struct LedgerAccountEditor: View {
                 workspace.completed("gl-account-add")
             } else {
                 try chart.amend(code: code, branch: branch, name: name, type: type, placement: placement, level: level)
+                workspace.completed("gl-account-edit")
                 dismiss()
             }
         }
@@ -217,6 +223,7 @@ private struct LedgerAccountEditor: View {
     private func remove() {
         perform {
             try ChartOfAccounts(workspace.context).delete(code: code, branch: branch)
+            workspace.completed("gl-account-delete")
             dismiss()
         }
     }

@@ -32,9 +32,9 @@ public struct ChartOfAccounts {
         case missingHeader, missingAccount, duplicate, nonzeroBalance
     }
 
-    private static let path = "ledgers/acas/ledger.dat"
+    static let path = "ledgers/acas/ledger.dat"
     private static let terminator = "99999999"
-    private static let layout: Layout = {
+    static let layout: Layout = {
         let money = FieldType.comp3(digits: 10, scale: 2, signed: true)
         return Layout("ledger-record", [
             ("code", .n9(digits: 6, scale: 0, signed: false)),

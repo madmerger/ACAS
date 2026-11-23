@@ -65,8 +65,8 @@ public struct LedgerBatches {
         case missingCompany, cycle, missingDefault, date, items, amount, account, text, capacity, storage
     }
 
-    private static let batchPath = "ledgers/acas/batch.dat"
-    private static let postingPath = "ledgers/acas/posting.dat"
+    static let batchPath = "ledgers/acas/batch.dat"
+    static let postingPath = "ledgers/acas/posting.dat"
     private static let money = FieldType.comp3(digits: 11, scale: 2, signed: false)
     private static let lineMoney = FieldType.n9(digits: 10, scale: 2, signed: true)
     private static let bin = FieldType.native(bytes: 4, signed: true)
