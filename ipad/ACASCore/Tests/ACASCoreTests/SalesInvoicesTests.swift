@@ -2,6 +2,19 @@ import XCTest
 @testable import ACASCore
 
 final class SalesInvoicesTests: XCTestCase {
+    func testInvoiceCanBeRegisteredForExistingDormantCustomer() throws {
+        let (service, invoice) = try makeInvoice()
+        let draft = try service.draft(for: invoice.id)
+        let customers = SalesProofRecords.salesFile(service.context.store)
+        var account = try XCTUnwrap(customers.read(key: draft.customer))
+        account.setInt("sales-status", 0)
+        XCTAssertEqual(customers.rewrite(account), "00")
+
+        let nextInvoice = try service.save(draft)
+        XCTAssertNotEqual(nextInvoice.id, invoice.id)
+        XCTAssertEqual(customers.read(key: draft.customer)?.int("sales-status"), 0)
+    }
+
     func testPrintedInvoiceCanBeAmendedAndReturnsToPrintQueue() throws {
         let (service, invoice) = try makeInvoice()
         var header = try XCTUnwrap(service.header(invoice.id))

@@ -54,6 +54,14 @@ final class SalesPeriodTests: XCTestCase {
         XCTAssertEqual(files.header(number)?.str("ih-day-book-flag"), " ")
         let report = try XCTUnwrap(store.readRaw(SalesDayBook.exportPath))
         XCTAssertEqual(String(decoding: report[62..<70], as: UTF8.self), "Day Book")
+        let rows = report.split(separator: 0x0a, omittingEmptySubsequences: false)
+        let heading = try XCTUnwrap(rows.firstIndex { String(decoding: $0, as: UTF8.self).contains("Prompt Pay") })
+        let totals = ["Receipts", "Invoices", "Credit Notes", "    Totals"]
+        for (index, title) in totals.enumerated() {
+            let row = try XCTUnwrap(rows.firstIndex { $0.starts(with: title.utf8) })
+            XCTAssertEqual(row, heading + 3 + 2 * index)
+            XCTAssertEqual(rows[row].count, 132)
+        }
         XCTAssertFalse(try service.options().manualQuarter)
 
         let before = store.snapshot()

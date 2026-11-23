@@ -82,6 +82,7 @@ private struct SalesAnalysisEditor: View {
     @State private var account = ""
     @State private var description = ""
     @State private var printCode = ""
+    @State private var printCodeEdited = false
     @State private var failed = false
     @State private var failure: String.LocalizationValue = "sales.analysis.failed"
     @State private var confirmDelete = false
@@ -95,13 +96,20 @@ private struct SalesAnalysisEditor: View {
                     .autocorrectionDisabled()
                     .textInputAutocapitalization(.never)
                     .accessibilityIdentifier("sales.analysis.group")
+                    .onChange(of: group) { _, value in
+                        if !printCodeEdited { printCode = value }
+                    }
             }
             TextField(slText("sales.analysis.account"), text: $account)
                 .keyboardType(.numberPad)
                 .accessibilityIdentifier("sales.analysis.account")
             TextField(slText("sales.analysis.description"), text: $description)
                 .accessibilityIdentifier("sales.analysis.description")
-            TextField(slText("sales.analysis.printCode"), text: $printCode)
+            TextField(slText("sales.analysis.printCode"), text: Binding(get: { printCode }, set: {
+                printCodeEdited = true
+                printCode = $0
+            }))
+                .accessibilityIdentifier("sales.analysis.printCode")
             Button(slText("sales.analysis.save"), action: save)
                 .accessibilityIdentifier("sales.analysis.save")
             if original != nil {
@@ -132,7 +140,7 @@ private struct SalesAnalysisEditor: View {
             guard let value = Int64(account.isEmpty ? "0" : account) else { throw SalesAnalysis.Error.invalidInput }
             try service.prepare()
             try service.save(group: group, account: value, description: description,
-                             printCode: original == nil && printCode.isEmpty ? group : printCode, replacing: original != nil)
+                             printCode: printCode, replacing: original != nil)
             workspace.completed("sales-analysis-code")
             dismiss()
         } catch {
@@ -227,7 +235,7 @@ private func analysisDescription(_ code: SalesAnalysis.Code) -> String {
     case ("Pvi", "VAT Input Invoices/CN's"): slText("sales.analysis.default.purchaseInvoiceTax")
     case ("Pvj", "VAT Input Receipts"): slText("sales.analysis.default.purchaseReceiptTax")
     case ("Sz", "Computer Control"), ("Pz", "Computer Control"): slText("sales.analysis.default.system")
-    case ("Pza", "Purchase Carriage Charges"): slText("sales.analysis.default.purchaseCarriage")
+    case ("Pza", "Purchase Carriage Charge"): slText("sales.analysis.default.purchaseCarriage")
     case ("Pzb", "Purchase Late Charges"): slText("sales.analysis.default.purchaseLate")
     case ("Szc", "Sales Carriage Charges"): slText("sales.analysis.default.salesCarriage")
     case ("Szd", "Sales Late Charges"): slText("sales.analysis.default.salesLate")
@@ -244,6 +252,8 @@ private func analysisFailure(_ error: Error) -> String.LocalizationValue {
     switch error {
     case SalesAnalysis.Error.invalidLayout: "sales.analysis.invalidLayout"
     case SalesAnalysis.Error.invalidInput: "sales.analysis.invalidInput"
+    case SalesAnalysis.Error.invalidDescription: "sales.analysis.invalidDescription"
+    case SalesAnalysis.Error.invalidPrintCode: "sales.analysis.invalidPrintCode"
     case SalesAnalysis.Error.duplicate: "sales.analysis.duplicate"
     case SalesAnalysis.Error.missingGroup: "sales.analysis.missingGroup"
     case SalesAnalysis.Error.groupUsed: "sales.analysis.groupUsed"
