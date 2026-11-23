@@ -22,9 +22,10 @@ SwiftUI のリスト、フォーム、テーブル等に専念させ、入力・
 # UDID は xcrun simctl list devices available で確認する。
 UDID='<iPadのUUID>'
 DESTINATION="platform=iOS Simulator,id=$UDID"
+python3 ipad/ACASUITests/Stock/generate_stock_fixtures.py "$HOME/acas-ipad-oracle"
 python3 ipad/scripts/generate_cases.py "$HOME/acas-ipad-oracle"
-python3 ipad/ACASUITests/Integration/generate_period_fixtures.py "$HOME/acas-ipad-oracle" \
-  --confirmed-root "$HOME/acas-ipad-oracle/period-extension/native"
+python3 ipad/ACASUITests/IRS/generate_bookkeeping_fixtures.py "$HOME/acas-ipad-oracle"
+python3 ipad/ACASUITests/Integration/generate_period_fixtures.py "$HOME/acas-ipad-oracle"
 xcodegen generate --spec ipad/project.yml
 swift test --package-path ipad/ACASCore
 xcodebuild -project ipad/ACAS.xcodeproj -scheme ACAS \
@@ -33,6 +34,8 @@ xcodebuild -project ipad/ACAS.xcodeproj -scheme ACAS \
   -destination "$DESTINATION" -derivedDataPath ipad/.derived \
   -parallel-testing-enabled NO test-without-building
 ```
+
+期末確定後の証跡も手元にある場合は、連携用生成コマンドに `--confirmed-root <INT-402 と INT-403 の証跡の親ディレクトリ>` を指定する。
 
 録画は別のターミナルで、テスト対象アプリのインストール後にケース ID が表示されてから開始する。判定表示まで記録して Ctrl+C で終了する。
 

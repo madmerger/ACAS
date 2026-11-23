@@ -107,12 +107,12 @@ final class StockFlows: XCTestCase {
     @MainActor
     func testConfirmST204() throws {
         let app = try launchStockOperation("ST-204", "stock.master", "stock.edit")
-        enter(app, "stock.code", "ITEM001")
-        tap(app, "stock.load")
-        replace(app, "stock.name", with: "ALPHA WIDGET UPDATED")
-        tap(app, "stock.action")
-        XCTAssertEqual(app.staticTexts["stock.result"].label, "品目を保存しました。")
-        verifyVerdict(app, "ST-204", verdict: "mismatch")
+        let result = app.staticTexts["stock.result"]
+        XCTAssertTrue(result.waitForExistence(timeout: 5))
+        XCTAssertEqual(result.label, "分析ファイルのレコード長が一致しないため、在庫品目の変更を中止しました。")
+        XCTAssertFalse(app.textFields["stock.code"].exists)
+        XCTAssertFalse(app.buttons["stock.action"].exists)
+        verifyVerdict(app, "ST-204")
     }
 
     @MainActor
@@ -206,6 +206,7 @@ final class StockFlows: XCTestCase {
             tap(app, button)
         }
         XCTAssertEqual(app.staticTexts["stock.reportResult"].label, "帳票を作成しました。", id)
+        XCTAssertTrue(app.buttons["stock.exportReport"].isHittable, id)
         verifyVerdict(app, id)
     }
 

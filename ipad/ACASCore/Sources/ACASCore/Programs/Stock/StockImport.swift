@@ -51,7 +51,10 @@ extension StockService {
                     row.setInt("stock-" + name, NSDecimalNumber(decimal: amount * scale).int64Value)
                 }
                 for (index, name) in ["order-date", "order-due"].enumerated() {
-                    let field = fields[index + 11]
+                    var field = fields[index + 11]
+                    if field.count >= 2, field.first == "\"", field.last == "\"" {
+                        field = String(field.dropFirst().dropLast())
+                    }
                     let date = Maps04.toBinary(field)
                     guard field.isEmpty || date != 0 else { throw Failure.invalidInput }
                     row.setInt("stock-" + name, Int64(date))

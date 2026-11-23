@@ -2,6 +2,7 @@
 import argparse
 import base64
 import json
+import subprocess
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -45,7 +46,7 @@ REPORTS = {
 OPERATIONS = {
     "ST-090": ("stock.create", "業務用在庫品目二件の登録"),
     "ST-203": ("stock.create", "在庫品目登録"),
-    "ST-204": ("stock.edit", "在庫品目変更"),
+    "ST-204": ("stock.edit.open", "在庫品目変更"),
     "ST-213": ("stock.order", "在庫発注記録"),
     "ST-222": ("stock.import", "在庫品目一括取込"),
     "ST-223": ("stock.close", "在庫管理を閉じる"),
@@ -83,6 +84,7 @@ def operation_fixture(evidence, run, case_id):
     changes = expected_changes(evidence, run / "record-diff.json")
     record_files = None
     reports = {}
+    seed = snapshot_seed(evidence, run)
     with evidence_path(evidence, run / "terminal.cast").open(encoding="utf-8") as recording:
         timestamp = json.loads(recording.readline())["timestamp"]
     if case_id == "ST-090":
@@ -90,6 +92,16 @@ def operation_fixture(evidence, run, case_id):
         changes = [change for change in changes if change["file"] in record_files]
         if len(changes) != 2 or any(change["before"] is not None for change in changes):
             raise ValueError("在庫品目二件の登録証跡が必要です")
+    if case_id == "ST-204":
+        path = "ledgers/acas/analysis.dat"
+        source = evidence_path(evidence, run / "before-files" / path)
+        dump = subprocess.run(["db_dump", str(source)], check=True, capture_output=True, text=True).stdout.splitlines()
+        rows = [line.strip() for line in dump[dump.index("HEADER=END") + 1:dump.index("DATA=END")]]
+        if changes or not rows or len(rows) % 2 or not any(len(bytes.fromhex(row)) != 36 for row in rows[1::2]):
+            raise ValueError("在庫を更新せず中断した分析ファイルの証跡が必要です")
+        snapshot = json.loads(base64.b64decode(seed))
+        snapshot["files"][path] = {"type": "indexed", "records": list(zip(rows[::2], rows[1::2]))}
+        seed = base64.b64encode(json.dumps(snapshot, separators=(",", ":")).encode()).decode()
     if case_id == "ST-213":
         path = "ledgers/acas/prt-1"
         report = evidence_path(evidence, run / "files" / path).read_bytes()
@@ -102,7 +114,7 @@ def operation_fixture(evidence, run, case_id):
         reports[audit] = evidence_path(evidence, run / "files" / audit).read_bytes().hex()
     return {
         "id": case_id, "title": title, "workflow": workflow, "dateSeconds": timestamp,
-        "seed": snapshot_seed(evidence, run), "changes": changes, "recordFiles": record_files, "reports": reports,
+        "seed": seed, "changes": changes, "recordFiles": record_files, "reports": reports,
     }
 
 

@@ -27,8 +27,9 @@ extension StockService {
         }
     }
 
+    @discardableResult
     public func printReport(_ report: Report, date: Date, selection: ReportSelection = .all,
-                            byAbbreviation: Bool = false, from: String = "", through: String = "") throws {
+                            byAbbreviation: Bool = false, from: String = "", through: String = "") throws -> Data {
         guard ReportSelection.options(for: report).contains(selection) else { throw Failure.invalidInput }
         let system = Record(SystemLayout.layout, bytes: settings.read(1) ?? Record(SystemLayout.layout).bytes)
         let format = Int(system.int("date-form"))
@@ -54,10 +55,7 @@ extension StockService {
         let rows = records.sorted { $0.raw(orderKey).lexicographicallyPrecedes($1.raw(orderKey)) }.filter { row in
             let key = row.raw(orderKey)
             if let lower, key.lexicographicallyPrecedes(lower) { return false }
-            if let upper {
-                let prefix = upper.reversed().drop(while: { $0 == 0x20 }).reversed()
-                if prefix.lexicographicallyPrecedes(key.prefix(prefix.count)) { return false }
-            }
+            if let upper, upper.lexicographicallyPrecedes(key) { return false }
             switch selection {
             case .all: return true
             case .current: return ["adds", "deducts", "wip-adds", "wip-deds"].contains { row.int("stock-" + $0) != 0 }
@@ -243,5 +241,6 @@ extension StockService {
             output.append(0x0a)
         }
         try store.writeRaw(directory + "prt-1", output)
+        return Data(output)
     }
 }

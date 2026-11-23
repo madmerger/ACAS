@@ -7,6 +7,7 @@ struct BookkeepingConfigurationForm: View {
     @State private var password = ""
     @State private var newPassword = ""
     @State private var message = ""
+    @State private var authenticated = false
 
     init(workspace: Workspace) {
         self.workspace = workspace
@@ -15,36 +16,52 @@ struct BookkeepingConfigurationForm: View {
 
     var body: some View {
         Form {
-            Section(irsText("settings.company")) {
-                TextField(irsText("settings.operator"), text: $value.operatorName).accessibilityIdentifier("irs.operatorName")
-                TextField(irsText("settings.client"), text: $value.client).accessibilityIdentifier("irs.client")
-                TextField(irsText("settings.street"), text: $value.street)
-                TextField(irsText("settings.city"), text: $value.city)
-                TextField(irsText("settings.country"), text: $value.country)
-                TextField(irsText("settings.postcode"), text: $value.postcode)
+            if authenticated {
+                Section(irsText("settings.company")) {
+                    TextField(irsText("settings.operator"), text: $value.operatorName).accessibilityIdentifier("irs.operatorName")
+                    TextField(irsText("settings.client"), text: $value.client).accessibilityIdentifier("irs.client")
+                    TextField(irsText("settings.street"), text: $value.street)
+                    TextField(irsText("settings.city"), text: $value.city)
+                    TextField(irsText("settings.country"), text: $value.country)
+                    TextField(irsText("settings.postcode"), text: $value.postcode)
+                }
+                Section(irsText("settings.period")) {
+                    DatePicker(irsText("settings.start"), selection: $value.start, displayedComponents: .date)
+                    DatePicker(irsText("settings.end"), selection: $value.end, displayedComponents: .date)
+                    TextField(irsText("settings.taxRate"), value: $value.taxRate, format: .percent.scale(0.01))
+                        .keyboardType(.decimalPad)
+                    TextField(irsText("settings.printDestination"), text: $value.printDestination)
+                }
+                SecureField(irsText("field.newPassword"), text: $newPassword)
+                    .accessibilityIdentifier("irs.newPassword")
+                Button(irsText("action.save")) {
+                    do {
+                        try BookkeepingService(workspace.context).save(value, password: password,
+                                                                       newPassword: newPassword.isEmpty ? nil : newPassword)
+                        message = irsText("result.settingsSaved")
+                        authenticated = false
+                        password = ""
+                        newPassword = ""
+                    } catch { message = bookkeepingError(error) }
+                    workspace.completed("irs.settings")
+                }
+                .accessibilityIdentifier("irs.saveSettings")
+            } else {
+                SecureField(irsText("field.password"), text: $password)
+                    .accessibilityIdentifier("irs.settingsPassword")
+                Button(irsText("action.authenticateSettings")) {
+                    do {
+                        value = try BookkeepingService(workspace.context).authenticateSettings(password: password)
+                        authenticated = true
+                        message = ""
+                        workspace.completed("irs.settings.authenticated")
+                    } catch {
+                        message = bookkeepingError(error)
+                        password = ""
+                    }
+                }
+                .accessibilityIdentifier("irs.authenticateSettings")
             }
-            Section(irsText("settings.period")) {
-                DatePicker(irsText("settings.start"), selection: $value.start, displayedComponents: .date)
-                DatePicker(irsText("settings.end"), selection: $value.end, displayedComponents: .date)
-                TextField(irsText("settings.taxRate"), value: $value.taxRate, format: .percent.scale(0.01))
-                    .keyboardType(.decimalPad)
-                TextField(irsText("settings.printDestination"), text: $value.printDestination)
-            }
-            SecureField(irsText("field.password"), text: $password)
-                .accessibilityIdentifier("irs.settingsPassword")
-            SecureField(irsText("field.newPassword"), text: $newPassword)
-                .accessibilityIdentifier("irs.newPassword")
-            Button(irsText("action.save")) {
-                do {
-                    try BookkeepingService(workspace.context).save(value, password: password,
-                                                                   newPassword: newPassword.isEmpty ? nil : newPassword)
-                    message = irsText("result.settingsSaved")
-                } catch { message = bookkeepingError(error) }
-                password = ""
-                newPassword = ""
-                workspace.completed("irs.settings")
-            }
-            .accessibilityIdentifier("irs.saveSettings")
             if !message.isEmpty { Text(message).accessibilityIdentifier("irs.result") }
         }
         .navigationTitle(irsText("menu.settings"))

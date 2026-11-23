@@ -36,7 +36,9 @@ public struct StockService {
         }
     }
 
-    public enum Failure: Error { case invalidInput, duplicate, missing, hasStockOrOrders, auditRequired, missingRecovery }
+    public enum Failure: Error {
+        case invalidInput, duplicate, missing, hasStockOrOrders, auditRequired, missingRecovery, invalidAnalysisRecordLength
+    }
 
     let context: BusinessContext
     let directory = "ledgers/acas/"
@@ -71,7 +73,16 @@ public struct StockService {
 
     public func find(_ code: String) throws -> Item { Item(try record(code)) }
 
+    public func validateItemEdit() throws {
+        let analysis = directory + "analysis.dat"
+        guard let kind = store.kind(analysis) else { return }
+        let recordSize = 36
+        guard kind == "indexed", store.all(analysis).allSatisfy({ $0.data.count == recordSize })
+        else { throw Failure.invalidAnalysisRecordLength }
+    }
+
     public func save(_ item: Item, editing original: String? = nil) throws {
+        if original != nil { try validateItemEdit() }
         let id = try key(item.code.uppercased(), 13)
         let abbreviation = try key(item.abbreviation.uppercased(), 7)
         _ = try key(item.name, 32)
@@ -161,7 +172,7 @@ public struct StockService {
                 let audit = directory + "staudit.dat"
                 var statuses = system.raw("file-statuses")
                 if statuses[9] != 0x31 {
-                    try store.writeRaw(audit, [])
+                    if !store.exists(audit) { try store.writeRaw(audit, []) }
                     statuses[9] = 0x31
                     system.setRaw("file-statuses", statuses)
                     try settings.write(1, system.bytes)

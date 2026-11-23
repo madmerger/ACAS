@@ -37,6 +37,7 @@ struct StockItemForm: View {
     @State private var due: Date?
     @State private var selected: String?
     @State private var message = ""
+    @State private var editOpeningError: String?
     @State private var confirmingDelete = false
     @State private var opened = false
 
@@ -45,6 +46,32 @@ struct StockItemForm: View {
 
     var body: some View {
         Form {
+            if let editOpeningError {
+                Text(editOpeningError).accessibilityIdentifier("stock.result")
+            } else {
+                fields
+            }
+        }
+        .navigationTitle(operation.title)
+        .onAppear {
+            guard !opened else { return }
+            opened = true
+            if operation == .edit {
+                do { try stock.validateItemEdit() }
+                catch { editOpeningError = stockError(error) }
+            } else if isReceipt || operation == .issue {
+                do { try stock.prepareMovementEntry() }
+                catch { message = stockError(error) }
+            }
+            workspace.completed("stock." + operation.rawValue + ".open")
+        }
+        .confirmationDialog(stockText("delete.confirm"), isPresented: $confirmingDelete, titleVisibility: .visible) {
+            Button(stockText("action.confirmDelete"), role: .destructive, action: submit)
+        }
+    }
+
+    private var fields: some View {
+        Group {
             TextField(operation == .barcode ? stockText("field.barcode") : stockText("field.code"), text: $code)
                 .textInputAutocapitalization(.characters)
                 .autocorrectionDisabled()
@@ -99,19 +126,6 @@ struct StockItemForm: View {
             if !message.isEmpty {
                 Text(message).accessibilityIdentifier("stock.result")
             }
-        }
-        .navigationTitle(operation.title)
-        .onAppear {
-            guard !opened else { return }
-            opened = true
-            if isReceipt || operation == .issue {
-                do { try stock.prepareMovementEntry() }
-                catch { message = stockError(error) }
-            }
-            workspace.completed("stock." + operation.rawValue + ".open")
-        }
-        .confirmationDialog(stockText("delete.confirm"), isPresented: $confirmingDelete, titleVisibility: .visible) {
-            Button(stockText("action.confirmDelete"), role: .destructive, action: submit)
         }
     }
 

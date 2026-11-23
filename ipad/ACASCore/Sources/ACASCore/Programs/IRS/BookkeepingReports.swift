@@ -3,7 +3,8 @@ import Foundation
 extension BookkeepingService {
     public enum Report { case accounts, defaults }
 
-    public func printReport(_ report: Report) throws {
+    @discardableResult
+    public func printReport(_ report: Report) throws -> Data {
         let settings = system
         var output: [UInt8] = []
         func field(_ text: String, _ width: Int) -> [UInt8] { SJIS.encode(text, size: width) }
@@ -57,5 +58,6 @@ extension BookkeepingService {
         }
         if !output.isEmpty { output.append(0x0a) }
         try store.writeRaw(directory + "prt-1", output)
+        return Data(output)
     }
 }

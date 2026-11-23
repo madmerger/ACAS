@@ -98,6 +98,11 @@ public struct BookkeepingService {
         return value
     }
 
+    public func authenticateSettings(password: String) throws -> Configuration {
+        try verifyPassword(password, against: system)
+        return configuration
+    }
+
     public func save(_ configuration: Configuration, password: String, newPassword: String? = nil) throws {
         var row = system
         try verifyPassword(password, against: row)
