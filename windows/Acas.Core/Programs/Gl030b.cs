@@ -5,14 +5,15 @@ namespace Acas.Core.Programs;
 public static partial class Gl030
 {
     /// <summary>gl030b: 勘定科目の新規登録。</summary>
-    private static async Task Add(Ctx c, string toDay)
+    private static async Task Add(Ctx c, string toDay, St st)
     {
         var t = c.Crt; var sys = c.Sys;
         EnsureFile(c);
         string codes = Codes(c);
         bool usePc = Pcs(c) || Branches(c);
         var r = Layouts.Ledger.New();
-        string pcCode = "  ";
+        // pc-code は gl030 呼出中は保持される (P/C 未使用時、初回は空白のままキーに使われる: レガシー実測どおり)
+        string pcCode = st.PcCode;
         t.V(Prog, 0101, eos: true, fg: 2);
         t.V(toDay, 0171, fg: 2);
         t.D("Chart of Accounts Set-Up", 0129);
@@ -32,7 +33,7 @@ public static partial class Gl030
             r.Set("nos", check);
             decimal pc = pcCode[1] == '*' ? 0 : Cob.ToNum(pcCode);
             r.SetN("pc", pc);
-            var b = c.Db.Read(File, Key(Cob.ToNum(check), pc));
+            var b = pcCode == "  " ? null : c.Db.Read(File, Key(Cob.ToNum(check), pc));
             truth = b != null;
             if (d && b != null)
             {
@@ -76,7 +77,7 @@ public static partial class Gl030
         if (!usePc) r.SetN("pc", 0);
         else
         {
-            pcCode = await t.A(P(17), 2, "  ");
+            pcCode = await t.A(P(17), 2, "  "); st.PcCode = pcCode;
             if (pcCode == "  ") pcCode = "00";
             bool ok = pcCode == "**" || Common.IsNum(pcCode) || (pcCode[1] == '*' && char.IsDigit(pcCode[0]));
             if (ok && pcCode != "**" && Common.IsNum(pcCode) && pcCode != "00") { char pb = codes[int.Parse(pcCode) - 1]; ok = pb == 'E' || pb == 'Y'; }

@@ -66,3 +66,11 @@ Invalid Placement!.	配置が不正です!
 Profit centres/branches only valid for Revenue Accounts!	利益センター/支店は収益勘定のみ有効です!
 Invalid!	不正!
 INVALID! Header Missing	不正! ヘッダなし
+GL103 No Ledger File to update	GL103 更新する元帳ファイルがありません
+Chart Of Accounts Update	勘定科目表の更新
+Invalid! Code must be numeric or <n*>	不正! コードは数字か <n*>
+Does not exist!	存在しません!
+Enter <+> only to Delete	削除は <+> のみ入力
+Invalid Placement!	配置が不正です!
+GL104 Rewrite ERR 030-01. hit return to finish	GL104 更新エラー 030-01。Enterで終了
+Deletion Request Denied! Current Balance Not Zero	削除不可! 現在残高がゼロではありません

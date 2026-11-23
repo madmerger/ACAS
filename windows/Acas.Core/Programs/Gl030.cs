@@ -10,6 +10,7 @@ public static partial class Gl030
     private static readonly string[] Types = { "Header ", "Detail ", "Sales  ", "Purch. ", "Special" };
     private static readonly string[] Places = { "Direct Income", "Direct Costs ", "Sundry Income", "Indirect Cost", "Fixed Assets ", "Current Asset", "Current Liab.", "Capital A/Cs " };
 
+    private sealed class St { public string PcCode = "  "; }
     private static bool Pcs(Ctx c) => c.Sys.S("P-C") == "P";
     private static bool Branches(Ctx c) => c.Sys.S("P-C") == "B";
     private static bool Index2(Ctx c) => c.Sys.S("Ledger-2nd-Index") == "Y";
@@ -17,7 +18,7 @@ public static partial class Gl030
 
     public static async Task<int> Run(Ctx c, string toDay)
     {
-        var t = c.Crt;
+        var t = c.Crt; var st = new St();
         while (true)
         {
             t.V(Prog, 0101, eos: true, fg: 2);
@@ -42,8 +43,8 @@ public static partial class Gl030
             if (menu == 9) return 0;
             if (c.Sys.S("P-C") == " ") menu++;
             if (menu == 1) { await SetupPc(c, toDay); continue; }
-            if (menu == 2) { await Add(c, toDay); continue; }
-            if (menu == 3) { await Amend(c, toDay); continue; }
+            if (menu == 2) { await Add(c, toDay, st); continue; }
+            if (menu == 3) { await Amend(c, toDay, st); continue; }
             if (!Index2(c)) menu++;
             if (menu == 4) { await Alpha(c, toDay); continue; }
             if (menu == 5 || menu == 6) { await Chart(c, toDay, menu); continue; }
