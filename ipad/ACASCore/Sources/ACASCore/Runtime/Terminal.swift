@@ -15,6 +15,9 @@ public enum CellWidth {
     public static func of(_ c: Character) -> Int {
         guard let s = c.unicodeScalars.first else { return 1 }
         let v = s.value
+        // 半角カナの濁点・半濁点 (U+FF9E/FF9F) は前の文字と 1 書記素になるが、端末上は 1 桁を占める
+        let marks = c.unicodeScalars.dropFirst().filter { $0.value == 0xFF9E || $0.value == 0xFF9F }.count
+        if marks > 0 { return 1 + marks }
         if v < 0x1100 { return 1 }
         if (0x1100...0x115F).contains(v) || (0x2E80...0xA4CF).contains(v) || (0xAC00...0xD7A3).contains(v)
             || (0xF900...0xFAFF).contains(v) || (0xFE30...0xFE4F).contains(v) || (0xFF00...0xFF60).contains(v)

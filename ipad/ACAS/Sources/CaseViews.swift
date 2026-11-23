@@ -36,9 +36,16 @@ final class CaseRunModel: ObservableObject {
             for (i, st) in testCase.steps.enumerated() {
                 if Task.isCancelled { return }
                 stepIndex = i + 1
-                for ch in st.text ?? "" {
-                    terminal.send(text: String(ch))
+                // エスケープシーケンス (Home キー等) は分割せず 1 回で送る
+                let text = st.text ?? ""
+                if text.contains("\u{1B}") {
+                    terminal.send(text: text)
                     try? await Task.sleep(nanoseconds: keyDelay)
+                } else {
+                    for ch in text {
+                        terminal.send(text: String(ch))
+                        try? await Task.sleep(nanoseconds: keyDelay)
+                    }
                 }
                 if let k = st.key, let key = Replay.key(k) { terminal.send(key) }
                 await settle(stepDelay)

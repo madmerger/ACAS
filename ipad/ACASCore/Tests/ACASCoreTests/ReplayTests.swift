@@ -100,6 +100,26 @@ final class ReplayTests: XCTestCase {
                 }
             } else {
                 for (i, st) in c.steps.enumerated() where st.expect != nil && i >= screens.count { diffs.append("画面\(i) なし") }
+                // 日本語画面: 入力欄の括弧 [ ] の行・桁がレガシー画面と同じセル位置にあること
+                if env["ACAS_BRACKETS"] != nil {
+                    func cols(_ line: String) -> [String] {
+                        var out: [String] = [], col = 0
+                        for ch in line {
+                            if ch == "[" || ch == "]" { out.append("\(ch)\(col)") }
+                            col += CellWidth.of(ch)
+                        }
+                        return out
+                    }
+                    for (i, f) in screenFiles.enumerated() where i < screens.count {
+                        guard let want = try? String(contentsOf: ev.appendingPathComponent(f), encoding: .utf8) else { continue }
+                        let a = Self.normalize(want), b = Self.normalize(screens[i])
+                        for l in 0..<max(a.count, b.count) {
+                            let x = l < a.count ? a[l] : "", y = l < b.count ? b[l] : ""
+                            if x.contains("nohup") || (l > 0 && a[l - 1].contains("nohup")) { continue }
+                            if cols(x) != cols(y) { diffs.append("画面\(i) L\(l + 1) 括弧位置相違\n  legacy|\(x)\n  ipad  |\(y)") }
+                        }
+                    }
+                }
             }
             // レコード差分
             if let rd = targets["keyed_record_diff"] as? String,
