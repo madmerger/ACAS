@@ -229,8 +229,16 @@ final class PurchaseLedgerTests: XCTestCase {
         supplier.address2 = "千代田区"
         let code = try ledger.saveSupplier(supplier, creating: true, joiningAddressLines: true)
         let record = try XCTUnwrap(ledger.supplierRecord(code))
-        XCTAssertEqual(Cobol.rtrim(record.str("purch-addr1")), "東京都\\")
-        XCTAssertEqual(Cobol.rtrim(record.str("purch-addr2")), "千代田区")
+        XCTAssertEqual(record.raw("purch-address"), SJIS.encode("東京都\\千代田区", size: 96))
+        let address = ledger.supplierAddressLines(try ledger.supplier(code: code))
+        XCTAssertEqual(address.first, "東京都")
+        XCTAssertEqual(address.second, "千代田区")
+
+        supplier.code = code
+        supplier.address2 = ""
+        try ledger.saveSupplier(supplier, creating: false, joiningAddressLines: true)
+        let updated = try XCTUnwrap(ledger.supplierRecord(code))
+        XCTAssertEqual(updated.raw("purch-address"), SJIS.encode("東京都\\", size: 96))
     }
 
     func testSupplierLifecyclePreservesFixedWidthRecord() throws {

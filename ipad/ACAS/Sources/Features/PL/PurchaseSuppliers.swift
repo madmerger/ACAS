@@ -63,7 +63,8 @@ struct PurchaseSupplierLookup: View {
                 Section(plString("pl.supplier.detail")) {
                     LabeledContent(plString("pl.supplier.name"), value: supplier.name)
                         .accessibilityIdentifier("pl.supplier.result")
-                    LabeledContent(plString("pl.supplier.address"), value: [supplier.address1, supplier.address2].filter { !$0.isEmpty }.joined(separator: " "))
+                    let address = ledger.supplierAddressLines(supplier)
+                    LabeledContent(plString("pl.supplier.address"), value: [address.first, address.second].filter { !$0.isEmpty }.joined(separator: " "))
                     LabeledContent(plString("pl.supplier.telephone"), value: supplier.telephone)
                     LabeledContent(plString("pl.supplier.balance"), value: purchaseAmount(supplier.currentBalance))
                     LabeledContent(plString("pl.supplier.unapplied"), value: purchaseAmount(supplier.unapplied))
@@ -129,11 +130,9 @@ struct PurchaseSupplierForm: View {
         self.workspace = workspace
         self.creating = creating
         var fields = supplier
-        let delimiter = PurchaseLedger(workspace.context).addressDelimiter
-        if !fields.address2.isEmpty, fields.address1.last == delimiter,
-           !fields.address1.dropLast().contains(delimiter), !fields.address2.contains(delimiter) {
-            fields.address1.removeLast()
-        }
+        let address = PurchaseLedger(workspace.context).supplierAddressLines(supplier)
+        fields.address1 = address.first
+        fields.address2 = address.second
         self._supplier = State(initialValue: fields)
     }
 
