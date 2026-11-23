@@ -106,6 +106,12 @@ final class ReplayTests: XCTestCase {
                 }
                 // 帳票・一時ファイルは別途比較
                 got = got.filter { $0.contains(".dat|") }
+                // レガシー実測がレコード単位に読めなかったファイル (after-records の unsupported_files) は実測側に差分が無いので比較対象外
+                let recs = ev.appendingPathComponent(rd).deletingLastPathComponent().appendingPathComponent("after-records/records.json")
+                if let ro = try? JSONSerialization.jsonObject(with: Data(contentsOf: recs)) as? [String: Any],
+                   let unsupported = ro["unsupported_files"] as? [String], !unsupported.isEmpty {
+                    got = got.filter { g in !unsupported.contains { g.hasPrefix($0 + "|") } }
+                }
                 if want != got {
                     diffs.append("レコード差分 相違: legacyのみ \(want.subtracting(got).sorted().map { String($0.prefix(160)) }) / ipadのみ \(got.subtracting(want).sorted().map { String($0.prefix(160)) })")
                 }
