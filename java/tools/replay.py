@@ -50,6 +50,11 @@ def norm_screen(s):
     return lines
 
 
+def norm_report(s):
+    """帳票: 画面と同じ正規化に加え、見出しの印刷時刻（HH:MM）を伏せる。"""
+    return [re.sub(r"\b\d\d:\d\d\b", "HH:MM", l) for l in norm_screen(s)]
+
+
 def snap_diff(before, after):
     out = []
     for f in sorted(set(before) | set(after)):
@@ -104,7 +109,7 @@ def run_case(api, evid, case, verbose=False):
     if dpath and (evid / dpath).exists():
         ld = json.loads((evid / dpath).read_text())
         unsupported = {Path(f).name for f in ld.get("unsupported_files", [])}
-        lset = sorted((c["file"].replace("ledgers/", "", 1), c["operation"], (c.get("before") or {}).get("hex"), (c.get("after") or {}).get("hex")) for c in ld["changes"])
+        lset = sorted((c["file"].replace("ledgers/", "", 1), {"変更": "更新"}.get(c["operation"], c["operation"]), (c.get("before") or {}).get("hex"), (c.get("after") or {}).get("hex")) for c in ld["changes"])
         jset = sorted(d for d in jdiff if Path(d[0]).name not in unsupported)
         rec = {"compared": True, "legacy_changes": len(lset), "java_changes": len(jset), "match": lset == jset,
                "java_changes_in_files_without_legacy_decoder": sorted({d[0] for d in jdiff if Path(d[0]).name in unsupported})}
@@ -119,14 +124,14 @@ def run_case(api, evid, case, verbose=False):
         m = re.search(r"files/ledgers/(.+)$", rp) or re.search(r"files/(spool/.+)$", rp)
         p = evid / rp
         if not m or not p.exists() or p.name == "command.json": continue
-        want = norm_screen(p.read_text(errors="replace").replace("\f", ""))
+        want = norm_report(p.read_text(errors="replace").replace("\f", ""))
         name = m.group(1)
         if name.startswith("spool/"):
             cands = [f for f in after if f.startswith("spool/") and Path(f).name == Path(name).name and f not in before]
-            got = [norm_screen("\n".join(bytes.fromhex(v).decode("latin1") for v in after[f].values()).replace("\f", "")) for f in cands]
+            got = [norm_report("\n".join(bytes.fromhex(v).decode("latin1") for v in after[f].values()).replace("\f", "")) for f in cands]
             ok = want in got
         else:
-            got = norm_screen("\n".join(bytes.fromhex(v).decode("latin1") for v in after.get(name, {}).values()).replace("\f", ""))
+            got = norm_report("\n".join(bytes.fromhex(v).decode("latin1") for v in after.get(name, {}).values()).replace("\f", ""))
             ok = want == got
             if not ok and len(detail) < 4:
                 detail.append({"report": name, "diff": [l for l in difflib.unified_diff(want, got, "legacy", "java", lineterm="", n=0)][:24]})
