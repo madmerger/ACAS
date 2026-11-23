@@ -33,6 +33,46 @@ public class StockServiceTests
     }
 
     [Fact]
+    public void 品目登録は開始在庫数量と評価額を保持する()
+    {
+        var (db, model) = Open();
+        using (db)
+        {
+            Submit(model.CreateForm(), ("StockKey", "ITEM003"), ("StockAbrev", "ITM003"),
+                ("StockDesc", "GAMMA"), ("StockHeld", "10"), ("StockValue", "45.00"),
+                ("StockCost", "5.00"), ("StockReorderPoint", "2"), ("StockStdReorder", "5"));
+            var row = Assert.Single(db.Scan(StockService.StockFile).Where(r => r.Key.StartsWith("ITEM003")));
+            var record = Layouts.Stock.From(row.Data);
+            Assert.Equal(10m, record.N("Stock-Held"));
+            Assert.Equal(45m, record.N("Stock-Value"));
+            Assert.Equal(2m, record.N("Stock-ReOrder-Pnt"));
+            Assert.Equal(5m, record.N("Stock-Std-ReOrder"));
+        }
+    }
+
+    [Fact]
+    public void 初回品目登録で分析コードと値を作成し再登録で初期化しない()
+    {
+        using var db = new Db();
+        const string systemKey = "00000001";
+        Assert.True(db.Write(StockService.SystemFile, systemKey, Layouts.System.New().B));
+        var model = new StockScreenModel(db, () => Today);
+        const string values = "ledgers/acas/value.dat";
+        Assert.False(db.Exists(values));
+        Assert.IsType<ConfirmationScreen>(Submit(model.CreateForm(), ("StockKey", "ITEM001"), ("StockAbrev", "ITM001")));
+        var system = Layouts.System.From(db.Read(StockService.SystemFile, systemKey)!);
+        Assert.Equal(1, system.I("File-Status-13"));
+        Assert.Equal(1, system.I("File-Status-15"));
+        Assert.Equal(16, db.Count(StockService.AnalysisFile));
+        Assert.Equal(16, db.Count(values));
+        Assert.All(db.Scan(values), row => Assert.Equal(66, row.Data.Length));
+        Assert.True(db.Delete(StockService.AnalysisFile, "Sa1"));
+        Assert.IsType<ConfirmationScreen>(Submit(model.CreateForm(), ("StockKey", "ITEM002"), ("StockAbrev", "ITM002")));
+        Assert.Equal(15, db.Count(StockService.AnalysisFile));
+        Assert.Null(db.Read(StockService.AnalysisFile, "Sa1"));
+    }
+
+    [Fact]
     public void 入庫はレガシーと同じバイトを更新し入庫明細表を出力する()
     {
         var (db, m) = Open();

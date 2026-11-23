@@ -108,6 +108,8 @@ public sealed class StockScreenModel(Db db, Func<DateTime> clock)
             new ChoiceField("StockServices", "役務専用品目", [new Choice("N", "いいえ"), new Choice("Y", "はい")], S("Stock-Services-Flag") == "Y" ? "Y" : "N"),
             new TextField("StockRetail", "売価", N("Stock-Retail", "zzzzzz9.99"), 10),
             new TextField("StockCost", "原価", N("Stock-Cost", "zzzzzz9.9999"), 12),
+            new TextField("StockHeld", "在庫数量", N("Stock-Held", "zzzzz9"), 6),
+            new TextField("StockValue", "在庫評価額", N("Stock-Value", "zzzzzzzz9.99"), 12),
             new TextField("StockReorderPoint", "発注点", N("Stock-ReOrder-Pnt", "zzzzzz9"), 6),
             new TextField("StockStdReorder", "標準発注量", N("Stock-Std-ReOrder", "zzzzzz9"), 6),
         ]);
@@ -132,15 +134,22 @@ public sealed class StockScreenModel(Db db, Func<DateTime> clock)
         r.Set("Stock-Services-Flag", v.Choice("StockServices") == "Y" ? "Y" : "N");
         if (!StockService.TryAmount(v.Text("StockRetail"), 2, out var retail) || !StockService.TryAmount(v.Text("StockCost"), 4, out var cost))
             return StockMessages.InvalidAmount;
+        if (!StockService.TryAmount(v.Text("StockValue"), 2, out var value)) return StockMessages.InvalidAmount;
+        if (!StockService.TryQuantity(v.Text("StockHeld"), out var held, out var negativeHeld, out var heldError) || negativeHeld)
+            return heldError ?? StockMessages.ST207;
         if (!StockService.TryQuantity(v.Text("StockReorderPoint"), out var rp, out var neg1, out var e1) || neg1) return e1 ?? StockMessages.ST207;
         if (!StockService.TryQuantity(v.Text("StockStdReorder"), out var sr, out var neg2, out var e2) || neg2) return e2 ?? StockMessages.ST207;
         r.SetN("Stock-Retail", retail);
         r.SetN("Stock-Cost", cost);
         r.SetN("Stock-ReOrder-Pnt", rp);
         r.SetN("Stock-Std-ReOrder", sr);
+        r.SetN("Stock-Held", held);
         if (r.St("Stock-Services-Flag") == "Y")
             foreach (var f in new[] { "Stock-Held", "Stock-On-Order", "Stock-Back-Ordered", "Stock-ReOrder-Pnt", "Stock-Std-ReOrder" }) r.SetN(f, 0);
-        if (r.St("Stock-Services-Flag") != "Y") r.SetN("Stock-Value", Cob.Round((r.N("Stock-Held") + r.N("Stock-Work-in-Progress")) * cost, 2));
+        if (r.St("Stock-Services-Flag") == "Y") value = 0;
+        else if (Service.System.I("Stk-Averaging") == 1 && value == 0 && held != 0 && cost != 0)
+            value = Cob.Round((held + (Service.System.I("Stk-Manu-Used") == 1 ? r.N("Stock-Work-in-Progress") : 0)) * cost, 2);
+        r.SetN("Stock-Value", value);
         return null;
     }
 
