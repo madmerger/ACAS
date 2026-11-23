@@ -68,6 +68,7 @@
 "sales.customer.error.duplicate" = "この得意先はすでに登録されています";
 "sales.customer.error.missing" = "指定した得意先は登録されていません";
 "sales.customer.error.invalidField" = "入力した文字または項目の長さを確認してください";
+"sales.customer.error.invalidTerms" = "取引条件の数値を指定の桁数で入力してください";
 "sales.customer.error.invalidAddress" = "住所は会社設定の区切り文字を使って分け、最初の部分を短くしてください";
 "sales.customer.error.outstandingBalance" = "売掛残高または未消込残高があるため処理できません";
 "sales.error.operationFailed" = "処理を完了できませんでした";

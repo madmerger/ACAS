@@ -65,6 +65,7 @@ private struct SalesCustomerView: View {
     let mode: Mode
     @State private var code = ""
     @State private var draft: SalesLedger.Customer?
+    @State private var terms = TermsInput()
     @State private var result: String?
     @State private var confirmDelete = false
     @FocusState private var focused: Field?
@@ -108,7 +109,7 @@ private struct SalesCustomerView: View {
         }
         .onAppear {
             if mode == .register && draft == nil {
-                do { draft = try ledger.newCustomer() } catch { result = SalesMessage.text(for: error) }
+                do { setDraft(try ledger.newCustomer()) } catch { result = SalesMessage.text(for: error) }
             }
         }
         .navigationTitle(mode.title)
@@ -143,18 +144,13 @@ private struct SalesCustomerView: View {
             TextField(slText("sales.customer.fax"), text: customer.fax).keyboardType(.phonePad)
         }
         Section(slText("sales.customer.terms")) {
-            TextField(slText("sales.customer.creditDays"), value: customer.creditDays, format: .number.grouping(.never))
-                .keyboardType(.numberPad)
-                .accessibilityIdentifier("sales.customer.creditDays")
-            TextField(slText("sales.customer.creditLimit"), value: customer.creditLimit, format: .number.grouping(.never))
-                .keyboardType(.numberPad)
+            termField("sales.customer.creditDays", text: $terms.creditDays)
+            termField("sales.customer.creditLimit", text: $terms.creditLimit)
             TextField(slText("sales.customer.discount"), value: discount(customer.discount), format: .number.grouping(.never))
                 .keyboardType(.decimalPad)
             Toggle(slText("sales.customer.lateCharge"), isOn: customer.lateCharges)
-            TextField(slText("sales.customer.lateChargeMinimumBalance"), value: customer.lateChargeMinimumBalance, format: .number.grouping(.never))
-                .keyboardType(.numberPad)
-            TextField(slText("sales.customer.lateChargeMaximum"), value: customer.lateChargeMaximum, format: .number.grouping(.never))
-                .keyboardType(.numberPad)
+            termField("sales.customer.lateChargeMinimumBalance", text: $terms.lateChargeMinimumBalance)
+            termField("sales.customer.lateChargeMaximum", text: $terms.lateChargeMaximum)
         }
         Section(slText("sales.customer.notifications")) {
             Toggle(slText("sales.customer.dunning"), isOn: customer.dunning)
@@ -204,6 +200,14 @@ private struct SalesCustomerView: View {
         (Decimal(value) / 100).formatted(.number.precision(.fractionLength(2)))
     }
 
+    private func termField(_ key: String, text: Binding<String>) -> some View {
+        LabeledContent(slText(String.LocalizationValue(key))) {
+            TextField(slText(String.LocalizationValue(key)), text: text)
+                .keyboardType(.numberPad)
+                .accessibilityIdentifier(key)
+        }
+    }
+
     private func discount(_ hundredths: Binding<Int64>) -> Binding<Decimal> {
         Binding(get: { Decimal(hundredths.wrappedValue) / 100 }, set: {
             let scaled = $0 * 100
@@ -214,7 +218,7 @@ private struct SalesCustomerView: View {
     private func lookup() {
         focused = nil
         do {
-            draft = try ledger.customer(code: code)
+            setDraft(try ledger.customer(code: code))
             result = nil
         } catch {
             draft = nil
@@ -227,20 +231,28 @@ private struct SalesCustomerView: View {
         guard var customer = draft else { return }
         focused = nil
         do {
+            try terms.apply(to: &customer)
             if mode == .register {
                 customer.code = code
                 let saved = try ledger.register(customer)
                 result = slText("sales.customer.registered \(saved.code)")
                 code = ""
-                draft = try ledger.newCustomer()
+                setDraft(try ledger.newCustomer())
             } else {
                 try ledger.update(customer)
                 result = slText("sales.customer.updated")
             }
+        } catch is TermsInput.Invalid {
+            result = slText("sales.customer.error.invalidTerms")
         } catch {
             result = SalesMessage.text(for: error)
         }
         workspace.completed("sales-customer-" + mode.rawValue)
+    }
+
+    private func setDraft(_ customer: SalesLedger.Customer) {
+        terms = TermsInput(customer)
+        draft = customer
     }
 
     private func close(permanently: Bool) {
@@ -253,6 +265,37 @@ private struct SalesCustomerView: View {
             result = SalesMessage.text(for: error)
         }
         workspace.completed("sales-customer-remove")
+    }
+}
+
+private struct TermsInput {
+    struct Invalid: Error {}
+
+    var creditDays = ""
+    var creditLimit = ""
+    var lateChargeMinimumBalance = ""
+    var lateChargeMaximum = ""
+
+    init() {}
+
+    init(_ customer: SalesLedger.Customer) {
+        creditDays = String(customer.creditDays)
+        creditLimit = String(customer.creditLimit)
+        lateChargeMinimumBalance = String(customer.lateChargeMinimumBalance)
+        lateChargeMaximum = String(customer.lateChargeMaximum)
+    }
+
+    func apply(to customer: inout SalesLedger.Customer) throws {
+        customer.creditDays = try integer(creditDays, maximum: 99)
+        customer.creditLimit = try integer(creditLimit, maximum: 9_999_999)
+        customer.lateChargeMinimumBalance = try integer(lateChargeMinimumBalance, maximum: 9_999)
+        customer.lateChargeMaximum = try integer(lateChargeMaximum, maximum: 9_999)
+    }
+
+    private func integer(_ text: String, maximum: Int64) throws -> Int64 {
+        guard text.utf8.allSatisfy({ (48...57).contains($0) }),
+              let value = Int64(text), value <= maximum else { throw Invalid() }
+        return value
     }
 }
 

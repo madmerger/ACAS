@@ -4,6 +4,11 @@ final class SalesCustomersFlows: XCTestCase {
     private let fixtureIDs = ["SL-400", "SL-401", "SL-402", "SL-403"]
 
     @MainActor
+    func testEmptyCreditDaysRejectsSave() throws {
+        try assertInvalidTerms(fieldID: "sales.customer.creditDays", replacement: "")
+    }
+
+    @MainActor
     func testChangingLookupCodeDiscardsEditSelection() throws {
         let (app, input) = try launch("SL-400", operation: "edit")
         let code = app.textFields["sales.customer.code"]
@@ -99,6 +104,22 @@ final class SalesCustomersFlows: XCTestCase {
         XCTAssertTrue(field.waitForExistence(timeout: 5), field.debugDescription)
         field.tap()
         field.typeText(input)
+    }
+
+    @MainActor
+    private func assertInvalidTerms(fieldID: String, replacement: String) throws {
+        let (app, input) = try launch("SL-400", operation: "edit")
+        enter(input["code"], in: app.textFields["sales.customer.code"])
+        tap("sales.customer.search", in: app)
+        let field = app.textFields[fieldID]
+        XCTAssertTrue(field.waitForExistence(timeout: 5))
+        let old = try XCTUnwrap(field.value as? String)
+        field.tap()
+        field.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: old.count) + replacement)
+        tap("sales.customer.save", in: app)
+        let result = app.staticTexts["sales.customer.result"]
+        XCTAssertTrue(result.waitForExistence(timeout: 5))
+        XCTAssertEqual(result.label, "取引条件の数値を指定の桁数で入力してください")
     }
 
     @MainActor
