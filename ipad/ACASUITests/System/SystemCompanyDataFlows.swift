@@ -134,9 +134,17 @@ final class SystemCompanyDataFlows: XCTestCase {
     @MainActor
     func testSYS003() throws {
         let app = try openCompany("SYS-003")
+        let name = app.textFields["system.company.name"]
+        let original = try XCTUnwrap(name.value as? String)
+        name.tap()
+        name.typeText(" DRAFT\n")
+        XCTAssertEqual(name.value as? String, original + " DRAFT")
         tap(app, "system.company.cancel")
         XCTAssertTrue(app.descendants(matching: .any).matching(identifier: "system.master").firstMatch.waitForExistence(timeout: 5))
         XCTAssertFalse(app.textFields["system.company.name"].exists)
+        tap(app, "system.company")
+        XCTAssertTrue(name.waitForExistence(timeout: 5))
+        XCTAssertEqual(name.value as? String, original)
         captureMatch(app, "SYS-003")
     }
 
