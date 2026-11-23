@@ -17,10 +17,15 @@ public struct SalesPosting {
     public init(_ context: BusinessContext) { self.context = context }
 
     public func checkAvailability() throws {
-        let system = try SalesLedger(context).systemRecord()
-        guard system.raw("file-statuses")[14] == 0x31 else { throw Error.missingAnalysis }
-        guard context.store.readRaw(Self.workPath) != nil else { throw Error.missingWorkFile }
-        guard context.store.all(Self.analysisPath).allSatisfy({ $0.data.count == 36 }) else {
+        let store = context.store
+        let invoices = SalesInvoices(context)
+        let status = try invoices.settings().raw("file-statuses")[14]
+        let hasInvoices = store.exists(invoices.file.path)
+        guard status == 0x31 || hasInvoices else { throw Error.missingAnalysis }
+        guard store.readRaw(Self.workPath) != nil || hasInvoices else { throw Error.missingWorkFile }
+        guard status == 0x31 || status == 0x30 || status == 0x20,
+              store.readRaw(Self.analysisPath) == nil,
+              store.all(Self.analysisPath).allSatisfy({ $0.data.count == SalesAnalysisFiles.layout.size }) else {
             throw Error.invalidAnalysisLayout
         }
     }
@@ -33,8 +38,10 @@ public struct SalesPosting {
         try store.withTransaction {
             try checkAvailability()
             var system = try invoices.settings()
+            try SalesAnalysisFiles.initialize(store, system: &system)
             var monthly = Record(SalesPostingRecords.monthly, bytes: invoices.systemFile.read(4) ?? SystemAuxRecords.initialRecord4())
-            guard var work = store.readRaw(Self.workPath), work.count % SalesOpenItems.layout.size == 0 else {
+            var work = store.readRaw(Self.workPath) ?? []
+            guard work.count % SalesOpenItems.layout.size == 0 else {
                 throw Error.invalidWorkFile
             }
             let extraction = try extract(invoices, monthly: &monthly)
@@ -168,7 +175,7 @@ public struct SalesPosting {
                 continue
             }
             if !transferred {
-                let item = extractItem(header)
+                let item = extractItem(header, storedLength: row.data.count)
                 records.append(item)
                 if type == 2 || type == 3 {
                     let field = type == 2 ? "invoices" : "credit-notes"
@@ -196,14 +203,20 @@ public struct SalesPosting {
         return (records, unprinted)
     }
 
-    private func extractItem(_ header: Record) -> Record {
+    private func extractItem(_ header: Record, storedLength: Int) -> Record {
         var item = Record(SalesOpenItems.layout)
         item.setRaw("customer", header.raw("ih-customer"))
         item["description"] = header.str("ih-order")
         for (field, source) in [("paid-current", "p-c"), ("invoice", "invoice"), ("date", "date"), ("type", "type"),
-                                ("credit", "cr"), ("deduction-days", "deduct-days")] {
+                                ("deduction-days", "deduct-days")] {
             item.setInt(field, header.int("ih-" + source))
         }
+        let credit = header.layout.fields["ih-cr"]!
+        let available = max(0, min(credit.type.size, storedLength - credit.offset))
+        let creditNumber = available == credit.type.size
+            ? header.int("ih-cr")
+            : header.int("ih-cr") & ((1 << (8 * available)) - 1)
+        item.setInt("credit", creditNumber)
         let sign: Int64 = header.int("ih-type") == 3 ? -1 : 1
         for (field, source) in [("net", "net"), ("extra", "extra"), ("carriage", "carriage"), ("discount", "discount"),
                                 ("tax", "vat"), ("extra-tax", "e-vat"), ("carriage-tax", "c-vat"),
@@ -284,6 +297,7 @@ private final class InvoicePostingReport {
     private let limit: Int
     private var page = 0
     private var lines = 0
+    private var creditsStarted = false
     private var totals = Array(repeating: (net: Int64(0), tax: Int64(0)), count: 4)
 
     init(store: FileStore, system: Record) {
@@ -346,7 +360,8 @@ private final class InvoicePostingReport {
     }
 
     func unapplied(_ credit: Record, balance: Int64) {
-        if lines > limit { headings(credits: true) }
+        if !creditsStarted || lines > limit { headings(credits: true) }
+        creditsStarted = true
         func field(_ key: String) -> String {
             let value = credit.int(key)
             return value == 0 ? Cobol.x("", 10) : Pic.edit("z(7)9", value: value, scale: 0) + "  "
@@ -360,9 +375,11 @@ private final class InvoicePostingReport {
     }
 
     func close(unapplied: Int64, missingCustomer: Bool) throws {
-        if lines > limit - 6 { headings(credits: true) }
-        let total = unapplied == 0 ? "" : Pic.edit("z(7)9.99", value: abs(unapplied), scale: 2)
-        printer.after(3, Cobol.x("", 24) + Cobol.x("Un-Applied Credits C/F ", 32) + total)
+        if creditsStarted {
+            if lines > limit - 6 { headings(credits: true) }
+            let total = unapplied == 0 ? "" : Pic.edit("z(7)9.99", value: abs(unapplied), scale: 2)
+            printer.after(3, Cobol.x("", 24) + Cobol.x("Un-Applied Credits C/F ", 32) + total)
+        }
         if missingCustomer { printer.after(3, "SL134 Warning Record/s missing in Sales File") }
         try printer.close()
     }

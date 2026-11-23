@@ -75,7 +75,8 @@ public struct SalesCustomerReport {
         let dateForm = Int(system.int("date-form"))
         let heading = Self.heading(filter, code: prefix, creationDay: creationDay, dateForm: dateForm)
         let date = Maps04.format(Maps04.toDate(Int(runDay)), dateForm: dateForm)
-        let pageLines = Int(system.int("page-lines"))
+        let configuredLines = Int(system.int("page-lines"))
+        let pageLines = configuredLines > 28 ? configuredLines : 48
         let delimiter = system.raw("sl-delim")[0]
         var spool = [UInt8]()
         var page = 0

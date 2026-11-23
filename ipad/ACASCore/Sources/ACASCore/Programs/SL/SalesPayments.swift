@@ -64,7 +64,9 @@ public struct SalesPayments {
             for (index, draft) in drafts.enumerated() {
                 try write(draft, batch: batch, item: Int64(index + 1))
             }
-            system.setInt("s-flag-p", 1)
+            if drafts.contains(where: { !$0.useUnappliedBalance }) {
+                system.setInt("s-flag-p", 1)
+            }
             system.setInt("first-sl-batch", batch + 1)
             system["oi-3-flag"] = "Y"
             try RelativeFile(store, path: "ledgers/acas/system.dat", recordSize: 1024).write(1, system.bytes)
