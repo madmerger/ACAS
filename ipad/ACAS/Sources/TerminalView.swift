@@ -210,9 +210,7 @@ struct ReportList: View {
                 ForEach(model.reportNames, id: \.self) { name in
                     NavigationLink(name) {
                         ScrollView([.horizontal, .vertical]) {
-                            Text(verbatim: model.report(name))
-                                .font(.system(size: 13, design: .monospaced))
-                                .foregroundColor(Theme.pale)
+                            ReportGrid(text: model.report(name))
                                 .padding()
                         }
                         .background(Theme.navy)
@@ -224,5 +222,40 @@ struct ReportList: View {
             .toolbar { ToolbarItem(placement: .cancellationAction) { Button("ui.common.close".localized) { dismiss() } } }
         }
         .tint(Theme.blue)
+    }
+}
+
+/// 帳票を桁グリッドで描く。全角文字は 2 桁ぶんを占め、半角との桁位置がずれない。
+struct ReportGrid: View {
+    let text: String
+    private static let cw: CGFloat = 8, ch: CGFloat = 17
+
+    private static func isWide(_ c: Character) -> Bool {
+        guard let v = c.unicodeScalars.first?.value else { return false }
+        return v >= 0x1100 && !(0xFF61...0xFF9F).contains(v)
+    }
+
+    var body: some View {
+        let lines = text.replacingOccurrences(of: "\r", with: "")
+            .split(separator: "\n", omittingEmptySubsequences: false)
+            .flatMap { $0.split(separator: "\u{0C}", omittingEmptySubsequences: false) }
+        let cols = lines.map { $0.reduce(0) { $0 + (Self.isWide($1) ? 2 : 1) } }.max() ?? 0
+        Canvas { ctx, _ in
+            for (row, line) in lines.enumerated() {
+                var col = 0
+                for c in line {
+                    let w = Self.isWide(c) ? 2 : 1
+                    if c != " " {
+                        let t = Text(verbatim: String(c))
+                            .font(.system(size: 13, design: .monospaced))
+                            .foregroundColor(Theme.pale)
+                        ctx.draw(t, at: CGPoint(x: (CGFloat(col) + CGFloat(w) / 2) * Self.cw,
+                                                y: (CGFloat(row) + 0.5) * Self.ch))
+                    }
+                    col += w
+                }
+            }
+        }
+        .frame(width: CGFloat(max(cols, 1)) * Self.cw, height: CGFloat(max(lines.count, 1)) * Self.ch)
     }
 }
