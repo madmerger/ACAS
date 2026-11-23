@@ -14,6 +14,9 @@ final class SalesInvoiceFlows: XCTestCase {
         tap("sales.invoice.generate", in: app)
         tap("sales.invoice.confirmPrint", in: app)
         finish(app, "SL-103", result: "請求書帳票を生成しました：1件")
+        let export = app.buttons["sales.invoice.export"]
+        XCTAssertTrue(export.isHittable)
+        XCTAssertEqual(export.label, "帳票原本を保存")
     }
 
     @MainActor

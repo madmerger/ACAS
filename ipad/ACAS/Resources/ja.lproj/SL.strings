@@ -1,4 +1,7 @@
 "sales.proof" = "未転記売上取引の確認帳票";
+"sales.invoice.export" = "帳票原本を保存";
+"sales.invoice.exportFilename" = "請求書帳票";
+"sales.invoice.exportFailed" = "帳票原本を保存できませんでした";
 "sales.proof.ready" = "帳票を作成してください";
 "sales.proof.failed" = "会社設定または請求書の情報を確認してください";
 "sales.proof.customer" = "得意先コード";

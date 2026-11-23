@@ -1,5 +1,42 @@
 import ACASCore
 import SwiftUI
+import UniformTypeIdentifiers
+
+private struct SalesInvoiceReport: FileDocument {
+    static let readableContentTypes = [UTType.data]
+    let bytes: Data
+
+    init(bytes: [UInt8]) { self.bytes = Data(bytes) }
+
+    init(configuration: ReadConfiguration) throws {
+        guard let bytes = configuration.file.regularFileContents else {
+            throw CocoaError(.fileReadCorruptFile)
+        }
+        self.bytes = bytes
+    }
+
+    func fileWrapper(configuration: WriteConfiguration) throws -> FileWrapper {
+        FileWrapper(regularFileWithContents: bytes)
+    }
+}
+
+private struct SalesInvoiceReportExport: View {
+    let report: SalesInvoiceReport
+    @State private var exporting = false
+    @State private var failed = false
+
+    var body: some View {
+        Button(slText("sales.invoice.export"), systemImage: "square.and.arrow.up") { exporting = true }
+            .accessibilityIdentifier("sales.invoice.export")
+            .fileExporter(isPresented: $exporting, document: report, contentType: .data,
+                          defaultFilename: slText("sales.invoice.exportFilename")) { result in
+                if case .failure = result { failed = true }
+            }
+            .alert(slText("sales.invoice.exportFailed"), isPresented: $failed) {
+                Button(slText("sales.action.cancel"), role: .cancel) {}
+            }
+    }
+}
 
 extension SalesInvoices.Kind {
     var title: String {
@@ -41,6 +78,7 @@ struct SalesInvoiceEditor: View {
     @State private var result: String?
     @State private var saved = false
     @State private var confirms = false
+    @State private var report: SalesInvoiceReport?
     @State private var editingLine: LineSelection?
     @FocusState private var focusedInput: String?
 
@@ -108,6 +146,7 @@ struct SalesInvoiceEditor: View {
             HStack {
                 if let result { Text(result).accessibilityIdentifier("sales.invoice.result") }
                 Spacer()
+                if let report { SalesInvoiceReportExport(report: report) }
                 Button(immediate ? slText("sales.invoice.saveAndPrint") : slText("sales.invoice.save")) {
                     focusedInput = nil
                     if immediate { confirms = true } else { save() }
@@ -203,7 +242,10 @@ struct SalesInvoiceEditor: View {
             let service = SalesInvoices(workspace.context)
             let invoice = try service.save(draft, replacing: existing)
             saved = true
-            if immediate { _ = try service.printInvoices([invoice.id]) }
+            if immediate {
+                _ = try service.printInvoices([invoice.id])
+                report = workspace.context.store.readRaw(SalesInvoices.printPath).map(SalesInvoiceReport.init)
+            }
             result = immediate ? slText("sales.invoice.immediatelyPrinted \(invoice.id.display)") : slText("sales.invoice.saved \(invoice.id.display)")
         } catch {
             result = SalesInvoiceMessage.text(for: error)
@@ -232,6 +274,7 @@ struct SalesInvoiceList: View {
     @State private var confirmingDeletion = false
     @State private var confirmingPrint = false
     @State private var reprint = false
+    @State private var report: SalesInvoiceReport?
     private var service: SalesInvoices { SalesInvoices(workspace.context) }
 
     var body: some View {
@@ -241,6 +284,7 @@ struct SalesInvoiceList: View {
                 HStack {
                     Toggle(slText("sales.invoice.reprint"), isOn: $reprint).fixedSize()
                     Spacer()
+                    if let report { SalesInvoiceReportExport(report: report) }
                     Button(slText("sales.invoice.generate"), systemImage: "printer") { confirmingPrint = true }
                         .buttonStyle(.borderedProminent)
                         .accessibilityIdentifier("sales.invoice.generate")
@@ -284,7 +328,12 @@ struct SalesInvoiceList: View {
         }
     }
 
-    private func reload() { entries = service.invoices() }
+    private func reload() {
+        entries = service.invoices()
+        if action == .print {
+            report = workspace.context.store.readRaw(SalesInvoices.printPath).map(SalesInvoiceReport.init)
+        }
+    }
 
     private func delete() {
         guard let toDelete else { return }
