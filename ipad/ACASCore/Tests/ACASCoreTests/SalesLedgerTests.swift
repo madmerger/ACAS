@@ -3,6 +3,24 @@ import XCTest
 @testable import ACASCore
 
 final class SalesLedgerTests: XCTestCase {
+    func testAgeingRefusesOnlyPendingPaymentFlagOneWhenOpenItemsAreRegistered() throws {
+        let store = try FileStore()
+        let context = BusinessContext(store: store)
+        let file = RelativeFile(store, path: "ledgers/acas/system.dat", recordSize: 1024)
+        var system = Record(SystemLayout.layout)
+        var statuses = system.raw("file-statuses")
+        statuses[18] = 0x31
+        system.setRaw("file-statuses", statuses)
+        store.createIndexed(SalesOpenItems.path)
+        for (flag, expected) in [(1, SalesReceivableOpening.Refusal.pendingPayments), (2, nil)] {
+            system.setInt("s-flag-p", Int64(flag))
+            try file.write(1, system.bytes)
+            let before = store.snapshot()
+            XCTAssertEqual(try SalesReceivableOpening.ageing.refusal(in: context), expected)
+            XCTAssertEqual(store.snapshot(), before)
+        }
+    }
+
     func testFailedNotesWriteRollsBackRegistrationAndAllowsRetry() throws {
         let path = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString).path
         defer {
