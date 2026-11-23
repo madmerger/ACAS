@@ -7,6 +7,20 @@ namespace Acas.Tests.Sales;
 public sealed class SalesPostingTests
 {
     [Fact]
+    public void AnalysisReportUsesPostedCountsAndAmountsAndClearsFlag()
+    {
+        using var db = new Db();
+        db.LoadBaseline("sl-printed");
+        var sales = new SalesLedger(db);
+        sales.ExtractSalesForPosting();
+        sales.PostSales();
+        var menu = new SalesScreens(sales).MainMenu();
+        var report = Assert.IsType<ReportScreen>(menu.Items.Single(i => i.Id == "SalesAnalysisReport").Open!());
+        Assert.Contains("a1　Emergency Name　明細　1　0　1　0.00％　100.00　0.00　100.00", report.Body);
+        Assert.Equal(0, sales.SystemRecord().I("S-Flag-A"));
+    }
+
+    [Fact]
     public void ConfirmedSaleMatchesCobolCustomerOpenItemAndNominalPosting()
     {
         using var db = new Db();

@@ -44,7 +44,8 @@ public sealed partial class SalesScreens(SalesLedger sales, Func<DateTime>? cloc
         Top('Ｊ', "PaymentProof", "入金検証帳票", PaymentProof),
         Top('Ｋ', "PaymentPost", "入金転記", PaymentPost),
         Top('Ｌ', "Analysis", "売上分析コード管理", AnalysisMenu, AnalysisMenu().Items.Where(i => i.Number != 9).ToArray()),
-        Top('Ｍ', "AnalysisReport", "売上分析帳票", () => sales.HasFile("value.dat") ? PrintAnalysis(false) : MainMenu()),
+        Top('Ｍ', "AnalysisReport", "売上分析帳票", () => sales.SalesAnalysisReport() is { } report
+            ? new ReportScreen("売上分析帳票", report, MainMenu) : MainMenu()),
         Top('Ｎ', "DayBook", "売上日計帳", DayBook),
         Top('Ｏ', "Statements", "得意先明細書", () => OpenItemReport("得意先明細書")),
         Top('Ｐ', "Reminders", "督促状", () => OpenItemReport("督促状")),

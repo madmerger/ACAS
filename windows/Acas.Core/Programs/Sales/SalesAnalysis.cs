@@ -73,4 +73,37 @@ public sealed partial class SalesLedger
             report.AppendLine($"{code.Code}　{code.Account}　{code.Description}　{code.PrintCode}　{(code.Code.Length == 1 ? "グループ" : "明細")}");
         return report.ToString();
     }
+
+    public string? SalesAnalysisReport() => db.Atomic(() =>
+    {
+        var system = SystemRecord();
+        if (system.I("S-Flag-A") != 0)
+        {
+            system.SetN("S-Flag-A", 0);
+            SaveSystem(system);
+        }
+        if (!db.Exists(ValueFile)) return null;
+        var report = new StringBuilder("売上分析帳票\n").AppendLine(GetText(system, "Usera"))
+            .AppendLine(ShowDate(system.I("Run-Date")))
+            .AppendLine("コード　分析名　区分　当期件数　前期件数　年度累計件数　件数比　当期金額　前期金額　年度累計金額　金額比");
+        foreach (var (key, data) in db.Scan(ValueFile, "S").TakeWhile(row => row.Key.StartsWith('S')))
+        {
+            var value = ReadPostingValue(data);
+            string code = value.S("code");
+            bool subtotal = code[2] == ' ';
+            if (!subtotal && value.N("valueCurrent") == 0 && value.N("valueYear") == 0) continue;
+            string kind = subtotal && value.I("account") == 0 ? "グループ" : "明細";
+            report.AppendLine($"{code[1..].TrimEnd()}　{GetText(value, "description")}　{kind}　" +
+                $"{value.I("countCurrent")}　{value.I("countLast")}　{value.I("countYear")}　" +
+                $"{Ratio(value.N("countCurrent"), value.N("countLast"))}　" +
+                $"{Amount(value.N("valueCurrent"))}　{Amount(value.N("valueLast"))}　{Amount(value.N("valueYear"))}　" +
+                $"{Ratio(value.N("valueCurrent"), value.N("valueLast"))}");
+        }
+        string body = report.ToString();
+        db.AddSpool("prt-1", body);
+        return body;
+
+        static string Ratio(decimal current, decimal previous) =>
+            Amount(previous == 0 ? 0 : decimal.Truncate(current / previous * 10_000) / 100) + "％";
+    });
 }
