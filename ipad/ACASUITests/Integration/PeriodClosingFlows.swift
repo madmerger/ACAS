@@ -21,6 +21,20 @@ final class PeriodClosingFlows: XCTestCase {
     }
 
     @MainActor
+    func testShowExcludedINT404() throws {
+        let id = "INT-404"
+        let fixture = Data("""
+        {"id":"INT-404","title":"売掛転記：レガシー未実施","workflow":"int.excluded","dateSeconds":1795392000,"changes":[],"reports":{}}
+        """.utf8)
+        let app = try launch(id, fixture: fixture)
+        tap(app, "section.sales")
+        let screenshot = XCTAttachment(screenshot: app.screenshot())
+        screenshot.name = id
+        screenshot.lifetime = .keepAlways
+        add(screenshot)
+    }
+
+    @MainActor
     func testPurchaseInvoiceTransfer() throws {
         let id = "INT-405"
         let app = try launch(id)
