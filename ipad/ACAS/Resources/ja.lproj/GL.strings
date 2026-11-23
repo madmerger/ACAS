@@ -1,3 +1,9 @@
+"gl.financial-statements" = "損益計算書・貸借対照表";
+"gl.financial-statements.date" = "決算書の基準日";
+"gl.financial-statements.prepare" = "帳票の出力へ進む";
+"gl.financial-statements.confirm" = "この基準日で帳票を出力しますか？";
+"gl.financial-statements.print" = "帳票を出力";
+"gl.financial-statements.ready" = "損益計算書・貸借対照表の帳票を出力しました";
 "gl.posting" = "仕訳転記";
 "gl.posting.check" = "バッチの確認";
 "gl.posting.run" = "転記を実行";
