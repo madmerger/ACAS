@@ -2,6 +2,16 @@ import XCTest
 
 final class SystemCompanyDataFlows: XCTestCase {
     @MainActor
+    func testSYS206() throws {
+        let app = try openCompany("SYS-206")
+        XCTAssertEqual(app.textFields["system.company.name"].value as? String, "EQUIVALENCE BUSINESS")
+        tap(app, "system.settings.company")
+        XCTAssertEqual(app.textFields["system.settings.address-1"].value as? String, "Test Street")
+        XCTAssertTrue(app.textFields["system.settings.start-date"].exists)
+        captureMatch(app, "SYS-206")
+    }
+
+    @MainActor
     func testSYS004() throws {
         let app = try openCompany("SYS-004")
         for (group, field) in [

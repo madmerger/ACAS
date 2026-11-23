@@ -17,12 +17,21 @@ WORKFLOWS = {
     "SYS-008": ("system-company-period", "会計サイクルの周期に06を入力"),
     "SYS-009": ("system-company-period", "会計サイクルの周期に99を入力"),
     "SYS-010": ("system-company-report", "売掛元帳と在庫管理の連携を無効にする"),
+    "SYS-200": ("system-main-menu", "会計管理のメニューを表示"),
+    "SYS-202": ("system-unavailable-orders", "受注管理が利用できないことを確認"),
+    "SYS-203": ("system-unavailable-payroll", "給与管理が利用できないことを確認"),
+    "SYS-204": ("system-unavailable-retail", "店頭販売が利用できないことを確認"),
+    "SYS-206": ("system-company-data", "会社・期間設定の表示を確認"),
+    "GL-001": ("gl-business-date", "処理日入力を開く"),
     "GL-020": ("gl-account-add", "新規の見出し勘定を登録"),
     "GL-021": ("gl-account-edit", "既存の見出し勘定の名称を変更"),
     "GL-022": ("gl-account-delete", "残高ゼロの明細勘定を削除"),
     "GL-023": ("gl-chart-inquiry", "指定した勘定科目を起点に照会"),
     "GL-033": ("gl-chart-print", "勘定科目一覧を出力"),
     "GL-034": ("gl-trial-balance-detail", "詳細試算表を出力"),
+    "GL-036": ("gl-business-date-invalid", "存在しない処理日を拒否する"),
+    "GL-200": ("gl-business-date", "総勘定元帳を開いて処理日入力へ進む"),
+    "GL-201": ("gl-business-date", "総勘定元帳メニューから処理日入力を開く"),
     "GL-204": ("gl-account-edit-menu", "勘定科目の変更・削除画面を表示"),
     "GL-205": ("gl-chart-inquiry-menu", "勘定科目一覧の照会画面を表示"),
     "GL-206": ("gl-chart-print", "勘定科目一覧の帳票を確認"),
@@ -32,6 +41,9 @@ WORKFLOWS = {
     "GL-222": ("gl-posting-menu", "仕訳転記のバッチ確認に到達"),
     "GL-224": ("gl-trial-balance-menu", "試算表メニューを表示"),
     "GL-225": ("gl-trial-balance-detail", "詳細試算表の帳票を確認"),
+    "GL-230": ("gl-close-ledger", "総勘定元帳を閉じて会計管理メニューに戻る"),
+    "GL-231": ("system-company-data", "総勘定元帳から会社・期間設定を開く"),
+    "GL-232": ("gl-business-date", "総勘定元帳開始時の処理日入力を確認"),
     "SL-104": ("sales-proof", "印刷済み請求書の未転記売上取引確認帳票"),
     "CALC-200": ("check-digit", "得意先コードのチェックディジット"),
 }
@@ -115,13 +127,16 @@ def fixture(evidence, case):
         if "/files/spool/" in path and source.read_bytes().hex() not in reports.values():
             raise ValueError(f"帳票スプールと原本が一致しません: {path}")
     seeded = workflow == "sales-proof" or workflow.startswith(
-        ("system-company-", "gl-account-", "gl-chart-", "gl-batch-status-", "gl-posting-", "gl-trial-balance-")
+        (
+            "system-", "gl-account-", "gl-chart-", "gl-batch-status-", "gl-business-date",
+            "gl-close-ledger", "gl-posting-", "gl-trial-balance-",
+        )
     )
     seed = snapshot_seed(evidence, run) if seeded else None
     with evidence_path(evidence, run / "terminal.cast").open(encoding="utf-8") as recording:
         date = json.loads(recording.readline())["timestamp"]
     inputs = case["input_data"]
-    text_inputs = inputs.get("text_inputs", [""])
+    text_inputs = inputs.get("text_inputs") or [""]
     values = {
         "company": text_inputs[0].split("\r")[0],
         "code": inputs.get("code"),

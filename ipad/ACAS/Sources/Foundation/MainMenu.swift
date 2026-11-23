@@ -48,6 +48,7 @@ struct MainMenu: View {
                 .accessibilityIdentifier("section." + item.rawValue)
             }
             .navigationTitle("app.title")
+            .onAppear { workspace.completed("system-main-menu") }
         } detail: {
             NavigationStack {
                 if let section {
@@ -68,9 +69,13 @@ struct MainMenu: View {
         case .sales:
             SalesMenu(workspace: workspace)
         case .general:
-            GeneralLedgerMenu(workspace: workspace)
+            GeneralLedgerMenu(workspace: workspace) {
+                self.section = .system
+                workspace.completed("gl-close-ledger")
+            }
         default:
             ContentUnavailableView("menu.pending", systemImage: section.symbol)
+                .onAppear { workspace.completed("system-unavailable-" + section.rawValue) }
         }
     }
 }

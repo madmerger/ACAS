@@ -6,6 +6,7 @@
 "gl.posting.ready" = "仕訳を転記し、転記帳票を出力しました。";
 "gl.posting.open-batch" = "未確認のバッチがあるため転記できません。バッチ状況を確認してください。";
 "gl.posting.invalid" = "仕訳データまたは勘定科目が無効なため、転記できません。";
+"gl.posting.failed" = "仕訳を転記できませんでした。";
 "gl.trial-balance" = "試算表";
 "gl.trial-balance.detail" = "詳細試算表を出力";
 "gl.trial-balance.ready" = "詳細試算表を出力しました";
@@ -50,6 +51,7 @@
 "gl.confirm-date" = "処理日を確定";
 "gl.date-confirmed" = "処理日を確定しました";
 "gl.invalid-date" = "存在する日付を入力してください";
+"gl.date-save-failed" = "処理日を保存できませんでした";
 "gl.missing-company" = "先に会社設定を保存してください";
 "gl.close-ledger" = "総勘定元帳を閉じる";
 "gl.accounts" = "勘定科目管理";

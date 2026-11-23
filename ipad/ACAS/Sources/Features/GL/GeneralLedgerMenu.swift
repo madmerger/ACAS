@@ -7,6 +7,7 @@ func ledgerText(_ key: String) -> String {
 
 struct GeneralLedgerMenu: View {
     let workspace: Workspace
+    let close: () -> Void
     @State private var opened = false
 
     var body: some View {
@@ -28,7 +29,7 @@ struct GeneralLedgerMenu: View {
                     .accessibilityIdentifier("gl.trial-balance")
                 NavigationLink("section.system") { SystemMenu(workspace: workspace) }
                     .accessibilityIdentifier("gl.company-settings")
-                Button(ledgerText("close-ledger")) { opened = false }
+                Button(ledgerText("close-ledger"), action: close)
                     .accessibilityIdentifier("gl.close-ledger")
             }
         } else {
@@ -61,6 +62,7 @@ private struct LedgerBusinessDate: View {
             year = String(today.year ?? 0)
             month = String(today.month ?? 0)
             day = String(today.day ?? 0)
+            workspace.completed("gl-business-date")
         }
     }
 
@@ -77,8 +79,11 @@ private struct LedgerBusinessDate: View {
             started()
         } catch GeneralLedgerSetup.Error.missingCompany {
             status = ledgerText("missing-company")
-        } catch {
+        } catch GeneralLedgerSetup.Error.invalidDate {
             status = ledgerText("invalid-date")
+            workspace.completed("gl-business-date-invalid")
+        } catch {
+            status = ledgerText("date-save-failed")
         }
     }
 }
