@@ -215,6 +215,63 @@ public sealed class Crt
         return Cob.Trunc(Cob.ToNum(s), 0) % (decimal)Math.Pow(10, digits);
     }
 
+    /// <summary>
+    /// SCREEN SECTION の ACCEPT (複数項目)。Tab/下で次項目、BackTab/上で前項目、Enter で確定、Esc で中止。
+    /// 空白はプロンプト文字 '_' で表示し、戻り値では空白に戻す。
+    /// </summary>
+    public async Task<string[]> Form(List<(int pos, string val, bool numeric)> fields)
+    {
+        var bufs = fields.Select(f => (f.numeric ? f.val : f.val.Replace(' ', '_')).ToCharArray()).ToArray();
+        if (bufs.Length == 0) { Status = 0; return Array.Empty<string>(); }
+        int fi = 0, cur = 0;
+        void Show()
+        {
+            int row = fields[fi].pos / 100, col = fields[fi].pos % 100, len = bufs[fi].Length;
+            var s = new string(bufs[fi]);
+            Put(Shadow, row, col, s, 6, false); Put(Visible, row, col, s, 6, false);
+            CurRow = row; CurCol = col + Math.Min(cur, len - 1); CursorOn = true;
+            FieldRow = row; FieldCol = col; FieldLen = len;
+            Changed?.Invoke();
+        }
+        Show();
+        while (true)
+        {
+            var k = await Keys.Read();
+            var buf = bufs[fi]; int len = buf.Length;
+            switch (k.Kind)
+            {
+                case K.Char:
+                    if (k.Ch < ' ' || k.Ch > '~') { Beep?.Invoke(); break; }
+                    if (fields[fi].numeric && !(char.IsDigit(k.Ch) || k.Ch is '.' or '-' or '+' or ' ')) { Beep?.Invoke(); break; }
+                    buf[cur] = k.Ch;
+                    if (cur < len - 1) cur++;
+                    Show();
+                    break;
+                case K.Backspace:
+                    if (cur > 0) { cur--; for (int i = cur; i < len - 1; i++) buf[i] = buf[i + 1]; buf[len - 1] = ' '; Show(); }
+                    break;
+                case K.Delete:
+                    for (int i = cur; i < len - 1; i++) buf[i] = buf[i + 1];
+                    buf[len - 1] = ' '; Show();
+                    break;
+                case K.Left: if (cur > 0) cur--; Show(); break;
+                case K.Right: if (cur < len - 1) cur++; Show(); break;
+                case K.Home: cur = 0; Show(); break;
+                case K.Tab: case K.Down: fi = (fi + 1) % bufs.Length; cur = 0; Show(); break;
+                case K.BackTab: case K.Up: fi = (fi + bufs.Length - 1) % bufs.Length; cur = 0; Show(); break;
+                case K.Enter: Status = 0; goto done;
+                case K.Esc: Status = 2005; goto done;
+                default:
+                    if (k.Kind >= K.F1 && k.Kind <= K.F12) { Status = 1001 + (k.Kind - K.F1); goto done; }
+                    break;
+            }
+        }
+    done:
+        CursorOn = false; FieldLen = 0;
+        Changed?.Invoke();
+        return bufs.Select(b => new string(b).Replace('_', ' ')).ToArray();
+    }
+
     public string[] ShadowLines()
     {
         var r = new string[Rows];

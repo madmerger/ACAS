@@ -279,3 +279,184 @@ Shareholders Funds	株主資本
 Gross Profit	売上総利益
 Net Profit  	純利益      
 Net Current Value	正味流動資産
+System Parameters	システム設定
+    Using UK format dd/mm/ccyy	    英国式 dd/mm/ccyy
+    Using USA format mm/dd/ccyy	    米国式 mm/dd/ccyy
+    Using Intl format ccyy/mm/dd	    国際式 ccyy/mm/dd
+    Incorectly Set. You MUST set this	    設定誤り。必ず設定すること
+SY005 Invalid Date	SY005 日付不正
+Weekly    	週次
+Fortnightly	隔週
+Monthly   	月次
+SY105 Lines > 28	SY105 行数>28
+Range 0 thru 1 only   	0～1のみ指定可
+Cobol data files used 	COBOLファイル使用
+Rdbms is used  	RDBMS使用
+Duplicate file processing used	二重ファイル処理を使用
+Duplicate file processing NOT used	二重ファイル処理は未使用
++Screen 	+画面
+Name	社名
+Address - [	住所    - [
+Post Code [	郵便番号  [
+Country - [	国名    - [
+Date Format   	日付書式
+  (1 = UK, 2 = USA, 3 = Intl)	  (1=英国, 2=米国, 3=国際)
+Period :  Start Date - [	会計期間: 開始日    - [
+End   Date - [	終了日    - [
+System Print Lines   -	印刷行数             -
+  (for Laser = 048)	  (レーザー=048)
+Vat Rates : (1)	VAT税率   : (1)
+Local Tax : (4)	地方税    : (4)
+Local Tax : (5)	地方税    : (5)
+Current Cycle	現在サイクル
+VAT Reg no - [	VAT登録No. - [
+ Printed [	 印刷済  [
+Current Quarter	現在四半期
+Pass-Word	暗証番号
+Cycle Period	サイクル期間
+Data File Handling	データ方式
+(Range 0/1)	(範囲 0/1)
+Dual file type Flag	二重ファイルフラグ
+(Range 0 / 1)	(範囲 0 / 1)
+* OK to file (Y/N) - [	* 保存する? (Y/N)  - [
+Single/Multi-User - [	単独/複数ユーザー - [
+]  (0=Single, 1=Multi)	]  (0=単独, 1=複数)
+Operating System 	OS種別
+(1=Dos, 2=Windows, 3=Mac, 4=OS/2, 5=Unix, 6=Linux)	(1=Dos, 2=Windows, 3=Mac, 4=OS/2, 5=Unix, 6=Linux)
+Data capture System 	データ入力方式
+] 0=Std, 1=GUI, 2=Widget	] 0=標準,1=GUI, 2=Widget
+Cups Print Spooler name 1 - [	印刷スプーラ名 1          - [
+Cups Print Spooler name 2 - [	印刷スプーラ名 2          - [
+Cups Print Spooler name 3 - [	印刷スプーラ名 3          - [
+RDB Schema name - [	RDBスキーマ名   - [
+] (ACASDB)	] (ACASDB)
+DB Username - [	DBユーザー名- [
+DB User Password - [	DBパスワード     - [
+Profit Centres/Branches - [	利益センター/支店       - [
+  (P, B, space)	  (P, B, 空白)
+P.C./Branches Level	利益C/支店 レベル
+  (R=Revenue, Space)	  (R=収益, 空白)
+P.C./Branches Grouped ? - [	利益C/支店 グループ化 ? - [
+  (Y=Grouped or Space)	  (Y=グループ化, 空白)
+Comparatives ?	前期比較 ?
+  (Y=Yes or Space)	  (Y=はい, 空白)
+Ledger Name Index ?	勘定名索引 ?
+Minimum Validation ?	最小限の検証 ?
+Archiving ?	保管 ?
+Sales Range	売上範囲
+Purchase Range	仕入範囲
+Automatic VAT Posting ? - [	VAT自動転記 ?           - [
+Next Batch Number	次回バッチ番号
+Use IRS instead of GL ? - [	GLの代りにIRS使用 ?     - [
+  (Y=Yes or N=No)	  (Y=はい, N=否)
+Delimiter	区切文字
+Purch/Stock Link  [	仕入/在庫連携     [
+Next Batch Number [	次回バッチ番号    [
+Pay Account       [	支払勘定          [
+Ledger Account    [	元帳勘定          [
+Creditor Account  [	買掛金勘定        [
+Late Letters	督促状
+  (1 = Yes or 0)	  (1=はい, 0)
+Late Charges	延滞料
+Credit Period - [	与信期間      - [
+Discount	値引
+Min Late Bal	延滞最低残
+Max Late Charge [	延滞料上限    [
+Credit Limit	与信限度
+  (Address lines)	  (住所行)
+Own Inv. Nos	自社請求No
+Late Charge % - [	延滞料率 %  - [
+Sales/Stock Link  [	販売/在庫連携     [
+Pay Account    -  [	入金勘定       -  [
+Ledger Account -  [	元帳勘定       -  [
+Debtors Account - [	売掛金勘定      - [
+Select what report types, company details will be printed to	会社情報を印字する帳票の種類を選択してください
+    Invoices   - [	請求書     - [
+    Statements - [	取引明細   - [
+  Late Letters - [	督促状       - [
+Delivery Notes - [	納品書         - [
+Debugging     	デバッグ
+Bomp/Wip used 	BOM/仕掛使用
+Order Entry   	受注入力
+Audit Used    	監査使用
+Audit Movement	移動監査
+Current Period	当期間
+  (W=Weekly, M=Monthly, Q=Quarterly)	  (W=週次, M=月次, Q=四半期)
+To Date Period	累計期間
+  (M=Monthly, Q=Quarterly, Y=Yearly)	  (M=月次, Q=四半期, Y=年次)
+Ave Valuation	平均評価
+Next 2, See Manual First	次の2項目は手引書参照
+Activity Rep 	活動帳票
+  (0 = No or 1) leave as 0	  (0=なし, 1) 0のまま
+Audit Number 	監査番号
+  (if 1st time = 0, else leave as is)	  (初回は0、以降は変更しない)
+Multi-user system assumed	複数ユーザーとみなします
+Single-user system    	単独ユーザー
+Multi-user system     	複数ユーザー
+MSDOS assumed	MSDOSとする
+Linux assumed	Linuxとする
+ Print Spool Name must be defined	 スプーラ名は必須です
+Cobol Standard Display  	COBOL標準表示
+Gui Display             	GUI表示
+Widget Display          	Widget表示
+ Invalid - Std selected 	 不正 - 標準を選択
+Using (Free) Open Source Version of ACAS	ACAS オープンソース版(無償)を使用中
+Using Commercial Version of ACAS	ACAS 商用版を使用中
+ DB name, set as requested	 DB名を設定しました
+ DB User, set as requested	 DBユーザーを設定
+ DB User pwd, set as requested	 DBパスワードを設定
+Selected        	選択
+Not selected    	未選択
+Profit centres selected	利益センターを選択
+Branches selected	支店を選択
+Not selected  	未選択
+Revenue A/cs only 	収益勘定のみ
+All A/cs          	全勘定
+1st digit of P.C./Branch 	利益C/支店の先頭1桁は
+is the group identifier	グループ識別子
+is not significant	意味を持たない
+Selected & Set	選択・設定済
+Unset	未設
+Selected & Set       	選択・設定済
+Unset and/or No Stock	未設定/在庫なし
+Late letters selected    	督促状を使用
+Late letters not selected	督促状を使用しない
+Late charges selected    	延滞料を使用
+Late charges not selected	延滞料を使用しない
+Unset         	未設定
+Error, set to N	エラー Nに設定
+  Set	  設定
+    UnSet	    未設定
+    Set to Monthly	    月次に設定
+    Set to Quarterly	    四半期に設定
+    Set to Weekly	    週次に設定
+    Unset: Has been set to Monthly	    未設定: 月次に設定
+    Set to Yearly	    年次に設定
+    Unset: Has been set to Yearly	    未設定: 年次に設定
+    Set	    設定
+  Set to zero	  0に設定
+Do you want printed copy (Y/N) [ ]	印刷しますか      (Y/N) [ ]
+   User Data Complete	   利用者情報 完了
+    OPS Data 1 Complete 	    運用設定1 完了
+    OPS Data 2 Complete 	    運用設定2 完了
+    G-L Data Complete  	    GL設定 完了
+    S-L Data Complete  	    SL設定 完了
+  S-L Data 2 Complete  	  SL設定2 完了
+    P-L Data Complete	    PL設定 完了
+  Stock Data Complete	  在庫設定 完了
+User Data	利用情報
+OPS  Data 1	運用設定 1
+OPS  Data 2	運用設定 2
+G-L  Data	GL 設定
+S-L  Data 1	SL 設定 1
+S-L  Data 2	SL 設定 2
+P-L  Data	PL 設定
+Stock Data	在庫設定
+S y s t e m   S e t - U p	システム設定
+Delimiter <\> assumed	区切文字 <\> 使用
+   User Data Complete   	   利用者情報 完了
+    G-L Data Complete   	    GL設定 完了
+    S-L Data Complete   	    SL設定 完了
+  S-L Data 2 Complete   	  SL設定2 完了
+    P-L Data Complete   	    PL設定 完了
+  Stock Data Complete   	  在庫設定 完了

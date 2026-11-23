@@ -16,6 +16,8 @@ public static partial class Gl051
             t.D("Printing......please wait", 1212);
             if (menu == 2) firstTime = true;
         }
+        // レガシー実測 (GL-218): postings.dat が無いと不定レコードを読み続けて復帰しない
+        if (!c.Db.Exists(Gl050.PostFile)) throw new Halt("postings.dat が存在しません");
         var rp = c.OpenReport(Ctx.L + "prt-1");
         b.SetN("actual-gross", 0); b.SetN("actual-vat", 0);
         b.SetN("ledger", 1);
