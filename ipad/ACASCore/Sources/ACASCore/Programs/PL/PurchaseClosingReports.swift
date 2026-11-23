@@ -1,6 +1,22 @@
 import Foundation
 
 extension PurchaseLedger {
+    private var closingDayBookPath: String { base + "closing-day-book.prt" }
+    private var lastPurchaseAnalysisPath: String { base + "last-purchase-analysis.prt" }
+
+    public var closedPurchaseDayBook: Data? { store.readRaw(closingDayBookPath).map { Data($0) } }
+    public var lastPurchaseAnalysisReport: Data? { store.readRaw(lastPurchaseAnalysisPath).map { Data($0) } }
+
+    private func appearsInDayBook(_ header: Record) -> Bool {
+        (1...3).contains(header.int("ih-type")) && ["z", "Z"].contains(header.str("ih-status"))
+            && !["b", "B"].contains(header.str("ih-day-book-flag"))
+    }
+
+    func archiveClosingDayBook() throws {
+        guard headers().contains(where: appearsInDayBook), let report = try purchaseDayBook() else { return }
+        try store.writeRaw(closingDayBookPath, Array(report))
+    }
+
     public func purchaseDayBook() throws -> Data? {
         let settings = system
         guard store.kind(invoicePath) == "indexed", store.kind(suppliersPath) == "indexed" else { return nil }
@@ -34,8 +50,7 @@ extension PurchaseLedger {
         var name = ""
         for header in headers() {
             let type = Int(header.int("ih-type"))
-            guard (1...3).contains(type), ["z", "Z"].contains(header.str("ih-status")),
-                  !["b", "B"].contains(header.str("ih-day-book-flag")) else { continue }
+            guard appearsInDayBook(header) else { continue }
             if line > settings.int("page-lines") { headings() }
             let code = header.str("ih-supplier")
             if let supplier = supplierRecord(code) { name = supplier.str("purch-name") }
@@ -136,6 +151,7 @@ extension PurchaseLedger {
                 }
                 try printer.close()
                 report = store.readRaw(Self.reportPath).map { Data($0) }
+                if let report { try store.writeRaw(lastPurchaseAnalysisPath, Array(report)) }
             }
             settings.setInt("p-flag-a", 0)
             try systemFile.write(1, settings.bytes)

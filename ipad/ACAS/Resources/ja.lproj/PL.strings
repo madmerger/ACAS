@@ -6,6 +6,7 @@
 "purchase.close.warning.invoices" = "未転記の伝票があります。";
 "purchase.close.warning.salesAnalysis" = "先に売掛の分析帳票を作成してください。";
 "purchase.close.dayBook" = "買掛日計帳を共有";
+"purchase.close.day_book.archive" = "保存済みの締め日計帳を共有";
 "purchase.close.analysis" = "買掛分析帳票を作成";
 "purchase.close.analysis.share" = "買掛分析帳票を共有";
 "purchase.close.run" = "期間を締める";

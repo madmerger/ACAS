@@ -66,6 +66,7 @@ extension PurchaseLedger {
                 quarter += 1
             }
 
+            try archiveClosingDayBook()
             try carrySupplierBalances(newQuarter: newQuarter ? quarter : nil, newYear: newYear)
             try carryOpenItems()
             try carryAnalysisValues(newYear: newYear)

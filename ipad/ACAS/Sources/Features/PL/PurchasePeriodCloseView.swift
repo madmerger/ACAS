@@ -35,6 +35,12 @@ struct PurchasePeriodCloseView: View {
                     Label(plString("purchase.close.dayBook"), systemImage: "square.and.arrow.up")
                 }
             }
+            if let closedDayBook = ledger.closedPurchaseDayBook {
+                ShareLink(item: closedDayBook, preview: SharePreview(plString("purchase.close.day_book.archive"))) {
+                    Label(plString("purchase.close.day_book.archive"), systemImage: "square.and.arrow.up")
+                }
+                .accessibilityIdentifier("pl.period.close.day_book.archive")
+            }
             if status?.needsPurchaseAnalysis == true {
                 Button(plString("purchase.close.analysis")) { generateAnalysis() }
                     .accessibilityIdentifier("pl.period.close.analysis")
@@ -58,6 +64,7 @@ struct PurchasePeriodCloseView: View {
         .task {
             guard status == nil else { return }
             status = ledger.periodCloseStatus
+            analysis = ledger.lastPurchaseAnalysisReport
             do { dayBook = try ledger.purchaseDayBook() } catch { notice = PurchaseNotice(error) }
         }
         .confirmationDialog(plString("purchase.close.confirm"), isPresented: $confirming, titleVisibility: .visible) {
