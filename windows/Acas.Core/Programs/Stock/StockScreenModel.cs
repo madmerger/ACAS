@@ -269,7 +269,8 @@ public sealed class StockScreenModel(Db db, Func<DateTime> clock)
         string title = MovementTitle(kind);
         string info = item.St("Stock-Key") + "　" + item.St("Stock-Desc") + "（在庫数 " + Fmt.E(item.N("Stock-Held"), "zzz,zz9-").Trim()
             + "・在庫金額 " + Fmt.E(item.N("Stock-Value"), "zz,zzz,zz9.99").Trim() + "）";
-        var fields = new List<Field> { new TextField("StockMovementQuantity", "数量（取消はマイナス記号を末尾に付加）　" + info, "", 7) };
+        var fields = new List<Field> { new TextField("StockMovementQuantity", "数量（取消はマイナス記号を末尾に付加）
+" + info, "", 7) };
         if (kind == MovementKind.Addition) fields.Add(new TextField("StockMovementPrice", "単価", "", 10));
         return new FormScreen(title, fields, "確定", v =>
         {
