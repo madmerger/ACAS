@@ -74,9 +74,9 @@ foreach (var item in ledger.RootElement.GetProperty("cases").EnumerateArray())
 
 foreach (var result in results)
 {
-    Console.WriteLine($"{result.Id} {result.Verdict}");
-    foreach (var diff in result.Differences) Console.WriteLine("  " + diff);
-    foreach (var file in result.UnmeasuredFiles ?? []) Console.WriteLine("  論理レコード未採取: " + file);
+    Console.WriteLine($"{LogText(result.Id)} {result.Verdict}");
+    foreach (var diff in result.Differences) Console.WriteLine("  " + LogText(diff));
+    foreach (var file in result.UnmeasuredFiles ?? []) Console.WriteLine("  論理レコード未採取: " + LogText(file));
 }
 Console.WriteLine(string.Join(" / ", new[] { "一致", "不一致", "対象外" }
     .Select(verdict => $"{verdict} {results.Count(r => r.Verdict == verdict)}")));
@@ -84,6 +84,11 @@ if (args.Length == 2)
     File.WriteAllText(args[1], JsonSerializer.Serialize(results,
         new JsonSerializerOptions { WriteIndented = true, Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping }));
 return results.Any(r => r.Verdict == "不一致") ? 1 : 0;
+
+static string LogText(string value) => string.Concat(value.Select(c =>
+    char.IsControl(c) || char.GetUnicodeCategory(c) is System.Globalization.UnicodeCategory.Format
+        or System.Globalization.UnicodeCategory.LineSeparator or System.Globalization.UnicodeCategory.ParagraphSeparator
+        ? $"\\u{(int)c:X4}" : c.ToString()));
 
 string Read(string name)
 {
