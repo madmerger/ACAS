@@ -84,6 +84,7 @@ struct CompanyForm: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button(String(localized: "system.company.cancel", table: "System")) {
+                    workspace.pendingInitialCompany = nil
                     workspace.completed("system-company-cancel")
                     dismiss()
                 }
