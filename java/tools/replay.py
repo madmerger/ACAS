@@ -117,6 +117,7 @@ def run_case(api, evid, case, verbose=False):
     before = api.call("GET", "/api/test/snapshot")
     sid = api.call("POST", "/api/sessions?app=" + runner["app"] + ("&irsPath=" + runner["irs_path"] if runner.get("irs_path") else ""))["id"]
     mism, detail, missing_expect, os_masked = [], [], [], 0
+    missing_evidence = []
     for i, step in enumerate(runner["steps"]):
         keys = to_keys(step.get("text", "")) + ([step["key"]] if "key" in step else [])
         api.call("POST", f"/api/sessions/{sid}/keys", {"keys": keys})
@@ -129,15 +130,21 @@ def run_case(api, evid, case, verbose=False):
             missing_expect.append({"step": i, "expect": step["expect"]})
         if i < len(screens):
             p = evid / screens[i]
-            want = norm_screen(p.read_text(errors="replace")) if p.exists() else None
-            if want is not None:
+            if not p.is_file():
+                missing_evidence.append(f"画面証跡なし: {screens[i]}")
+            else:
+                want = norm_screen(p.read_text())
                 want, got, n = mask_os_output(want, got)
                 os_masked += n
-            if want is not None and want != got:
-                mism.append(i)
-                if len(detail) < 3:
-                    detail.append({"step": i, "input": step.get("text", step.get("key", "")),
-                                   "diff": [l for l in difflib.unified_diff(want, got, "legacy", "java", lineterm="", n=0)][:24]})
+                if want != got:
+                    mism.append(i)
+                    if len(detail) < 3:
+                        detail.append({"step": i, "input": step.get("text", step.get("key", "")),
+                                       "diff": [l for l in difflib.unified_diff(want, got, "legacy", "java", lineterm="", n=0)][:24]})
+    if len(screens) > len(runner["steps"]):
+        missing_evidence.append("画面証跡に対応する操作手順なし")
+    if screens and len(screens) < len(runner["steps"]):
+        missing_evidence.append("操作手順に対応する画面証跡なし")
     ja = api.call("GET", f"/api/test/sessions/{sid}/screen?lang=ja")
     after = api.call("GET", "/api/test/snapshot")
     api.call("DELETE", f"/api/sessions/{sid}")
@@ -147,7 +154,9 @@ def run_case(api, evid, case, verbose=False):
     rec = {"compared": False}
     dpath = targets.get("keyed_record_diff")
     jdiff = [d for d in snap_diff(before, after) if not is_report(d[0])]
-    if dpath and (evid / dpath).exists():
+    if dpath and not (evid / dpath).is_file():
+        missing_evidence.append(f"レコード差分証跡なし: {dpath}")
+    elif dpath:
         ld = json.loads((evid / dpath).read_text())
         unsupported = {Path(f).name for f in ld.get("unsupported_files", [])}
         lset = sorted((c["file"].replace("ledgers/", "", 1), {"変更": "更新"}.get(c["operation"], c["operation"]), (c.get("before") or {}).get("hex"), (c.get("after") or {}).get("hex")) for c in ld["changes"])
@@ -164,7 +173,10 @@ def run_case(api, evid, case, verbose=False):
     for rp in targets.get("report_files") or []:
         m = re.search(r"files/ledgers/(.+)$", rp) or re.search(r"files/(spool/.+)$", rp)
         p = evid / rp
-        if not m or not p.exists() or p.name == "command.json": continue
+        if p.name == "command.json": continue
+        if not m or not p.is_file():
+            missing_evidence.append(f"帳票証跡を比較できません: {rp}")
+            continue
         want = norm_report(p.read_bytes().decode("latin1"))
         name = m.group(1)
         if name.startswith("spool/"):
@@ -173,18 +185,21 @@ def run_case(api, evid, case, verbose=False):
             ok = want in got
         else:
             got = norm_report("\n".join(bytes.fromhex(v).decode("latin1") for v in after.get(name, {}).values()))
-            ok = want == got
+            ok = name in after and want == got
             if not ok and len(detail) < 4:
                 detail.append({"report": name, "diff": [l for l in difflib.unified_diff(want, got, "legacy", "java", lineterm="", n=0)][:24]})
         reps.append({"file": name, "match": ok})
     res["reports"] = reps
+    if not screens and not rec["compared"] and not reps and not missing_evidence:
+        missing_evidence.append("レガシー実測の比較対象なし")
     problems = []
     if mism: problems.append(f"画面相違 {len(mism)}/{len(screens)} 画面 (step {mism[:8]})")
     if missing_expect: problems.append(f"期待文言なし {missing_expect[:3]}")
     if rec.get("compared") and not rec["match"]: problems.append(f"レコード差分相違 (legacy {rec['legacy_changes']} / java {rec['java_changes']})")
     if any(not r["match"] for r in reps): problems.append("帳票相違 " + ",".join(r["file"] for r in reps if not r["match"]))
-    res["verdict"] = "不一致" if problems else "一致"
-    res["reason"] = "; ".join(problems) if problems else f"画面 {len(screens)}・レコード差分 {rec.get('legacy_changes', 0)} 件・帳票 {len(reps)} 件がレガシー実測と一致"
+    res["verdict"] = "未検証" if missing_evidence else "不一致" if problems else "一致"
+    issues = missing_evidence + problems
+    res["reason"] = "; ".join(issues) if issues else f"画面 {len(screens)}・レコード差分 {rec.get('legacy_changes', 0)} 件・帳票 {len(reps)} 件がレガシー実測と一致"
     if os_masked: res["reason"] += f"（OS 出力行は比較対象外: {os_masked} 箇所）"
     if problems: res["detail"] = detail
     return res
