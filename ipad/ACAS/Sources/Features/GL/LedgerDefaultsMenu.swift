@@ -6,7 +6,7 @@ struct LedgerDefaultsMenu: View {
 
     var body: some View {
         List {
-            NavigationLink(ledgerText("defaults-add")) { LedgerDefaultsList(workspace: workspace, edit: true) }
+            NavigationLink(ledgerText("defaults-add")) { LedgerDefaultsSetup(workspace: workspace) }
                 .accessibilityIdentifier("gl.defaults.add")
             NavigationLink(ledgerText("defaults-edit")) { LedgerDefaultsList(workspace: workspace, edit: true) }
                 .accessibilityIdentifier("gl.defaults.edit")
@@ -14,6 +14,50 @@ struct LedgerDefaultsMenu: View {
                 .accessibilityIdentifier("gl.defaults.list")
         }
         .navigationTitle(ledgerText("defaults"))
+    }
+}
+
+private struct LedgerDefaultsSetup: View {
+    let workspace: Workspace
+    @State private var confirmReset = false
+    @State private var editing = false
+    @State private var password = ""
+    @State private var message: String?
+
+    var body: some View {
+        Form {
+            Section(ledgerText("defaults-setup.prompt")) {
+                Button(ledgerText("defaults-setup.keep")) { editing = true }
+                    .accessibilityIdentifier("gl.defaults.setup.keep")
+                Button(ledgerText("defaults-setup.reset"), role: .destructive) { confirmReset = true }
+                    .accessibilityIdentifier("gl.defaults.setup.reset")
+            } footer: {
+                Text(ledgerText("defaults-setup.warning"))
+                    .accessibilityIdentifier("gl.defaults.setup.warning")
+            }
+            if let message { Text(message) }
+        }
+        .navigationTitle(ledgerText("defaults-add"))
+        .navigationDestination(isPresented: $editing) { LedgerDefaultsList(workspace: workspace, edit: true) }
+        .alert(ledgerText("defaults-setup.reset"), isPresented: $confirmReset) {
+            SecureField(ledgerText("defaults-setup.password"), text: $password)
+            Button(ledgerText("defaults-setup.cancel"), role: .cancel) { password = "" }
+            Button(ledgerText("defaults-setup.reset"), role: .destructive, action: reset)
+        }
+        .onAppear { workspace.completed("gl-defaults-setup") }
+    }
+
+    private func reset() {
+        defer { password = "" }
+        do {
+            try GeneralLedgerSetup(workspace.context).resetDefaults(password: password)
+            message = nil
+            editing = true
+        } catch GeneralLedgerSetup.Error.invalidPassword {
+            message = ledgerText("defaults-setup.invalid-password")
+        } catch {
+            message = ledgerText("defaults-setup.failed")
+        }
     }
 }
 
