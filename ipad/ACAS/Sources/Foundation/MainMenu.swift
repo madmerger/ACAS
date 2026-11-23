@@ -47,7 +47,9 @@ struct MainMenu: View {
         #if DEBUG
         .safeAreaInset(edge: .top, spacing: 0) {
             if let evidence = workspace.evidence {
-                CaseBanner(evidence: evidence) { evidence.evaluateEquivalence(store: workspace.context.store) }
+                CaseBanner(evidence: evidence) { screenMatches in
+                    evidence.evaluateEquivalence(store: workspace.context.store, screenMatches: screenMatches)
+                }
             }
         }
         #endif

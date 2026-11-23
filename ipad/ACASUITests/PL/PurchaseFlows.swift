@@ -426,6 +426,12 @@ final class PurchaseFlows: XCTestCase {
 
     private func verify(_ number: Int) throws {
         let id = String(format: "PL-%03d", number)
+        let fixtureURL = try XCTUnwrap(Bundle(for: Self.self).url(
+            forResource: id, withExtension: "json", subdirectory: "fixtures"))
+        let fixture = try JSONSerialization.jsonObject(with: Data(contentsOf: fixtureURL)) as? [String: Any]
+        let equivalence = fixture?["equivalence"] as? [String: Any]
+        let checkpoint = equivalence?["checkpoint"] as? [String: String]
+        var screenMatches = true
         let app = try launch(id, openPurchases: false)
         if number == 90 {
             tap(app, "system.company")
@@ -461,11 +467,15 @@ final class PurchaseFlows: XCTestCase {
         case 410:
             tap(app, "pl.analysis", scrolling: true)
             tap(app, "pl.analysis.add")
-            enter(app, "分析コード", "A")
+            enter(app, "分析コード", "Z")
             enter(app, "勘定科目コード", "500001", replacing: true)
             enter(app, "名称", "PURCHASES")
+            enter(app, "印刷分類", "P")
             dismissKeyboard(app)
-            XCTAssertEqual(app.textFields["名称"].value as? String, "PURCHASES")
+            screenMatches = [("分析コード", "Z"), ("勘定科目コード", "500001"),
+                             ("名称", "PURCHASES"), ("印刷分類", "P")].allSatisfy {
+                app.textFields[$0.0].value as? String == $0.1
+            }
         case 414:
             tap(app, "pl.transaction.post", scrolling: true)
             tap(app, "pl.post.start")
@@ -476,14 +486,59 @@ final class PurchaseFlows: XCTestCase {
         default:
             let routeNumber = (1...22).contains(number) ? Self.menuCases[number - 1] : number
             let route = try XCTUnwrap(Self.routes[routeNumber])
-            for link in route.links { tap(app, link, scrolling: true) }
-            XCTAssertTrue(app.navigationBars[route.title].waitForExistence(timeout: 5)
-                          || app.staticTexts[route.title].firstMatch.exists, route.title)
-            if let action = route.action { tap(app, action, scrolling: true) }
-            if app.alerts.firstMatch.exists { app.alerts.buttons["閉じる"].tap() }
+            switch checkpoint?["kind"] {
+            case "purchaseMenu":
+                reveal(app.descendants(matching: .any)[try XCTUnwrap(route.links.first)].firstMatch,
+                       in: app, scrolling: true)
+                screenMatches = app.navigationBars["買掛元帳"].exists
+            case "chequeMenu":
+                tap(app, "pl.cheques", scrolling: true)
+                screenMatches = app.navigationBars["支払予定・小切手・送金"].exists
+                    && app.descendants(matching: .any)["pl.cheques.remittance"].firstMatch.exists
+            case "blocked":
+                tap(app, try XCTUnwrap(route.links.first), scrolling: true)
+                let opened = app.navigationBars[route.title].waitForExistence(timeout: 3)
+                let alert = app.alerts.firstMatch
+                let message = alert.exists ? alert.staticTexts.allElementsBoundByIndex.map(\.label).joined(separator: " ") : ""
+                let legacyError = try XCTUnwrap(checkpoint?["detail"]?.split(separator: " ").dropFirst().first)
+                let equivalents: [Substring: String] = [
+                    "T-014": "検証対象の仕入取引がありません",
+                    "T-017": "該当する仕入取引がありません",
+                    "T-023": "先に支払を検証してください",
+                    "T-025": "未決済明細が初期化されていません",
+                    "T-030": "検証対象の支払がありません",
+                ]
+                screenMatches = !opened && (message.contains(legacyError) ||
+                    equivalents[legacyError].map { message.contains($0) } == true)
+                let observed = opened ? "移行版は「\(route.title)」画面を表示" :
+                    (message.isEmpty ? "移行版の拒否画面を確認できず" : "移行版の警告：\(message)")
+                print("ACAS_PL_SCREEN|\(id)|" + observed)
+                if alert.exists {
+                    let dismiss = alert.buttons["閉じる"]
+                    if dismiss.exists { dismiss.tap() }
+                }
+            case "supplierReport":
+                for link in route.links { tap(app, link, scrolling: true) }
+                let supplier = app.textFields["pl.report.supplier"]
+                screenMatches = app.navigationBars[route.title].exists && supplier.exists
+                    && (supplier.value as? String == "" || supplier.value as? String == supplier.placeholderValue)
+                    && !app.descendants(matching: .any)["pl.report.share"].firstMatch.exists
+                    && !app.descendants(matching: .any)["pl.report.preview"].firstMatch.exists
+                let hasDate = app.descendants(matching: .any).matching(identifier: "登録日").firstMatch.exists
+                if !hasDate {
+                    print("ACAS_PL_SCREEN|\(id)|移行版は帳票未生成だが、旧証跡の「登録日」条件がない")
+                }
+                screenMatches = screenMatches && hasDate
+            default:
+                for link in route.links { tap(app, link, scrolling: true) }
+                XCTAssertTrue(app.navigationBars[route.title].waitForExistence(timeout: 5)
+                              || app.staticTexts[route.title].firstMatch.exists, route.title)
+                if let action = route.action { tap(app, action, scrolling: true) }
+                if app.alerts.firstMatch.exists { app.alerts.buttons["閉じる"].tap() }
+            }
         }
 
-        tap(app, "case.compare")
+        tap(app, screenMatches ? "case.compare" : "case.compare.screenMismatch")
         let match = app.staticTexts["case.verdict.match"]
         let mismatch = app.staticTexts["case.verdict.mismatch"]
         let outside = app.staticTexts["case.verdict.out_of_scope"]

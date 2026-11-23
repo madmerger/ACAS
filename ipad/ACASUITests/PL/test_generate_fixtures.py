@@ -3,7 +3,9 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from generate_fixtures import check_required_cases, fixture, purchase_case_ids, seed_files, validate_case_id
+from generate_fixtures import (
+    check_required_cases, equivalence_fixture, fixture, purchase_case_ids, seed_files, validate_case_id,
+)
 
 
 class EvidencePathTests(unittest.TestCase):
@@ -52,3 +54,24 @@ class EvidencePathTests(unittest.TestCase):
         records.write_text(json.dumps({"files": {str(self.root.parent / "system.dat"): {}}}), encoding="utf-8")
         with self.assertRaisesRegex(ValueError, "証跡ルート外"):
             seed_files(self.root, self.run)
+
+    def test_only_unexecuted_cases_are_out_of_scope(self):
+        (self.run / "diff.json").write_text('{"changes": []}', encoding="utf-8")
+        records = self.run / "before-records"
+        records.mkdir()
+        (records / "records.json").write_text('{"files": {}}', encoding="utf-8")
+        (self.run / "terminal.cast").write_text('{"timestamp": 0}\n', encoding="utf-8")
+        (self.run / "screen.txt").write_text(
+            "Purchase Ledger System Menu\nT-025 Error not in error.txt.", encoding="utf-8")
+        legacy = {"evidence": ["run"], "verdict": "相違", "reason": "到達先ヘッダに無い",
+                  "comparison_targets": {"keyed_record_diff": "run/diff.json", "report_files": [],
+                                         "screen_text": ["run/screen.txt"]}}
+        case = {"id": "PL-003", "title": "買掛残高・明細照会", "legacy_result": legacy}
+        comparison = equivalence_fixture(self.root, case)["equivalence"]
+        self.assertIsNone(comparison["outOfScope"])
+        self.assertEqual(comparison["checkpoint"]["kind"], "blocked")
+        self.assertIn("T-025", comparison["checkpoint"]["detail"])
+        legacy.update(verdict="未実施", reason="実行せず")
+        comparison = equivalence_fixture(self.root, case)["equivalence"]
+        self.assertEqual(comparison["outOfScope"], "実行せず")
+        self.assertIsNone(comparison["checkpoint"])

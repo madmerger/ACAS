@@ -4,6 +4,7 @@ import base64
 import hashlib
 import json
 import re
+import subprocess
 from pathlib import Path
 
 
@@ -95,6 +96,16 @@ def fixture(root, case):
     }
 
 
+def archived_records(path):
+    dump = subprocess.check_output(["db_dump", str(path)], text=True)
+    lines = dump.splitlines()
+    records = [line.strip() for line in lines[lines.index("HEADER=END") + 1:lines.index("DATA=END")]]
+    if len(records) % 2:
+        raise ValueError(f"奇数行の論理レコード抽出です: {path}")
+    return [(key.hex(), data.hex()) for key, data in zip(
+        map(bytes.fromhex, records[::2]), map(bytes.fromhex, records[1::2]))]
+
+
 def equivalence_fixture(root, case):
     case_id = case["id"]
     legacy = case["legacy_result"]
@@ -110,6 +121,16 @@ def equivalence_fixture(root, case):
         length = KEY_LENGTHS.get(Path(path).name)
         key = (after or before)[:2 * length] if length else change["key"]
         changes.append(dict(file=path, key=key, before=before, after=after))
+    path_filter = ["ledgers/acas/purchled.dat"] if case_id == "PL-090" else None
+    cleared_files = []
+    if case_id == "PL-414":
+        archive = "ledgers/acas/openitm5.dat"
+        for key, data in archived_records(evidence_path(root, run / "files" / archive)):
+            changes.append(dict(file=archive, key=key, before=None, after=data))
+        path_filter = sorted({change["file"] for change in changes})
+        staged = "ledgers/acas/openitm4.dat"
+        if evidence_path(root, run / "files" / staged).stat().st_size == 0:
+            cleared_files.append(staged)
     reports = {}
     for path in targets["report_files"]:
         source = evidence_path(root, path)
@@ -124,16 +145,35 @@ def equivalence_fixture(root, case):
                 digest = hashlib.sha256(evidence_path(root, path).read_bytes()).hexdigest()
                 if digest not in {r["sha256"] for r in reports.values()}:
                     raise ValueError(f"帳票スプールと原本が一致しません: {path}")
-    out_of_scope = legacy["reason"] if legacy["verdict"] != "合格" and not changes and not reports else None
+    out_of_scope = legacy["reason"] if legacy["verdict"] == "未実施" else None
+    checkpoint = None
+    if legacy["verdict"] != "合格" and not changes and not reports and not out_of_scope:
+        screens = [evidence_path(root, path).read_text(errors="replace") for path in targets["screen_text"]]
+        final = screens[-1]
+        if error := re.search(r"T-[0-9]{3}(?= Error)", final):
+            checkpoint = {"kind": "blocked", "detail": f"旧版は {error[0]} で拒否、対象画面には進まない"}
+        elif "Purchase Ledger System Menu" in final:
+            checkpoint = {"kind": "purchaseMenu", "detail": "旧証跡は買掛元帳メニューまで"}
+        elif "Cheque Menu" in final:
+            checkpoint = {"kind": "chequeMenu", "detail": "旧証跡は支払予定・小切手メニューまで"}
+        elif "Report Attributes" in final and "Supplier Number" in final:
+            checkpoint = {"kind": "supplierReport", "detail": "旧証跡は仕入先帳票の条件画面まで、帳票未生成"}
+        elif case_id == "PL-410" and any(re.search(r"\[Z \]\s+\[500001\]\s+\[PURCHASES\s+\]\s+\[P\s+\]", screen)
+                                         for screen in screens):
+            checkpoint = {"kind": "analysisDraft", "detail": "分析コード Z・勘定 500001・名称 PURCHASES・分類 P、保存なし"}
+        else:
+            raise ValueError(f"比較する旧証跡の画面を特定できません: {case_id}")
     with evidence_path(root, run / "terminal.cast").open(encoding="utf-8") as recording:
         date = json.loads(recording.readline())["timestamp"]
     return {
         "id": case_id, "title": case["title"], "workflow": "pl.equivalence", "dateSeconds": date,
         "seed": seed_files(root, run), "changes": changes, "reports": {}, "calculation": None,
         "equivalence": {"reportDigests": reports, "outOfScope": out_of_scope,
+                        "checkpoint": checkpoint,
+                        "clearedFiles": cleared_files,
                         "unprintedReports": [path for path, report in reports.items() if report["count"] == 0]
                         if case_id in ("PL-018", "PL-228") else [],
-                        "pathFilter": ["ledgers/acas/purchled.dat"] if case_id == "PL-090" else None,
+                        "pathFilter": path_filter,
                         "relativeRecordSizes": {f"ledgers/acas/{name}": size
                                                 for name, size in RELATIVE_SIZES.items()}},
     }

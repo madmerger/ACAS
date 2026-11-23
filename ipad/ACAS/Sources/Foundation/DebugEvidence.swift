@@ -15,6 +15,9 @@ final class DebugEvidence: Decodable, ObservableObject {
     let equivalence: Equivalence?
 
     struct Equivalence: Decodable {
+        struct Checkpoint: Decodable {
+            let detail: String
+        }
         struct Report: Decodable {
             let count: Int
             let sha256: String
@@ -24,6 +27,8 @@ final class DebugEvidence: Decodable, ObservableObject {
         let unprintedReports: [String]?
         let pathFilter: [String]?
         let relativeRecordSizes: [String: Int]
+        let checkpoint: Checkpoint?
+        let clearedFiles: [String]?
     }
 
     var before: EvidenceComparison.Snapshot = [:]
@@ -65,7 +70,7 @@ final class DebugEvidence: Decodable, ObservableObject {
         return snapshot
     }
 
-    func evaluateEquivalence(store: FileStore) {
+    func evaluateEquivalence(store: FileStore, screenMatches: Bool) {
         guard let equivalence else { return }
         if let reason = equivalence.outOfScope {
             details = reason
@@ -73,11 +78,21 @@ final class DebugEvidence: Decodable, ObservableObject {
             return
         }
         var differences: [String] = []
-        let actual = EvidenceComparison.diff(before: before, after: snapshot(store))
+        if !screenMatches, let checkpoint = equivalence.checkpoint {
+            differences.append("画面相違：" + checkpoint.detail)
+        }
+        if equivalence.checkpoint != nil && store.readRaw(PurchaseLedger.reportPath) != nil {
+            differences.append("旧証跡にはない帳票を生成")
+        }
+        let after = snapshot(store)
+        let actual = EvidenceComparison.diff(before: before, after: after)
         let expected = changes.sorted()
         let unmatched = expected.filter { !actual.contains($0) } + actual.filter { !expected.contains($0) }
         for entry in Set(unmatched.map { "\($0.file):\($0.key)" }).sorted() {
             differences.append(entry)
+        }
+        for file in equivalence.clearedFiles ?? [] {
+            if store.readRaw(file) != [] { differences.append("\(file)：原本は空ファイル、移行版は空ファイルを確認できず") }
         }
         for (path, report) in equivalence.reportDigests.sorted(by: { $0.key < $1.key }) {
             let originalBytes = store.readRaw(path)
@@ -95,15 +110,19 @@ final class DebugEvidence: Decodable, ObservableObject {
                 differences.append("\(path): 期待 \(report.count) B / 実測 \(bytes.map { String($0.count) } ?? "なし")")
             }
         }
-        details = differences.isEmpty && !(equivalence.unprintedReports ?? []).isEmpty
-            ? "条件画面到達：帳票未作成、原本 0 B" : differences.joined(separator: "; ")
+        if differences.isEmpty {
+            details = equivalence.checkpoint?.detail ?? ((equivalence.unprintedReports ?? []).isEmpty
+                ? "" : "条件画面到達：帳票未作成、原本 0 B")
+        } else {
+            details = differences.joined(separator: "; ")
+        }
         result = differences.isEmpty ? "match" : "mismatch"
     }
 }
 
 struct CaseBanner: View {
     @ObservedObject var evidence: DebugEvidence
-    var compare: (() -> Void)?
+    var compare: ((Bool) -> Void)?
 
     var body: some View {
         HStack {
@@ -111,7 +130,10 @@ struct CaseBanner: View {
             Text(evidence.title)
             Spacer()
             if evidence.equivalence != nil, let compare, evidence.result == nil {
-                Button("case.compare", action: compare).accessibilityIdentifier("case.compare")
+                Button("case.compare") { compare(true) }.accessibilityIdentifier("case.compare")
+                if evidence.equivalence?.checkpoint != nil {
+                    Button("画面相違を記録") { compare(false) }.accessibilityIdentifier("case.compare.screenMismatch")
+                }
             }
             Text(LocalizedStringKey("case." + (evidence.result ?? "running")))
                 .bold()
