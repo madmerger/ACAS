@@ -170,9 +170,6 @@ enum SLA070 {
     }
 
     static func report(_ s: Session, _ w: WS) throws {
-        if analysisUnreadable(s) { try hang(s) }
-        let f = analysisFile(s)
-        _ = f.open()
         let p = SLA.Printer(s)
         p.open()
         var page = 0
@@ -192,6 +189,10 @@ enum SLA070 {
             lineCnt = 5
         }
         headings()
+        // 見出しは出力済みの状態で読み込みループに入る (全件印刷の明細繰り返しは再現しない)
+        if analysisUnreadable(s) { try hang(s) }
+        let f = analysisFile(s)
+        _ = f.open()
         f.startFirst()
         while let r = f.readNext() {
             if r.str("pa-system") != "S" && !w.printAll { continue }

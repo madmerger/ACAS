@@ -75,7 +75,7 @@
 "irs010.menu_footer" = "F1～F4 = 選択肢 1～4;  Return で確定;  Escape で終了";
 "irs010.setup_title" = "勘定科目表の登録";
 "irs010.amend_title" = "勘定科目表の変更";
-"irs010.add_existing" = "既存の科目表に追加 (Y/N) ?  - [";
+"irs010.add_existing" = "既存の科目表に追加 (Y/N) ?    - [";
 "irs010.nb1" = "注意 (1) この顧客の初回登録なら いいえ (N)";
 "irs010.nb2" = "(2) いいえ (N) は";
 "irs010.nb2_destroys" = "破棄";
@@ -133,7 +133,7 @@
 "irs020.setup_title" = "既定科目の登録";
 "irs020.amend_title" = "既定科目の変更";
 "irs020.display_title" = "既定科目の表示";
-"irs020.add_existing" = "既存の既定科目に追加 (Y/N) ?   - [";
+"irs020.add_existing" = "既存の既定科目に追加 (Y/N) ?     - [";
 "irs020.nb2_defaults" = "既存の既定科目を";
 "irs020.col_ac" = "科目";
 "irs020.col_desc" = "摘要";

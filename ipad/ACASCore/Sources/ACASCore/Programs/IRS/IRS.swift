@@ -447,7 +447,11 @@ extension IRS {
             s.store.appendRaw(path, SJIS.encode(Cobol.rtrim(line), size: CellWidth.of(Cobol.rtrim(line))) + [0x0a])
         }
         /// CALL "SYSTEM" using Print-Report (lpr) 相当: 端末内では帳票として通知する
-        func spool() { s.onReport?(path) }
+        func spool() {
+            // CLOSE 時、最後の WRITE が AFTER 指定なら行末の改行が 1 つ補われる
+            if let b = s.store.readRaw(path), let last = b.last, last != 0x0a { s.store.appendRaw(path, [0x0a]) }
+            s.onReport?(path)
+        }
     }
 
     /// 画面見出し共通 (プログラム名、反転タイトル、処理日)

@@ -238,7 +238,7 @@
 "pl020.pl187" = "PL187 同じ仕入先の請求書のみ取消できます";
 /* pl030.cbl — Invoice Data Amend */
 "pl030.title" = "仕入請求書修正";
-"pl030.further" = "続けて修正しますか? (Y/N)     [Y]";
+"pl030.further" = "続けて修正しますか? (Y/N)      [Y]";
 "pl030.level_1" = "レベル1";
 "pl030.line" = "行   - ";
 "pl030.code" = "分析";
@@ -271,7 +271,7 @@
 "pl030.pl190" = "PL190 同じ仕入先の請求書のみ取消できます";
 /* pl040.cbl — Invoice Data Deletion */
 "pl040.title" = "仕入請求書削除";
-"pl040.further" = "続けて削除しますか? (Y/N)      [Y]";
+"pl040.further" = "続けて削除しますか? (Y/N)       [Y]";
 "pl040.box_date" = "*日付 [  /  /    ]*仕入先     [       ]*";
 "pl040.box_order" = "**                *発注    [          ]*";
 "pl040.box_folio" = "*整理No [        ]*請求書  [          ]*";

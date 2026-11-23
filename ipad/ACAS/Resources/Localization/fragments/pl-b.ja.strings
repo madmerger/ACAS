@@ -57,9 +57,9 @@
 "plbdev.sorry" = "未対応の機能です";
 "plbdev.client" = "会社名 -";
 "plbdev.pl000_title" = "買掛元帳  業務開始";
-"plbdev.enter_date_uk" = "本日の日付を入力  dd/mm/yyyy - [          ]";
-"plbdev.enter_date_usa" = "本日の日付を入力  mm/dd/yyyy - [          ]";
-"plbdev.enter_date_intl" = "本日の日付を入力  yyyy/mm/dd - [          ]";
+"plbdev.enter_date_uk" = "本日の日付を入力     dd/mm/yyyy - [          ]";
+"plbdev.enter_date_usa" = "本日の日付を入力     mm/dd/yyyy - [          ]";
+"plbdev.enter_date_intl" = "本日の日付を入力     yyyy/mm/dd - [          ]";
 "plbdev.pl005" = "PL005 日付不正";
 "plb.maps99_missing" = "エラーはerror.txtに未登録。Returnで終了";
 "plb.pl002" = "PL002 エラーを控えてReturn押下";
@@ -253,7 +253,7 @@
 "pl940.payment_date" = "支払日              - [          ]";
 "report.pl940.pl902" = "PL902 データなし";
 "pl950.title" = "小切手台帳";
-"pl950.warning" = "警告: 未決済明細ファイルを更新します。続行しますか      (YES/NO) [   ]";
+"pl950.warning" = "警告: 未決済明細ファイルを更新します。続行しますか        (YES/NO) [   ]";
 "pl950.pl904" = "PL904 PE 950-01:Returnで続行";
 "pl950.pl905" = "PL905 PE 950-02:Returnで続行";
 "report.pl950.title" = "小切手・BACS台帳";

@@ -12,9 +12,18 @@ final class CaseRunModel: ObservableObject {
     @Published var changes = 0
     @Published var done = false
     private var task: Task<Void, Never>?
+    /// レガシー実測の実施日 (23/11/2026)。処理日に依存する画面・更新をレガシー証跡と同じ条件で再現する。
+    static let legacyRunDate = Date(timeIntervalSince1970: 1_795_435_200)
+
+    /// 最低 `minimum` 待ち、その後プログラムが入力待ちで落ち着くまで待つ
+    private func settle(_ minimum: UInt64) async {
+        try? await Task.sleep(nanoseconds: minimum)
+        let runner = replay.runner
+        _ = await Task.detached { runner.settle(timeout: 10) }.value
+    }
 
     init?(_ c: ReplayCase, app: AppModel) {
-        guard let seed = app.seed(c.baseline), let r = try? Replay(c, seed: seed, l10n: app.l10n()) else { return nil }
+        guard let seed = app.seed(c.baseline), let r = try? Replay(c, seed: seed, l10n: app.l10n(), now: Self.legacyRunDate, timeZone: TimeZone(identifier: "UTC")) else { return nil }
         testCase = c; replay = r
         terminal = TerminalModel(session: r.session)
     }
@@ -23,7 +32,7 @@ final class CaseRunModel: ObservableObject {
         task = Task { [weak self] in
             guard let self else { return }
             terminal.start(testCase.app)
-            try? await Task.sleep(nanoseconds: stepDelay)
+            await settle(stepDelay)
             for (i, st) in testCase.steps.enumerated() {
                 if Task.isCancelled { return }
                 stepIndex = i + 1
@@ -32,7 +41,7 @@ final class CaseRunModel: ObservableObject {
                     try? await Task.sleep(nanoseconds: keyDelay)
                 }
                 if let k = st.key, let key = Replay.key(k) { terminal.send(key) }
-                try? await Task.sleep(nanoseconds: stepDelay)
+                await settle(stepDelay)
             }
             changes = replay.recordChanges().filter { $0.file.hasSuffix(".dat") }.count
             state = "ui.cases.completed"
@@ -66,7 +75,7 @@ struct CaseRunView: View {
         .background(Theme.navy.ignoresSafeArea())
         .onAppear { model.run() }
         .onChange(of: model.done) { _, d in
-            if d { DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { model.stop(); onFinish() } }
+            if d { DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) { model.stop(); onFinish() } }
         }
     }
 }

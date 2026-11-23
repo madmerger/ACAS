@@ -34,7 +34,7 @@
 "sl000.enter_date_intl" = "本日の日付を入力 yyyy/mm/dd     - [          ]";
 "sl000.sl005" = "SL005 日付が不正";
 /* sl070.cbl — Product Analysis codes */
-"sl070.select" = "次の中から番号で選択してください    :- [ ]";
+"sl070.select" = "次の中から番号で選択してください      :- [ ]";
 "sl070.opt1" = "(1)  分析コード登録";
 "sl070.opt2" = "(2)  分析コード修正・削除";
 "sl070.opt3" = "(3)  分析コード印刷";
@@ -367,7 +367,7 @@
 "sl085.box3" = "*金額    {          }*ﾊﾞｯﾁ  [     /   ]*";
 "sl085.warning_unapplied" = "警告 未消込残高の振替";
 "sl085.current_balance" = "現在残高        - ";
-"sl085.confirm" = "何もせず取消しますか?                    (Y/N)..[ ]";
+"sl085.confirm" = "何もせず取消しますか?                     (Y/N)..[ ]";
 "sl085.further" = "続けて訂正しますか (Y/N) ?       [Y]";
 "sl085.reversing" = "取消中 お待ち下さい";
 "sl085.for_invoice" = "請求書番号      ";

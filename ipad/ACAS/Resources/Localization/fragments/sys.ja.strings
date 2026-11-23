@@ -8,7 +8,7 @@
 "sys.at" = "　 ";
 "sys.on" = "　 ";
 "acas.menu_title" = "ACAS メニュー";
-"acas.select_prompt" = "次の中から英字で選択してください      :- [ ]";
+"acas.select_prompt" = "次の中から英字で選択してください       :- [ ]";
 "acas.item_a" = "(A)  総勘定元帳";
 "acas.item_b" = "(B)  売掛元帳";
 "acas.item_c" = "(C)  買掛元帳";

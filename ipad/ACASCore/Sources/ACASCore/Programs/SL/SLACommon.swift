@@ -29,18 +29,23 @@ enum SLA {
         init(_ s: Session, name: String = "prt-1", recLen: Int = 132) {
             self.s = s; self.path = s.ledgers + name; self.recLen = recLen
         }
-        func open() { s.store.writeRaw(path, []) }
+        /// 最後の WRITE が AFTER 指定だと、CLOSE 時に行末の改行が 1 つ補われる
+        private var needsNewline = false
+        func open() { s.store.writeRaw(path, []); needsNewline = false }
         private func rec(_ line: String) -> [UInt8] { SJIS.encode(line, size: recLen) }
         func after(_ n: Int, _ line: String) {
-            s.store.appendRaw(path, [UInt8](repeating: 0x0a, count: n) + rec(line))
+            s.store.appendRaw(path, [UInt8](repeating: 0x0a, count: n) + rec(line)); needsNewline = true
         }
         func before(_ n: Int, _ line: String) {
-            s.store.appendRaw(path, rec(line) + [UInt8](repeating: 0x0a, count: n))
+            s.store.appendRaw(path, rec(line) + [UInt8](repeating: 0x0a, count: n)); needsNewline = false
         }
-        func afterPage(_ line: String) { s.store.appendRaw(path, [0x0c] + rec(line)) }
-        func beforePage(_ line: String) { s.store.appendRaw(path, rec(line) + [0x0c]) }
+        func afterPage(_ line: String) { s.store.appendRaw(path, [0x0c] + rec(line)); needsNewline = true }
+        func beforePage(_ line: String) { s.store.appendRaw(path, rec(line) + [0x0c]); needsNewline = false }
         /// close + CALL "SYSTEM" using Print-Report (印刷スプールは iPad 版では UI へ通知)
-        func close(spool: Bool = true) { if spool { s.onReport?(path) } }
+        func close(spool: Bool = true) {
+            if needsNewline { s.store.appendRaw(path, [0x0a]); needsNewline = false }
+            if spool { s.onReport?(path) }
+        }
     }
 
     // MARK: レコード (fdsl.cob / fddel.cob)

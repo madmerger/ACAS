@@ -12,7 +12,7 @@
 "xl150.phase1_purchase" = "段階  1  - 仕入";
 "xl150.please_wait_purchase" = "お待ちを";
 "xl150.value_reset" = "年度末: 分析値ファイル初期化";
-"xl150.end_of_quarter" = "四半期末ですか             (Y/N) - [ ]";
+"xl150.end_of_quarter" = "四半期末ですか               (Y/N) - [ ]";
 "xl150.xl001" = "XL001 中止。Return を押す      ";
 "xl150.xl006" = "XL006 プログラム引数は 2 個までですが、指定された個数は       ";
 "xl150.xl007" = "XL007 プログラム引数が不正:        ";

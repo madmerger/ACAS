@@ -1,7 +1,7 @@
 import XCTest
 @testable import ACASCore
 
-/// 買掛元帳 前半の追加突合 (ReplayTests が比較しないもの):
+/// 全サブシステムの追加突合 (ReplayTests が比較しないもの):
 /// - 帳票 (prt-1) をレガシー実測の帳票ファイルとバイト単位で比較する
 /// - iPad 側で追加・変更した索引ファイルのレコードが、レガシー実測後のファイル (runs/<ケース>/files/...) の中に
 ///   同じバイト列で存在するかを確認する (record-diff.json が unsupported とした value.dat / openitm5.dat 等も対象)
@@ -17,7 +17,7 @@ final class PLAReportTests: XCTestCase {
         for c in ledger["cases"] as! [[String: Any]] { legacy[c["id"] as! String] = c["legacy_result"] as? [String: Any] }
         var reportFailed: [String] = [], reports = 0
         var fileFailed: [String] = [], fileCases = 0, records = 0
-        for c in cases where c.subsystem == "PL" {
+        for c in cases {
             if let f = filter, f.firstMatch(in: c.id, range: NSRange(c.id.startIndex..., in: c.id)) == nil { continue }
             guard let lr = legacy[c.id], let targets = lr["comparison_targets"] as? [String: Any],
                   let first = (targets["screen_text"] as? [String] ?? []).first else { continue }
@@ -34,16 +34,25 @@ final class PLAReportTests: XCTestCase {
             let l10n = try L10n(directory: ReplayTests.resources.appendingPathComponent("Localization"), language: .en)
             let r = try Replay(c, seed: seed, l10n: l10n, now: now, timeZone: TimeZone(identifier: "UTC"))
             _ = r.runAll()
-            // 帳票
-            if let want = try? Data(contentsOf: filesDir.appendingPathComponent("ledgers/acas/prt-1")) {
-                let got = Data(r.session.store.readRaw("ledgers/acas/prt-1") ?? [])
+            // 帳票: この実行でレガシーが書き換えた prt-* (実行前と内容が違うもの) を全て比較する
+            let beforeDir = runDir.appendingPathComponent("before-files")
+            var names: [String] = []
+            if let e = FileManager.default.enumerator(atPath: filesDir.path) {
+                for case let rel as String in e where !rel.hasPrefix("spool/") && (rel as NSString).lastPathComponent.hasPrefix("prt-") {
+                    names.append(rel)
+                }
+            }
+            for rel in names.sorted() {
+                guard let want = try? Data(contentsOf: filesDir.appendingPathComponent(rel)) else { continue }
+                if let before = try? Data(contentsOf: beforeDir.appendingPathComponent(rel)), before == want { continue }
+                let got = Data(r.session.store.readRaw(rel) ?? [])
                 reports += 1
-                if let dir = env["ACAS_REPORT_DUMP"] { try? got.write(to: URL(fileURLWithPath: dir + "/\(c.id)-prt-1")) }
+                if let dir = env["ACAS_REPORT_DUMP"] { try? got.write(to: URL(fileURLWithPath: dir + "/\(c.id)-\((rel as NSString).lastPathComponent)")) }
                 if got != want {
-                    reportFailed.append(c.id)
+                    if !reportFailed.contains(c.id) { reportFailed.append(c.id) }
                     let a = [UInt8](want), b = [UInt8](got)
                     let at = zip(a, b).enumerated().first { $0.element.0 != $0.element.1 }?.offset ?? min(a.count, b.count)
-                    print("== REPORT \(c.id): 相違 (legacy \(a.count) バイト / ipad \(b.count) バイト、最初の相違位置 \(at))")
+                    print("== REPORT \(c.id) \(rel): 相違 (legacy \(a.count) バイト / ipad \(b.count) バイト、最初の相違位置 \(at))")
                 }
             }
             // 索引ファイルのレコード

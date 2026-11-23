@@ -595,7 +595,7 @@
 "irs010.menu_footer" = "F1～F4 = 選択肢 1～4;  Return で確定;  Escape で終了";
 "irs010.setup_title" = "勘定科目表の登録";
 "irs010.amend_title" = "勘定科目表の変更";
-"irs010.add_existing" = "既存の科目表に追加 (Y/N) ?  - [";
+"irs010.add_existing" = "既存の科目表に追加 (Y/N) ?    - [";
 "irs010.nb1" = "注意 (1) この顧客の初回登録なら いいえ (N)";
 "irs010.nb2" = "(2) いいえ (N) は";
 "irs010.nb2_destroys" = "破棄";
@@ -653,7 +653,7 @@
 "irs020.setup_title" = "既定科目の登録";
 "irs020.amend_title" = "既定科目の変更";
 "irs020.display_title" = "既定科目の表示";
-"irs020.add_existing" = "既存の既定科目に追加 (Y/N) ?   - [";
+"irs020.add_existing" = "既存の既定科目に追加 (Y/N) ?     - [";
 "irs020.nb2_defaults" = "既存の既定科目を";
 "irs020.col_ac" = "科目";
 "irs020.col_desc" = "摘要";
@@ -1154,7 +1154,7 @@
 "pl020.pl187" = "PL187 同じ仕入先の請求書のみ取消できます";
 /* pl030.cbl — Invoice Data Amend */
 "pl030.title" = "仕入請求書修正";
-"pl030.further" = "続けて修正しますか? (Y/N)     [Y]";
+"pl030.further" = "続けて修正しますか? (Y/N)      [Y]";
 "pl030.level_1" = "レベル1";
 "pl030.line" = "行   - ";
 "pl030.code" = "分析";
@@ -1187,7 +1187,7 @@
 "pl030.pl190" = "PL190 同じ仕入先の請求書のみ取消できます";
 /* pl040.cbl — Invoice Data Deletion */
 "pl040.title" = "仕入請求書削除";
-"pl040.further" = "続けて削除しますか? (Y/N)      [Y]";
+"pl040.further" = "続けて削除しますか? (Y/N)       [Y]";
 "pl040.box_date" = "*日付 [  /  /    ]*仕入先     [       ]*";
 "pl040.box_order" = "**                *発注    [          ]*";
 "pl040.box_folio" = "*整理No [        ]*請求書  [          ]*";
@@ -1411,9 +1411,9 @@
 "plbdev.sorry" = "未対応の機能です";
 "plbdev.client" = "会社名 -";
 "plbdev.pl000_title" = "買掛元帳  業務開始";
-"plbdev.enter_date_uk" = "本日の日付を入力  dd/mm/yyyy - [          ]";
-"plbdev.enter_date_usa" = "本日の日付を入力  mm/dd/yyyy - [          ]";
-"plbdev.enter_date_intl" = "本日の日付を入力  yyyy/mm/dd - [          ]";
+"plbdev.enter_date_uk" = "本日の日付を入力     dd/mm/yyyy - [          ]";
+"plbdev.enter_date_usa" = "本日の日付を入力     mm/dd/yyyy - [          ]";
+"plbdev.enter_date_intl" = "本日の日付を入力     yyyy/mm/dd - [          ]";
 "plbdev.pl005" = "PL005 日付不正";
 "plb.maps99_missing" = "エラーはerror.txtに未登録。Returnで終了";
 "plb.pl002" = "PL002 エラーを控えてReturn押下";
@@ -1607,7 +1607,7 @@
 "pl940.payment_date" = "支払日              - [          ]";
 "report.pl940.pl902" = "PL902 データなし";
 "pl950.title" = "小切手台帳";
-"pl950.warning" = "警告: 未決済明細ファイルを更新します。続行しますか      (YES/NO) [   ]";
+"pl950.warning" = "警告: 未決済明細ファイルを更新します。続行しますか        (YES/NO) [   ]";
 "pl950.pl904" = "PL904 PE 950-01:Returnで続行";
 "pl950.pl905" = "PL905 PE 950-02:Returnで続行";
 "report.pl950.title" = "小切手・BACS台帳";
@@ -1666,7 +1666,7 @@
 "sl000.enter_date_intl" = "本日の日付を入力 yyyy/mm/dd     - [          ]";
 "sl000.sl005" = "SL005 日付が不正";
 /* sl070.cbl — Product Analysis codes */
-"sl070.select" = "次の中から番号で選択してください    :- [ ]";
+"sl070.select" = "次の中から番号で選択してください      :- [ ]";
 "sl070.opt1" = "(1)  分析コード登録";
 "sl070.opt2" = "(2)  分析コード修正・削除";
 "sl070.opt3" = "(3)  分析コード印刷";
@@ -1999,7 +1999,7 @@
 "sl085.box3" = "*金額    {          }*ﾊﾞｯﾁ  [     /   ]*";
 "sl085.warning_unapplied" = "警告 未消込残高の振替";
 "sl085.current_balance" = "現在残高        - ";
-"sl085.confirm" = "何もせず取消しますか?                    (Y/N)..[ ]";
+"sl085.confirm" = "何もせず取消しますか?                     (Y/N)..[ ]";
 "sl085.further" = "続けて訂正しますか (Y/N) ?       [Y]";
 "sl085.reversing" = "取消中 お待ち下さい";
 "sl085.for_invoice" = "請求書番号      ";
@@ -2088,8 +2088,8 @@
 "sl900.extra_rate" = "追加料金/値引の率 (%)             - [     ]";
 "sl900.entry_level" = "請求書入力レベル (1, 2)";
 "sl900.box1" = "- [ ]";
-"sl900.stock_link" = "請求→在庫連動         - [ ]";
-"sl900.stock_audit" = "請求→在庫監査         - [ ]";
+"sl900.stock_link" = "請求→在庫連動          - [ ]";
+"sl900.stock_audit" = "請求→在庫監査          - [ ]";
 "sl900.extra_ac" = "追加料金・値引の勘定科目";
 "sl900.box6" = "- [      ]";
 "sl900.vat_ac" = "消費税勘定";
@@ -2421,7 +2421,7 @@
 
 /* sl920 */
 "sl920.title" = "請求書データ修正";
-"sl920.further" = "続けて修正しますか? (Y/N)     [Y]";
+"sl920.further" = "続けて修正しますか? (Y/N)      [Y]";
 "sl920.sl192" = "SL192 請求ファイル更新エラー      : ";
 "sl920.sl193" = "SL193 赤伝対象の請求書が請求ファイルにありません";
 "sl920.sl194" = "SL194 請求書がありません";
@@ -2888,7 +2888,7 @@
 "sys.at" = "　 ";
 "sys.on" = "　 ";
 "acas.menu_title" = "ACAS メニュー";
-"acas.select_prompt" = "次の中から英字で選択してください      :- [ ]";
+"acas.select_prompt" = "次の中から英字で選択してください       :- [ ]";
 "acas.item_a" = "(A)  総勘定元帳";
 "acas.item_b" = "(B)  売掛元帳";
 "acas.item_c" = "(C)  買掛元帳";
@@ -3304,7 +3304,7 @@
 "xl150.phase1_purchase" = "段階  1  - 仕入";
 "xl150.please_wait_purchase" = "お待ちを";
 "xl150.value_reset" = "年度末: 分析値ファイル初期化";
-"xl150.end_of_quarter" = "四半期末ですか             (Y/N) - [ ]";
+"xl150.end_of_quarter" = "四半期末ですか               (Y/N) - [ ]";
 "xl150.xl001" = "XL001 中止。Return を押す      ";
 "xl150.xl006" = "XL006 プログラム引数は 2 個までですが、指定された個数は       ";
 "xl150.xl007" = "XL007 プログラム引数が不正:        ";

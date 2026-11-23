@@ -26,6 +26,15 @@ errors = [f"missing in ja: {k}" for k in en if k not in ja] + [f"missing in en: 
 # 画面文言 (ui. / report. 以外) は日本語のセル幅が英語原文以下であること
 errors += [f"ja wider than en ({width(ja[k])}>{width(en[k])}): {k}" for k in en
            if k in ja and not k.startswith(("ui.", "report.")) and width(ja[k]) > width(en[k])]
+# 入力欄の括弧 [ ] は英語原文と同じ桁に置く (入力位置は桁固定のため)
+def brackets(s):
+    s = s.replace('\\"', '"').replace('\\\\', '\\'); out, c = [], 0
+    for ch in s:
+        if ch in "[]": out.append((ch, c))
+        c += 2 if unicodedata.east_asian_width(ch) in "WF" else 1
+    return out
+errors += [f"bracket columns differ from en: {k}" for k in en
+           if k in ja and not k.startswith(("ui.", "report.")) and brackets(ja[k]) != brackets(en[k])]
 if errors:
     print("\n".join(errors)); sys.exit(1)
 if "--check" not in sys.argv:
