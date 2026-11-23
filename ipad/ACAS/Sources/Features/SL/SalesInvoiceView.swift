@@ -53,9 +53,35 @@ extension SalesInvoices.Kind {
 
 struct SalesInvoiceMenu: View {
     let workspace: Workspace
+    @State private var fixedData: SalesInvoices.FixedData?
+    @State private var failure: String?
 
     var body: some View {
+        Group {
+            if let fixedData {
+                if fixedData.nextInvoice == "00000000" {
+                    SalesInvoiceFixedDataView(workspace: workspace, data: fixedData) { self.fixedData = $0 }
+                } else {
+                    actions(fixedData)
+                }
+            } else if let failure {
+                Text(failure)
+            } else {
+                ProgressView()
+            }
+        }
+        .task {
+            do { fixedData = try SalesInvoices(workspace.context).fixedData() }
+            catch { failure = SalesInvoiceMessage.text(for: error) }
+        }
+    }
+
+    private func actions(_ fixedData: SalesInvoices.FixedData) -> some View {
         List {
+            NavigationLink(slText("sales.invoice.fixed.title")) {
+                SalesInvoiceFixedDataView(workspace: workspace, data: fixedData) { self.fixedData = $0 }
+            }
+            .accessibilityIdentifier("sales.invoice.fixed")
             NavigationLink(slText("sales.invoice.pendingTitle")) { SalesInvoiceEditor(workspace: workspace, title: slText("sales.invoice.registerTitle")) }
                 .accessibilityIdentifier("sales.invoice.pending")
             NavigationLink(slText("sales.invoice.immediateTitle")) { SalesInvoiceEditor(workspace: workspace, title: slText("sales.invoice.immediateTitle"), immediate: true) }
@@ -71,6 +97,76 @@ struct SalesInvoiceMenu: View {
         }
         .navigationTitle(slText("sales.invoice.menuTitle"))
         .task { workspace.completed("sales-invoice-menu-view") }
+    }
+}
+
+private struct SalesInvoiceFixedDataView: View {
+    let workspace: Workspace
+    @State var data: SalesInvoices.FixedData
+    let onSave: (SalesInvoices.FixedData) -> Void
+    @Environment(\.dismiss) private var dismiss
+    @State private var failure: String?
+
+    var body: some View {
+        Form {
+            field("sales.invoice.fixed.nextInvoice", text: $data.nextInvoice, keyboard: .numberPad)
+            field("sales.invoice.fixed.extraDescription", text: $data.extraDescription)
+            Picker(slText("sales.invoice.fixed.extraType"), selection: $data.extraType) {
+                Text(slText("sales.invoice.fixed.unset")).tag("")
+                Text(slText("sales.invoice.fixed.charge")).tag("C")
+                Text(slText("sales.invoice.fixed.discount")).tag("D")
+            }
+            choice("sales.invoice.fixed.printExtra", selection: $data.printExtra)
+            field("sales.invoice.fixed.extraRate", text: $data.extraRate, keyboard: .decimalPad)
+            Picker(slText("sales.invoice.fixed.entryLevel"), selection: $data.entryLevel) {
+                Text(slText("sales.invoice.fixed.unset")).tag("0")
+                Text("1").tag("1")
+                Text("2").tag("2")
+            }
+            choice("sales.invoice.fixed.stockLink", selection: $data.stockLink)
+            choice("sales.invoice.fixed.stockAudit", selection: $data.stockAudit)
+                .disabled(data.stockLink != "Y")
+            if data.usesGeneralLedger {
+                field("sales.invoice.fixed.extraAccount", text: $data.extraAccount, keyboard: .numberPad)
+                field("sales.invoice.fixed.taxAccount", text: $data.taxAccount, keyboard: .numberPad)
+            }
+            field("sales.invoice.fixed.proFormaDays", text: $data.proFormaDays, keyboard: .numberPad)
+            if let failure { Text(failure).foregroundStyle(.red) }
+            Button(slText("sales.invoice.save")) { save() }
+                .accessibilityIdentifier("sales.invoice.fixed.save")
+        }
+        .navigationTitle(slText("sales.invoice.fixed.title"))
+        .task { workspace.completed("sales-invoice-fixed-data-view") }
+    }
+
+    private func field(_ key: String, text: Binding<String>, keyboard: UIKeyboardType = .default) -> some View {
+        let label = slText(String.LocalizationValue(key))
+        return LabeledContent(label) {
+            TextField(label, text: text)
+                .keyboardType(keyboard)
+                .multilineTextAlignment(.trailing)
+                .accessibilityIdentifier(key)
+        }
+    }
+
+    private func choice(_ key: String.LocalizationValue, selection: Binding<String>) -> some View {
+        Picker(slText(key), selection: selection) {
+            Text(slText("sales.invoice.fixed.unset")).tag("")
+            Text(slText("sales.invoice.fixed.on")).tag("Y")
+            Text(slText("sales.invoice.fixed.off")).tag("N")
+        }
+    }
+
+    private func save() {
+        do {
+            let service = SalesInvoices(workspace.context)
+            let isInitialSetup = try service.fixedData().nextInvoice == "00000000"
+            try service.saveFixedData(data)
+            onSave(try service.fixedData())
+            if !isInitialSetup { dismiss() }
+        } catch {
+            failure = SalesInvoiceMessage.text(for: error)
+        }
     }
 }
 

@@ -71,6 +71,85 @@ public struct SalesInvoices {
 
     public var usesOwnNumbers: Bool { (try? settings().str("sl-own-nos")) == "Y" }
 
+    public struct FixedData {
+        public var nextInvoice: String
+        public var extraDescription: String
+        public var extraType: String
+        public var printExtra: String
+        public var extraRate: String
+        public var entryLevel: String
+        public var stockLink: String
+        public var stockAudit: String
+        public var extraAccount: String
+        public var taxAccount: String
+        public var proFormaDays: String
+        public let usesGeneralLedger: Bool
+    }
+
+    public func fixedData() throws -> FixedData {
+        let system = try settings()
+        let rate = system.int("extra-rate")
+        return FixedData(nextInvoice: Cobol.z(system.int("next-invoice"), 8),
+                         extraDescription: Cobol.rtrim(system.str("extra-desc")),
+                         extraType: Cobol.rtrim(system.str("extra-type")),
+                         printExtra: Cobol.rtrim(system.str("extra-print")),
+                         extraRate: Cobol.z(rate / 100, 2) + "." + Cobol.z(rate % 100, 2),
+                         entryLevel: Cobol.z(system.int("invoicer"), 1),
+                         stockLink: Cobol.rtrim(system.str("sl-stock-link")),
+                         stockAudit: Cobol.rtrim(system.str("sl-stock-audit")),
+                         extraAccount: Cobol.z(system.int("extra-charge-ac"), 6),
+                         taxAccount: Cobol.z(system.int("vat-ac"), 6),
+                         proFormaDays: Cobol.z(system.int("pf-retention"), 3),
+                         usesGeneralLedger: system.int("level-1") == 1)
+    }
+
+    public func saveFixedData(_ draft: FixedData) throws {
+        func number(_ text: String, digits: Int) throws -> Int64 {
+            guard (1...digits).contains(text.utf8.count),
+                  text.utf8.allSatisfy({ (0x30...0x39).contains($0) }), let value = Int64(text) else {
+                throw Error.invalidInput
+            }
+            return value
+        }
+        var system = try settings()
+        let next = try number(draft.nextInvoice, digits: 8)
+        let level = try number(draft.entryLevel, digits: 1)
+        let link = draft.stockLink.uppercased()
+        let audit = link == "N" ? "N" : draft.stockAudit.uppercased()
+        let description = Cobol.rtrim(draft.extraDescription)
+        guard next > 0, (1...2).contains(level), ["Y", "N"].contains(link), ["Y", "N"].contains(audit),
+              let encoded = description.data(using: .shiftJIS), encoded.count <= 14 else {
+            throw Error.invalidInput
+        }
+        let extraType = description.isEmpty ? " " : draft.extraType.uppercased()
+        let printExtra = description.isEmpty ? " " : draft.printExtra.uppercased()
+        var rate: Int64 = 0
+        if !description.isEmpty {
+            let parts = draft.extraRate.split(separator: ".", omittingEmptySubsequences: false)
+            guard ["C", "D"].contains(extraType), ["Y", "N"].contains(printExtra), (1...2).contains(parts.count) else {
+                throw Error.invalidInput
+            }
+            rate = try number(String(parts[0]), digits: 2) * 100
+            if parts.count == 2 {
+                rate += try number(String(parts[1]), digits: 2) * (parts[1].count == 1 ? 10 : 1)
+            }
+        }
+        system.setInt("next-invoice", next)
+        system["extra-desc"] = description
+        system["extra-type"] = extraType
+        system["extra-print"] = printExtra
+        system.setInt("extra-rate", rate)
+        system.setInt("invoicer", level)
+        system["sl-stock-link"] = link
+        system["sl-stock-audit"] = audit
+        if system.int("level-1") == 1 {
+            system.setInt("extra-charge-ac", try number(draft.extraAccount, digits: 6))
+            system.setInt("vat-ac", try number(draft.taxAccount, digits: 6))
+        }
+        system.setInt("pf-retention", try number(draft.proFormaDays, digits: 3))
+        try systemFile.write(1, system.bytes)
+    }
+
     func date(for day: Int64) -> Date? {
         guard (1...3_067_671).contains(day) else { return nil }
         let parts = Maps04.dateOfInteger(Int(day))
