@@ -26,8 +26,8 @@ public class IntegrationTests
 
         new LedgerTransfer(db).TransferInvoices(TransferLedger.Sales, new DateTime(2026, 11, 23), TransferDestination.Dedicated);
 
-        Assert.Equal((byte)'0', db.Read(items, "CUST011/00000001")![89]);
-        Assert.Equal((byte)'1', db.Read(items, "CUST011/00000002")![89]);
+        Assert.Equal((byte)'0', db.Read(items, "CUST011/00000001")![94]);
+        Assert.Equal((byte)'1', db.Read(items, "CUST011/00000002")![94]);
     }
 
     [Fact]
