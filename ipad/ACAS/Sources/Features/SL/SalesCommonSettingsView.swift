@@ -13,7 +13,7 @@ struct SalesCommonSettingsView: View {
                     ForEach(settings.fields) { field in
                         let key = "sales.common." + field.id
                         LabeledContent(slText(String.LocalizationValue(key))) {
-                            Text(field.value.isEmpty ? slText("sales.common.unset") : field.value)
+                            Text(displayValue(for: field))
                                 .foregroundStyle(.primary)
                                 .accessibilityIdentifier(key)
                         }
@@ -37,5 +37,10 @@ struct SalesCommonSettingsView: View {
                 failed = true
             }
         }
+    }
+
+    private func displayValue(for field: SalesCommonSettings.Field) -> String {
+        if field.id == "password" { return slText("sales.common.password.hidden") }
+        return field.value.isEmpty ? slText("sales.common.unset") : field.value
     }
 }

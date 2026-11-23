@@ -176,7 +176,7 @@ final class SalesReachFlows: XCTestCase {
                 ("date-form", "1"), ("start-date", "01/01/2026"), ("end-date", "31/12/2026"),
                 ("page-lines", "048"), ("vat-rate-1", "20.00"), ("vat-rate-2", "05.00"), ("vat-rate-3", "00.00"),
                 ("vat-rate-4", "00.00"), ("vat-rate-5", "00.00"), ("vat-reg-number", "TESTVAT"), ("sl-vat-printed", "N"),
-                ("password", "未設定"), ("scycle", "01"), ("current-quarter", "01"), ("period", "03"),
+                ("password", "非表示"), ("scycle", "01"), ("current-quarter", "01"), ("period", "03"),
                 ("file-system-used", "0"), ("file-duplicates-in-use", "0"),
             ]
             let form = app.scrollViews.firstMatch

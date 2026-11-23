@@ -105,6 +105,7 @@
 "sales.common.vat-reg-number" = "付加価値税登録番号";
 "sales.common.sl-vat-printed" = "付加価値税登録番号の印字";
 "sales.common.password" = "パスワード";
+"sales.common.password.hidden" = "非表示";
 "sales.common.scycle" = "現在のサイクル";
 "sales.common.current-quarter" = "現在の四半期";
 "sales.common.period" = "サイクル期間";
