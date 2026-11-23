@@ -164,6 +164,13 @@ final class SystemInitializationFlows: XCTestCase {
         let desired = enabled ? "1" : "0"
         if toggle.value as? String != desired {
             toggle.coordinate(withNormalizedOffset: CGVector(dx: 0.95, dy: 0.5)).tap()
+            let changed = XCTNSPredicateExpectation(predicate: NSPredicate(format: "value == %@", desired), object: toggle)
+            if XCTWaiter.wait(for: [changed], timeout: 2) != .completed {
+                reveal(toggle, app: app)
+                if toggle.value as? String != desired {
+                    toggle.coordinate(withNormalizedOffset: CGVector(dx: 0.95, dy: 0.5)).tap()
+                }
+            }
         }
         XCTAssertEqual(toggle.value as? String, desired, id)
     }
