@@ -89,6 +89,14 @@ public sealed class Db : IDisposable
     }
     public int Count(string file) => Scan(file).Count;
 
+    public bool ExecuteAtomically(Func<bool> write)
+    {
+        using var transaction = _c.BeginTransaction();
+        if (!write()) return false;
+        transaction.Commit();
+        return true;
+    }
+
     public void AddSpool(string name, string body) =>
         Exec("INSERT INTO spool(name,created,body) VALUES($n,$c,$b)", ("$n", name), ("$c", DateTime.UtcNow.ToString("o")), ("$b", body));
     public List<(long Id, string Name, DateTimeOffset Created, string Body)> Spool()
