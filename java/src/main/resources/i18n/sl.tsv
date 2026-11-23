@@ -604,3 +604,22 @@ Letter Production	督促状作成
 Low Date    - [  ]	低 日数     - [  ]
 Medium Date - [  ]	中 日数     - [  ]
 High Date   - [  ]	高 日数     - [  ]
+End of Cycle Processing	期末処理
+WARNING: MAKE SURE THAT DATE IS AT END OF CYCLE.IE END OF MONTH	警告: 日付が期末（月末など）であることを確認してください
+Have you made a Backup of ALL DATA FILES? If so; 	全データファイルのバックアップは済みましたか? 済みなら 
+Confirm end of Cycle Processing to be Run (Y/N) - [ ]	期末処理の実行を確認してください (Y/N)         - [ ]
+ok to proceed (Y/N) - [Y]	続行しますか (Y/N)  - [Y]
+Give password [****]	パスワード    [****]
+Do you wish to run Sales Ledger? (Y/N) - [ ]	売掛を処理しますか?        (Y/N) - [ ]
+Do you wish to run Purchase Ledger? (Y/N) - [ ]	買掛を処理しますか?           (Y/N) - [ ]
+Is this the end of a quarter (Y/N) - [ ]	四半期末ですか?        (Y/N) - [ ]
+Phase 1  - Sales	フェーズ 1 - 売掛
+Phase 1  - Purchase	フェーズ 1 - 買掛
+Please wait.	お待ちください
+Please Wait	お待ちください
+End of year; VALUE File reset	年度末; 分析金額ファイルを初期化しました
+XL001 Aborting. Press return   	XL001 中止します。Enter を押下
+XL101 WARNING..... Proofed but NOT posted invoices	XL101 警告..... 検証済みで未転記の請求書があります
+XL102 !!ERROR..... Proofed but NOT posted payments	XL102 !!エラー..... 検証済みで未転記の入金があります
+XL103 !!ERROR.... Sales Analysis NOT run	XL103 !!エラー.... 売上分析が未実行です
+XL104 I'm confused: You appear to have rejected the run, try again	XL104 処理対象の台帳が選択されていません。やり直してください
