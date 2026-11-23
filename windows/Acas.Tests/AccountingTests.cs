@@ -11,6 +11,29 @@ public class AccountingTests
         1, 3, 48, 1, false);
 
     [Fact]
+    public void 買掛元帳を使用する初期登録では仕入先住所の区切り文字を設定する()
+    {
+        using var db = new Db();
+        var settings = new SystemSettings(db);
+        Assert.True(settings.Initialize(Company, Start));
+        Assert.True(new Acas.Core.Programs.Purchase.PurchaseLedger(db).ValidAddress(@"1 SUPPLY ROAD\LONDON\UK", ""));
+    }
+
+    [Fact]
+    public void 既定勘定の初期化には締め処理用の暗証文字が必要()
+    {
+        using var db = new Db();
+        var settings = new SystemSettings(db);
+        Assert.True(settings.Initialize(Company, Start));
+        Assert.True(settings.AmendDefault(new(1, 3100m, "01", "I")));
+
+        Assert.False(settings.ResetDefaults("WXYZ"));
+        Assert.Equal(3100m, settings.DefaultAccounts()[0].Code);
+        Assert.True(settings.ResetDefaults("ABCD"));
+        Assert.All(settings.DefaultAccounts(), account => Assert.Equal(0m, account.Code));
+    }
+
+    [Fact]
     public void 元帳設定は部門区分に応じて収益勘定の制限と仕訳保管を保存する()
     {
         using var db = new Db();

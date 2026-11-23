@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text;
 using System.Text.Json;
 using Acas.App;
@@ -17,7 +18,8 @@ public static class GroupOneVerification
             database.LoadBaseline(scenario.Baseline);
             var before = database.Snapshot();
             var model = new AccountingScreens(database);
-            var navigation = model.Navigation().SelectMany(item => item.Children?.Prepend(item) ?? [item])
+            var navigation = model.Navigation().Concat(SubsystemScreens.Load(typeof(AccountingScreens).Assembly, database))
+                .SelectMany(item => item.Children?.Prepend(item) ?? [item])
                 .ToDictionary(item => item.Id);
             Screen screen = model.Start();
             var inputs = new Dictionary<string, object?>();
@@ -32,14 +34,28 @@ public static class GroupOneVerification
                             differences.Add($"画面：{action.Id} {action.Value} を確認できません（{screen.Title}）。" +
                                 (screen is FormScreen { Error: { } error } && action.Id == "Status" ? $"表示：{error}" : ""));
                         break;
-                    case ActionType.Text or ActionType.Choice:
+                    case ActionType.Text or ActionType.Choice or ActionType.DateText:
                         var field = (screen as FormScreen)?.Fields.SingleOrDefault(field => field.Id == action.Id);
                         if (field is not (TextField or PasswordField) && action.Type == ActionType.Text ||
-                            field is not ChoiceField && action.Type == ActionType.Choice)
+                            field is not ChoiceField && action.Type == ActionType.Choice ||
+                            field is not DateField && action.Type == ActionType.DateText)
                             throw new InvalidOperationException($"該当する入力欄がありません：{action.Id}（{screen.Title}）");
                         if (field is ChoiceField choice && choice.Options.All(option => option.Value != action.Value))
                             throw new InvalidOperationException($"指定した選択肢がありません：{action.Id}／{action.Value}");
-                        inputs[action.Id] = action.Value;
+                        inputs[action.Id] = action.Type == ActionType.DateText
+                            ? DateTime.TryParseExact(action.Value, "dd/MM/yyyy", CultureInfo.InvariantCulture,
+                                DateTimeStyles.None, out var date) ? date : null
+                            : action.Value;
+                        break;
+                    case ActionType.RejectChoice:
+                        if (screen is not FormScreen form ||
+                            form.Fields.FirstOrDefault(field => field.Id == action.Id) is not ChoiceField options ||
+                            options.Options.Any(option => option.Value == action.Value))
+                            differences.Add($"画面：{action.Id} で不正値「{action.Value}」を拒否できません。");
+                        else observations.Add($"{action.Id}：不正値「{action.Value}」は選択できません。");
+                        break;
+                    case ActionType.Key or ActionType.Close:
+                        differences.Add($"実画面での操作が必要です：{action.Type} {action.Id}。");
                         break;
                     default:
                         screen = Move(navigation, screen, action, inputs);
@@ -85,6 +101,7 @@ public static class GroupOneVerification
         string? actual = (action.Id, screen) switch
         {
             ("Status", FormScreen form) => form.Error,
+            ("ScreenTitle", _) => screen.Title,
             ("ScreenMessage", InformationScreen info) => info.Message,
             ("Confirmation", ConfirmationScreen confirm) => confirm.Message,
             ("ReportDocument", ReportScreen report) when !string.IsNullOrWhiteSpace(report.Body) => report.Body,

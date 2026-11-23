@@ -14,10 +14,24 @@ public sealed class LedgerReports(Db database)
     private const string Places = "11112222334444555666778888";
     private readonly SystemSettings _settings = new(database);
 
+    public string? PrintChart()
+    {
+        if (!database.Exists(GeneralLedger.LedgerFile) || _settings.Read() is not { } system) return null;
+        const string title = "勘定科目一覧";
+        var report = new PagedReport(title, system, "勘定コード　部門・拠点　階層　科目名");
+        var records = Records().ToArray();
+        if (records.Length == 0) report.Line("勘定科目がありません。");
+        foreach (var row in records)
+        {
+            int level = row.I("level");
+            report.Line($"{Code(row)}　{row.S("pc")}　{(level == 0 ? "明細" : $"第{level}階層")}　{row.St("name")}");
+        }
+        return Save(title, report.ToString());
+    }
+
     public string? TrialBalance(bool structured)
     {
         if (!database.Exists(GeneralLedger.LedgerFile) || _settings.Read() is not { } system) return null;
-        if (structured && system.S("P-C") is not ("P" or "B")) return null;
         string title = structured
             ? system.S("P-C") == "B" ? "拠点別試算表" : "部門別試算表"
             : "詳細試算表";

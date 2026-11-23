@@ -38,6 +38,7 @@ internal static class Program
                     Padding = new Thickness(14, 8, 14, 8), Child = text }
             };
             var stopwatch = Stopwatch.StartNew();
+            Console.WriteLine($"ケース計時の開始：{DateTimeOffset.Now:O}");
             ui.Startup += async (_, _) =>
             {
                 try

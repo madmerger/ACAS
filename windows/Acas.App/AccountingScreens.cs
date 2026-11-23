@@ -45,11 +45,18 @@ internal sealed partial class AccountingScreens(Db database)
             new("MenuOperatingParameters", "運用環境設定", Open: () => OperatingSettings()),
             new("MenuGeneralLedgerParameters", "総勘定元帳の設定", Open: () => GeneralLedgerSettings()),
             new("MenuSettingsReport", "設定内容の印刷", Open: SettingsReportMenu)
-        ], Open: SettingsMenu)
+        ], Open: SettingsMenu),
+        new("MenuOrders", "受注管理", Open: () => Unavailable("受注管理")),
+        new("MenuPayroll", "給与計算", Open: () => Unavailable("給与計算")),
+        new("MenuPointOfSale", "販売時点管理", Open: () => Unavailable("販売時点管理"))
     ];
 
     public Screen Start() => _settings.Read() == null ? Setup() :
-        new InformationScreen("業務メニュー", "左側のメニューから操作を選択してください。");
+        BusinessMenu();
+
+    private static Screen BusinessMenu() => new InformationScreen("業務メニュー", "左側のメニューから操作を選択してください。");
+
+    private static Screen Unavailable(string title) => new InformationScreen(title, "この機能は現在利用できません。");
 
     private Screen Setup(string name = "", CompanySetup? model = null, string? error = null)
     {
@@ -145,7 +152,10 @@ internal sealed partial class AccountingScreens(Db database)
         new("GeneralTrialBalance", "試算表", Open: TrialBalanceMenu),
         new("GeneralArchivedLedger", "元帳印刷", Open: ArchivedLedgerMenu),
         new("GeneralFinancialStatements", "決算書印刷", Open: FinancialStatements),
-        new("GeneralSettings", "共通設定", Open: SettingsMenu)
+        new("GeneralFinalSetup", "決算書設定", Open: () => Unavailable("決算書設定")),
+        new("GeneralFinalPrint", "最終決算帳票", Open: GeneralMenu),
+        new("GeneralSettings", "共通設定", Open: SettingsMenu),
+        new("GeneralBack", "総勘定元帳を閉じる", Open: BusinessMenu)
     ]);
 
     private Screen ChartMenu()
@@ -158,6 +168,8 @@ internal sealed partial class AccountingScreens(Db database)
             new("ChartAdd", "科目登録", first, Open: () => AccountForm(null)),
             new("ChartEdit", "科目変更・削除", first + 1, Open: () => AccountLookup(true)),
             new("ChartList", "科目一覧表示", display, Open: () => AccountLookup(false)),
+            new("ChartPrint", "勘定科目一覧を印刷", display + 1,
+                Open: () => LedgerReport("勘定科目一覧", _ledgerReports.PrintChart(), ChartMenu)),
             new("ChartBack", "総勘定元帳に戻る", 9, Open: GeneralMenu)
         ]);
     }
@@ -243,10 +255,20 @@ internal sealed partial class AccountingScreens(Db database)
 
     private Screen DefaultsMenu() => new MenuScreen("既定勘定の管理",
     [
+        new("DefaultsAdd", "既定勘定登録", 1, Open: RegisterDefaults),
         new("DefaultsEdit", "既定勘定修正", 2, Open: () => DefaultAccounts(true)),
         new("DefaultsList", "既定勘定表示", 3, Open: () => DefaultAccounts(false)),
         new("DefaultsBack", "総勘定元帳に戻る", 9, Open: GeneralMenu)
     ]);
+
+    private Screen RegisterDefaults() => new ConfirmationScreen("既定勘定登録",
+        "既存の既定勘定に追加しますか。既存の内容を消去する場合は取り消してください。",
+        "追加する", () => DefaultAccounts(true), () => new FormScreen("既定勘定の初期化",
+            [new PasswordField("DefaultResetPassword", "締め処理用の暗証文字", 4)], "初期化する", values =>
+                _settings.ResetDefaults(values.Text("DefaultResetPassword"))
+                    ? DefaultAccounts(true)
+                    : new InformationScreen("既定勘定の初期化", "暗証文字が一致しないため初期化していません。"),
+            DefaultsMenu));
 
     private Screen DefaultAccounts(bool edit) => new TableScreen("既定勘定一覧", "DefaultAccountList",
         ["番号", "勘定コード", "取引区分", "税区分"], _settings.DefaultAccounts()

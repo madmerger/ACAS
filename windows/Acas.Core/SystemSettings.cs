@@ -63,6 +63,7 @@ public sealed class SystemSettings(Db database)
             ("SL-Dunning", 1), ("SL-Charges", 1), ("SL-Credit", 30), ("Invoicer", 2)
         }) system.SetN(field, value);
         system.Set("SL-Delim", "\\");
+        if (setup.Purchasing) system.Set("PL-Delim", "\\");
         Array.Fill(system.B, (byte)' ', 768, 256);
 
         var defaults = Layouts.Default.New().B;
@@ -248,6 +249,21 @@ public sealed class SystemSettings(Db database)
             data.Set("vat" + i, account.Tax);
         }
         database.Put(SystemFile, DefaultKey, data.B);
+        return true;
+    }
+
+    public bool ResetDefaults(string password)
+    {
+        if (Read() is not { } system || password.Length != 4 || password.Any(ch => !char.IsAsciiLetter(ch)) ||
+            system.S("Pass-Word") != EncodePassword(password)) return false;
+        var defaults = ReadDefaults();
+        for (int i = 1; i <= 33; i++)
+        {
+            defaults.SetN("acs" + i, 0);
+            defaults.Set("code" + i, "");
+            defaults.Set("vat" + i, "");
+        }
+        database.Put(SystemFile, DefaultKey, defaults.B);
         return true;
     }
 

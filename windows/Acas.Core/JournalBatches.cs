@@ -144,9 +144,8 @@ public sealed partial class JournalBatches(Db database)
 
     public string? PrintTransactions()
     {
-        if (!database.Exists(JournalEntry.PostingFile)) return null;
-        var system = _settings.Read();
-        int pageLines = system?.I("Page-Lines") ?? 0;
+        if (_settings.Read() is not { } system) return null;
+        int pageLines = system.I("Page-Lines");
         var lines = ReadPostings().GroupBy(p => p.I("batch")).Select(group =>
             FormatProof(ReadBatch(group.Key), group, pageLines, null, null, group.Key)).ToArray();
         string body = lines.Length == 0 ? "全仕訳一覧\n仕訳がありません。" : string.Join('\f', lines);
@@ -156,7 +155,7 @@ public sealed partial class JournalBatches(Db database)
 
     public string? PrintStatus()
     {
-        if (!database.Exists(JournalEntry.BatchFile) || _settings.Read() is not { } system) return null;
+        if (_settings.Read() is not { } system) return null;
         var report = new StringBuilder();
         int page = 0, lines = 0;
         void BeginPage()

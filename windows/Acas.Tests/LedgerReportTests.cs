@@ -8,6 +8,33 @@ public class LedgerReportTests
     private static readonly DateTime RunDate = new(2025, 4, 1);
 
     [Fact]
+    public void 勘定科目一覧は見出しと明細を印刷し予約科目を除外する()
+    {
+        using var db = OpenCompany();
+        Account(db, 300000, 0, 1, "Revenue", "A");
+        Account(db, 300001, 0, 0, "Sales", "A");
+        Account(db, 999900, 0, 0, "Sentinel", "Z");
+
+        var body = new LedgerReports(db).PrintChart();
+        Assert.NotNull(body);
+        Assert.Contains("3000.00　00　第1階層　Revenue", body);
+        Assert.Contains("3000.01　00　明細　Sales", body);
+        Assert.DoesNotContain("Sentinel", body);
+        Assert.Equal(body, Assert.Single(db.Spool()).Body);
+    }
+
+    [Fact]
+    public void データがない会社でも仕訳とバッチ状況の帳票を作成する()
+    {
+        using var db = OpenCompany();
+        var batches = new JournalBatches(db);
+
+        Assert.Contains("仕訳がありません", batches.PrintTransactions());
+        Assert.Contains("バッチ状況帳票", batches.PrintStatus());
+        Assert.Equal(2, db.Spool().Count);
+    }
+
+    [Fact]
     public void 試算表は借方と貸方を分け前期と直近の四半期を表示する()
     {
         using var db = OpenCompany();
