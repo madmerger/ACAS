@@ -1,10 +1,10 @@
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using Acas.Core;
 using Acas.Verify;
 
 namespace Acas.UiDriver;
@@ -94,8 +94,10 @@ internal static class Program
                 {
                     var (first, second, id) = scenario.CalcInput();
                     string actual = desktop!.Calculate(id, first, second);
-                    string expected = Calculations.Summary(scenario.Driver!, scenario.ExpectedLine(options.Evidence));
-                    outcome = Outcome.Compare(scenario, actual == expected, actual, $"旧：「{expected}」／新：「{actual}」", "実画面");
+                    string legacy = scenario.ExpectedLine(options.Evidence);
+                    string expected = ExpectedCalculationText(scenario.Driver!, legacy);
+                    outcome = Outcome.Compare(scenario, actual == expected, actual,
+                        $"旧証跡：「{legacy}」／期待表示：「{expected}」／新：「{actual}」", "実画面");
                 }
                 catch (Exception e)
                 {
@@ -108,5 +110,30 @@ internal static class Program
             Thread.Sleep(500);
         }
         return outcomes;
+    }
+
+    private static string ExpectedCalculationText(string driver, string legacy)
+    {
+        if (driver == "drv09")
+        {
+            string[] codeResult = legacy[6..].Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            return $"検査数字＝{codeResult[0]}　判定：{(codeResult[1] == "Y" ? "有効" : "無効")}";
+        }
+        if (driver == "drv04")
+        {
+            // The original ten-character input can itself contain the delimiter.
+            string[] dateResult = legacy[11..].Split('|', 2, StringSplitOptions.TrimEntries);
+            return dateResult[0] == "0" ? "日付不正（通算日＝0）" :
+                $"日付有効　通算日＝{dateResult[0]}　正規化＝{dateResult[1]}";
+        }
+        string result = legacy[(legacy.LastIndexOf('|') + 1)..].Trim();
+        var invariant = CultureInfo.InvariantCulture;
+        return driver switch
+        {
+            "drvvat" => $"消費税額＝{decimal.Parse(result, invariant).ToString("0.00", invariant)}",
+            "drvage" => $"経過日数区分＝{int.Parse(result, invariant).ToString(invariant)}日",
+            "drvavg" => $"平均原価＝{result}",
+            _ => throw new InvalidDataException("対応する計算ドライバがありません。")
+        };
     }
 }
