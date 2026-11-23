@@ -70,15 +70,23 @@ struct PurchaseTransactionsView: View {
                 .accessibilityIdentifier("pl.transactions.table")
             } else {
                 Table(rows) {
-                    TableColumn(plString("purchase.invoice.number")) { Text(String($0.id)) }
+                    TableColumn(plString("purchase.invoice.number")) {
+                        Text(String($0.id)).accessibilityIdentifier("pl.transaction.number")
+                    }
                     TableColumn(plString("purchase.invoice.date")) { Text($0.date.formatted(.dateTime.year().month().day())) }
-                    TableColumn(plString("purchase.supplier.code"), value: \.supplier)
-                    TableColumn(plString("purchase.invoice.type")) { Text($0.type.japaneseTitle) }
+                    TableColumn(plString("purchase.supplier.code")) { row in
+                        Text(row.supplier).accessibilityIdentifier("pl.transaction.\(row.id).supplier")
+                    }
+                    TableColumn(plString("purchase.invoice.type")) { row in
+                        Text(row.type.japaneseTitle).accessibilityIdentifier("pl.transaction.\(row.id).type")
+                    }
                     TableColumn(plString("purchase.invoice.net")) { row in
                         Text(purchaseAmount(amounts(for: row).net))
+                            .accessibilityIdentifier("pl.transaction.\(row.id).net")
                     }
                     TableColumn(plString("purchase.invoice.tax")) { row in
                         Text(purchaseAmount(amounts(for: row).tax))
+                            .accessibilityIdentifier("pl.transaction.\(row.id).tax")
                     }
                     TableColumn(plString("purchase.invoice.state")) { row in
                         if mode == .edit || mode == .delete {
