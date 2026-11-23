@@ -1,6 +1,16 @@
 import Foundation
 
 extension PurchaseRecords {
+    static let valueLayout: Layout = {
+        let count = FieldType.comp(digits: 5, scale: 0, signed: false)
+        let fields: [(String, FieldType)] = [
+            ("code", .x(3)), ("account", d(6)), ("description", .x(24)), ("print", .x(3)),
+            ("this-count", count), ("last-count", count), ("year-count", count),
+            ("this-net", money(10)), ("last-net", money(10)), ("year-net", money(10)),
+        ]
+        return Layout("value-record", fields)
+    }()
+
     /// wssys4.cob System-Record-4 の買掛部分 (先頭 120 バイト)
     static let sys4Layout: Layout = {
         var f: [(String, FieldType)] = []

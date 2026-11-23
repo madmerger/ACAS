@@ -3,6 +3,28 @@ import XCTest
 @testable import ACASCore
 
 final class PurchaseLedgerTests: XCTestCase {
+    func testPostingAccumulatesLegacyAnalysisKeysAndTotals() throws {
+        let ledger = try makeLedger()
+        var value = PurchaseLedger.Transaction(date: ledger.processingDate)
+        value.supplier = try addSupplier(ledger)
+        value.lines[0].code = "a1"
+        value.lines[0].net = 10_000
+        try ledger.saveTransaction(value)
+        try ledger.postTransactions()
+        try ledger.postTransactions()
+        let path = ledger.base + "value.dat"
+        for (key, amount) in [("P1 ", 10_000), ("Pvi", 2_000)] {
+            let bytes = try XCTUnwrap(ledger.store.read(path, key: Array(key.utf8)))
+            XCTAssertEqual(bytes.count, 66)
+            let actual = Record(PurchaseRecords.valueLayout, bytes: bytes)
+            XCTAssertEqual(actual.int("this-count"), 1)
+            XCTAssertEqual(actual.int("year-count"), 1)
+            XCTAssertEqual(actual.int("last-count"), 0)
+            XCTAssertEqual(actual.int("this-net"), Int64(amount))
+            XCTAssertEqual(actual.int("year-net"), Int64(amount))
+        }
+    }
+
     func testPostingPreservesLegacyExtractedTransactions() throws {
         let ledger = try makeLedger()
         let code = try addSupplier(ledger)

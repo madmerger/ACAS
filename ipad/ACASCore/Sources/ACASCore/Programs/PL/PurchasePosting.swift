@@ -75,6 +75,7 @@ private final class PurchasePosting {
             }
         }
         head(credits: false)
+        PurchaseAnalysisPosting(ledger).accumulate(headers: items.compactMap { $0.staged ? nil : $0.header })
         for (header, storedItem, staged) in items {
             var item = storedItem
             if usesGL { writePosting(item) }
