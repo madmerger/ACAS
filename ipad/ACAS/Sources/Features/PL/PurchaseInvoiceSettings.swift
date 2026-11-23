@@ -28,22 +28,27 @@ struct PurchaseInvoiceMenu: View {
 
 private struct PurchaseInvoiceSettingsForm: View {
     let workspace: Workspace
-    @State private var settings: PurchaseLedger.InvoiceSettings
+    private let showsVATAccount: Bool
+    @State private var nextFolio: String
+    @State private var vatAccount: String
     @State private var error: PurchaseNotice?
     @Environment(\.dismiss) private var dismiss
 
     init(workspace: Workspace) {
         self.workspace = workspace
-        _settings = State(initialValue: PurchaseLedger(workspace.context).invoiceSettings())
+        let settings = PurchaseLedger(workspace.context).invoiceSettings()
+        showsVATAccount = settings.vatAccount != nil
+        _nextFolio = State(initialValue: String(settings.nextFolio))
+        _vatAccount = State(initialValue: settings.vatAccount.map { String($0) } ?? "")
     }
 
     var body: some View {
         Form {
-            TextField(plString("purchase.invoice.settings.nextFolio"), value: $settings.nextFolio, format: .number.grouping(.never))
+            TextField(plString("purchase.invoice.settings.nextFolio"), text: $nextFolio)
                 .keyboardType(.numberPad)
                 .accessibilityIdentifier("pl.invoice.settings.nextFolio")
-            if let account = Binding($settings.vatAccount) {
-                TextField(plString("purchase.invoice.settings.vatAccount"), value: account, format: .number.grouping(.never))
+            if showsVATAccount {
+                TextField(plString("purchase.invoice.settings.vatAccount"), text: $vatAccount)
                     .keyboardType(.numberPad)
                     .accessibilityIdentifier("pl.invoice.settings.vatAccount")
             }
@@ -57,7 +62,12 @@ private struct PurchaseInvoiceSettingsForm: View {
 
     private func save() {
         do {
-            try PurchaseLedger(workspace.context).saveInvoiceSettings(settings)
+            let ledger = PurchaseLedger(workspace.context)
+            guard let folio = Int64(nextFolio) else { throw PurchaseLedger.Error.invalidInvoiceSettings }
+            var settings = ledger.invoiceSettings()
+            settings.nextFolio = folio
+            settings.vatAccount = showsVATAccount ? Int64(vatAccount) : nil
+            try ledger.saveInvoiceSettings(settings)
             workspace.completed("pl.invoice.settings.save")
             dismiss()
         } catch { self.error = PurchaseNotice(error) }

@@ -113,6 +113,37 @@ final class PurchaseFlows: XCTestCase {
         add(proof)
     }
 
+    func testInvoiceSettingsRejectBlankNumericFields() throws {
+        let app = try launch("PL-413", smokeID: "仕入伝票の固定設定")
+        tap(app, "pl.invoice.settings.menu", scrolling: true)
+        tap(app, "pl.invoice.settings.open")
+        let folio = "pl.invoice.settings.nextFolio"
+        let vat = "pl.invoice.settings.vatAccount"
+        let save = "pl.invoice.settings.save"
+        let error = app.alerts.staticTexts["次の伝票番号は1から8桁の正の整数、消費税勘定科目コードは6桁以内の整数で入力してください。"]
+
+        enter(app, folio, "", replacing: true)
+        dismissKeyboard(app)
+        tap(app, save)
+        XCTAssertTrue(error.waitForExistence(timeout: 5), "次の伝票番号の空欄を拒否してください")
+        app.alerts.buttons["閉じる"].tap()
+
+        enter(app, folio, "240", replacing: true)
+        enter(app, vat, "", replacing: true)
+        dismissKeyboard(app)
+        tap(app, save)
+        XCTAssertTrue(error.waitForExistence(timeout: 5), "消費税勘定科目コードの空欄を拒否してください")
+        app.alerts.buttons["閉じる"].tap()
+
+        enter(app, vat, "500001", replacing: true)
+        dismissKeyboard(app)
+        tap(app, save)
+        XCTAssertTrue(app.textFields[folio].waitForNonExistence(timeout: 5), "固定設定を保存するとフォームが閉じます")
+        tap(app, "pl.invoice.settings.open")
+        XCTAssertEqual(app.textFields[folio].value as? String, "240")
+        XCTAssertEqual(app.textFields[vat].value as? String, "500001")
+    }
+
     private func launch(_ id: String, smokeID: String? = nil) throws -> XCUIApplication {
         continueAfterFailure = false
         let url = try XCTUnwrap(
@@ -155,7 +186,7 @@ final class PurchaseFlows: XCTestCase {
         if replacing, let current = field.value as? String {
             field.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: current.count))
         }
-        field.typeText(value)
+        if !value.isEmpty { field.typeText(value) }
     }
 
     private func reveal(_ element: XCUIElement, in app: XCUIApplication, scrolling: Bool) {
