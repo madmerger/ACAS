@@ -37,7 +37,8 @@ public class TerminalController {
     @PostMapping(value = "/sessions/{id}/keys", consumes = MediaType.APPLICATION_JSON_VALUE)
     public Map<String, Object> keys(@PathVariable String id, @RequestBody Keys body) {
         Ctx c = ctx(id);
-        if (body.keys() == null || body.keys().size() > 2000 || !body.keys().stream().allMatch(TerminalController::validKey)) {
+        if (body.keys() == null || body.keys().isEmpty() || body.keys().size() > 2000
+                || !body.keys().stream().allMatch(TerminalController::validKey)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "入力形式が正しくありません");
         }
         c.term.feed(body.keys(), 15000);
