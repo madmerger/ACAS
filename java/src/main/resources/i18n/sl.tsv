@@ -188,3 +188,33 @@ CN.Re Inv -	CN 対象請求
 Payment	支払
 Journal Payment	振替入金
 >> screen overflow <<	>> 画面あふれ <<
+Invoicing Menu	請求書メニュー
+(1)  Amend Invoicing Fixed Data	(1)  請求書固定項目の設定
+(2)  Enter Invoice Details	(2)  請求情報入力
+(2)  Enter Invoices For Batch Printing	(2)  請求情報入力（一括印刷待ち）
+(3)  Enter Invoice For Immediate Printing	(3)  請求情報入力（即時印刷）
+(7)  Print Invoices	(7)  請求書印刷
+(8)  Print Delivery Notes/Picking Lists	(8)  納品書・ピッキングリスト印刷
+(4)  Amend Invoices	(4)  請求書修正
+(5)  Delete Invoices	(5)  請求書削除
+(6)  Invoice Deletion Report	(6)  請求書削除帳票
+(9)  Return To System menu	(9)  メニューへ戻る
+Invalid option, try again	選択が不正です。再入力
+Invoicing Fixed Data	請求書固定項目
+Next Invoice	次回請求書番号
+- [        ]	- [        ]
+Extra Charge/Discount Description - [	追加料金・値引の名称              - [
+]	]
+Extra Charge/Discount Type (C/D)  - [ ]	追加料金・値引の区分 (C/D)        - [ ]
+Print Extra on Invoices (N/Y)     - [ ]	請求書へ追加項目を印字 (N/Y)      - [ ]
+Extra Charge/Discount Percentage  - [     ]	追加料金・値引の率                - [     ]
+Invoice Entry Level (1, 2) 	請求入力レベル (1, 2)
+- [ ]	- [ ]
+Invoice to Stock Link  - [ ]	在庫連携               - [ ]
+Invoice to Stock Audit - [ ]	在庫監査記録           - [ ]
+Extra Charge Discount Account	追加料金・値引の勘定
+- [      ]	- [      ]
+Vat Account	消費税勘定
+Proforma Retention In Days 	見積請求書の保存日数
+- [   ]	- [   ]
+Details Ok To File (Y/N) ...........[Y]	この内容で登録しますか (Y/N) .......[Y]
