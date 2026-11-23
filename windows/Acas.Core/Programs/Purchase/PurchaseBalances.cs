@@ -3,7 +3,11 @@ using Acas.Core.Engine;
 namespace Acas.Core.Programs.Purchase;
 
 public sealed record PurchaseAnalysisTotal(string Code, string Description, bool Group, int CurrentCount, int PreviousCount,
-    int YearCount, decimal Current, decimal Previous, decimal Year);
+    int YearCount, decimal Current, decimal Previous, decimal Year)
+{
+    internal const string EmergencyDescription = "Emergency Name";
+    public string DisplayDescription => Description == EmergencyDescription ? "緊急作成" : Description;
+}
 
 public sealed record AgedPurchaseItem(string Supplier, int Folio, DateTime? Date, int Type, bool Held, int Bucket,
     decimal Balance, decimal Paid, decimal ExpiredDiscount);
@@ -63,7 +67,7 @@ public sealed partial class PurchaseLedger
                 else
                 {
                     value.SetN("account", analysis?.N("account") ?? 0);
-                    value.Set("description", analysis?.S("description") ?? "Emergency Name");
+                    value.Set("description", analysis?.S("description") ?? PurchaseAnalysisTotal.EmergencyDescription);
                     value.Set("print", analysis?.S("reference") ?? "");
                 }
             }

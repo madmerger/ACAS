@@ -220,7 +220,7 @@ internal sealed partial class PurchaseScreens
         return PagedReport(title, ["分析コード　区分　摘要", "件数・金額　当期　前期　年累計　前期比"],
             rows.Select(row => new[]
             {
-                $"{row.Code}　{(row.Group ? "グループ" : "明細")}　{row.Description}",
+                $"{row.Code}　{(row.Group ? "グループ" : "明細")}　{row.DisplayDescription}",
                 $"件数　{row.CurrentCount}　{row.PreviousCount}　{row.YearCount}　{Ratio(row.CurrentCount, row.PreviousCount)}",
                 $"金額　{Money(row.Current)}　{Money(row.Previous)}　{Money(row.Year)}　{Ratio(row.Current, row.Previous)}"
             }));

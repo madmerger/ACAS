@@ -290,6 +290,29 @@ public sealed class PurchaseLedgerTests
     }
 
     [Fact]
+    public void 仕入分析の自動生成摘要はレコードを変更せず日本語で表示する()
+    {
+        using var db = Fixture("sl-ready");
+        var ledger = new PurchaseLedger(db);
+        var analysis = ledger.NewAnalysis("a1");
+        analysis.Set("description", "PURCHASE TEST");
+        Assert.True(ledger.SaveAnalysis(analysis, true));
+        Assert.True(ledger.SaveInvoice(Sample(ledger) with { Discount = 10m, DiscountDays = 20 }, true));
+        Assert.Single(ledger.PostInvoices()!);
+
+        var totals = ledger.PurchaseAnalysisTotals()!;
+        foreach (var code in new[] { "v", "z" })
+        {
+            var group = Assert.Single(totals, row => row.Code == code);
+            Assert.Equal("緊急作成", group.DisplayDescription);
+            Assert.Equal("Emergency Name", group.Description);
+            Assert.Equal("Emergency Name          ", System.Text.Encoding.ASCII.GetString(
+                db.Read("ledgers/acas/value.dat", $"P{code} ")!, 9, 24));
+        }
+        Assert.Equal("PURCHASE TEST", Assert.Single(totals, row => row.Code == "a1").DisplayDescription);
+    }
+
+    [Fact]
     public void 支払転記は使用した割引を分析明細とグループから差し引く()
     {
         using var db = Fixture("sl-ready");
