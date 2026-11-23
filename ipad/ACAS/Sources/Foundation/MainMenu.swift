@@ -24,7 +24,22 @@ struct MainMenu: View {
     @ObservedObject var workspace: Workspace
     @State private var section: SectionID? = .system
 
-    var body: some View {
+    @ViewBuilder var body: some View {
+        #if DEBUG
+        if let evidence = workspace.evidence {
+            VStack(spacing: 0) {
+                CaseBanner(evidence: evidence)
+                menu
+            }
+        } else {
+            menu
+        }
+        #else
+        menu
+        #endif
+    }
+
+    private var menu: some View {
         NavigationSplitView {
             List(SectionID.allCases, selection: $section) { item in
                 NavigationLink(value: item) {
@@ -44,11 +59,6 @@ struct MainMenu: View {
             }
             .id(section)
         }
-        #if DEBUG
-        .safeAreaInset(edge: .top, spacing: 0) {
-            if let evidence = workspace.evidence { CaseBanner(evidence: evidence) }
-        }
-        #endif
     }
 
     @ViewBuilder private func functions(in section: SectionID) -> some View {
