@@ -10,6 +10,17 @@ Java 21 / Spring Boot 4 port of ACAS, built alongside the COBOL sources. Nothing
 
 Migration plan: `docs/migration/java-ipad-pr-plan.md`.
 
+## COBOL codecs
+
+`acas-isam` provides `com.acas.isam.codec`: packed decimal, big-endian
+PIC binary, native binary (explicit byte order, little-endian by default),
+display overpunch and integer dates. PIC codecs take total digits and scale.
+Native binary takes a byte size (1/2/4/8) and signed flag; unsigned 8-byte
+values are not supported by the COBOL BINARY-DOUBLE mapping. Invalid values
+and buffer bounds throw `CobolDataException`; codecs never truncate.
+`acas-core` provides `CobolNumeric.store` for COBOL assignment rounding,
+high-order truncation and unsigned absolute-value semantics.
+
 ## Build and run
 
 Requires JDK 21 and `unzip`: `./mvnw` checks the Maven distribution it downloads against `distributionSha256Sum` in `.mvn/wrapper/maven-wrapper.properties`.
