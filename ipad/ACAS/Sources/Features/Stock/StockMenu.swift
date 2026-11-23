@@ -155,6 +155,7 @@ func stockError(_ error: Error) -> String {
     switch error as? StockService.Failure {
     case .missing: stockText("error.missing")
     case .duplicate: stockText("error.duplicate")
+    case .hasStockOrOrders: stockText("error.hasStockOrOrders")
     case .auditRequired: stockText("error.auditRequired")
     case .missingRecovery: stockText("error.missingRecovery")
     default: stockText("error.invalid")

@@ -107,6 +107,7 @@ struct StockItemForm: View {
             TextField(stockText("field.name"), text: $item.name).accessibilityIdentifier("stock.name")
             TextField(stockText("field.held"), value: $item.held, format: .number).keyboardType(.numbersAndPunctuation)
             TextField(stockText("field.price"), value: $item.cost, format: .number.scale(0.0001)).keyboardType(.decimalPad)
+            TextField(stockText("field.value"), value: $item.value, format: .number.scale(0.01)).keyboardType(.decimalPad)
             TextField(stockText("field.reorder"), value: $item.reorderPoint, format: .number).keyboardType(.numbersAndPunctuation)
         }
     }
@@ -155,9 +156,6 @@ struct StockItemForm: View {
             case .lookup:
                 load()
             case .receive, .issue, .barcode:
-                if quantity.isEmpty {
-                    _ = try stock.find(code)
-                }
                 guard let count = Int64(quantity) else { throw StockService.Failure.invalidInput }
                 let row = try stock.move(isReceipt ? .receipt : .issue, code: code, quantity: count,
                     price: isReceipt ? money(price) : 0,

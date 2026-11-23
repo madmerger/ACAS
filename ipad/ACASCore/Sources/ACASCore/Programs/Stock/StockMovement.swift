@@ -9,14 +9,16 @@ extension StockService {
               valueOverride.map({ (0...9_999_999_999).contains($0) }) ?? true else { throw Failure.invalidInput }
         var system = settings.read(1).map { Record(SystemLayout.layout, bytes: $0) } ?? Record(SystemLayout.layout)
         let format = Int(system.int("date-form"))
-        let processing = Maps04.format(Maps04.toDate(day(date)), dateForm: format)
-        guard let month = Int(processing.dropFirst(3).prefix(2)), (1...12).contains(month) else {
+        let processingDay = day(date)
+        let processing = Maps04.format(Maps04.toDate(processingDay), dateForm: format)
+        let month = Maps04.dateOfInteger(processingDay).month
+        guard processingDay > 0, (1...12).contains(month) else {
             throw Failure.invalidInput
         }
         let receiving = direction == .receipt
         let report = directory + "prt-1"
         if store.exists(path) { try store.writeRaw(report, []) }
-        var row = try record(code)
+        var row = try movementRecord(code)
         let held = row.int("stock-held")
         let work = row.int("stock-work-in-progress")
         let cost = row.int("stock-cost")

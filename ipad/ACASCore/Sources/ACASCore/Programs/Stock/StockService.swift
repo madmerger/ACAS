@@ -30,7 +30,7 @@ public struct StockService {
         }
     }
 
-    public enum Failure: Error { case invalidInput, duplicate, missing, auditRequired, missingRecovery }
+    public enum Failure: Error { case invalidInput, duplicate, missing, hasStockOrOrders, auditRequired, missingRecovery }
 
     let context: BusinessContext
     let directory = "ledgers/acas/"
@@ -50,18 +50,28 @@ public struct StockService {
     }
 
     func record(_ code: String) throws -> Record {
-        guard let data = store.read(path, key: try key(code, 13)) else { throw Failure.missing }
+        guard let data = store.read(path, key: try key(code.uppercased(), 13)) else { throw Failure.missing }
         return Record(StockLayout.layout, bytes: data)
+    }
+
+    func movementRecord(_ code: String) throws -> Record {
+        let normalized = code.uppercased()
+        if let abbreviation = try? key(normalized, 7),
+           let row = records.first(where: { $0.raw("stock-abrev-key") == abbreviation }) {
+            return row
+        }
+        return try record(normalized)
     }
 
     public func find(_ code: String) throws -> Item { Item(try record(code)) }
 
     public func save(_ item: Item, editing original: String? = nil) throws {
-        let id = try key(item.code, 13)
-        let abbreviation = try key(item.abbreviation, 7)
+        let id = try key(item.code.uppercased(), 13)
+        let abbreviation = try key(item.abbreviation.uppercased(), 7)
         _ = try key(item.name, 32)
         guard (-999_999...999_999).contains(item.held), (0...99_999_999_999).contains(item.cost),
-              (-999_999...999_999).contains(item.reorderPoint) else { throw Failure.invalidInput }
+              (-999_999...999_999).contains(item.reorderPoint),
+              (0...99_999_999_999).contains(item.value) else { throw Failure.invalidInput }
         var row = try original.map(record) ?? Record(StockLayout.layout)
         let previous = original == nil ? nil : row.raw("stock-key")
         guard !records.contains(where: {
@@ -72,9 +82,15 @@ public struct StockService {
             row.setRaw("filler-1", [UInt8](repeating: 0, count: 8))
             row.setRaw("filler-2", [UInt8](repeating: 0, count: 15))
         }
-        if original == nil || item.held != row.int("stock-held") || item.cost != row.int("stock-cost") {
-            row.setInt("stock-value", Cobol.truncate(item.held * item.cost / 100, digits: 11, signed: false))
+        var value = item.value
+        if value == 0, item.held != 0, item.cost != 0, let raw = settings.read(1) {
+            let system = Record(SystemLayout.layout, bytes: raw)
+            if system.int("stk-averaging") == 1 {
+                let work = system.int("stk-manu-used") == 1 ? row.int("stock-work-in-progress") : 0
+                value = Cobol.truncate((item.held + work) * item.cost / 100, digits: 11, signed: false)
+            }
         }
+        row.setInt("stock-value", value)
         row.setRaw("stock-key", id)
         row.setRaw("stock-abrev-key", abbreviation)
         row["stock-desc"] = item.name
@@ -90,13 +106,16 @@ public struct StockService {
     }
 
     public func remove(_ code: String) throws {
-        guard store.delete(path, key: try key(code, 13)) else { throw Failure.missing }
+        let row = try record(code)
+        guard ["stock-held", "stock-on-order", "stock-back-ordered"].allSatisfy({ row.int($0) == 0 })
+        else { throw Failure.hasStockOrOrders }
+        guard store.delete(path, key: row.raw("stock-key")) else { throw Failure.missing }
     }
 
     public func renumber(_ code: String, to replacement: String) throws {
         var row = try record(code)
         let old = row.raw("stock-key")
-        let new = try key(replacement, 13)
+        let new = try key(replacement.uppercased(), 13)
         guard new != old else { return }
         row.setRaw("stock-key", new)
         guard store.write(path, key: new, data: row.bytes) else { throw Failure.duplicate }
@@ -109,9 +128,9 @@ public struct StockService {
     }
 
     public func order(_ code: String, quantity: Int64, backOrdered: Int64, ordered: Date?, due: Date?) throws {
-        guard (-999_999...999_999).contains(quantity), (-999_999...999_999).contains(backOrdered)
+        guard (0...999_998).contains(quantity), (0...999_998).contains(backOrdered)
         else { throw Failure.invalidInput }
-        var row = try record(code)
+        var row = try movementRecord(code)
         row.setInt("stock-on-order", quantity)
         row.setInt("stock-back-ordered", backOrdered)
         row.setInt("stock-order-date", Int64(ordered.map(day) ?? 0))

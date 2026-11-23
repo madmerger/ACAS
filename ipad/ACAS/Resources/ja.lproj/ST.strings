@@ -10,6 +10,7 @@
 "stock.delete.confirm" = "この品目を削除しますか？";
 "stock.error.auditRequired" = "在庫期間締めには在庫監査帳票の発行が必要です。";
 "stock.error.duplicate" = "品目コードまたは略号が既に使われています。";
+"stock.error.hasStockOrOrders" = "在庫数、発注数、または未入荷数が残っている品目は削除できません。";
 "stock.error.invalid" = "入力内容を確認してください。";
 "stock.error.missing" = "指定した在庫品目がありません。";
 "stock.error.missingRecovery" = "復元用の一時ファイルがありません。";
