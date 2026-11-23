@@ -171,6 +171,8 @@ public final class ScreenDef {
 
     /** ACCEPT screen-name（WITH UPDATE 相当: 現在値を初期表示）。戻り値は CRT STATUS。 */
     public int accept(Terminal term, Binder b, int fg) {
+        // ACCEPT screen-name は入力前に画面全体を再表示する
+        display(term, b, fg);
         List<Terminal.Field> fields = new ArrayList<>();
         List<Item> inputs = new ArrayList<>();
         for (Item it : items) {
