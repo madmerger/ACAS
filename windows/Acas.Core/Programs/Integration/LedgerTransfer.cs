@@ -278,7 +278,8 @@ public sealed partial class LedgerTransfer(Db db)
             legacy.Append('\n');
         }
         if (totalDeductions != 0)
-            legacy.Append("           Total  Amount Late Deductions").Append(PicMoney(totalDeductions, 11)).Append('\n');
+            legacy.Append("           Total  Amount Late Deductions".PadRight(43))
+                .Append(PicMoney(totalDeductions, 11)).Append('\n');
         legacy.Append('\n');
         var result = new IrsReport(title, report.ToString(), legacy.ToString());
         db.Atomic(() =>

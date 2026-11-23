@@ -32,6 +32,8 @@ public class PaymentTransferTests
 
         Assert.Contains("延滞加算免除合計　1.00", report.Body);
         Assert.Equal(before + 1, balanceLayout.From(db.Read(SystemFile, "00000004")!).N("deductions"));
+        var legacyTotal = Assert.Single(report.LegacyBody!.Split('\n'), line => line.Contains("Total  Amount Late Deductions"));
+        Assert.Equal("       1.00  ", legacyTotal[43..]);
     }
 
     [Theory]
