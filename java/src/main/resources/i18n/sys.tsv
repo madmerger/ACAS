@@ -19,7 +19,7 @@ ACAS (3.00.05)	ACAS (3.00.05)
 SYS002 (3.01.39)	SYS002 (3.01.39)
 ACAS System Setup Routine	ACAS システム初期設定
 Level 1	レベル 1
-Enter the Company Name	会社名を入力してください
+Enter the Company Name	会社名を入力して下さい
 Please verify that name is correct (Y/N)	会社名が正しいことを確認してください (Y/N)
 Problem with opening system file. Hit return to clear	システムファイルを開けません。Enter で続行
 Using General	総勘定元帳を使用
@@ -39,7 +39,6 @@ Stock	在庫
 Order Entry	受注入力
 System Parameters	システムパラメータ
 S y s t e m   S e t - U p	システム設定
-S y s t e m S e t - U p	システム設定
 +Screen	+画面
 User Data	利用者情報
 OPS	運用
@@ -74,7 +73,7 @@ Vat Rates : (1)	VAT 率 : (1)
 Local Tax : (4)	地方税 : (4)
 Local Tax : (5)	地方税 : (5)
 Next 2, See Manual First	次の 2 項目は手引書参照
-VAT Reg no	VAT 登録番号
+VAT Reg no	VAT登録No.
 Printed	印字
 (Y=Yes or N=No)	(Y=はい, N=いいえ)
 Pass-Word	パスワード
@@ -109,14 +108,14 @@ S-L Data Complete	SL 設定 完了
 S-L Data 2 Complete	SL 設定 2 完了
 P-L Data Complete	PL 設定 完了
 Stock Data Complete	在庫設定 完了
-* OK to file (Y/N)	* 保存してよいですか (Y/N)
-OK to file (Y/N)	保存してよいですか (Y/N)
+* OK to file (Y/N)	* 保存する   (Y/N)
+OK to file (Y/N)	保存する   (Y/N)
 Single/Multi-User	単独/複数利用者
 (0=Single, 1=Multi)	(0=単独, 1=複数)
 Operating System	OS
 (1=Dos, 2=Windows, 3=Mac, 4=OS/2, 5=Unix, 6=Linux)	(1=Dos, 2=Windows, 3=Mac, 4=OS/2, 5=Unix, 6=Linux)
 Data capture System	入力方式
-0=Std, 1=GUI, 2=Widget	0=標準, 1=GUI, 2=Widget
+0=Std, 1=GUI, 2=Widget	0=標準, 1=GUI, 2=ｳｨｼﾞｪｯﾄ
 Cups Print Spooler name 1	CUPS 印刷スプーラ名 1
 Cups Print Spooler name 2	CUPS 印刷スプーラ名 2
 Cups Print Spooler name 3	CUPS 印刷スプーラ名 3
@@ -132,7 +131,7 @@ Mac OSX	Mac OSX
 Unix	Unix
 Cobol Standard Display	COBOL 標準表示
 Gui Display	GUI 表示
-Widget Display	Widget 表示
+Widget Display	ウィジェット表示
 Invalid - Std selected	不正 - 標準を選択
 Using (Free) Open Source Version of ACAS	ACAS オープンソース版(無償)を使用
 Using Commercial Version of ACAS	ACAS 商用版を使用
@@ -176,7 +175,7 @@ Credit Limit	与信限度
 Discount	値引
 Min Late Bal	遅延最低残高
 Max Late Charge	遅延損害金上限
-Late Charge %	遅延損害金率 %
+Late Charge %	遅延損害金率%
 Delimiter	区切り文字
 Delimiter <\> assumed	区切り文字 <\> と見なします
 Own Inv. Nos	手動請求番号
@@ -228,7 +227,6 @@ RDBMS Port	RDBMS ポート
 RDBMS Host	RDBMS ホスト
 RDBMS Socket	RDBMS ソケット
 S Y S T E M   P A R A M E T E R S	システムパラメータ一覧
-S Y S T E M P A R A M E T E R S	システムパラメータ一覧
 Page	頁
 User Parameters	利用者パラメータ
 G/L Parameters	GL パラメータ
@@ -334,15 +332,11 @@ Yes	はい
 S Y S T E M	システム
 P A R A M E T E R S	パラメータ一覧
 Parameters	パラメータ
-Late Charge Rate	延滞料率
 Cobol/Dup Mode Not Used	Cobol/二重化モード 未使用
 Pay	支払
 Account	勘定
 Purchase Range Most Signif.	仕入範囲 最上位
 Digit is -	桁 -
-Rate 2/5.	税率 2/5.
-Rate 3.	税率 3.
-VAT    Rate 1/4.	税率 1/4.
 Rate 1/4.	税率 1/4.
 Company Heads Print on Delivery notes:	会社見出し印字 納品書:
 Company Heads Print on Invoices	会社見出し印字 請求書
@@ -350,7 +344,9 @@ Company Heads Print on Late Letters	会社見出し印字 督促状
 Company Heads Print on Statements	会社見出し印字 取引明細書
 Debtors	売掛金
 Ledger	元帳
-Creditor Account	買掛金 勘定
 Creditor	買掛金
 Sales Range most Significant Digit is -	売上範囲 最上位桁 -
-Path to Ledgers	元帳パス
+Digit is	桁
+Print VAT Nunber No	VAT 番号印字 いいえ
+Print VAT Nunber Yes	VAT 番号印字 はい
+Inv.	請求

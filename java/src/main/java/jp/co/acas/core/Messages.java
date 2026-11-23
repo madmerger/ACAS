@@ -15,6 +15,16 @@ import java.util.regex.Pattern;
  */
 public final class Messages {
     private static final Map<String, String> EXACT = new HashMap<>();
+    /** サブシステム別の訳語（同じ英語原文でも SL は「顧客」、PL は「仕入先」のように訳が異なる）。 */
+    private static final Map<String, Map<String, String>> BY_DOMAIN = new HashMap<>();
+    private static final ThreadLocal<String> DOMAIN = new ThreadLocal<>();
+    /** 実行中プログラムのサブシステム（sys/gl/sl/pl/st/irs）を設定し、直前の値を返す。 */
+    public static String domain(String d) { String old = DOMAIN.get(); DOMAIN.set(d); return old; }
+    private static String lookup(String key) {
+        Map<String, String> m = BY_DOMAIN.get(DOMAIN.get());
+        String v = m == null ? null : m.get(key);
+        return v != null ? v : EXACT.get(key);
+    }
     private static final List<String[]> PHRASES = new ArrayList<>();
     private static final Set<String> UNTRANSLATED = ConcurrentHashMap.newKeySet();
     private static final Pattern CHUNK = Pattern.compile("\\s{2,}|\\s*:-\\s*|\\s*\\[[^\\]]*\\]?|\\]|\\s+-\\s+");
@@ -29,6 +39,7 @@ public final class Messages {
                     if (line.startsWith("#") || !line.contains("\t")) continue;
                     String[] p = line.split("\t", 2);
                     EXACT.putIfAbsent(norm(p[0]), p[1]);
+                    BY_DOMAIN.computeIfAbsent(f, k -> new HashMap<>()).putIfAbsent(norm(p[0]), p[1]);
                 }
             } catch (Exception e) { throw new IllegalStateException(e); }
         }
@@ -47,11 +58,18 @@ public final class Messages {
     private static String pad(String s, int w) { int d = w - width(s); return d > 0 ? s + " ".repeat(d) : s; }
 
     /** 英語の画面／帳票文字列を日本語へ。桁位置を保つため、可能な限り元の幅に合わせて空白で埋める。 */
-    public static String ja(String en) {
+    public static String ja(String en) { return ja(en, false); }
+    /** 帳票行の日本語化。帳票は見出しとデータが同じ行に混在するため、英大文字だけの語（コード・登録名称などのデータ）は訳さない。 */
+    public static String jaReport(String en) { return ja(en, true); }
+    private static final Pattern DATA = Pattern.compile("[A-Z0-9][A-Z0-9/&.'-]*( [A-Z0-9][A-Z0-9/&.'-]+)*");
+    private static boolean data(String s, boolean report) { return report && DATA.matcher(s.strip()).matches() && !s.strip().matches("([A-Z] )+[A-Z]"); }
+    private static String ja(String en, boolean report) {
         if (en == null || en.isBlank()) return en;
+        if (data(en, report)) return en;
         String lead = en.substring(0, en.length() - en.stripLeading().length());
-        String hit = EXACT.get(norm(en));
-        if (hit != null) return pad(lead + hit, en.length());
+        String hit = lookup(norm(en));
+        if (hit != null) return pad(align(en, lead + hit), en.length());
+        if (!HAS_WORD.matcher(en).find()) return en;
         StringBuilder out = new StringBuilder();
         Matcher m = CHUNK.matcher(en);
         int pos = 0; int debt = 0; // debt: 日本語が広かった分、後続の空白から差し引く
@@ -59,7 +77,7 @@ public final class Messages {
             boolean found = m.find();
             String chunk = en.substring(pos, found ? m.start() : en.length());
             if (!chunk.isEmpty()) {
-                String t = chunk(chunk);
+                String t = data(chunk, report) ? chunk : chunk(chunk);
                 debt += width(t) - chunk.length();
                 out.append(t);
             }
@@ -77,9 +95,28 @@ public final class Messages {
         if (debt < 0) out.append(" ".repeat(-debt));
         return out.toString();
     }
+    private static final Pattern BOX = Pattern.compile("\\[[^\\]]*\\]|\\{[^}]*\\}|[\\[\\]{}]");
+    /** 訳語中の入力枠 [ ] { } を英語原文と同じ桁へ揃える（枠内へ後からデータを重ね書きするため）。 */
+    private static String align(String en, String ja) {
+        Matcher me = BOX.matcher(en), mj = BOX.matcher(ja);
+        StringBuilder out = new StringBuilder();
+        int pe = 0, pj = 0;
+        while (me.find()) {
+            if (!mj.find()) return ja;
+            String text = ja.substring(pj, mj.start());
+            int want = me.start() - pe, w = width(text);
+            while (w > want && text.endsWith(" ")) { text = text.substring(0, text.length() - 1); w--; }
+            while (w > want && text.contains("  ")) { text = text.replaceFirst("  ", " "); w--; }
+            out.append(text).append(" ".repeat(Math.max(0, want - w))).append(me.group());
+            pe = me.end(); pj = mj.end();
+        }
+        if (mj.find()) return ja;
+        return out.append(ja.substring(pj)).toString();
+    }
     private static String chunk(String chunk) {
+        if (!HAS_WORD.matcher(chunk).find()) return chunk;
         String lead = chunk.substring(0, chunk.length() - chunk.stripLeading().length());
-        String hit = EXACT.get(norm(chunk));
+        String hit = lookup(norm(chunk));
         if (hit != null) return lead + hit;
         String s = chunk; boolean any = false;
         for (String[] p : PHRASES) {
@@ -88,7 +125,7 @@ public final class Messages {
             boolean lb = i == 0 || !Character.isLetterOrDigit(s.charAt(i - 1));
             int e = i + p[0].length();
             boolean rb = e >= s.length() || !Character.isLetterOrDigit(s.charAt(e));
-            if (lb && rb) { s = s.substring(0, i) + p[1] + s.substring(e); any = true; }
+            if (lb && rb) { s = s.substring(0, i) + lookup(p[0]) + s.substring(e); any = true; }
         }
         if (!any && HAS_WORD.matcher(chunk).find()) UNTRANSLATED.add(norm(chunk));
         return s;

@@ -492,3 +492,8 @@ PL940 (3.01.04)	PL940 (3.01.04)
 PL950 (3.01.09)	PL950 (3.01.09)
 PL104 Do you wish to create them (Y/N) ? [ ]	PL104 作成しますか (Y/N) ?              [ ]
 PL104 Do you wish to create them (Y/N) ?	PL104 作成しますか (Y/N) ?
+*Date  [  /  /    ]*A/C Nos   [       ]*	*日付  [  /  /    ]*仕入先    [       ]*
+Acct No          Name	仕入先番号       名称
+Overdue A/Cs    - [	延滞先          - [
+A/C               Name	仕入先            名称
+For Account:        . Give invoice no. to toggle [        ]	対象仕入先:         . 切替える請求書番号を入力   [        ]

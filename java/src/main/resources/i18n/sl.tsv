@@ -209,14 +209,11 @@ Extra Charge/Discount Type (C/D)  - [ ]	追加料金・値引の区分 (C/D)    
 Print Extra on Invoices (N/Y)     - [ ]	請求書へ追加項目を印字 (N/Y)      - [ ]
 Extra Charge/Discount Percentage  - [     ]	追加料金・値引の率                - [     ]
 Invoice Entry Level (1, 2) 	請求入力レベル (1, 2)
-- [ ]	- [ ]
 Invoice to Stock Link  - [ ]	在庫連携               - [ ]
 Invoice to Stock Audit - [ ]	在庫監査記録           - [ ]
 Extra Charge Discount Account	追加料金・値引の勘定
-- [      ]	- [      ]
 Vat Account	消費税勘定
 Proforma Retention In Days 	見積請求書の保存日数
-- [   ]	- [   ]
 Details Ok To File (Y/N) ...........[Y]	この内容で登録しますか (Y/N) .......[Y]
 SL003 Hit Return To Continue	SL003 Enter で続行
 SL006 Note Details & Hit Return to continue	SL006 内容を確認し Enter で続行
@@ -262,7 +259,6 @@ Sub-Totals	小計
 {          }	{          }
 Shipping & Handling	送料・手数料
 Late Charge	延滞料
-[          ]              	[          ]
 ------------   -----------	------------   -----------
 ------------	------------
 Itemised Totals	合計
@@ -285,7 +281,6 @@ None Zero To Abort	0 以外で中止
 Return To Continue	Enter で続行
 Using Deleted Invoice Numbers	削除済み請求書番号を再利用
 Invoice To Credit - [	赤伝対象請求書    - [
-] 	]
 Do you wish to use this Invoice No.? {N}	この請求書番号を使いますか          ? {N}
 ..If so, you must ensure that it belonged to the same customer and that it is a 	..使う場合、同一顧客の請求書（領収ではない）であることを確認してください
 Invoice ie, not a receipt	（請求書のみ可）
@@ -302,9 +297,6 @@ Amend Further Invoices? (Y/N)  [Y]	続けて修正しますか (Y/N)       [Y]
 Invoice Ok To Store?	この内容で保存
 (Y/N)  [Y]	(Y/N)  [Y]
 Invoicing Data Amend	請求情報修正
-*Date   [  /  /    ]*                  *	*日付   [  /  /    ]*                  *
-*A/C Nos   [       ]*Ref   [          ]*	*顧客番号  [       ]*参照  [          ]*
-*Invoice [         ]*Order [          ]*	*請求書  [         ]*注文  [          ]*
 F8 = Only Show delivery details on 'A/C nos' entry	F8 = 顧客番号入力時に納品先のみ表示
 Invoice To Credit - [         ]	赤伝対象請求書    - [         ]
 Do You Wish To Use This Invoice No.? {N}	この請求書番号を使いますか          ? {N}
@@ -450,8 +442,6 @@ Payment Totals	入金 合計
 Journal Totals	振替 合計
 SL170 Not Found - 	SL170 見つかりません - 
 Customer Alphabetical Listing	顧客名順一覧
-Report On : 	出力対象  : 
-Disc 	値引 
 Active	有効
 Dormant	休止
 Record not found	レコードなし
@@ -494,9 +484,7 @@ Credit Terms  <------------- T u r n o v e r ------------> <--S A L E S-->  <--D
 Acct No          Name	顧客番号         名称
 Days   Limit  Mvmt Average   Qtr 1   Qtr 2   Qtr 3   Qtr 4 Current    Last  Invoice    Payment	日数   限度   件数 平均額    Q1      Q2      Q3      Q4    当期       前期  請求       入金
 Sales Analysis	売上分析
-Sales  Analysis	売上分析
 Analysis  Type    <-----Description------>   <-------Transactions------->   <----------------Amount----------------->  % Period Mvmt	分析      種別    <---------名称--------->   <----------取引件数--------->   <------------------金額------------------>  % 期間増減
-  Code	  コード
 Current   Previous   Y. to D      Current      Previous    Year To Date  Trans. Amount	当期      前期       年累計       当期         前期        年累計        件数   金額
 Group	グループ
  Detail	 明細
@@ -505,9 +493,7 @@ Printing.......Please wait	印刷中.......お待ちください
  Number   ---Date--- <------------Customer------------>	 番号     ---日付--- <--------------顧客--------------->
 <---Net-->  <---Vat-->  <--Gross->	<--税抜-->  <-消費税->  <--税込-->
 Goods     Discount   Prompt Pay     Carriage          Net          Vat        Gross	商品      値引       早期入金       運賃              税抜         消費税     税込
-    Totals	    合計
 Statement Production	取引明細書作成
-*Date    [  /  /    ]*                 *	*日付    [  /  /    ]*                 *
 *A/C Nos    [       ]*               ***	*顧客番号   [       ]*               ***
 *Value    [         ]*                 *	*金額     [         ]*                 *
 Notes	注記
@@ -524,8 +510,6 @@ Credit Note Re. Inv - 	貸方票 対象請求書 -
 Unapplied Credit Allocated	未充当残高を充当
 Payment. Received With Thanks	ご入金ありがとうございました
 Aged Debtors Report	売掛金年齢調べ
-*A/C Nos [       ]                   ***	*顧客番号[       ]                   ***
-*Value  [         ]*                   *	*金額   [         ]*                   *
  (1)  -  <Date>  :  Appears on listing	 (1)  -  <日付>  :  帳票に印字する日付
  (2)  -  <A/C>   :  A/c's to match for printing	 (2)  -  <顧客>  :  印刷対象とする顧客番号
  (3)  -  <Value> :  Minimum o/s to print	 (3)  -  <金額>  :  印刷する最小未決済額
@@ -559,7 +543,6 @@ Less: Credit Notes Posted	減算: 転記済貸方票
 Balance Carried Forward	次期繰越残高
 Out Of Balance	不一致
 Letter Production	督促状作成
-*A/C Nos   [       ]                 ***	*顧客番号  [       ]                 ***
  (1) - <A/C>   :  A/Cs To Match For Printing	 (1) - <顧客>  :  印刷対象とする顧客番号
  (2) - <Value> :  Minimum O/S To Print	 (2) - <金額>  :  印刷する最小未決済額
 Low Date    - [  ]	低 日数     - [  ]
@@ -589,3 +572,4 @@ Dedn	控除
 Gl.Nos.	GL番号
 Lgr Code	元帳ｺｰﾄﾞ
 Lgr	元帳
+; F8 = Only Show delivery details	; F8 = 納品先のみ表示

@@ -34,7 +34,9 @@ public final class Ctx {
         Program p = find(name);
         if (p == null) return false;
         p.ctx = this;
-        p.run(args);
+        String pkg = p.getClass().getPackageName();
+        String old = Messages.domain(pkg.substring(pkg.lastIndexOf('.') + 1));
+        try { p.run(args); } finally { Messages.domain(old); }
         return true;
     }
     public static Program find(String name) {

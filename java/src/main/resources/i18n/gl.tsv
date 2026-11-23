@@ -280,7 +280,6 @@ General	総勘定
 Detail Trial Balance	明細試算表
 Profit Centre Trial Balance	利益センター別試算表
 Condensed Report	要約帳票
-Transaction Posting	仕訳転記
 Transaction Proof Report	仕訳検証帳票
 Ledger - Print	元帳 - 印刷
 Sheet	枚
@@ -304,7 +303,6 @@ Last	最終
 Activity	処理日
 Status	状況
 Chart of Accounts	勘定科目表
-Activity	処理日
 Name	名称
 Level	階層
 Placement	配置
@@ -320,7 +318,6 @@ VAT Side	税貸借
 Gross	総額
 Net	純
 VAT	税
-Ledger	元帳
 Current Balance	当期残高
 Last Year Balance	前年残高
 Last  Year	前    年
@@ -340,20 +337,13 @@ Ledger  Batch  Status       Last	元帳    ﾊﾞｯﾁ   状態         最終
 Items  ---Gross---- -----VAT----	件数   ----総額---- ----税額----
 ---Gross----	----総額----
 -----VAT----	----税額----
-Activity	処理日
-Items	件数
 Direct Income	直接収益
 Indirect Cost	間接費
-Fixed Assets	固定資産
-Current Asset	流動資産
-Current Liab.	流動負債
-Capital A/Cs	資本勘定
 <----Detail	<----明細
 Level----><-------Level	階層----><-------階層
 4-------><-------Level	4-------><-------階層
 3-------><-------Level	3-------><-------階層
 2-------><-------Level	2-------><-------階層
-Level	階層
 <--------This	<--------当
 Year-------->	年度-------->
 <--------Last	<--------前

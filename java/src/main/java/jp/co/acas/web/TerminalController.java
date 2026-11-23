@@ -62,7 +62,7 @@ public class TerminalController {
         List<String> lines = new ArrayList<>();
         for (var e : store.all(name)) {
             String line = new String(e.getValue(), StandardCharsets.ISO_8859_1);
-            lines.add("ja".equals(lang) ? Messages.ja(line) : line);
+            lines.add("ja".equals(lang) ? Messages.jaReport(line) : line);
         }
         return Map.of("name", name, "lines", lines);
     }
