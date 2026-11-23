@@ -10,6 +10,7 @@ enum SLA050 {
 
     final class WS {
         var error = 0
+        var uDate = SLA.spaces(10)
         var j = 0
         var a = 0
         var firstTime = "Y"
@@ -101,7 +102,7 @@ enum SLA050 {
             add(w, w.a, grs, lVat + lNet)
             if w.lineCnt > pageLines - 2 { headings1(s, w) }
             let line5 = Pic.edit("z(7)9", value: ih.int("ih-invoice"), scale: 0) + " "
-                + Cobol.x(SLA.convertBin(s, ih.int("ih-date")), 11) + Cobol.x(cust, 8) + name + SLA.spaces(5) + typeLit
+                + Cobol.x(SLA.convertBin(s, ih.int("ih-date"), uDate: &w.uDate), 11) + Cobol.x(cust, 8) + name + SLA.spaces(5) + typeLit
                 + cr(hNet) + SLA.spaces(13) + cr(lNet) + cr(lVat) + cr(lNet + lVat)
             w.p.after(2, line5)
             w.lineCnt += 2

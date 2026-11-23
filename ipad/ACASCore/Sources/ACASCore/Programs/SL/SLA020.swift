@@ -16,6 +16,7 @@ enum SLA020 {
         var amountOut: Int64 = 0, invAmount: Int64 = 0
         var customerIn = SLA.spaces(7)
         var workFileData = "N"
+        var uDate = SLA.spaces(10)
         var bal0: Int64 = 0, bal30: Int64 = 0, bal60: Int64 = 0, bal90: Int64 = 0, balT: Int64 = 0
         var l0date = ""
         var name = "", addr = [String](repeating: "", count: 4), account = ""
@@ -192,7 +193,7 @@ enum SLA020 {
                 if type == 5 || type == 6 { oi.setInt("oi-invoice", 0) }
                 let inv = Cobol.truncate(oi.int("oi-invoice"), digits: 8, signed: false)
                 setLine(w, w.a, 1, inv == 0 ? SLA.spaces(8) : edit("z(7)9", inv, 0))
-                setLine(w, w.a, 12, Cobol.x(SLA.convertBin(s, oi.int("oi-date")), 11))
+                setLine(w, w.a, 12, Cobol.x(SLA.convertBin(s, oi.int("oi-date"), uDate: &w.uDate), 11))
                 if oi.str("oi-hold-flag") != " " { setLine(w, w.a, 10, "Q") }
                 var desc = [Character](repeating: " ", count: 20)
                 var p = 1

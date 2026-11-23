@@ -324,6 +324,40 @@
 "sla.fs.57" = "LINAGE";
 "sla.fs.61" = "共有エラー";
 "sla.fs.91" = "ファイル使用不可";
+
+/* sl060 */
+"sl060.title" = "請求書転記・転記リスト";
+"sl060.ok_to_post" = "売上取引を転記しますか (YES/NO) ?         [   ]";
+"sl060.posting" = "転記中......お待ち下さい";
+"sl060.phase1" = "段階  1 - OTM2 から OTM3 を作成";
+"sl060.phase2" = "2 - 赤伝を OTM3 に消込";
+"sl060.sl002" = "SL002 エラーを確認し Return";
+"sl060.sl003" = "SL003 Return で続行";
+"sl060.sl130" = "SL130 Open-IT3 = ";
+"sl060.sl131" = "SL131 PE - 赤伝消込: Return で続行";
+"sl060.sl132" = "SL132 バッチファイル書込エラー: ";
+"sl060.sl133" = "SL133 PE 060-01";
+"sl060.sl134" = "SL134 警告 得意先ファイルにレコードなし";
+"sl060.sl135" = "SL135 得意先ファイル更新エラー";
+"sl060.sl136" = "SL136 未決済明細ファイル3 書込エラー    ";
+"sl060.batch_desc" = "売掛請求書";
+"report.sl060.unknown" = "*** 得意先未登録 ***";
+"report.sl060.invoice" = "請求書";
+"report.sl060.cr_note" = "赤伝";
+"report.sl060.receipt" = "領収";
+"report.sl060.title" = "請求書転記リスト";
+"report.sl060.page" = "頁   ";
+"report.sl060.unapplied" = "未消込赤伝";
+"report.sl060.line4a_main" = "   番号     日付    <-------------得意先------------->   種別  ";
+"report.sl060.line4b_main" = "    旧残高      新残高      控除    税抜      消費税        税込";
+"report.sl060.line4a" = "---得意先---    請求書     繰越残高         消込額      赤伝番号          種別    ";
+"report.sl060.total_posted" = "転記合計";
+"report.sl060.group1" = "領収";
+"report.sl060.group2" = "請求書";
+"report.sl060.group3" = "赤伝";
+"report.sl060.late_deductions" = "           延滞控除額 合計";
+"report.sl060.unapplied_cf" = "未消込赤伝 繰越";
+"report.sl060.cr_note7" = "赤伝";
 /* ---- sys.ja.strings ---- */
 /* ACAS.cbl — システムメニュー (日本語) */
 "sys.sy006" = "SY006 プログラム引数は2個までです。指定された数: ";

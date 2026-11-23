@@ -324,6 +324,40 @@
 "sla.fs.57" = "I/O Linage";
 "sla.fs.61" = "File Sharing Failure";
 "sla.fs.91" = "File Not Available";
+
+/* sl060 */
+"sl060.title" = "Invoice Posting & Report";
+"sl060.ok_to_post" = "OK to post Sales transactions (YES/NO) ?  [   ]";
+"sl060.posting" = "Posting......Please Wait";
+"sl060.phase1" = "Phase 1 - Building OTM3 from OTM2";
+"sl060.phase2" = "2 - Applying Cr. Notes to OTM3";
+"sl060.sl002" = "SL002 Note error and hit return";
+"sl060.sl003" = "SL003 Hit Return To Continue";
+"sl060.sl130" = "SL130 Open-IT3 = ";
+"sl060.sl131" = "SL131 PE - CR SWOP: Return to continue";
+"sl060.sl132" = "SL132 Err on Batch file write : ";
+"sl060.sl133" = "SL133 PE 060-01";
+"sl060.sl134" = "SL134 Warning Record/s missing in Sales File";
+"sl060.sl135" = "SL135 Error On Re/write Sales File";
+"sl060.sl136" = "SL136 Error writing to Open Item 3 File ";
+"sl060.batch_desc" = "Sales Ledger Invoices";
+"report.sl060.unknown" = "*** Customer Unknown ***";
+"report.sl060.invoice" = "Invoice";
+"report.sl060.cr_note" = "CR. Note";
+"report.sl060.receipt" = "Receipt";
+"report.sl060.title" = "Invoice Posting Report";
+"report.sl060.page" = "Page ";
+"report.sl060.unapplied" = "Un-Applied Credits";
+"report.sl060.line4a_main" = " Number     Date    <------------Customer------------>   Type  ";
+"report.sl060.line4b_main" = " Old Balance  New Balance   Dedn     Net         Vat       Gross";
+"report.sl060.line4a" = "--Customer--   Invoice      Bal C/F        Applied      Cr. Note          Type    ";
+"report.sl060.total_posted" = "Total  Posted";
+"report.sl060.group1" = "Receipts";
+"report.sl060.group2" = "Invoices";
+"report.sl060.group3" = "Credit Notes";
+"report.sl060.late_deductions" = "           Total  Amount Late Deductions";
+"report.sl060.unapplied_cf" = "Un-Applied Credits C/F ";
+"report.sl060.cr_note7" = "Cr. Note";
 /* ---- sys.en.strings ---- */
 /* ACAS.cbl — システムメニュー (英語 = レガシー原文) */
 "sys.sy006" = "SY006 Program Arguments limited to two and you have specified ";

@@ -169,6 +169,14 @@ enum SLA {
     }
 
     /// zz060-Convert-Date: バイナリ日付を Date-Form の表示形式へ
+    /// zz060-Convert-Date (u-date を持ち越す版): maps04 は u-bin が 0 以下のとき u-date を書き換えないため、
+    /// 直前の u-date がそのまま使われる (レガシーの癖)。uDate は呼び出し側 WS の u-date (初期値は空白)。
+    static func convertBin(_ s: Session, _ bin: Int64, uDate: inout String) -> String {
+        if bin > 0 { uDate = Maps04.toDate(Int(bin)) }
+        if uDate.allSatisfy({ $0 == " " }) { return spaces(10) }
+        if s.sys.int("date-form") == 0 { s.sys.setInt("date-form", 1) }
+        return Common.convDate(s, uDate)
+    }
     static func convertBin(_ s: Session, _ bin: Int64) -> String {
         if s.sys.int("date-form") == 0 { s.sys.setInt("date-form", 1) }
         return Common.convDate(s, Maps04.toDate(Int(bin)))
