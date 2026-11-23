@@ -45,6 +45,7 @@ struct LedgerBatchMaintenanceMenu: View {
     @State private var editingBatch: LedgerBatch?
     @State private var proofReports: [LedgerBatchProof.Report] = []
     @State private var proofStatus: String?
+    @State private var allTransactions: [UInt8]?
 
     var body: some View {
         List {
@@ -63,6 +64,7 @@ struct LedgerBatchMaintenanceMenu: View {
                 .navigationTitle(ledgerText("batch-amend.title"))
                 .onAppear { workspace.completed("gl-batch-amend-menu") }
                 .sheet(item: $editingBatch, onDismiss: {
+                    allTransactions = nil
                     proofReports = []
                     proofStatus = nil
                 }) { batch in
@@ -74,9 +76,12 @@ struct LedgerBatchMaintenanceMenu: View {
                 .accessibilityIdentifier("gl.batch.proof.all")
             Button(ledgerText("batch-proof.one")) { choosingBatch = true }
                 .accessibilityIdentifier("gl.batch.proof.one")
+            Button(ledgerText("batch-proof.print-all"), action: printAllTransactions)
+                .accessibilityIdentifier("gl.batch.proof.print-all")
             if let proofStatus {
                 Text(proofStatus).accessibilityIdentifier("gl.batch.proof.status")
             }
+            if let allTransactions { LedgerReportShare(bytes: allTransactions) }
             ForEach(proofReports) { report in
                 LabeledContent {
                     LedgerReportShare(bytes: report.bytes)
@@ -115,6 +120,7 @@ struct LedgerBatchMaintenanceMenu: View {
     }
 
     private func proof(_ number: Int? = nil) {
+        allTransactions = nil
         proofReports = []
         do {
             proofReports = try LedgerBatchProof(workspace.context).generate(batch: number)
@@ -122,6 +128,18 @@ struct LedgerBatchMaintenanceMenu: View {
                 proofReports.allSatisfy(\.verified) ? "batch-proof.verified" : "batch-proof.differences"
             proofStatus = ledgerText(key)
             workspace.completed(number == nil ? "gl-batch-proof-all" : "gl-batch-proof-one")
+        } catch {
+            proofStatus = ledgerText("batch-proof.failed")
+        }
+    }
+
+    private func printAllTransactions() {
+        proofReports = []
+        allTransactions = nil
+        do {
+            allTransactions = try LedgerBatchProof(workspace.context).printAllTransactions()
+            proofStatus = ledgerText("batch-proof.printed-all")
+            workspace.completed("gl-batch-print-all")
         } catch {
             proofStatus = ledgerText("batch-proof.failed")
         }

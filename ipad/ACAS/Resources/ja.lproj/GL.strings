@@ -58,6 +58,8 @@
 "gl.batch-amend.empty" = "訂正できるバッチはありません";
 "gl.batch-proof.all" = "当期の全バッチを検証して帳票を出力";
 "gl.batch-proof.one" = "指定バッチを検証して帳票を出力";
+"gl.batch-proof.print-all" = "全仕訳を印刷";
+"gl.batch-proof.printed-all" = "全仕訳の帳票を出力しました";
 "gl.batch-proof.select" = "検証するバッチを選択";
 "gl.batch-proof.empty" = "検証対象のバッチはありません";
 "gl.batch-proof.verified" = "予定額と明細の合計が一致しました";
