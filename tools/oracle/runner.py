@@ -33,10 +33,13 @@ def build(destination):
     destination.mkdir(parents=True, exist_ok=False)
     paths = subprocess.check_output(["git", "ls-files", "-z"], cwd=ROOT).decode().split("\0")
     for name in paths:
+        source = ROOT / name
+        if name and (source.is_symlink() or not source.resolve().is_relative_to(ROOT.resolve())):
+            raise RuntimeError(f"Unsafe tracked source (symlink or outside repository): {name}")
         if name and not name.startswith(("tools/", ".git")):
             target = destination / name
             target.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copy2(ROOT / name, target)
+            shutil.copy2(source, target)
     with (destination / "build.log").open("w") as log:
         subprocess.run(["bash", "./comp-all.sh"], cwd=destination, stdout=log,
                        stderr=subprocess.STDOUT, check=True)

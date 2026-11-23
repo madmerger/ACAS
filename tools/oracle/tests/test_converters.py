@@ -6,6 +6,7 @@ import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from converters import data_records, report_json
 from runner import HERE, load, seed
+import runner
 
 
 def test_data_records():
@@ -74,3 +75,28 @@ def test_fixture_rejects_truncation_and_delimiters(tmp_path):
     fixture = {"analysis": [], "suppliers": [{"code": "BAD|KEY", "name": "Test"}]}
     with pytest.raises(ValueError, match="supplier"):
         seed(tmp_path, None, fixture, {})
+
+
+@pytest.mark.parametrize("tracked", ["linked.cbl", "../outside.cbl", "tools/linked.cbl"])
+def test_build_rejects_unsafe_tracked_sources(tmp_path, monkeypatch, tracked):
+    root = tmp_path / "repo"
+    root.mkdir()
+    (root / "tools").mkdir()
+    (tmp_path / "outside.cbl").write_text("private data")
+    if "linked" in tracked:
+        (root / tracked).symlink_to(tmp_path / "outside.cbl")
+    monkeypatch.setattr(runner, "ROOT", root)
+    monkeypatch.setattr(runner.subprocess, "check_output", lambda *args, **kwargs: tracked.encode() + b"\0")
+    destination = tmp_path / "build"
+    with pytest.raises(RuntimeError, match="Unsafe tracked source"):
+        runner.build(destination)
+    assert list(destination.iterdir()) == []
+
+
+def test_build_rejects_symlinks_within_repository(tmp_path, monkeypatch):
+    (tmp_path / "source.cbl").write_text("source")
+    (tmp_path / "linked.cbl").symlink_to(tmp_path / "source.cbl")
+    monkeypatch.setattr(runner, "ROOT", tmp_path)
+    monkeypatch.setattr(runner.subprocess, "check_output", lambda *args, **kwargs: b"linked.cbl\0")
+    with pytest.raises(RuntimeError, match="Unsafe tracked source"):
+        runner.build(tmp_path / "build")
