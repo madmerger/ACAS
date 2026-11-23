@@ -107,6 +107,7 @@ public sealed class PurchaseLedgerTests
     {
         using var db = Fixture("sl-ready");
         var ledger = new PurchaseLedger(db);
+        Assert.True(ledger.SaveAnalysis(ledger.NewAnalysis("a1"), true));
         Assert.True(ledger.SaveInvoiceSettings(99999999, null));
         Assert.True(ledger.SaveInvoice(Sample(ledger), true));
         Assert.Equal("99999999", Assert.Single(ledger.Invoices()).Folio);
