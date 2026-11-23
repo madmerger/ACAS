@@ -133,16 +133,22 @@ extension PurchaseLedger {
     }
 
     public func cancelPayment(supplier code: String, number: Int64, restoringDiscounts: [Int64: Int64] = [:]) throws {
+        try store.withTransaction {
+            try cancelPendingPayment(supplier: code, number: number, restoringDiscounts: restoringDiscounts)
+        }
+    }
+
+    private func cancelPendingPayment(supplier code: String, number: Int64, restoringDiscounts: [Int64: Int64]) throws {
         guard var supplier = supplierRecord(code) else { throw Error.supplierNotFound }
         let payment = try pendingPayment(supplier: supplier.str("purch-key"), number: number)
         let invoices = try reversedInvoices(payment, in: openItemRecords(), restoringDiscounts: restoringDiscounts)
         for invoice in invoices {
-            store.rewrite(openItemsPath, key: Array(invoice.bytes.prefix(11)), data: invoice.bytes)
+            try requirePostingWrite(store.rewrite(openItemsPath, key: Array(invoice.bytes.prefix(11)), data: invoice.bytes), path: openItemsPath)
         }
-        store.delete(openItemsPath, key: Array(payment.bytes.prefix(11)))
+        try requirePostingWrite(store.delete(openItemsPath, key: Array(payment.bytes.prefix(11))), path: openItemsPath)
         if payment.int("oi-type") == 6 {
             supplier.setInt("purch-unapplied", supplier.int("purch-unapplied") + payment.int("oi-paid"))
-            store.rewrite(suppliersPath, key: supplier.raw("purch-key"), data: supplier.bytes)
+            try requirePostingWrite(store.rewrite(suppliersPath, key: supplier.raw("purch-key"), data: supplier.bytes), path: suppliersPath)
         }
         var configuration = system
         configuration["oi-5-flag"] = "Y"
@@ -152,6 +158,10 @@ extension PurchaseLedger {
 
     @discardableResult
     public func savePayment(_ value: Payment, restoringDiscounts: [Int64: Int64] = [:]) throws -> Int64 {
+        try store.withTransaction { try savePendingPayment(value, restoringDiscounts: restoringDiscounts) }
+    }
+
+    private func savePendingPayment(_ value: Payment, restoringDiscounts: [Int64: Int64]) throws -> Int64 {
         let day = try legacyDate(value.date)
         guard (1..<1_000_000_000).contains(value.amount), value.allocations.count <= 999,
               Set(value.allocations.map(\.id)).count == value.allocations.count,
@@ -177,10 +187,13 @@ extension PurchaseLedger {
                 modified[invoice.int("oi-invoice")] = invoice
             }
         } else {
-            while index <= 999, items.contains(where: {
-                $0.int("oi-b-nos") == batch && $0.int("oi-b-item") == index
-            }) { index += 1 }
-            if index > 999 { batch += 1; index = 1 }
+            let usedNumbers = Set(items.filter { $0.str("oi-supplier") == supplierCode }.map { $0.int("oi-invoice") })
+            let usedBatchItems = Set(items.filter { $0.int("oi-b-nos") != 0 }.map { $0.int("oi-b-nos") * 1000 + $0.int("oi-b-item") })
+            while usedNumbers.contains(batch * 1000 + index) || usedBatchItems.contains(batch * 1000 + index) {
+                index += 1
+                if index > 999 { batch = batch == 99_999 ? 1 : batch + 1; index = 1 }
+                guard batch != currentBatch || index != 1 else { throw Error.duplicateTransaction }
+            }
         }
         let number = batch * 1000 + index
         let key = openItemKey(supplier: supplierCode, number: number)
@@ -225,11 +238,14 @@ extension PurchaseLedger {
         payment.setInt("oi-b-nos", batch)
         payment.setInt("oi-b-item", index)
         for invoice in modified.values {
-            store.rewrite(openItemsPath, key: Array(invoice.bytes.prefix(11)), data: invoice.bytes)
+            try requirePostingWrite(store.rewrite(openItemsPath, key: Array(invoice.bytes.prefix(11)), data: invoice.bytes), path: openItemsPath)
         }
-        if value.number == nil { store.write(openItemsPath, key: key, data: payment.bytes) }
-        else { store.rewrite(openItemsPath, key: key, data: payment.bytes) }
-        store.rewrite(suppliersPath, key: supplier.raw("purch-key"), data: supplier.bytes)
+        if value.number == nil {
+            try requirePostingWrite(store.write(openItemsPath, key: key, data: payment.bytes), path: openItemsPath)
+        } else {
+            try requirePostingWrite(store.rewrite(openItemsPath, key: key, data: payment.bytes), path: openItemsPath)
+        }
+        try requirePostingWrite(store.rewrite(suppliersPath, key: supplier.raw("purch-key"), data: supplier.bytes), path: suppliersPath)
         if value.number == nil { configuration.setInt("bl-next-batch", (batch + 1) % 100_000) }
         if !value.credit || configuration.int("p-flag-p") == 2 { configuration.setInt("p-flag-p", 1) }
         configuration["oi-5-flag"] = "Y"

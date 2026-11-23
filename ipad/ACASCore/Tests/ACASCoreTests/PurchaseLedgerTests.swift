@@ -578,6 +578,156 @@ final class PurchaseLedgerTests: XCTestCase {
         XCTAssertThrowsError(try ledger.removeSupplier(code: code, deactivate: false))
     }
 
+    func testPaymentWritesRollBackOnLateFailure() throws {
+        try withDiskLedger { ledger, db in
+            var invoice = PurchaseLedger.Transaction(date: ledger.processingDate)
+            invoice.supplier = try addSupplier(ledger)
+            invoice.lines[0].code = "a1"
+            invoice.lines[0].net = 10_000
+            let folio = try ledger.saveTransaction(invoice)
+            try ledger.postTransactions()
+
+            var payment = PurchaseLedger.Payment(date: ledger.processingDate)
+            payment.supplier = invoice.supplier
+            payment.amount = 5_000
+            payment.allocations = [.init(invoice: folio, amount: 5_000)]
+            let block = "CREATE TRIGGER reject_payment_config BEFORE UPDATE ON files WHEN NEW.name = '\(ledger.base)system.dat' BEGIN SELECT RAISE(ABORT, 'blocked'); END"
+            let unblock = "DROP TRIGGER reject_payment_config"
+
+            func assertRollback(_ operation: () throws -> Void) {
+                let before = EvidenceComparison.snapshot(ledger.store)
+                XCTAssertEqual(sqlite3_exec(db, block, nil, nil, nil), SQLITE_OK)
+                XCTAssertThrowsError(try operation())
+                XCTAssertTrue(EvidenceComparison.diff(before: before, after: EvidenceComparison.snapshot(ledger.store)).isEmpty)
+                XCTAssertEqual(sqlite3_exec(db, unblock, nil, nil, nil), SQLITE_OK)
+            }
+
+            assertRollback { _ = try ledger.savePayment(payment) }
+            let number = try ledger.savePayment(payment)
+            assertRollback { try ledger.cancelPayment(supplier: invoice.supplier, number: number) }
+            assertRollback { _ = try ledger.proofPayments() }
+            try ledger.proofPayments()
+            assertRollback { _ = try ledger.postPayments() }
+            XCTAssertEqual(try ledger.postPayments().map(\.number), [number])
+            XCTAssertTrue(try ledger.postPayments().isEmpty)
+        }
+    }
+
+    func testPaymentPostingUpdatesExistingDeductionAnalysis() throws {
+        let ledger = try makeLedger()
+        let code = try addSupplier(ledger)
+        var invoice = PurchaseLedger.Transaction(date: ledger.processingDate)
+        invoice.supplier = code
+        invoice.lines[0].code = "a1"
+        invoice.lines[0].net = 10_000
+        invoice.deduction = 500
+        invoice.deductionDays = 10
+        let folio = try ledger.saveTransaction(invoice)
+        try ledger.postTransactions()
+        let path = ledger.base + "value.dat"
+        for code in ["Pzb", "Pz "] {
+            var value = Record(PurchaseRecords.valueLayout)
+            value["code"] = code
+            value.setInt("this-count", 10)
+            value.setInt("year-count", 20)
+            value.setInt("this-net", 4_000)
+            value.setInt("year-net", 8_000)
+            let key = Array(code.utf8)
+            if ledger.store.read(path, key: key) == nil {
+                XCTAssertTrue(ledger.store.write(path, key: key, data: value.bytes))
+            } else {
+                XCTAssertTrue(ledger.store.rewrite(path, key: key, data: value.bytes))
+            }
+        }
+        var payment = PurchaseLedger.Payment(date: ledger.processingDate)
+        payment.supplier = code
+        payment.amount = 11_500
+        payment.allocations = [.init(invoice: folio, amount: 11_500, discount: 500)]
+        try ledger.savePayment(payment)
+        try ledger.proofPayments()
+        try ledger.postPayments()
+
+        for code in ["Pzb", "Pz "] {
+            let bytes = try XCTUnwrap(ledger.store.read(path, key: Array(code.utf8)))
+            let value = Record(PurchaseRecords.valueLayout, bytes: bytes)
+            XCTAssertEqual(value.int("this-count"), 9)
+            XCTAssertEqual(value.int("year-count"), 19)
+            XCTAssertEqual(value.int("this-net"), 3_500)
+            XCTAssertEqual(value.int("year-net"), 7_500)
+        }
+    }
+
+    func testOrphanedPaymentDoesNotBlockOtherSupplierPosting() throws {
+        let ledger = try makeLedger()
+        let removed = try addSupplier(ledger)
+        var another = ledger.newSupplier
+        another.code = "SUP2"
+        another.name = "Supplier 2"
+        another.address1 = "住所\\市"
+        try ledger.saveSupplier(another, creating: true)
+
+        var payment = PurchaseLedger.Payment(date: ledger.processingDate)
+        payment.amount = 500
+        payment.supplier = removed
+        try ledger.savePayment(payment)
+        try ledger.removeSupplier(code: removed, deactivate: false)
+        payment.supplier = another.code
+        try ledger.savePayment(payment)
+        try ledger.proofPayments()
+
+        XCTAssertEqual(Set(try ledger.postPayments().map(\.supplier)), [removed, another.code])
+        XCTAssertTrue(ledger.pendingPayments().isEmpty)
+        XCTAssertNil(ledger.supplierRecord(removed))
+        XCTAssertEqual(ledger.supplierRecord(another.code)?.int("purch-unapplied"), 500)
+    }
+
+    func testPaymentPostingUsesFreeGLBatchAfterInvoicePosting() throws {
+        let ledger = try makeLedger()
+        var configuration = ledger.system
+        configuration.setInt("level-1", 1)
+        configuration.setInt("next-batch", 2)
+        configuration.setInt("bl-next-batch", 1)
+        try ledger.systemFile.write(1, configuration.bytes)
+        var invoice = PurchaseLedger.Transaction(date: ledger.processingDate)
+        invoice.supplier = try addSupplier(ledger)
+        invoice.lines[0].code = "a1"
+        invoice.lines[0].net = 10_000
+        try ledger.saveTransaction(invoice)
+        try ledger.postTransactions()
+        let batchPath = ledger.base + "batch.dat"
+        let firstKey = Array("200002".utf8)
+        let firstBatch = try XCTUnwrap(ledger.store.read(batchPath, key: firstKey))
+
+        var payment = PurchaseLedger.Payment(date: ledger.processingDate)
+        payment.supplier = invoice.supplier
+        payment.amount = 5_000
+        payment.allocations = try ledger.proposedAllocations(supplier: invoice.supplier, amount: payment.amount, date: payment.date)
+        let number = try ledger.savePayment(payment)
+        XCTAssertEqual(ledger.system.int("bl-next-batch"), 2)
+        try ledger.proofPayments()
+        XCTAssertEqual(try ledger.postPayments().map(\.number), [number])
+        XCTAssertEqual(ledger.store.read(batchPath, key: firstKey), firstBatch)
+        XCTAssertNotNil(ledger.store.read(batchPath, key: Array("200003".utf8)))
+        XCTAssertEqual(ledger.system.int("bl-next-batch"), 4)
+    }
+
+    func testPaymentSkipsOccupiedInvoiceNumber() throws {
+        let ledger = try makeLedger()
+        let code = try addSupplier(ledger)
+        var item = Record(PurchaseRecords.oiLayout)
+        let number = max(1, ledger.system.int("bl-next-batch")) * 1000 + 1
+        item["oi-supplier"] = code
+        item.setInt("oi-invoice", number)
+        item.setInt("oi-type", 2)
+        let key = ledger.openItemKey(supplier: code, number: number)
+        XCTAssertTrue(ledger.store.write(ledger.openItemsPath, key: key, data: item.bytes))
+        var payment = PurchaseLedger.Payment(date: ledger.processingDate)
+        payment.supplier = code
+        payment.amount = 500
+        XCTAssertEqual(try ledger.savePayment(payment), number + 1)
+        XCTAssertEqual(ledger.store.read(ledger.openItemsPath, key: key), item.bytes)
+    }
+
     func testPaymentAllocatesEditsAndPosts() throws {
         let ledger = try makeLedger()
         let code = try addSupplier(ledger)
@@ -598,6 +748,11 @@ final class PurchaseLedgerTests: XCTestCase {
         XCTAssertEqual(pendingInvoice.int("oi-cr"), 500_000)
         XCTAssertThrowsError(try ledger.postPayments())
         XCTAssertEqual(try ledger.proofPayments().map(\.number), [paymentNumber])
+        let report = try XCTUnwrap(ledger.store.readRaw(PurchaseLedger.reportPath))
+        let detail = try XCTUnwrap(report.split(separator: 10).map(SJIS.decode)
+            .first { $0.hasPrefix(String(repeating: " ", count: 90) + Pic.edit("z(7)9", value: number, scale: 0)) })
+        XCTAssertTrue(detail.contains("50.00"))
+        XCTAssertTrue(detail.contains("70.00"))
         payment.number = paymentNumber
         payment.amount = 12_500
         payment.allocations = [.init(invoice: number, amount: 12_000)]
