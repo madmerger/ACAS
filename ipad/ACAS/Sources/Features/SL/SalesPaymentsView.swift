@@ -1,6 +1,44 @@
 import ACASCore
 import SwiftUI
 
+struct SalesPaymentGate<Content: View>: View {
+    let workspace: Workspace
+    let operation: SalesPayments.Operation
+    let title: String.LocalizationValue
+    @ViewBuilder let content: () -> Content
+    @State private var ready = false
+    @State private var failure: String.LocalizationValue?
+
+    var body: some View {
+        Group {
+            if ready {
+                content()
+            } else if let failure {
+                List {
+                    Text(slText(failure)).accessibilityIdentifier("sales.payment.unavailable")
+                }
+                .navigationTitle(slText(title))
+            } else {
+                ProgressView()
+            }
+        }
+        .task {
+            do {
+                switch try SalesPayments(workspace.context).blocker(for: operation) {
+                case nil: ready = true
+                case .pendingSales: failure = "sales.payment.pendingSales"
+                case .missingOpenItems: failure = "sales.period.openItemsMissing"
+                case .noPendingPayments: failure = "sales.payment.none"
+                case .proofRequired: failure = "sales.payment.post.failed"
+                }
+                if failure != nil { workspace.completed("sales-payment-unavailable") }
+            } catch {
+                failure = "sales.payment.failed"
+            }
+        }
+    }
+}
+
 struct SalesPaymentsView: View {
     let workspace: Workspace
     @State private var date = Date()
