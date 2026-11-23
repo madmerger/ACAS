@@ -14,6 +14,8 @@ final class SalesCustomersFlows: XCTestCase {
         code.tap()
         code.typeText(XCUIKeyboardKey.delete.rawValue)
         XCTAssertTrue(save.waitForNonExistence(timeout: 5))
+        XCTAssertEqual(app.state, .runningForeground)
+        XCTAssertEqual(code.value as? String, input["code"].map { String($0.dropLast()) })
     }
 
     @MainActor

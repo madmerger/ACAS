@@ -96,11 +96,13 @@ private struct SalesCustomerView: View {
                 }
                 if let result { Text(result).accessibilityIdentifier("sales.customer.result") }
             }
-            if let model = Binding($draft) {
+            if let customer = draft {
                 if mode == .register || mode == .edit {
-                    details(model)
+                    details(Binding(get: { draft ?? customer }, set: { edited in
+                        if draft?.id == customer.id { draft = edited }
+                    }))
                 } else {
-                    summary(model.wrappedValue)
+                    summary(customer)
                 }
             }
         }
