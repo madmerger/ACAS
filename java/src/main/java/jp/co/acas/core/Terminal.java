@@ -109,8 +109,8 @@ public final class Terminal {
                 default -> k.matches("F\\d{1,2}") && exceptionsEnabled ? 1000 + Integer.parseInt(k.substring(1)) : null;
             };
             if (st != null) { crtStatus = st; break; }
-            if (k.startsWith("ERASE:")) {
-                idx = eraseSelection(buf, k, ' ');
+            if (k.startsWith("REPLACE:")) {
+                idx = replaceSelection(buf, k, ' ', flags);
                 continue;
             }
             switch (k) {
@@ -174,9 +174,9 @@ public final class Terminal {
                     if (f < fields.size() - 1) { f++; idx = 0; continue; }
                     crtStatus = 0; return 0;
                 }
-            } else if (k.startsWith("ERASE:")) {
-                idx = eraseSelection(buf, k, ' ');
-                eraseSelection(shown[f], k, '_');
+            } else if (k.startsWith("REPLACE:")) {
+                idx = replaceSelection(buf, k, ' ', cur.flags);
+                replaceSelection(shown[f], k, '_', cur.flags);
                 edit = true;
             } else {
                 Integer st = switch (k) {
@@ -208,15 +208,21 @@ public final class Terminal {
         }
     }
 
-    private static int eraseSelection(char[] field, String key, char padding) {
-        String[] range = key.split(":");
+    private static int replaceSelection(char[] field, String key, char padding, int flags) {
+        String[] range = key.split(":", 4);
         int start = Math.min(field.length - 1, Integer.parseInt(range[1]));
         int end = Math.min(field.length, Integer.parseInt(range[2]));
-        if (end > start) {
-            System.arraycopy(field, end, field, start, field.length - end);
-            Arrays.fill(field, field.length - (end - start), field.length, padding);
-        }
-        return start;
+        if (end < start) return start;
+        String insert = range[3];
+        if ((flags & NUMERIC) != 0 && !insert.matches("[0-9.,+\\-]*")) return start;
+        if ((flags & UPPER) != 0) insert = insert.toUpperCase(java.util.Locale.ROOT);
+        int count = Math.min(insert.length(), field.length - start);
+        int next = start + count;
+        int tail = Math.min(field.length - end, field.length - next);
+        System.arraycopy(field, end, field, next, tail);
+        insert.getChars(0, count, field, start);
+        Arrays.fill(field, next + tail, field.length, padding);
+        return Math.min(field.length - 1, next);
     }
 
     /** 入力キーを 1 つ取り出す（無ければ入力待ち状態を通知して待機）。 */
