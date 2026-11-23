@@ -195,9 +195,26 @@ function Test-InvoiceDraftNavigation($window, [string]$route) {
     $net.SetValue('123.45')
 
     $label = $caption.Current.BoundingRectangle
-    $right = [Math]::Min($item.Current.BoundingRectangle.Right, (Wait-Id $window 'Navigation').Current.BoundingRectangle.Right - 20)
-    if ($right - $label.Right -lt 8) { throw 'No navigation row whitespace for invoice draft test.' }
-    [Acas.PurchaseAuditWindow]::Click([int](($right + $label.Right) / 2), [int]($label.Top + $label.Height / 2))
+    if ($label.IsEmpty -or $label.Height -lt 2) { throw 'The invoice navigation caption is not visible.' }
+    $selection = $item.GetCurrentPattern([Windows.Automation.SelectionItemPattern]::Pattern)
+    if (!$selection.Current.IsSelected) { throw 'The invoice navigation item is not selected.' }
+    $right = (Wait-Id $window 'Navigation').Current.BoundingRectangle.Right
+    $y = [int]($label.Top + $label.Height / 2)
+    $walker = [Windows.Automation.TreeWalker]::RawViewWalker
+    $point = $null
+    for ($x = [int][Math]::Floor($label.Right) + 1; $x -lt $right; $x++) {
+        $candidate = [Windows.Point]::new($x, $y)
+        $hit = [Windows.Automation.AutomationElement]::FromPoint($candidate)
+        for ($element = $hit; $element; $element = $walker.GetParent($element)) {
+            if ([Windows.Automation.Automation]::Compare($element, $item)) {
+                $point = $candidate
+                break
+            }
+        }
+        if ($point) { break }
+    }
+    if (!$point) { throw 'No whitespace to the right of the invoice caption hit the selected navigation item.' }
+    [Acas.PurchaseAuditWindow]::Click([int]$point.X, [int]$point.Y)
     Start-Sleep -Milliseconds 200
     $remaining = Find-Id $window 'PurchaseLineNet'
     if (!$remaining -or $remaining.GetCurrentPattern([Windows.Automation.ValuePattern]::Pattern).Current.Value -ne '123.45') {
