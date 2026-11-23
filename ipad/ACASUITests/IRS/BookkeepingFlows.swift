@@ -94,6 +94,23 @@ final class BookkeepingFlows: XCTestCase {
     }
 
     @MainActor
+    func testChangingTrialBalanceOptionsInvalidatesExport() throws {
+        try verifyReach("IRS-216", path: ["trialBalance"]) { app in
+            tap(app, "irs.trialBalanceScope")
+            tap(app, "集計")
+            tap(app, "irs.trialBalanceZero")
+            tap(app, "除外する")
+            tap(app, "irs.trialBalanceOutput")
+            tap(app, "印刷")
+            tap(app, "irs.generateReport")
+            XCTAssertTrue(app.buttons["irs.exportReport"].exists)
+            tap(app, "irs.trialBalanceScope")
+            tap(app, "明細")
+            XCTAssertFalse(app.buttons["irs.exportReport"].exists)
+        }
+    }
+
+    @MainActor
     func testReachIRS007() throws { try verifyStatementEntry("IRS-007") }
 
     @MainActor

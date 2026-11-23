@@ -339,6 +339,7 @@ private struct BookkeepingReportPreview<Content: View>: View {
     @State private var message = ""
     @State private var document: BookkeepingReportDocument?
     @State private var exporting = false
+    @State private var generatedReport: BookkeepingService.Report?
 
     var body: some View {
         preview
@@ -349,6 +350,7 @@ private struct BookkeepingReportPreview<Content: View>: View {
                             document = BookkeepingReportDocument(
                                 data: try BookkeepingService(workspace.context).printReport(report)
                             )
+                            generatedReport = report
                             message = irsText("result.reportGenerated")
                             workspace.completed(workflow)
                         } catch {
@@ -358,13 +360,18 @@ private struct BookkeepingReportPreview<Content: View>: View {
                     }
                     .buttonStyle(.borderedProminent)
                     .accessibilityIdentifier("irs.generateReport")
-                    if document != nil {
+                    if document != nil, generatedReport == report {
                         Button(irsText("action.exportReport")) { exporting = true }
                             .accessibilityIdentifier("irs.exportReport")
                     }
                     Text(message).accessibilityIdentifier("irs.reportResult")
                 }
                 .padding()
+            }
+            .onChange(of: report) {
+                document = nil
+                generatedReport = nil
+                message = ""
             }
             .fileExporter(isPresented: $exporting, document: document, contentType: .data, defaultFilename: "prt-1") {
                 if case .failure = $0 { message = irsText("error.exportReport") }

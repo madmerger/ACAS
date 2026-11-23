@@ -1,7 +1,7 @@
 import Foundation
 
 extension BookkeepingService {
-    public enum Report { case accounts, defaults, trialBalance(summary: Bool, zeroBalances: Bool) }
+    public enum Report: Equatable { case accounts, defaults, trialBalance(summary: Bool, zeroBalances: Bool) }
 
     public struct TrialBalanceRow: Identifiable {
         public let account: Account
