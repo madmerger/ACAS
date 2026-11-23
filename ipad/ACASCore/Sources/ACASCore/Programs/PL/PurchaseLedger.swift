@@ -145,7 +145,10 @@ public struct PurchaseLedger {
             let previous = addressLines(record)
             if creating || first != previous.first || second != previous.second {
                 let address = second.isEmpty && first.contains(delimiter) ? first : first + String(delimiter) + second
-                record["purch-address"] = address
+                let width = record.raw("purch-address").count
+                let bytes = SJIS.encode(address, size: max(width, address.utf8.count))
+                guard bytes.dropFirst(width).allSatisfy({ $0 == 0x20 }) else { throw Error.invalidAddress }
+                record.setRaw("purch-address", Array(bytes.prefix(width)))
             }
         } else {
             record["purch-addr1"] = supplier.address1

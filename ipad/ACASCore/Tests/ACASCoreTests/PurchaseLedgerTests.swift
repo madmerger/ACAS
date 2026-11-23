@@ -241,6 +241,21 @@ final class PurchaseLedgerTests: XCTestCase {
         XCTAssertEqual(updated.raw("purch-address"), SJIS.encode("東京都\\", size: 96))
     }
 
+    func testSupplierAddressEditRejectsTruncatingSecondLine() throws {
+        let ledger = try makeLedger()
+        var supplier = ledger.newSupplier
+        supplier.code = "SUPP01"
+        supplier.address1 = "東京"
+        supplier.address2 = String(repeating: "町", count: 34)
+        supplier.code = try ledger.saveSupplier(supplier, creating: true, joiningAddressLines: true)
+        let before = try XCTUnwrap(ledger.supplierRecord(supplier.code)).bytes
+        supplier.address1 = String(repeating: "東", count: 14)
+        XCTAssertThrowsError(try ledger.saveSupplier(supplier, creating: false, joiningAddressLines: true)) {
+            XCTAssertEqual($0 as? PurchaseLedger.Error, .invalidAddress)
+        }
+        XCTAssertEqual(ledger.supplierRecord(supplier.code)?.bytes, before)
+    }
+
     func testPostingPreviewUsesSignedFixedWidthHeaderTotals() throws {
         let ledger = try makeLedger()
         var transaction = PurchaseLedger.Transaction(date: ledger.processingDate)
