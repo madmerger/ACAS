@@ -6,11 +6,11 @@ struct SystemMenu: View {
 
     var body: some View {
         List {
-            NavigationLink("system.company") { CompanyForm(workspace: workspace) }
+            NavigationLink(String(localized: "system.company", table: "System")) { CompanyForm(workspace: workspace) }
                 .accessibilityIdentifier("system.company")
             #if DEBUG
             if workspace.evidence != nil {
-                NavigationLink("calculation.title") { CheckDigitForm(workspace: workspace) }
+                NavigationLink(String(localized: "calculation.title", table: "CALC")) { CheckDigitForm(workspace: workspace) }
                     .accessibilityIdentifier("calculation.title")
             }
             #endif
@@ -28,10 +28,10 @@ private struct CompanyForm: View {
 
     var body: some View {
         Form {
-            TextField("system.company.name", text: $name)
+            TextField(String(localized: "system.company.name", table: "System"), text: $name)
                 .focused($editingName)
                 .accessibilityIdentifier("system.company.name")
-            Button("action.save") {
+            Button(String(localized: "action.save", table: "System")) {
                 saved = false
                 do {
                     try CompanySetup(workspace.context).save(name: name)
@@ -45,14 +45,14 @@ private struct CompanyForm: View {
                 }
             }
             .accessibilityIdentifier("action.save")
-            if saved { Text("system.company.saved") }
+            if saved { Text(String(localized: "system.company.saved", table: "System")) }
         }
-        .navigationTitle("system.company")
+        .navigationTitle(String(localized: "system.company", table: "System"))
         .onAppear { name = CompanySetup(workspace.context).name }
-        .alert("system.company.invalid", isPresented: $invalid) {
+        .alert(String(localized: "system.company.invalid", table: "System"), isPresented: $invalid) {
             Button("action.close", role: .cancel) {}
         }
-        .alert("system.company.storageFailed", isPresented: $storageFailed) {
+        .alert(String(localized: "system.company.storageFailed", table: "System"), isPresented: $storageFailed) {
             Button("action.close", role: .cancel) {}
         }
     }
@@ -68,12 +68,12 @@ private struct CheckDigitForm: View {
 
     var body: some View {
         Form {
-            TextField("calculation.code", text: $code)
+            TextField(String(localized: "calculation.code", table: "CALC"), text: $code)
                 .focused($editingCode)
                 .textInputAutocapitalization(.characters)
                 .autocorrectionDisabled()
                 .accessibilityIdentifier("calculation.code")
-            Button("action.calculate") {
+            Button(String(localized: "action.calculate", table: "CALC")) {
                 editingCode = false
                 check = Maps09.checkDigit(code)
                 calculated = true
@@ -83,13 +83,13 @@ private struct CheckDigitForm: View {
             if let check {
                 Text(verbatim: String(check))
                     .accessibilityIdentifier("calculation.result")
-                Text("calculation.valid")
+                Text(String(localized: "calculation.valid", table: "CALC"))
                     .accessibilityIdentifier("calculation.valid")
             } else if calculated {
-                Text("calculation.invalid")
+                Text(String(localized: "calculation.invalid", table: "CALC"))
             }
         }
-        .navigationTitle("calculation.title")
+        .navigationTitle(String(localized: "calculation.title", table: "CALC"))
     }
 }
 #endif

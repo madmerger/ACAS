@@ -8,6 +8,7 @@ final class FoundationFlows: XCTestCase {
         let field = app.textFields["calculation.code"]
         field.tap()
         field.typeText(try XCTUnwrap(input["code"] as? String))
+        XCTAssertEqual(app.buttons["action.calculate"].label, "計算")
         tap(app, "action.calculate")
         XCTAssertEqual(app.staticTexts["calculation.result"].label, "2")
         XCTAssertTrue(app.staticTexts["calculation.valid"].exists)
@@ -19,6 +20,7 @@ final class FoundationFlows: XCTestCase {
         let (app, _) = try launch("SL-104")
         tap(app, "section.sales")
         tap(app, "sales.proof")
+        XCTAssertEqual(app.buttons["action.generate"].label, "帳票を作成")
         tap(app, "action.generate")
         XCTAssertTrue(app.staticTexts["CUST011"].waitForExistence(timeout: 5))
         XCTAssertTrue(app.staticTexts["ALPHA CUSTOMER"].exists)
@@ -33,6 +35,7 @@ final class FoundationFlows: XCTestCase {
         let field = app.textFields["system.company.name"]
         field.tap()
         field.typeText(try XCTUnwrap(input["company"] as? String))
+        XCTAssertEqual(app.buttons["action.save"].label, "保存")
         tap(app, "action.save")
         XCTAssertTrue(app.staticTexts["会社設定を保存しました"].waitForExistence(timeout: 5))
         finish(app, "SYS-001", verdict: "mismatch")

@@ -6,7 +6,7 @@ struct SalesMenu: View {
 
     var body: some View {
         List {
-            NavigationLink("sales.proof") { SalesProofView(workspace: workspace) }
+            NavigationLink(String(localized: "sales.proof", table: "SL")) { SalesProofView(workspace: workspace) }
                 .accessibilityIdentifier("sales.proof")
         }
     }
@@ -21,26 +21,26 @@ private struct SalesProofView: View {
         VStack(spacing: 0) {
             HStack {
                 Spacer()
-                Button("action.generate", systemImage: "doc.badge.plus", action: generate)
+                Button(String(localized: "action.generate", table: "SL"), systemImage: "doc.badge.plus", action: generate)
                     .buttonStyle(.borderedProminent)
                     .accessibilityIdentifier("action.generate")
             }
             .padding()
             if let entries {
                 Table(entries) {
-                    TableColumn("sales.proof.customer") { Text($0.customer) }
-                    TableColumn("sales.proof.name") { Text($0.name) }
-                    TableColumn("sales.proof.net") { Text(amount($0.net)) }
-                    TableColumn("sales.proof.tax") { Text(amount($0.tax)) }
-                    TableColumn("sales.proof.gross") { Text(amount($0.gross)) }
+                    TableColumn(String(localized: "sales.proof.customer", table: "SL")) { Text($0.customer) }
+                    TableColumn(String(localized: "sales.proof.name", table: "SL")) { Text($0.name) }
+                    TableColumn(String(localized: "sales.proof.net", table: "SL")) { Text(amount($0.net)) }
+                    TableColumn(String(localized: "sales.proof.tax", table: "SL")) { Text(amount($0.tax)) }
+                    TableColumn(String(localized: "sales.proof.gross", table: "SL")) { Text(amount($0.gross)) }
                 }
                 .accessibilityIdentifier("sales.proof.preview")
             } else {
-                ContentUnavailableView("sales.proof.ready", systemImage: "doc.text")
+                ContentUnavailableView(String(localized: "sales.proof.ready", table: "SL"), systemImage: "doc.text")
             }
         }
-        .navigationTitle("sales.proof")
-        .alert("sales.proof.failed", isPresented: $failed) {
+        .navigationTitle(String(localized: "sales.proof", table: "SL"))
+        .alert(String(localized: "sales.proof.failed", table: "SL"), isPresented: $failed) {
             Button("action.close", role: .cancel) {}
         }
     }
