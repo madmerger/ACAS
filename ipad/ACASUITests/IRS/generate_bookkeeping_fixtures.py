@@ -75,17 +75,19 @@ def reach_fixture(evidence, case):
     with evidence_path(evidence, run / "terminal.cast").open(encoding="utf-8") as recording:
         timestamp = json.loads(recording.readline())["timestamp"]
     seed = json.loads(base64.b64decode(snapshot_seed(evidence, run)))
+    reports = {}
     if destination == "accountList":
         seed["files"]["ledgers/irs/acnts.dat"] = seeded_accounts(evidence, run)
     if destination in {"defaultEdit", "defaultList"}:
         defaults = "ledgers/irs/dflt.dat"
         data = evidence_path(evidence, run / "before-files" / defaults).read_bytes()
         seed["files"][defaults] = {"type": "raw", "hex": data.hex()}
+        reports[defaults] = data.hex()
     return {
         "id": case["id"], "title": title + "への到達確認",
         "workflow": f"irs.{destination}.open", "dateSeconds": timestamp,
         "seed": base64.b64encode(json.dumps(seed, separators=(",", ":")).encode()).decode(),
-        "changes": changes, "reports": {},
+        "changes": changes, "reports": reports,
     }
 
 
