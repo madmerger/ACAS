@@ -1,6 +1,7 @@
 using System.IO;
 using System.Windows;
 using System.Windows.Automation;
+using System.Windows.Automation.Peers;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Data;
@@ -18,6 +19,7 @@ namespace Acas.App;
 public partial class MainWindow : Window
 {
     private readonly Db _database;
+    private readonly List<ISubsystemScreens> _subsystems = [];
     private MenuScreen? _screenMenu;
 
     public MainWindow(string? database = null)
@@ -28,12 +30,22 @@ public partial class MainWindow : Window
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
         _database = new Db(path);
         Closed += (_, _) => _database.Dispose();
+        TrackTemplateIds(Navigation);
+        TrackTemplateIds(ScreenContent);
 
-        foreach (var item in SubsystemScreens.Load(typeof(MainWindow).Assembly, _database)
+        foreach (var item in SubsystemScreens.Load(typeof(MainWindow).Assembly, _database, _subsystems.Add)
             .Append(new NavigationItem("MenuReports", "帳票", Open: OpenReports)))
             Navigation.Items.Add(CreateMenuItem(item));
         ShowScreen(new InformationScreen("業務メニュー", "左側のメニューから操作を選択してください。"));
+        Closing += (_, e) =>
+        {
+            if (TryCloseSubsystems()) return;
+            e.Cancel = true;
+            MessageBox.Show(this, "元帳の終了状態を保存できませんでした。", "会計管理");
+        };
     }
+
+    internal bool TryCloseSubsystems() => _subsystems.All(subsystem => subsystem.TryClose());
 
     private static T Identify<T>(T control, string id, string? name = null) where T : FrameworkElement
     {
@@ -42,12 +54,44 @@ public partial class MainWindow : Window
         return control;
     }
 
+    private static void TrackTemplateIds(FrameworkElement root)
+    {
+        root.LayoutUpdated += (_, _) => Visit(root, AutomationProperties.GetAutomationId(root));
+
+        static void Visit(DependencyObject parent, string path)
+        {
+            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
+            {
+                var child = VisualTreeHelper.GetChild(parent, i);
+                var id = AutomationProperties.GetAutomationId(child);
+                var part = id.Length == 0 ? $"{path}_{child.GetType().Name}{i}" : id;
+                if (id.Length == 0 && child is TextBlock or Thumb)
+                    AutomationProperties.SetAutomationId(child, part);
+                Visit(child, part);
+            }
+        }
+    }
+
     private static TreeViewItem CreateMenuItem(NavigationItem item)
     {
-        var node = Identify(new TreeViewItem { Header = item.Caption, Tag = item, IsExpanded = true }, item.Id);
+        var caption = Identify(new TextBlock { Text = item.Caption }, item.Id + "Caption");
+        var node = Identify(new NavigationTreeItem { Header = caption, Tag = item, IsExpanded = true }, item.Id, item.Caption);
+        node.SetResourceReference(StyleProperty, typeof(TreeViewItem));
         if (item.Children != null)
             foreach (var child in item.Children) node.Items.Add(CreateMenuItem(child));
         return node;
+    }
+
+    private sealed class NavigationTreeItem : TreeViewItem
+    {
+        protected override AutomationPeer OnCreateAutomationPeer() => new NavigationTreeItemPeer(this);
+
+        private sealed class NavigationTreeItemPeer(NavigationTreeItem owner) : TreeViewItemAutomationPeer(owner)
+        {
+            protected override Point GetClickablePointCore() =>
+                owner.Header is FrameworkElement header && CreatePeerForElement(header) is { } peer
+                    ? peer.GetClickablePoint() : base.GetClickablePointCore();
+        }
     }
 
     private void OpenNavigation(object sender, RoutedPropertyChangedEventArgs<object> e)
@@ -58,19 +102,19 @@ public partial class MainWindow : Window
 
     private void ReopenSelectedNavigation(object sender, MouseButtonEventArgs e)
     {
+        if (Navigation.SelectedItem is not TreeViewItem { Header: TextBlock header, Tag: NavigationItem { Open: not null } } node)
+            return;
+
         for (var element = e.OriginalSource as DependencyObject; element != null;)
         {
-            if (element is ToggleButton) return;
-            if (element is TreeViewItem node)
+            if (element == header)
             {
-                if (node.IsSelected && node.Tag is NavigationItem { Open: not null })
-                {
-                    e.Handled = true;
-                    node.Focus();
-                    OpenNavigationItem(node);
-                }
+                e.Handled = true;
+                node.Focus();
+                OpenNavigationItem(node);
                 return;
             }
+            if (element is TreeViewItem) return;
             element = element is Visual ? VisualTreeHelper.GetParent(element) : LogicalTreeHelper.GetParent(element);
         }
     }
@@ -130,7 +174,7 @@ public partial class MainWindow : Window
 
     private Button ActionButton(string id, string label, Action action)
     {
-        var button = Identify(new Button { Content = label }, id);
+        var button = Identify(new Button { Content = Identify(new TextBlock { Text = label }, id + "Caption") }, id, label);
         button.Click += (_, _) => action();
         return button;
     }
@@ -140,7 +184,10 @@ public partial class MainWindow : Window
         var panel = new DockPanel();
         var list = Identify(new ListBox(), "ScreenMenu", menu.Title);
         foreach (var item in menu.Items)
-            list.Items.Add(Identify(new ListBoxItem { Content = item.Caption, Tag = item }, item.Id));
+        {
+            var caption = Identify(new TextBlock { Text = item.Caption }, item.Id + "Caption");
+            list.Items.Add(Identify(new ListBoxItem { Content = caption, Tag = item }, item.Id, item.Caption));
+        }
         var open = ActionButton("ScreenMenuOpen", "開く", () =>
         {
             if (list.SelectedItem is ListBoxItem { Tag: NavigationItem { Open: { } action } })
@@ -167,10 +214,14 @@ public partial class MainWindow : Window
             HeadersVisibility = DataGridHeadersVisibility.Column, GridLinesVisibility = DataGridGridLinesVisibility.Horizontal
         }, table.Id, table.Title);
         for (int i = 0; i < table.Columns.Count; i++)
+        {
+            var headerStyle = new Style(typeof(DataGridColumnHeader), grid.ColumnHeaderStyle);
+            headerStyle.Setters.Add(new Setter(AutomationProperties.AutomationIdProperty, $"{table.Id}Column{i + 1}"));
             grid.Columns.Add(new DataGridTextColumn
             {
-                Header = table.Columns[i], Binding = new Binding($"Cells[{i}]"), SortMemberPath = $"SortCells[{i}]"
+                Header = table.Columns[i], HeaderStyle = headerStyle, Binding = new Binding($"Cells[{i}]"), SortMemberPath = $"SortCells[{i}]"
             });
+        }
 
         var actions = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 12, 0, 0) };
         if (table.Rows.Any(row => row.Open != null))
@@ -205,6 +256,11 @@ public partial class MainWindow : Window
                     readers.Add(field.Id, () => textBox.Text);
                     control = textBox;
                     break;
+                case PasswordField password:
+                    var passwordBox = new PasswordBox { MaxLength = password.MaxLength };
+                    readers.Add(field.Id, () => passwordBox.Password);
+                    control = passwordBox;
+                    break;
                 case DateField date:
                     var datePicker = new DatePicker { SelectedDate = date.Value, SelectedDateFormat = DatePickerFormat.Short };
                     readers.Add(field.Id, () => datePicker.SelectedDate);
@@ -222,7 +278,10 @@ public partial class MainWindow : Window
                 default:
                     throw new NotSupportedException();
             }
-            var label = Identify(new Label { Content = field.Label, Target = control }, field.Id + "Label");
+            var label = Identify(new Label
+            {
+                Content = Identify(new TextBlock { Text = field.Label }, field.Id + "LabelCaption"), Target = control
+            }, field.Id + "Label", field.Label);
             AutomationProperties.SetLabeledBy(control, label);
             control.MinWidth = 280;
             control.Margin = new Thickness(0, 0, 0, 12);
@@ -254,14 +313,22 @@ public partial class MainWindow : Window
         actions.Children.Add(ActionButton("ConfirmationConfirm", model.ConfirmLabel, () => dialog.DialogResult = true));
         panel.Children.Add(actions);
         dialog.Content = panel;
+        TrackTemplateIds(dialog);
         return dialog.ShowDialog() == true;
     }
 
     private FrameworkElement CreateReport(ReportScreen report)
     {
-        FlowDocument Document()
+        const double fontSize = 14;
+        var font = new FontFamily("ＭＳ ゴシック");
+        var typeface = new Typeface(font, FontStyles.Normal, FontWeights.Normal, FontStretches.Normal);
+        double dpi = VisualTreeHelper.GetDpi(this).PixelsPerDip;
+        double lineWidth = report.Body.Split('\r', '\n', '\f').Max(line =>
+            new FormattedText(line, Language.GetSpecificCulture(), FlowDirection.LeftToRight, typeface, fontSize, Brushes.Black, dpi)
+                .WidthIncludingTrailingWhitespace);
+        FlowDocument Document(double size)
         {
-            var document = new FlowDocument { FontFamily = new FontFamily("ＭＳ ゴシック"), FontSize = 14, ColumnWidth = 1200 };
+            var document = new FlowDocument { FontFamily = font, FontSize = size, ColumnWidth = double.PositiveInfinity };
             var pages = report.Body.Split('\f');
             for (int i = 0; i < pages.Length; i++)
                 document.Blocks.Add(new Paragraph(new Run(pages[i])) { BreakPageBefore = i > 0 });
@@ -292,13 +359,13 @@ public partial class MainWindow : Window
             if (dialog.ShowDialog() != true) return;
             try
             {
-                var document = Document();
                 var capabilities = dialog.PrintQueue.GetPrintCapabilities(dialog.PrintTicket);
                 var imageable = capabilities.PageImageableArea;
                 var left = imageable?.OriginWidth ?? 0;
                 var top = imageable?.OriginHeight ?? 0;
                 var width = imageable?.ExtentWidth ?? dialog.PrintableAreaWidth;
                 var height = imageable?.ExtentHeight ?? dialog.PrintableAreaHeight;
+                var document = Document(width > 0 && lineWidth + 4 > width ? fontSize * width / (lineWidth + 4) : fontSize);
                 document.PageWidth = Math.Max(left + width, capabilities.OrientedPageMediaWidth ?? 0);
                 document.PageHeight = Math.Max(top + height, capabilities.OrientedPageMediaHeight ?? 0);
                 document.PagePadding = new Thickness(left, top, Math.Max(0, document.PageWidth - left - width),
@@ -313,7 +380,12 @@ public partial class MainWindow : Window
         }));
         DockPanel.SetDock(buttons, Dock.Top);
         panel.Children.Add(buttons);
-        panel.Children.Add(Identify(new FlowDocumentScrollViewer { Document = Document(), IsToolBarVisible = false }, "ReportDocument", report.Title));
+        var preview = Document(fontSize);
+        AutomationProperties.SetAutomationId(preview, "ReportDocumentContent");
+        preview.MinPageWidth = lineWidth + 36;
+        preview.PagePadding = new Thickness(16);
+        panel.Children.Add(Identify(new FlowDocumentScrollViewer { Document = preview, IsToolBarVisible = false,
+            HorizontalScrollBarVisibility = ScrollBarVisibility.Auto }, "ReportDocument", report.Title));
         return panel;
     }
 }

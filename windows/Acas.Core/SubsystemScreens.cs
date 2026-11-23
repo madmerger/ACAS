@@ -6,6 +6,7 @@ namespace Acas.Core;
 public interface ISubsystemScreens
 {
     MenuItem CreateNavigation(Db database);
+    bool TryClose() => true;
 }
 
 [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
@@ -23,10 +24,17 @@ public sealed class SubsystemScreensAttribute<T>(int order) : SubsystemScreensAt
 
 public static class SubsystemScreens
 {
-    public static IReadOnlyList<MenuItem> Load(Assembly assembly, Db database) => assembly
+    public static IReadOnlyList<MenuItem> Load(Assembly assembly, Db database,
+        Action<ISubsystemScreens>? onLoad = null) => assembly
         .GetCustomAttributes<SubsystemScreensAttribute>()
         .OrderBy(registration => registration.Order)
         .ThenBy(registration => registration.GetType().FullName, StringComparer.Ordinal)
-        .Select(registration => registration.Create().CreateNavigation(database))
+        .Select(registration =>
+        {
+            var subsystem = registration.Create();
+            var menu = subsystem.CreateNavigation(database);
+            onLoad?.Invoke(subsystem);
+            return menu;
+        })
         .ToArray();
 }

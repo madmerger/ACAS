@@ -89,6 +89,14 @@ public sealed class Db : IDisposable
     }
     public int Count(string file) => Scan(file).Count;
 
+    public bool ExecuteAtomically(Func<bool> write)
+    {
+        using var transaction = _c.BeginTransaction();
+        if (!write()) return false;
+        transaction.Commit();
+        return true;
+    }
+
     public T Atomic<T>(Func<T> operation)
     {
         using var transaction = _c.BeginTransaction();
