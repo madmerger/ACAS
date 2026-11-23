@@ -90,18 +90,25 @@ public partial class MainWindow : Window
     {
         for (var element = e.OriginalSource as DependencyObject; element != null;)
         {
-            if (element is ToggleButton) return;
+            if (element is ToggleButton or ScrollBar) return;
             if (element is TreeViewItem node)
             {
-                if (node.IsSelected && node.Tag is NavigationItem { Open: not null })
-                {
-                    e.Handled = true;
-                    node.Focus();
-                    OpenNavigationItem(node);
-                }
+                Reopen(node);
                 return;
             }
             element = element is Visual ? VisualTreeHelper.GetParent(element) : LogicalTreeHelper.GetParent(element);
+        }
+
+        if (Navigation.SelectedItem is TreeViewItem { Header: FrameworkElement header } selected &&
+            e.GetPosition(header).Y is var y && y >= 0 && y < header.ActualHeight)
+            Reopen(selected);
+
+        void Reopen(TreeViewItem node)
+        {
+            if (!node.IsSelected || node.Tag is not NavigationItem { Open: not null }) return;
+            e.Handled = true;
+            node.Focus();
+            OpenNavigationItem(node);
         }
     }
 
