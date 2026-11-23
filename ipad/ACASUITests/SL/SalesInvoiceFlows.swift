@@ -17,6 +17,15 @@ final class SalesInvoiceFlows: XCTestCase {
         let export = app.buttons["sales.invoice.export"]
         XCTAssertTrue(export.isHittable)
         XCTAssertEqual(export.label, "帳票原本を保存")
+        export.tap()
+        let save = app.buttons.matching(NSPredicate(format: "label IN %@", ["Save", "保存"])).firstMatch
+        XCTAssertTrue(save.waitForExistence(timeout: 10), app.debugDescription)
+        let picker = XCTAttachment(screenshot: app.screenshot())
+        picker.name = "SL-103-帳票保存"
+        picker.lifetime = .keepAlways
+        add(picker)
+        save.tap()
+        XCTAssertTrue(save.waitForNonExistence(timeout: 10))
     }
 
     @MainActor
