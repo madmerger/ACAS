@@ -91,6 +91,7 @@
 "gl.account-level" = "見出し階層";
 "gl.account-balance" = "残高";
 "gl.account-delete" = "勘定科目を削除";
+"gl.account-edit.lookup" = "コードで勘定科目を検索";
 "gl.delete-confirm" = "この勘定科目を削除しますか？";
 "gl.saved" = "勘定科目を保存しました";
 "gl.action.save" = "保存";
