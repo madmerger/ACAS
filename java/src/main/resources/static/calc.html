@@ -2,56 +2,129 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>ACAS 計算ロジック</title>
 <link rel="stylesheet" href="app.css">
-<style>
- .calc { max-width: 900px; margin: 1em auto; }
- .calc fieldset { margin: .8em 0; border: 1px solid #456; padding: .6em 1em; }
- .calc label { margin-right: 1em; }
- .calc input { font: inherit; width: 10em; }
- .calc output { display: inline-block; min-width: 22em; margin-left: 1em; color: #ff6; font-family: monospace; }
-</style>
+<link rel="stylesheet" href="calc.css">
 </head>
 <body>
-<header><h1>ACAS 計算ロジック</h1><nav><a href="index.html">業務画面</a></nav></header>
-<div id="case-banner" class="case-banner" hidden></div>
+<header class="calc-header"><h1>ACAS 計算ロジック</h1></header>
+<div id="case-banner" class="case-banner" role="status" hidden></div>
 <main class="calc">
- <fieldset id="f-check"><legend>チェックディジット（顧客・仕入先コード）</legend>
-  <label>コード（6 桁） <input id="code" maxlength="6"></label><button data-calc="check">計算</button><output id="o-check"></output></fieldset>
- <fieldset id="f-date"><legend>日付変換（日/月/年 → 通算日）</legend>
-  <label>日付 <input id="date" maxlength="11"></label><button data-calc="date">変換</button><output id="o-date"></output></fieldset>
- <fieldset id="f-vat"><legend>消費税（VAT）額</legend>
-  <label>税抜金額 <input id="net"></label><label>税率(%) <input id="rate"></label><button data-calc="vat">計算</button><output id="o-vat"></output></fieldset>
- <fieldset id="f-age"><legend>債権年齢区分</legend>
-  <label>経過日数 <input id="days"></label><button data-calc="age">判定</button><output id="o-age"></output></fieldset>
- <fieldset id="f-avg"><legend>在庫平均原価</legend>
-  <label>在庫金額 <input id="value"></label><label>数量 <input id="qty"></label><button data-calc="avg">計算</button><output id="o-avg"></output></fieldset>
+ <p class="calc-intro">計算したい項目に値を入力してください。結果は各項目の下に表示されます。</p>
+ <form autocomplete="off">
+  <fieldset id="f-check">
+   <legend>チェックディジット（顧客・仕入先コード）</legend>
+   <div class="calc-fields">
+    <label>コード（半角6文字） <input id="code" maxlength="6" placeholder="例：K9P34Y" spellcheck="false"></label>
+    <button data-calc="check">計算</button>
+   </div>
+   <output id="o-check" for="code"></output>
+  </fieldset>
+ </form>
+ <form autocomplete="off">
+  <fieldset id="f-date">
+   <legend>日付から通算日への変換</legend>
+   <div class="calc-fields">
+    <label>日付（日／月／年） <input id="date" maxlength="11" placeholder="例：01/01/2024" spellcheck="false"></label>
+    <button data-calc="date">変換</button>
+   </div>
+   <output id="o-date" for="date"></output>
+  </fieldset>
+ </form>
+ <form autocomplete="off">
+  <fieldset id="f-vat">
+   <legend>付加価値税額</legend>
+   <div class="calc-fields">
+    <label>税抜金額 <input id="net" inputmode="decimal"></label>
+    <label>税率（％） <input id="rate" inputmode="decimal"></label>
+    <button data-calc="vat">計算</button>
+   </div>
+   <output id="o-vat" for="net rate"></output>
+  </fieldset>
+ </form>
+ <form autocomplete="off">
+  <fieldset id="f-age">
+   <legend>売掛債権の経過日数区分</legend>
+   <div class="calc-fields">
+    <label>経過日数（日） <input id="days" inputmode="numeric"></label>
+    <button data-calc="age">判定</button>
+   </div>
+   <output id="o-age" for="days"></output>
+  </fieldset>
+ </form>
+ <form autocomplete="off">
+  <fieldset id="f-avg">
+   <legend>在庫平均原価</legend>
+   <div class="calc-fields">
+    <label>在庫金額 <input id="value" inputmode="decimal"></label>
+    <label>数量 <input id="qty" inputmode="numeric"></label>
+    <button data-calc="avg">計算</button>
+   </div>
+   <output id="o-avg" for="value qty"></output>
+  </fieldset>
+ </form>
 </main>
 <script>
 const v = id => document.getElementById(id).value;
 const q = o => new URLSearchParams(o).toString();
+const failed = text => ({text, error: true});
 const defs = {
-  check: () => ['/api/calc/check-digit?' + q({code: v('code')}), r => r.valid ? 'チェックディジット: ' + r.check + '（有効）' : 'コード不正'],
-  date: () => ['/api/calc/date?' + q({date: v('date')}), r => r.valid ? '通算日: ' + r.integer + '　日付: ' + r.normalized : '日付不正（通算日 0）'],
-  vat: () => ['/api/calc/vat?' + q({net: v('net'), rate: v('rate')}), r => '税額: ' + r.vat],
-  age: () => ['/api/calc/age?' + q({days: v('days')}), r => '区分: ' + (r.bucket === 0 ? '当月（30 日未満）' : r.bucket + ' 日' + (r.bucket === 90 ? '以上' : '台')) + ' [' + r.bucket + ']'],
-  avg: () => ['/api/calc/average-cost?' + q({value: v('value'), qty: v('qty')}), r => r.cost === null ? '計算不可（数量 0）' : '平均原価: ' + r.cost],
+  check: () => ['check-digit', {code: v('code')}, r => r.valid
+    ? {text: 'チェックディジット：' + r.check + '（有効）'}
+    : failed('コードが無効です。半角の数字・英大文字・ハイフンで6文字入力してください。')],
+  date: () => ['date', {date: v('date')}, r => r.valid
+    ? {text: '通算日：' + r.integer + '　日付：' + r.normalized}
+    : failed('日付が無効です（通算日：0）。日／月／年の順に確認してください。')],
+  vat: () => ['vat', {net: v('net'), rate: v('rate')}, r => ({text: '税額：' + r.vat})],
+  age: () => ['age', {days: v('days')}, r => ({text: '区分：' + ({
+    0: '当月（30日未満）', 30: '30～59日', 60: '60～89日', 90: '90日以上',
+  })[r.bucket]})],
+  avg: () => ['average-cost', {value: v('value'), qty: v('qty')}, r => r.cost === null
+    ? failed('数量が0のため、平均原価を計算できません。')
+    : {text: '平均原価：' + r.cost}],
 };
-async function calc(name) {
-  const [url, fmt] = defs[name]();
-  const out = document.getElementById('o-' + name);
+async function calc(button) {
+  if (button.disabled) return;
+  const [endpoint, params, format] = defs[button.dataset.calc]();
+  const out = button.form.querySelector('output');
+  out.textContent = '';
+  delete out.dataset.result;
+  out.removeAttribute('data-error');
+  out.setAttribute('aria-busy', 'true');
+  button.disabled = true;
+  let result;
   try {
-    const res = await fetch(url);
-    if (!res.ok) { out.textContent = '入力エラー'; out.dataset.result = ''; return; }
-    const r = await res.json();
-    out.textContent = fmt(r); out.dataset.result = JSON.stringify(r);
-  } catch (e) { out.textContent = '通信エラー'; }
+    const res = await fetch('/api/calc/' + endpoint + '?' + q(params));
+    if (res.ok) {
+      const body = await res.json();
+      result = format(body);
+      out.dataset.result = JSON.stringify(body);
+    } else if (res.status === 400) {
+      const body = await res.json();
+      result = failed(body.message || '入力内容を確認してください。');
+    } else {
+      result = failed('計算を完了できませんでした。時間をおいて再試行してください。');
+    }
+  } catch {
+    result = failed('通信に失敗しました。接続を確認して再試行してください。');
+  } finally {
+    out.toggleAttribute('data-error', result.error === true);
+    out.textContent = result.text;
+    out.removeAttribute('aria-busy');
+    button.disabled = false;
+  }
 }
-document.querySelectorAll('button[data-calc]').forEach(b => b.addEventListener('click', () => calc(b.dataset.calc)));
-document.querySelectorAll('.calc input').forEach(i => i.addEventListener('keydown', e => {
-  if (e.key === 'Enter') i.closest('fieldset').querySelector('button').click(); }));
+document.querySelectorAll('.calc form').forEach(form => form.addEventListener('submit', e => {
+  e.preventDefault();
+  calc(form.querySelector('button[data-calc]'));
+}));
 const p = new URLSearchParams(location.search);
-window.acasSetCase = (id, title) => { const b = document.getElementById('case-banner'); b.hidden = false; b.textContent = 'ケース ' + id + '： ' + (title || ''); };
+window.acasSetCase = (id, title) => {
+  const banner = document.getElementById('case-banner');
+  banner.textContent = 'ケース ' + id + '：' + (title || '');
+  banner.hidden = false;
+};
 if (p.get('case')) window.acasSetCase(p.get('case'), p.get('title'));
 </script>
 </body>

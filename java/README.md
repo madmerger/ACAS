@@ -1,8 +1,7 @@
 # ACAS Web 版（Spring Boot 3 / Java 21）
 
-レガシー GnuCOBOL 版 ACAS（システム設定 / GL / SL / PL / 在庫 / IRS）を、サーバー側に業務ロジックと DB（H2）を持つ
-Web アプリへ移行したもの。画面・メニュー・メッセージ・帳票は日本語で表示し、メニュー階層・キー・入力順・計算・データ更新は
-レガシーと同一に保つ。
+レガシー GnuCOBOL 版 ACAS（システム設定、総勘定元帳、売掛元帳、買掛元帳、在庫管理、簡易会計）の Web 版です。
+業務メニューはボタン、入力はフォーム、一覧はテーブル、帳票はダイアログで操作します。業務データは H2 に保存します。
 
 ## ビルドと起動
 
@@ -15,17 +14,18 @@ java -jar target/acas-web-1.0.0.jar      # http://localhost:8080/
 | プロパティ | 既定 | 説明 |
 |---|---|---|
 | `acas.data-dir` | `./data` | H2 データベースの保存先 |
-| `acas.initial-baseline` | `biz` | DB が空のとき投入する初期データ（`empty` で投入なし） |
-| `acas.test-api` | `false` | 同一性確認用 API（`/api/test/**`）を有効化。本番では無効のままにする |
+| `server.address` | `127.0.0.1` | ローカル利用時の待ち受けアドレス。アプリ内の独立した Web 認証は未実装 |
+| `acas.initial-baseline` | 空 | DB が空のとき投入する初期データ名。検証用途では `biz` 等を指定 |
+| `acas.test-api` | `false` | 同一性確認用 API（`/api/test/**`）を有効化。隔離した検証用データベースで使用 |
 | `acas.fixed-date` | なし | システム日付の固定（`yyyy-MM-dd`、検証用） |
 
 ## 構成
 
 - `jp.co.acas.core` … COBOL 実行モデルの移植基盤
-  - `Layout` / `Rec`: コピー句（`resources/copybooks/`）を実行時に解析し、固定長レコードをレガシーと同じバイト列で保持
+  - `Layout` / `Rec`: Maven が既存の COBOL ソースツリーから取り込むコピー句を解析し、固定長レコードを保持
   - `CobFile` / `Store`: 索引・相対・順・行順ファイルの入出力（FILE STATUS 互換）。H2 に保存
-  - `Terminal`: 80x24 画面。レガシー原文（英語）面と日本語面の 2 面を持ち、ブラウザには日本語面を表示
-  - `Messages`: 英語→日本語の文言対応表（`resources/i18n/*.tsv`、画面 `/messages.html` で閲覧可能）
+  - `Terminal`: レガシーの対話状態を保持し、照合用テキストとフォーム・選択肢・表示項目を出力
+  - `Messages`: 英語から日本語への文言対応表（`resources/i18n/*.tsv`）
   - `Program` / `Ctx`: COBOL 1 プログラム = 1 クラス。`call("gl030")` は `jp.co.acas.<sys|gl|sl|pl|st|irs|calc>.Gl030` を呼ぶ
 - `jp.co.acas.web` … REST API（`/api/sessions` ほか）と静的 UI（`resources/static/`）
 - `jp.co.acas.sys|gl|sl|pl|st|irs|calc` … 各サブシステムの業務プログラム
@@ -54,7 +54,8 @@ java -jar target/acas-web-1.0.0.jar      # http://localhost:8080/
 ```
 java -jar target/acas-web-1.0.0.jar --server.port=18080 --acas.test-api=true \
      --acas.fixed-date=2026-11-23 --acas.data-dir=/tmp/acas-test
-python3 tools/replay.py <証跡展開dir> -v GL-020 SL-        # ID または接頭辞（末尾 -）
+ACAS_VIDEO=web.mp4 python3 tools/ui_replay.py <証跡展開dir> --out 結果.json GL-020 SL-
 ```
 
-レガシー実測（`runs/<ケース>/` の画面テキスト・レコード差分・帳票）と、Web 版の英語原文面・レコード 16 進・帳票を比較する。
+ブラウザーで操作を再生し、同じ業務処理が出力する照合用テキスト、レコードの差分、帳票をレガシー実測と比較します。
+録画には Playwright の Chromium と FFmpeg が必要です。レガシー側の入力制限に合わせて、業務フォームは半角文字を受け付けます。

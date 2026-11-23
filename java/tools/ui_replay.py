@@ -119,8 +119,10 @@ def run_calc(b, case):
     page = b.page
     page.evaluate("([i, t]) => window.acasSetCase(i, t)", [case["id"], case["title"]])
     key = next((k for k in CALC if isinstance(inp, dict) and k in inp), None)
-    if lr["verdict"] == "未実施" or lr.get("actual") is None or key is None:
+    if lr["verdict"] == "未実施":
         return dict(r, verdict="対象外", reason="レガシー未実施のため比較対象なし: " + str(lr.get("reason") or ""))
+    if lr.get("actual") is None or key is None:
+        return dict(r, verdict="未検証", reason="計算の実測値または入力手順を取得できませんでした")
     name, fields = CALC[key]
     page.evaluate("(n) => { const o = document.getElementById('o-' + n); o.textContent = ''; delete o.dataset.result; }", name)
     for f in fields: page.fill("#" + f, str(inp.get(f, "")))
