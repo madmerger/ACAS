@@ -172,7 +172,7 @@ enum Sys002 {
         if st.open, let b = f.read(1) {
             st.sys = Record(SystemLayout.layout, bytes: b)
         } else {
-            st.sys = Record(SystemLayout.layout)
+            st.sys = SystemAuxRecords.initialSystem()
             st.sys.setInt("system-record-version-prime", 1)
             st.sys.setInt("system-record-version-secondary", 1)
             st.sys.setInt("date-form", 1)
