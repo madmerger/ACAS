@@ -117,6 +117,7 @@ final class PurchaseFlows: XCTestCase {
         let app = try launch("PL-413", smokeID: "仕入伝票の固定設定")
         tap(app, "pl.invoice.settings.menu", scrolling: true)
         tap(app, "pl.invoice.settings.open")
+        XCTAssertTrue(app.staticTexts["再利用できる削除済みの伝票番号がある場合は、そちらを先に使います。"].exists)
         let folio = "pl.invoice.settings.nextFolio"
         let vat = "pl.invoice.settings.vatAccount"
         let save = "pl.invoice.settings.save"

@@ -28,27 +28,22 @@ struct PurchaseInvoiceMenu: View {
 
 private struct PurchaseInvoiceSettingsForm: View {
     let workspace: Workspace
-    private let showsVATAccount: Bool
-    @State private var nextFolio: String
-    @State private var vatAccount: String
+    @State private var nextFolio = ""
+    @State private var vatAccount: String?
     @State private var error: PurchaseNotice?
     @Environment(\.dismiss) private var dismiss
 
-    init(workspace: Workspace) {
-        self.workspace = workspace
-        let settings = PurchaseLedger(workspace.context).invoiceSettings()
-        showsVATAccount = settings.vatAccount != nil
-        _nextFolio = State(initialValue: String(settings.nextFolio))
-        _vatAccount = State(initialValue: settings.vatAccount.map { String($0) } ?? "")
-    }
-
     var body: some View {
         Form {
-            TextField(plString("purchase.invoice.settings.nextFolio"), text: $nextFolio)
-                .keyboardType(.numberPad)
-                .accessibilityIdentifier("pl.invoice.settings.nextFolio")
-            if showsVATAccount {
-                TextField(plString("purchase.invoice.settings.vatAccount"), text: $vatAccount)
+            Section {
+                TextField(plString("purchase.invoice.settings.nextFolio"), text: $nextFolio)
+                    .keyboardType(.numberPad)
+                    .accessibilityIdentifier("pl.invoice.settings.nextFolio")
+            } footer: {
+                Text(plString("purchase.invoice.settings.nextFolio.help"))
+            }
+            if let account = Binding($vatAccount) {
+                TextField(plString("purchase.invoice.settings.vatAccount"), text: account)
                     .keyboardType(.numberPad)
                     .accessibilityIdentifier("pl.invoice.settings.vatAccount")
             }
@@ -57,7 +52,12 @@ private struct PurchaseInvoiceSettingsForm: View {
         }
         .navigationTitle(plString("purchase.invoice.settings"))
         .purchaseAlert($error)
-        .onAppear { workspace.completed("pl.invoice.settings.screen") }
+        .onAppear {
+            let settings = PurchaseLedger(workspace.context).invoiceSettings()
+            nextFolio = String(settings.nextFolio)
+            vatAccount = settings.vatAccount.map { String($0) }
+            workspace.completed("pl.invoice.settings.screen")
+        }
     }
 
     private func save() {
@@ -66,7 +66,7 @@ private struct PurchaseInvoiceSettingsForm: View {
             guard let folio = Int64(nextFolio) else { throw PurchaseLedger.Error.invalidInvoiceSettings }
             var settings = ledger.invoiceSettings()
             settings.nextFolio = folio
-            settings.vatAccount = showsVATAccount ? Int64(vatAccount) : nil
+            settings.vatAccount = vatAccount.flatMap { Int64($0) }
             try ledger.saveInvoiceSettings(settings)
             workspace.completed("pl.invoice.settings.save")
             dismiss()
