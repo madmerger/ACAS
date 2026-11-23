@@ -13,7 +13,7 @@ struct GeneralLedgerMenu: View {
     var body: some View {
         if opened {
             List {
-                NavigationLink(ledgerText("business-date")) { LedgerBusinessDate(workspace: workspace) {} }
+                NavigationLink(ledgerText("business-date")) { LedgerBusinessDate(workspace: workspace, reopening: true) {} }
                     .accessibilityIdentifier("gl.business-date")
                 NavigationLink(ledgerText("accounts")) { LedgerAccountsMenu(workspace: workspace) }
                     .accessibilityIdentifier("gl.accounts")
@@ -42,6 +42,7 @@ struct GeneralLedgerMenu: View {
 
 private struct LedgerBusinessDate: View {
     let workspace: Workspace
+    var reopening = false
     let started: () -> Void
     @State private var year = ""
     @State private var month = ""
@@ -64,7 +65,7 @@ private struct LedgerBusinessDate: View {
             year = String(today.year ?? 0)
             month = String(today.month ?? 0)
             day = String(today.day ?? 0)
-            workspace.completed("gl-business-date")
+            workspace.completed(reopening ? "gl-business-date-reopen" : "gl-business-date")
         }
     }
 

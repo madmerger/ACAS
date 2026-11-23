@@ -46,12 +46,22 @@ final class LedgerBusinessDateFlows: XCTestCase {
     @MainActor
     private func checkDateMenu(_ id: String, reopen: Bool = false) throws {
         let app = try openLedger(id)
+        let fields = ["year", "month", "day"].map { app.textFields["gl.date." + $0] }
+        let initial = try fields.map { field in
+            let populated = XCTNSPredicateExpectation(
+                predicate: NSPredicate(format: "value MATCHES %@", "[0-9]+"), object: field)
+            XCTAssertEqual(XCTWaiter.wait(for: [populated], timeout: 5), .completed)
+            return try XCTUnwrap(field.value as? String)
+        }
         if reopen {
+            XCTAssertFalse(app.staticTexts["case.verdict.match"].exists)
             tap(app, "gl.confirm-date")
             tap(app, "gl.business-date")
-        }
-        for part in ["year", "month", "day"] {
-            XCTAssertTrue(app.textFields["gl.date." + part].waitForExistence(timeout: 5))
+            for (field, value) in zip(fields, initial) {
+                let restored = XCTNSPredicateExpectation(predicate: NSPredicate(format: "value == %@", value),
+                                                         object: field)
+                XCTAssertEqual(XCTWaiter.wait(for: [restored], timeout: 5), .completed)
+            }
         }
         captureMatch(app, id)
     }
