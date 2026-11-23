@@ -14,9 +14,9 @@ public static class Common
         string dd = a.Substring(0, 2), mm = a.Substring(3, 2), cc = a.Substring(6, 2), yy = a.Substring(8, 2);
         if (!IsNum(dd) || !IsNum(mm) || !IsNum(cc)) return 0;
         int d = int.Parse(dd), m = int.Parse(mm);
-        yy = yy.Replace(' ', '0');   // 空白は数字 0 として扱われる (USAGE DISPLAY のゾーン無視: レガシー実測)
-        if (d < 1 || d > 31 || m < 1 || m > 12 || !IsNum(yy)) return 0;
-        int y = int.Parse(cc + yy);
+        if (d < 1 || d > 31 || m < 1 || m > 12 || !IsNum(yy.Replace(' ', '0'))) return 0;
+        // 年下 2 桁の空白は (文字コード - '0') = -16 として桁計算される (レガシー実測 CALC-259: "01/01/24  " → 2224 年)
+        int y = int.Parse(cc) * 100 + (yy[0] - '0') * 10 + (yy[1] - '0');
         if (y < 1601 || d > DateTime.DaysInMonth(y, m)) return 0;
         return Launcher.DateToBin(new DateTime(y, m, d));
     }

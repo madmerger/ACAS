@@ -15,8 +15,24 @@ int ok = 0, ng = 0; var results = new List<object>();
 foreach (var c in doc.RootElement.GetProperty("cases").EnumerateArray())
 {
     var id = c.GetProperty("id").GetString()!;
-    if (c.GetProperty("subsystem").GetString() == "CALC") continue;
     if (filters.Length > 0 && !filters.Any(f => id.StartsWith(f))) continue;
+    if (c.GetProperty("subsystem").GetString() == "CALC")
+    {
+        var calc = Acas.Core.Programs.Calc.Run(c);
+        if (calc == null)
+        {
+            Console.WriteLine($"N/A {id} 対象外 (レガシー未実施: 比較対象なし)");
+            results.Add(new { id, match = (bool?)null, verdict = "対象外", result = "", reason = "レガシー側未実施 (HTTP/ブラウザ専用の期待で端末版に判定面が無い) のため比較対象なし" });
+            continue;
+        }
+        var legacy = Acas.Core.Programs.Calc.LegacyLine(c, root);
+        bool same = legacy != null && legacy == calc.Value.Line;
+        if (same) ok++; else ng++;
+        Console.WriteLine($"{(same ? "OK  " : "NG  ")}{id} {calc.Value.Summary}");
+        if (!same) Console.WriteLine($"   旧[{legacy}] 新[{calc.Value.Line}]");
+        results.Add(new { id, match = (bool?)same, verdict = same ? "一致" : "不一致", result = calc.Value.Summary, reason = same ? "" : $"旧[{legacy}] 新[{calc.Value.Line}]" });
+        continue;
+    }
     if (!c.GetProperty("runner").TryGetProperty("steps", out _)) { Console.WriteLine($"SKIP {id}"); continue; }
     CaseResult r;
     try { r = await CaseRunner.Run(c, root); }
