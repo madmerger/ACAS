@@ -4,6 +4,60 @@ import XCTest
 @testable import ACASCore
 
 final class PurchaseLedgerTests: XCTestCase {
+    func testPostingRollsBackGLPostingIfBatchWriteFails() throws {
+        try withDiskLedger { ledger, db in
+            var system = ledger.system
+            system.setInt("level-1", 1)
+            try ledger.systemFile.write(1, system.bytes)
+            var value = PurchaseLedger.Transaction(date: ledger.processingDate)
+            value.supplier = try addSupplier(ledger)
+            value.lines[0].code = "a1"
+            value.lines[0].net = 10_000
+            value.lines[0].tax = 2_000
+            let folio = try ledger.saveTransaction(value)
+            let batchPath = ledger.base + "batch.dat"
+            let postingPath = ledger.base + "posting.dat"
+            let postingFile = RelativeFile(ledger.store, path: postingPath, recordSize: PurchaseRecords.postLayout.size)
+            let before = EvidenceComparison.snapshot(ledger.store)
+            let sql = """
+                CREATE TRIGGER reject_batch BEFORE INSERT ON records
+                WHEN NEW.file = '\(batchPath)'
+                    AND (SELECT length(data) FROM files WHERE name = '\(postingPath)') > 0
+                BEGIN SELECT RAISE(ABORT, 'blocked after writing GL posting'); END
+                """
+            XCTAssertNil(ledger.store.readRaw(postingPath))
+            XCTAssertEqual(sqlite3_exec(db, sql, nil, nil, nil), SQLITE_OK)
+
+            XCTAssertThrowsError(try ledger.postTransactions()) { error in
+                guard case .rejected(let path) = error as? PurchasePostingWriteError else {
+                    return XCTFail("予期しないエラー: \(error)")
+                }
+                XCTAssertEqual(path, batchPath)
+            }
+            XCTAssertNil(ledger.store.readRaw(postingPath))
+            XCTAssertTrue(ledger.store.all(batchPath).isEmpty)
+            XCTAssertTrue(EvidenceComparison.diff(before: before, after: EvidenceComparison.snapshot(ledger.store)).isEmpty)
+
+            XCTAssertEqual(sqlite3_exec(db, "DROP TRIGGER reject_batch", nil, nil, nil), SQLITE_OK)
+            XCTAssertEqual(try ledger.postTransactions().map(\.id), [folio])
+            XCTAssertEqual(postingFile.recordCount, 1)
+            let raw = try XCTUnwrap(postingFile.read(1))
+            let posting = Record(PurchaseRecords.postLayout, bytes: raw)
+            XCTAssertEqual(posting.int("post-number"), 1)
+            XCTAssertEqual(posting.int("post-amount"), 10_000)
+            XCTAssertEqual(posting.int("vat-amount"), 2_000)
+            let batches = ledger.store.all(batchPath)
+            XCTAssertEqual(batches.count, 1)
+            let batch = Record(PurchaseRecords.batchLayout, bytes: try XCTUnwrap(batches.first?.data))
+            XCTAssertEqual(batch.int("batch-nos"), posting.int("batch"))
+            XCTAssertEqual(batch.int("items"), 1)
+            XCTAssertTrue(try ledger.postTransactions().isEmpty)
+            XCTAssertEqual(postingFile.recordCount, 1)
+            XCTAssertEqual(postingFile.read(1), raw)
+            XCTAssertEqual(ledger.store.all(batchPath).count, 1)
+        }
+    }
+
     func testPostingDoesNotWriteAfterSQLiteRollsBackSupplierUpdate() throws {
         try withDiskLedger { ledger, db in
             var value = PurchaseLedger.Transaction(date: ledger.processingDate)
