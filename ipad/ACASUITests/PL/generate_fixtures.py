@@ -120,8 +120,8 @@ def equivalence_fixture(root, case):
                         "unprintedReports": [path for path, report in reports.items() if report["count"] == 0]
                         if case_id in ("PL-018", "PL-228") else [],
                         "pathFilter": ["ledgers/acas/purchled.dat"] if case_id == "PL-090" else None,
-                        "relativeRecordSizes": {x["file"]: RELATIVE_SIZES[Path(x["file"]).name]
-                                                for x in changes if Path(x["file"]).name in RELATIVE_SIZES}},
+                        "relativeRecordSizes": {f"ledgers/acas/{name}": size
+                                                for name, size in RELATIVE_SIZES.items()}},
     }
 
 

@@ -49,14 +49,7 @@ final class DebugEvidence: Decodable, ObservableObject {
     }
 
     func snapshot(_ store: FileStore) -> EvidenceComparison.Snapshot {
-        var snapshot = EvidenceComparison.snapshot(store)
-        for (path, size) in equivalence?.relativeRecordSizes ?? [:] {
-            let file = RelativeFile(store, path: path, recordSize: size)
-            for index in 0..<file.recordCount {
-                guard let bytes = file.read(index + 1) else { continue }
-                snapshot[path, default: [:]][String(format: "%08d", index + 1)] = FileStore.hex(bytes)
-            }
-        }
+        var snapshot = EvidenceComparison.snapshot(store, relativeRecordSizes: equivalence?.relativeRecordSizes ?? [:])
         if let paths = equivalence?.pathFilter {
             snapshot = snapshot.filter { paths.contains($0.key) }
         }

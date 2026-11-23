@@ -630,6 +630,23 @@ final class PurchaseLedgerTests: XCTestCase {
         }
     }
 
+    func testEvidenceSnapshotDetectsUnexpectedPostingRecords() throws {
+        let ledger = try makeLedger()
+        let store = ledger.store
+        let path = ledger.base + "posting.dat"
+        let sizes = [path: PurchaseRecords.postLayout.size]
+        let before = EvidenceComparison.snapshot(store, relativeRecordSizes: sizes)
+        let file = RelativeFile(store, path: path, recordSize: PurchaseRecords.postLayout.size)
+        try file.write(2, [65])
+        let after = EvidenceComparison.snapshot(store, relativeRecordSizes: sizes)
+        let changes = EvidenceComparison.diff(before: before, after: after)
+        XCTAssertEqual(changes.map(\.file), [path])
+        XCTAssertEqual(changes.map(\.key), ["00000002"])
+        XCTAssertEqual(EvidenceComparison.diff(before: after, after: before).map(\.file), [path])
+        XCTAssertTrue(EvidenceComparison.diff(before: after,
+                                              after: EvidenceComparison.snapshot(store, relativeRecordSizes: sizes)).isEmpty)
+    }
+
     func testPostingAccumulatesLegacyAnalysisKeysAndTotals() throws {
         let ledger = try makeLedger()
         var value = PurchaseLedger.Transaction(date: ledger.processingDate)
