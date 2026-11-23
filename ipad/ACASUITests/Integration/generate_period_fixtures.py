@@ -65,11 +65,14 @@ def confirmed_period(evidence, run, case_id, workflow, title):
     before_extra = read_json(evidence_path(evidence, run / "before-extra.json"))
     after_extra = read_json(evidence_path(evidence, run / "after-extra.json"))
     open_items = "ledgers/acas/" + ("openitm3.dat" if workflow == "salesPeriod" else "openitm5.dat")
-    extra_files = {open_items}
-    if workflow == "purchasePeriod":
-        extra_files.add("ledgers/acas/value.dat")
+    value = "ledgers/acas/value.dat"
+    extra_files = {open_items, value}
     for file in sorted(extra_files):
-        old, new = before_extra[file], after_extra[file]
+        old = before_extra[file]
+        if file == value and file not in after_extra and file not in result["changed"] and file not in result["deleted"]:
+            new = old
+        else:
+            new = after_extra[file]
         seed["files"][file] = {"type": "indexed", "records": sorted(old.items())}
         changes.extend({"file": file, "key": key, "before": old.get(key), "after": new.get(key)}
                        for key in sorted(old.keys() | new.keys()) if old.get(key) != new.get(key))
