@@ -249,6 +249,7 @@ struct CompanyForm: View {
                 settings: draft, paths: .init(incompleteRecords: incompletePath, ledgers: ledgersPath),
                 printReport: printReport
             )
+            guard selection.paths.isValid else { throw CompanySetup.Error.invalidField }
             if setup.name.isEmpty {
                 try setup.prepareInitialRecord(draft)
                 workspace.pendingInitialCompany = selection
