@@ -135,6 +135,7 @@ private struct LedgerAccountsMenu: View {
         .onAppear {
             ChartOfAccounts(workspace.context).prepare()
             reload()
+            workspace.completed("gl-accounts-menu")
         }
     }
 
@@ -213,6 +214,7 @@ private struct LedgerAccountEditor: View {
             type = initial?.type ?? 0
             placement = initial?.placement ?? ""
             level = max(1, initial?.level ?? 1)
+            if initial == nil { workspace.completed("gl-account-add-menu") }
         }
     }
 

@@ -18,12 +18,23 @@ WORKFLOWS = {
     "SYS-009": ("system-company-period", "会計サイクルの周期に99を入力"),
     "SYS-010": ("system-company-report", "売掛元帳と在庫管理の連携を無効にする"),
     "SYS-200": ("system-main-menu", "会計管理のメニューを表示"),
+    "SYS-201": ("company", "会社の初期登録"),
     "SYS-202": ("system-unavailable-orders", "受注管理が利用できないことを確認"),
     "SYS-203": ("system-unavailable-payroll", "給与管理が利用できないことを確認"),
     "SYS-204": ("system-unavailable-retail", "店頭販売が利用できないことを確認"),
     "SYS-206": ("system-company-data", "会社・期間設定の表示を確認"),
+    "SYS-207": ("company", "初期登録で利用領域を選択"),
+    "SYS-208": ("company", "初期登録で会社・期間を設定"),
+    "SYS-209": ("company", "初期登録で運用・端末設定を確認"),
+    "SYS-210": ("company", "初期登録で印刷先を設定"),
+    "SYS-211": ("company", "初期登録で設定帳票の出力有無を選択"),
     "GL-001": ("gl-business-date-reopen", "処理日入力を開き直す"),
+    "GL-002": ("gl-accounts-menu", "勘定科目の管理メニューを表示"),
+    "GL-003": ("gl-defaults-menu", "既定勘定の管理メニューを表示"),
+    "GL-006": ("gl-batch-status-menu", "バッチ状況のメニューを表示"),
+    "GL-007": ("gl-posting-menu", "仕訳転記のバッチ確認を表示"),
     "GL-008": ("gl-cycle-close-menu", "期間締めの確認画面を表示"),
+    "GL-009": ("gl-trial-balance-menu", "試算表メニューを表示"),
     "GL-020": ("gl-account-add", "新規の見出し勘定を登録"),
     "GL-021": ("gl-account-edit", "既存の見出し勘定の名称を変更"),
     "GL-022": ("gl-account-delete", "残高ゼロの明細勘定を削除"),
@@ -42,6 +53,8 @@ WORKFLOWS = {
     "GL-042": ("gl-defaults-list", "既定勘定の一覧を確認"),
     "GL-200": ("gl-business-date", "総勘定元帳を開いて処理日入力へ進む"),
     "GL-201": ("gl-business-date-reopen", "総勘定元帳メニューから処理日入力を開く"),
+    "GL-202": ("gl-accounts-menu", "勘定科目の管理メニューに到達"),
+    "GL-203": ("gl-account-add-menu", "勘定科目の登録フォームに到達"),
     "GL-204": ("gl-account-edit-menu", "勘定科目の変更・削除画面を表示"),
     "GL-205": ("gl-chart-inquiry-menu", "勘定科目一覧の照会画面を表示"),
     "GL-206": ("gl-chart-print", "勘定科目一覧の帳票を確認"),
@@ -140,7 +153,7 @@ def fixture(evidence, case):
             raise ValueError(f"帳票スプールと原本が一致しません: {path}")
     seeded = workflow == "sales-proof" or workflow.startswith(
         (
-            "system-", "gl-account-", "gl-chart-", "gl-batch-status-", "gl-business-date",
+            "system-", "gl-account-", "gl-accounts-", "gl-chart-", "gl-batch-status-", "gl-business-date",
             "gl-close-ledger", "gl-cycle-close-", "gl-defaults-", "gl-posting-", "gl-trial-balance-",
         )
     )
@@ -163,7 +176,7 @@ def fixture(evidence, case):
         number, account, *rest = text_inputs[3].rstrip("\r").split("\r")
         values.update(entry=int(number), account=account.replace(".", ""), transactionCode=rest[0] if rest else None)
     changes = expected_changes(evidence, targets.get("keyed_record_diff"))
-    if workflow == "company":
+    if case["id"] == "SYS-001":
         changes += analysis_changes(evidence, run)
     return {
         "id": case["id"],
