@@ -23,7 +23,7 @@ public sealed partial class SalesLedger
             ("Pvi", "VAT Input Invoices/CN's") => "仕入付加価値税（請求書・貸方伝票）",
             ("Pvj", "VAT Input Receipts") => "仕入付加価値税（領収書）",
             ("Sz" or "Pz", "Computer Control") => "システム管理",
-            ("Pza", "Purchase Carriage Charges") => "仕入送料",
+            ("Pza", "Purchase Carriage Charge") => "仕入送料",
             ("Pzb", "Purchase Late Charges") => "仕入延滞料",
             ("Szc", "Sales Carriage Charges") => "売上送料",
             ("Szd", "Sales Late Charges") => "売上延滞料",

@@ -146,6 +146,24 @@ public sealed class SalesTests
     }
 
     [Fact]
+    public void AllAnalysisCodesDisplayTruncatedLegacyPurchaseCarriageDescriptionInJapanese()
+    {
+        using var db = new Db();
+        db.LoadBaseline("sl-printed");
+        var sales = new SalesLedger(db);
+        var system = sales.SystemRecord();
+        system.SetN("File-Status-15", 0);
+        db.Put(SalesLedger.SystemFile, "00000001", system.B);
+        sales.ExtractSalesForPosting();
+
+        byte[] stored = db.Read(SalesLedger.AnalysisFile, "Pza")!;
+        Assert.Equal("Purchase Carriage Charge", System.Text.Encoding.ASCII.GetString(stored, 9, 24));
+        Assert.Contains("za　000000　仕入送料　P&P", sales.AnalysisReport(true));
+        Assert.DoesNotContain("Purchase Carriage Charge", sales.AnalysisReport(true));
+        Assert.Equal(stored, db.Read(SalesLedger.AnalysisFile, "Pza"));
+    }
+
+    [Fact]
     public void EmptyAnalysisReportComparisonChecksHeadingValuesAndNoDetails()
     {
         var legacy = "SL070                              Product Analysis Codes        Page   1\n\n" +
