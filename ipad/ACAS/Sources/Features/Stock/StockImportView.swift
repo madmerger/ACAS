@@ -30,7 +30,15 @@ struct StockImportView: View {
                 let file = try result.get()
                 let access = file.startAccessingSecurityScopedResource()
                 defer { if access { file.stopAccessingSecurityScopedResource() } }
-                let data = try Data(contentsOf: file)
+                let limit = 8 * 1024 * 1024
+                let handle = try FileHandle(forReadingFrom: file)
+                defer { try? handle.close() }
+                let data = try handle.read(upToCount: limit + 1) ?? Data()
+                guard data.count <= limit else {
+                    source = ""
+                    message = stockText("error.importSize")
+                    return
+                }
                 if data.count.isMultiple(of: 512), !data.contains(10), !data.contains(13) {
                     let bytes = Array(data)
                     source = stride(from: 0, to: bytes.count, by: 512)

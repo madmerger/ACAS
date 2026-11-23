@@ -4,6 +4,28 @@ import XCTest
 @testable import ACASCore
 
 final class StockServiceTests: XCTestCase {
+    func testItemEditRejectsWrongAnalysisRecordLengthWithoutUpdatingStock() throws {
+        let store = try FileStore()
+        let service = StockService(BusinessContext(store: store))
+        let analysis = "ledgers/acas/analysis.dat"
+        let key = Array("Pa1".utf8)
+        XCTAssertTrue(store.write(analysis, key: key, data: key + Array(repeating: 0x20, count: 63)))
+        var item = StockService.Item()
+        item.code = "ITEM001"
+        item.abbreviation = "ITEM"
+        item.name = "元の品目"
+        try service.save(item)
+        let before = store.all("ledgers/acas/stockctl.dat").map(\.data)
+        item.name = "変更後の品目"
+        XCTAssertThrowsError(try service.save(item, editing: item.code)) {
+            XCTAssertEqual($0 as? StockService.Failure, .invalidAnalysisRecordLength)
+        }
+        XCTAssertEqual(store.all("ledgers/acas/stockctl.dat").map(\.data), before)
+        XCTAssertTrue(store.rewrite(analysis, key: key, data: key + Array(repeating: 0x20, count: 33)))
+        try service.save(item, editing: item.code)
+        XCTAssertEqual(try service.find(item.code).name, item.name)
+    }
+
     func testAuditReportEnablesPeriodClosingAndIncludesMovements() throws {
         let store = try FileStore()
         let service = StockService(BusinessContext(store: store))
@@ -67,6 +89,8 @@ final class StockServiceTests: XCTestCase {
         XCTAssertEqual(sqlite3_open(path, &db), SQLITE_OK)
         let sql = "CREATE TRIGGER reject_report BEFORE UPDATE ON files WHEN NEW.name LIKE '%/prt-1' BEGIN SELECT RAISE(ABORT, 'blocked'); END"
         XCTAssertEqual(sqlite3_exec(db, sql, nil, nil, nil), SQLITE_OK)
+        let insert = "CREATE TRIGGER reject_new_report BEFORE INSERT ON files WHEN NEW.name LIKE '%/prt-1' BEGIN SELECT RAISE(ABORT, 'blocked'); END"
+        XCTAssertEqual(sqlite3_exec(db, insert, nil, nil, nil), SQLITE_OK)
         XCTAssertThrowsError(try service.move(.receipt, code: "ITEM001", quantity: 2, date: service.today))
         XCTAssertEqual(try service.find("ITEM001").held, 0)
         XCTAssertNil(store.readRaw("ledgers/acas/staudit.dat"))
@@ -97,7 +121,25 @@ final class StockServiceTests: XCTestCase {
         XCTAssertEqual(EvidenceComparison.snapshot(store), original)
     }
 
-    func testMissingMovementItemClearsReportWithoutChangingStock() throws {
+    func testOrderPreservesAuditWrittenByMovement() throws {
+        let store = try FileStore()
+        let service = StockService(BusinessContext(store: store))
+        var settings = Record(SystemLayout.layout)
+        settings.setInt("stk-audit-used", 1)
+        try service.settings.write(1, settings.bytes)
+        var item = StockService.Item()
+        item.code = "ITEM001"
+        item.abbreviation = "ITEM"
+        item.name = "品目"
+        try service.save(item)
+        _ = try service.move(.receipt, code: item.code, quantity: 2, date: service.today)
+        let audit = try XCTUnwrap(store.readRaw("ledgers/acas/staudit.dat"))
+        XCTAssertFalse(audit.isEmpty)
+        try service.confirmOrder(item.code, quantity: 1, backOrdered: 0, ordered: nil, due: nil, date: service.today)
+        XCTAssertEqual(store.readRaw("ledgers/acas/staudit.dat"), audit)
+    }
+
+    func testMissingMovementItemPreservesCurrentReportWithoutChangingStock() throws {
         let store = try FileStore()
         let service = StockService(BusinessContext(store: store))
         var item = StockService.Item()
@@ -107,13 +149,41 @@ final class StockServiceTests: XCTestCase {
         try service.save(item)
         let original = EvidenceComparison.snapshot(store)
         for direction in [StockService.Direction.receipt, .issue] {
-            try store.writeRaw("ledgers/acas/prt-1", [0x20])
+            try service.prepareMovementEntry()
+            let reportPath = "ledgers/acas/prt-1"
+            XCTAssertEqual(store.readRaw(reportPath), [])
+            try store.writeRaw(reportPath, [0x20])
             XCTAssertThrowsError(try service.move(direction, code: "MISSING", quantity: 1, date: service.today)) {
                 guard case StockService.Failure.missing = $0 else { return XCTFail("\($0)") }
             }
-            XCTAssertEqual(store.readRaw("ledgers/acas/prt-1"), [])
+            XCTAssertEqual(store.readRaw(reportPath), [0x20])
             XCTAssertEqual(EvidenceComparison.snapshot(store), original)
         }
+    }
+
+    func testStockReportStopsAtFullEndCode() throws {
+        let service = StockService(BusinessContext(store: try FileStore()))
+        var item = StockService.Item()
+        item.name = "Included item"
+        item.code = "A100"
+        item.abbreviation = item.code
+        try service.save(item)
+        item.name = "Excluded item"
+        item.code = "A1001"
+        item.abbreviation = item.code
+        try service.save(item)
+        let report = try service.printReport(.listing, date: service.today, through: "A100")
+        XCTAssertNotNil(report.range(of: Data("Included item".utf8)))
+        XCTAssertNil(report.range(of: Data("Excluded item".utf8)))
+    }
+
+    func testStockImportAcceptsQuotedLegacyDates() throws {
+        let store = try FileStore()
+        let service = StockService(BusinessContext(store: store))
+        XCTAssertEqual(try service.importItems(#"A100,Item,0,0,0,0,0,0,0,0,0,"01/10/2026","03/10/2026""#), 1)
+        let row = try service.record("A100")
+        XCTAssertEqual(row.int("stock-order-date"), Int64(Maps04.integerOfDate(year: 2026, month: 10, day: 1)))
+        XCTAssertEqual(row.int("stock-order-due"), Int64(Maps04.integerOfDate(year: 2026, month: 10, day: 3)))
     }
 
     func testManualMovementPrefersAbbreviationAndBarcodeUsesPrimaryCode() throws {

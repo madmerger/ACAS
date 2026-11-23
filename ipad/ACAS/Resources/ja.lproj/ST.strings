@@ -37,6 +37,10 @@
 "stock.error.invalid" = "入力内容を確認してください。";
 "stock.error.missing" = "指定した在庫品目がありません。";
 "stock.error.missingRecovery" = "復元用の一時ファイルがありません。";
+"stock.error.invalidAnalysisRecordLength" = "分析ファイルのレコード長が一致しないため、在庫品目の変更を中止しました。";
+"stock.error.importSize" = "在庫取込ファイルは8 MiB以下に分割してください。";
+"stock.action.exportReport" = "帳票原本を書き出す";
+"stock.error.exportReport" = "帳票原本を書き出せませんでした。";
 "stock.field.abbreviation" = "品目略号";
 "stock.field.backordered" = "未入荷数";
 "stock.field.barcode" = "バーコード";

@@ -1,7 +1,8 @@
 import Foundation
 
 extension StockService {
-    public func printMasterReport() throws {
+    @discardableResult
+    public func printMasterReport() throws -> Data {
         let system = Record(SystemLayout.layout, bytes: settings.read(1) ?? Record(SystemLayout.layout).bytes)
         let pageLimit = Int(system.int("page-lines"))
         let format = Int(system.int("date-form"))
@@ -66,6 +67,7 @@ extension StockService {
         let count = Pic.edit("zzz,zzz,zz9", value: Int64(rows.count), scale: 0)
         append(" Total Stock Records " + count.trimmingCharacters(in: .whitespaces), after: 3)
         try store.writeRaw(directory + "prt-1", output + [0x0a])
+        return Data(output + [0x0a])
     }
 
     func masterReportDetail(_ row: Record, dateForm: Int) -> [UInt8] {
