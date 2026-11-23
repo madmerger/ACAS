@@ -206,7 +206,7 @@ public sealed class StockScreenModel(Db db, Func<DateTime> clock)
         [
             r.St("Stock-Abrev-Key"), r.St("Stock-Key"), r.St("Stock-Desc"), r.St("Stock-Location"),
             Fmt.E(r.N("Stock-Held"), "zzz,zz9-").Trim(), Fmt.E(r.N("Stock-Cost"), "zzzzzz9.9999").Trim(),
-            Fmt.E(r.N("Stock-Value"), "zz,zzz,zz9.99").Trim(), Fmt.E(r.N("Stock-On-Order"), "zzz,zz9").Trim(),
+            Fmt.E(r.N("Stock-Value"), "zzz,zzz,zz9.99").Trim(), Fmt.E(r.N("Stock-On-Order"), "zzz,zz9").Trim(),
         ], () => DetailForm(r.St("Stock-Key")))).ToList(), "登録されている在庫品目はありません。");
 
     private Screen DetailForm(string key)
@@ -219,7 +219,7 @@ public sealed class StockScreenModel(Db db, Func<DateTime> clock)
             "仕入先　" + string.Join("・", new[] { r.St("Stock-Supplier-P1"), r.St("Stock-Supplier-P2"), r.St("Stock-Supplier-P3") }.Where(x => x.Length > 0)),
             "保管場所　" + r.St("Stock-Location"), "売価　" + Fmt.E(r.N("Stock-Retail"), "zzzzzz9.99").Trim(),
             "原価　" + Fmt.E(r.N("Stock-Cost"), "zzzzzz9.9999").Trim(), "在庫数　" + r.N("Stock-Held"),
-            "在庫金額　" + Fmt.E(r.N("Stock-Value"), "zz,zzz,zz9.99").Trim(), "発注点　" + r.N("Stock-ReOrder-Pnt"),
+            "在庫金額　" + Fmt.E(r.N("Stock-Value"), "zzz,zzz,zz9.99").Trim(), "発注点　" + r.N("Stock-ReOrder-Pnt"),
             "標準発注量　" + r.N("Stock-Std-ReOrder"), "発注残　" + r.N("Stock-On-Order"), "入荷待ち　" + r.N("Stock-Back-Ordered"),
             "当期入庫　" + r.N("Stock-Adds"), "当期出庫　" + r.N("Stock-Deducts"),
         }), DisplayList);
@@ -277,7 +277,7 @@ public sealed class StockScreenModel(Db db, Func<DateTime> clock)
     {
         string title = MovementTitle(kind);
         string info = item.St("Stock-Key") + "　" + item.St("Stock-Desc") + "（在庫数 " + Fmt.E(item.N("Stock-Held"), "zzz,zz9-").Trim()
-            + "・在庫金額 " + Fmt.E(item.N("Stock-Value"), "zz,zzz,zz9.99").Trim() + "）";
+            + "・在庫金額 " + Fmt.E(item.N("Stock-Value"), "zzz,zzz,zz9.99").Trim() + "）";
         var fields = new List<Field> { new TextField("StockMovementQuantity", "数量（取消はマイナス記号を末尾に付加）\n" + info, "", 7) };
         if (kind == MovementKind.Addition) fields.Add(new TextField("StockMovementPrice", "単価", "", 10));
         return new FormScreen(title, fields, "確定", v =>
