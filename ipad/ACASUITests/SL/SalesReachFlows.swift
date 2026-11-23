@@ -111,7 +111,7 @@ final class SalesReachFlows: XCTestCase {
         for _ in 0..<3 where !status.isHittable { app.swipeUp() }
         XCTAssertTrue(status.waitForExistence(timeout: 5))
         XCTAssertTrue(status.label.contains("区切り文字を1〜4個"))
-        XCTAssertTrue(status.label.contains("最初の区切り文字の前は、Shift_JISで30バイト以内"))
+        XCTAssertTrue(status.label.contains("最初の区切り文字は住所1に入れ、その前はShift_JISで30バイト以内"))
         attach(app, name: "初期得意先登録-住所入力案内")
     }
 
