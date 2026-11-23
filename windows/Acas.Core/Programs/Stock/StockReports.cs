@@ -157,7 +157,7 @@ public static class StockReports
     {
         string title = kind switch { 1 => "在庫評価表", 2 => "在庫受払表", 3 => "発注点割れ一覧表", 4 => "在庫履歴表", _ => "在庫一覧表" };
         int month = int.Parse(s.ToDay.Substring(3, 2));
-        IEnumerable<Rec> sel = kind == 3 ? items.Where(r => r.St("Stock-Services-Flag") != "Y" && r.N("Stock-Held") < r.N("Stock-ReOrder-Pnt")) : items;
+        IEnumerable<Rec> sel = kind == 3 ? items.Where(r => r.St("Stock-Services-Flag") != "Y" && r.N("Stock-Held") <= r.N("Stock-ReOrder-Pnt")) : items;
         string Q(Rec r, string f) => Fmt.E(r.N(f), "zzzzzz9-").Trim();
         var rows = sel.Select(r => kind switch
         {
