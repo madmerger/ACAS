@@ -139,13 +139,14 @@ public struct SalesInvoices {
         ("status", .n9(digits: 1, scale: 0, signed: false)), ("", .filler(19)),
     ])
 
-    private func validateCreditTarget(_ draft: Draft, customer: String, amending: Bool, confirmed: Bool) throws {
+    private func validateCreditTarget(_ draft: Draft, customer: String, replacing existing: Number?, confirmed: Bool) throws {
         guard draft.kind == .creditNote, draft.creditedInvoice != 0 else { return }
         guard draft.creditedInvoice < 99_999_999 else { throw Error.invalidInput }
-        if amending {
+        if let existing {
             let suffix = draft.creditedInvoiceSuffix.uppercased()
             guard ["", "A", "B", "C"].contains(suffix) else { throw Error.invalidInput }
             let number = Number(value: draft.creditedInvoice, suffix: suffix)
+            guard key(number) != key(existing) else { throw Error.invalidCreditTarget }
             if let target = header(number) {
                 guard target.int("ih-type") == Kind.invoice.rawValue, Cobol.rtrim(target.str("ih-customer")) == customer else {
                     throw Error.invalidCreditTarget
@@ -179,7 +180,7 @@ public struct SalesInvoices {
               (1...40).contains(draft.lines.count), (0...99_999_999).contains(draft.creditedInvoice) else {
             throw Error.invalidInput
         }
-        try validateCreditTarget(draft, customer: customer, amending: existing != nil, confirmed: confirmingUnknownCreditTarget)
+        try validateCreditTarget(draft, customer: customer, replacing: existing, confirmed: confirmingUnknownCreditTarget)
         let dateNumber = Maps04.integerOfDate(year: y, month: m, day: d)
         let sequential = system.int("next-invoice")
         let ownNumber = system.str("sl-own-nos") == "Y" ? draft.requestedNumber : nil

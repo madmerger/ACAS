@@ -96,6 +96,19 @@ final class SalesInvoicesTests: XCTestCase {
         }
     }
 
+    func testChangingInvoiceToCreditNoteRejectsItsOwnNumber() throws {
+        let (service, invoice) = try makeInvoice()
+        var draft = try service.draft(for: invoice.id)
+        draft.kind = .creditNote
+        draft.creditedInvoice = invoice.id.value
+        let before = service.context.store.snapshot()
+
+        XCTAssertThrowsError(try service.save(draft, replacing: invoice.id, confirmingUnknownCreditTarget: true)) {
+            XCTAssertEqual($0 as? SalesInvoices.Error, .invalidCreditTarget)
+        }
+        XCTAssertEqual(service.context.store.snapshot(), before)
+    }
+
     private func makeInvoice() throws -> (SalesInvoices, SalesInvoices.Invoice) {
         let store = try FileStore()
         let date = Date(timeIntervalSince1970: 1_700_000_000)
