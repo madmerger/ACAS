@@ -2,12 +2,11 @@
 """レガシー証跡のベースライン（GnuCOBOL 索引/相対/行順ファイル）を
 Web 版の初期データ JSON（{論理ファイル名: {キー16進: レコード16進}}）へ変換する開発用ツール。
 使い方: dump_baselines.py <証跡展開ディレクトリ> <出力ディレクトリ(src/main/resources/baselines)>
-GnuCOBOL 3.1.2 (cobc) が必要。"""
+GnuCOBOL 3.1.2 (cobc) が必要。コピー句はこのリポジトリの原本を使う。"""
 import json, re, struct, subprocess, sys, tempfile
 from pathlib import Path
 
-EVID, OUT = Path(sys.argv[1]), Path(sys.argv[2])
-LEG = EVID / "legacy"
+REPO = Path(__file__).resolve().parents[2]
 # 物理ファイル名: (コピー句, FD名, レコード名, 主キー, SELECT 追加句, FD 前置き)
 INDEXED = {
     "acas/ledger.dat": ("general/fdledger.cob", "ledger-file", "ledger-record", "ledger-key", "", ""),
@@ -85,18 +84,20 @@ goback.
     src = tmp / (name.replace("/", "_") + ".cbl")
     src.write_text(code)
     exe = src.with_suffix("")
-    subprocess.run(["cobc", "-x", "-I", str(LEG), "-I", str(LEG / "copybooks"), "-o", str(exe), str(src)], check=True, capture_output=True)
+    subprocess.run(["cobc", "-x", "-I", str(REPO), "-I", str(REPO / "copybooks"), "-o", str(exe), str(src)],
+                   cwd=REPO, check=True, capture_output=True)
     return exe
 
 def seqkey(n): return struct.pack(">q", n).hex()
 
 def main():
-    OUT.mkdir(parents=True, exist_ok=True)
+    evid, out_dir = Path(sys.argv[1]), Path(sys.argv[2])
+    out_dir.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory() as t:
         tmp = Path(t)
         exes = {n: build(tmp, n, s) for n, s in INDEXED.items()}
         phys = {n: build(tmp, n + ".phys", s) for n, s in PHYSICAL.items()}
-        for base in sorted((EVID / "baselines").iterdir()):
+        for base in sorted((evid / "baselines").iterdir()):
             data = {}
             root = base / "ledgers"
             for p in sorted(root.rglob("*")) if root.is_dir() else []:
@@ -133,7 +134,8 @@ def main():
                     data[rel] = {seqkey(i + 1): l.hex() for i, l in enumerate(lines)}
                 else:
                     raise SystemExit(f"未対応ファイル: {base.name}/{rel}")
-            (OUT / f"{base.name}.json").write_text(json.dumps(data, indent=0, sort_keys=True))
+            (out_dir / f"{base.name}.json").write_text(json.dumps(data, indent=0, sort_keys=True))
             print(base.name, {k: len(v) for k, v in data.items()})
 
-main()
+if __name__ == "__main__":
+    main()
