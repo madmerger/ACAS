@@ -559,3 +559,41 @@ Credit Note Re. Inv - 	貸方票 対象請求書 -
 Unapplied Credit Allocated	未充当残高を充当
 Payment. Received With Thanks	ご入金ありがとうございました
 Goods	商品
+Aged Debtors Report	売掛金年齢調べ
+*Date    [  /  /    ]                  *	*日付    [  /  /    ]                  *
+*A/C Nos [       ]                   ***	*顧客番号[       ]                   ***
+*Value  [         ]*                   *	*金額   [         ]*                   *
+ (1)  -  <Date>  :  Appears on listing	 (1)  -  <日付>  :  帳票に印字する日付
+ (2)  -  <A/C>   :  A/c's to match for printing	 (2)  -  <顧客>  :  印刷対象とする顧客番号
+ (3)  -  <Value> :  Minimum o/s to print	 (3)  -  <金額>  :  印刷する最小未決済額
+No Open invoice records present	未決済請求書がありません
+Current Period is 	当期は 
+Customer  Name                           Telephone     Invoice     Date       Current         30         60    90 & Over   Payments	顧客      名称                           電話          請求書      日付       当期            30         60    90 以上     入金
+Terms:	条件:
+Credit Limit:	与信限度:
+Balance:	残高:
+Cr Bal:	貸方残:
+Over:	超過:
+Unapplied Cash	未充当入金
+Account Statistics  	顧客統計
+Total       Current         30           60       90 & Over	合計        当期            30           60       90 以上
+Number Of Invoices	請求書件数
+Amount	金額
+% of O/S Invoices	未決済請求書の割合 %
+Average O/S Amount	平均未決済額
+Number       Amount	件数         金額
+Payments	入金
+Credit Balances	貸方残高
+Late Charges	延滞料
+Number of Live Accounts	有効顧客数
+Number of Active Accounts	取引中顧客数
+% Active	取引中の割合 %
+  Reconciliation Data	  照合データ
+Balance Brought Forward	前期繰越残高
+Plus: Invoices Posted	加算: 転記済請求書
+Less: Credit Notes Posted	減算: 転記済貸方票
+      Payments Posted	      転記済入金
+      Pay Late Chgs Taken	      入金時の延滞料
+      CN Late Chgs Taken	      貸方票の延滞料
+Balance Carried Forward	次期繰越残高
+Out Of Balance	不一致
