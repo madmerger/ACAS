@@ -148,9 +148,10 @@ final class SalesReachFlows: XCTestCase {
     func testSL240() throws { try customerReport("SL-240") }
     func testSL238() throws {
         try reach("SL-238", through: ["sales.invoice.menu"], title: "請求書サブシステム", verdict: nil) { app in
-            XCTAssertTrue(app.buttons["sales.invoice.print"].exists)
-            XCTAssertFalse(app.buttons.containing(NSPredicate(format: "label CONTAINS %@ OR label CONTAINS %@",
-                                                                "納品書", "ピッキング")).firstMatch.exists)
+            XCTAssertEqual(buttons(in: app, containing: "請求書一括印刷").firstMatch.identifier, "sales.invoice.print")
+            for label in ["納品書", "ピッキング"] {
+                XCTAssertFalse(buttons(in: app, containing: label).firstMatch.exists)
+            }
         }
     }
 
@@ -173,12 +174,12 @@ final class SalesReachFlows: XCTestCase {
 
     private func unavailableSalesMenuItem(_ id: String, labels: [String]) throws {
         try reach(id, through: [], title: "売掛元帳", verdict: nil) { app in
-            func check() {
+            @MainActor func check() {
                 for label in labels {
-                    XCTAssertFalse(app.buttons.containing(NSPredicate(format: "label CONTAINS %@", label)).firstMatch.exists)
+                    XCTAssertFalse(buttons(in: app, containing: label).firstMatch.exists)
                 }
             }
-            XCTAssertTrue(app.buttons["sales.customers"].exists)
+            XCTAssertEqual(buttons(in: app, containing: "得意先マスター管理").firstMatch.identifier, "sales.customers")
             check()
             attach(app, name: "\(id)-売掛メニュー上部")
             let last = app.buttons["sales.customer.turnover"]
@@ -189,6 +190,10 @@ final class SalesReachFlows: XCTestCase {
             }
             XCTAssertTrue(last.isHittable)
         }
+    }
+
+    private func buttons(in app: XCUIApplication, containing label: String) -> XCUIElementQuery {
+        app.buttons.matching(NSPredicate(format: "label CONTAINS %@", label))
     }
 
     private func customerMenu(_ id: String) throws {
