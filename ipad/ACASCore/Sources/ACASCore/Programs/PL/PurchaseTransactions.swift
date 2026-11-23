@@ -177,12 +177,13 @@ extension PurchaseLedger {
             }
             return nil
         }
-        let number = value.number ?? reusable?.number ?? max(1, configuration.int("next-folio"))
+        let nextFolio = Cobol.truncate(configuration.int("next-folio"), digits: 8)
+        let number = value.number ?? reusable?.number ?? max(1, nextFolio)
         guard (1...99_999_999).contains(number) else { throw Error.invalidTransaction }
         let previous = header(number)
         if value.number != nil && previous == nil { throw Error.transactionNotFound }
         if value.number == nil && previous != nil {
-            configuration.setInt("next-folio", number + 1)
+            configuration.setInt("next-folio", Cobol.truncate(number + 1, digits: 8))
             try systemFile.write(1, configuration.bytes)
             return nil
         }
@@ -246,7 +247,7 @@ extension PurchaseLedger {
                 try store.writeRaw(deletedPath, deleted)
             } else {
                 if deleted != nil { try store.writeRaw(deletedPath, []) }
-                configuration.setInt("next-folio", number + 1)
+                configuration.setInt("next-folio", Cobol.truncate(number + 1, digits: 8))
             }
             setFileFlag(26, in: &configuration)
         }

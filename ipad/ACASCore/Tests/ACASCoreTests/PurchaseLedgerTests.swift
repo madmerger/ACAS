@@ -24,6 +24,28 @@ final class PurchaseLedgerTests: XCTestCase {
         XCTAssertEqual(try ledger.saveTransaction(transaction), folio + 1)
     }
 
+    func testHighestFolioWrapsOnSuccessfulEntryAndDuplicate() throws {
+        let ledger = try makeLedger()
+        var transaction = PurchaseLedger.Transaction(date: ledger.processingDate)
+        transaction.supplier = try addSupplier(ledger)
+        transaction.lines[0].code = "a1"
+        transaction.lines[0].net = 10_000
+        let highest: Int64 = 99_999_999
+        var settings = ledger.invoiceSettings()
+        settings.nextFolio = highest
+        try ledger.saveInvoiceSettings(settings)
+
+        XCTAssertEqual(try ledger.saveTransaction(transaction), highest)
+        XCTAssertEqual(ledger.invoiceSettings().nextFolio, 0)
+
+        try ledger.saveInvoiceSettings(settings)
+        XCTAssertThrowsError(try ledger.saveTransaction(transaction)) { error in
+            XCTAssertEqual(error as? PurchaseLedger.Error, .duplicateTransaction)
+        }
+        XCTAssertEqual(ledger.invoiceSettings().nextFolio, 0)
+        XCTAssertEqual(try ledger.saveTransaction(transaction), 1)
+    }
+
     func testInvoiceSettingsWriteOnlyConfiguredFieldsAndSetNextTransactionFolio() throws {
         let ledger = try makeLedger()
         var configuration = ledger.system
