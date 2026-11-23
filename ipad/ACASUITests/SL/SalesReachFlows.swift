@@ -54,6 +54,21 @@ final class SalesReachFlows: XCTestCase {
         }
     }
 
+    func testSL105() throws {
+        let app = XCUIApplication()
+        let evidence: [String: Any] = [
+            "id": "SL-105", "title": "印刷済み請求書を得意先・売掛へ転記",
+            "workflow": "legacy-not-run", "dateSeconds": 0, "changes": [], "reports": [:],
+        ]
+        app.launchEnvironment["ACAS_FIXTURE"] = try JSONSerialization.data(withJSONObject: evidence).base64EncodedString()
+        app.launchArguments += ["-AppleLanguages", "(ja)", "-AppleLocale", "ja_JP"]
+        XCUIDevice.shared.orientation = .landscapeLeft
+        app.launch()
+        XCTAssertTrue(app.staticTexts["SL-105"].waitForExistence(timeout: 10))
+        XCTAssertEqual(app.staticTexts["case.verdict.notApplicable"].label, "対象外")
+        attach(app, name: "SL-105")
+    }
+
     func testSL002() throws { try customerMenu("SL-002") }
     func testSL004() throws { try salesEntry("SL-004") }
     func testSL005() throws { try salesAmendment("SL-005") }
