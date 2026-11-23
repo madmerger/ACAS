@@ -73,10 +73,10 @@ struct PurchaseTransactionsView: View {
                     TableColumn(plString("pl.supplier.code"), value: \.supplier)
                     TableColumn(plString("pl.invoice.type")) { Text($0.type.japaneseTitle) }
                     TableColumn(plString("pl.invoice.net")) { row in
-                        Text(purchaseAmount(row.lines.reduce(row.carriage) { $0 + $1.net }))
+                        Text(purchaseAmount(reportSign(for: row) * row.lines.reduce(row.carriage) { $0 + $1.net }))
                     }
                     TableColumn(plString("pl.invoice.tax")) { row in
-                        Text(purchaseAmount(row.lines.reduce(row.carriageTax ?? 0) { $0 + ($1.tax ?? 0) }))
+                        Text(purchaseAmount(reportSign(for: row) * row.lines.reduce(row.carriageTax ?? 0) { $0 + ($1.tax ?? 0) }))
                     }
                     TableColumn(plString("pl.invoice.state")) { row in
                         if mode == .edit || mode == .delete {
@@ -112,6 +112,10 @@ struct PurchaseTransactionsView: View {
             Button(plString("pl.action.cancel"), role: .cancel) {}
         }
         .purchaseAlert($error)
+    }
+
+    private func reportSign(for row: PurchaseLedger.Transaction) -> Int64 {
+        (mode == .proof || mode == .post) && row.type == .creditNote ? -1 : 1
     }
 
     private func action(for row: PurchaseLedger.Transaction) -> some View {
