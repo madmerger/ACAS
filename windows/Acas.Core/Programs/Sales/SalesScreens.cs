@@ -39,7 +39,7 @@ public sealed partial class SalesScreens(SalesLedger sales, Func<DateTime>? cloc
         Top('Ｅ', "SalesAmend", "売上取引修正", () => InvoiceSelect("売上取引修正", false)),
         Top('Ｆ', "SalesProof", "売上検証帳票", InvoiceProof),
         Top('Ｇ', "SalesPost", "売上転記", SalesPost),
-        Top('Ｈ', "PaymentEntry", "入金入力・消込", () => Payments("入金入力・消込", "openitm3.dat")),
+        Top('Ｈ', "PaymentEntry", "入金入力・消込", PaymentEntry),
         Top('Ｉ', "PaymentAmend", "入金修正", () => Payments("入金修正", "openitm2.dat")),
         Top('Ｊ', "PaymentProof", "入金検証帳票", () => Payments("入金検証帳票", "openitm2.dat")),
         Top('Ｋ', "PaymentPost", "入金転記", () => Payments("入金転記", "openitm2.dat")),
