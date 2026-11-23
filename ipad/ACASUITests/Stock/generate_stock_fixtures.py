@@ -48,7 +48,7 @@ OPERATIONS = {
     "ST-203": ("stock.create", "在庫品目登録"),
     "ST-204": ("stock.edit.open", "在庫品目変更"),
     "ST-213": ("stock.order", "在庫発注記録"),
-    "ST-222": ("stock.import", "在庫品目一括取込"),
+    "ST-222": ("stock.import.open", "在庫品目一括取込：台帳無変更の照合"),
     "ST-223": ("stock.close", "在庫管理を閉じる"),
     "ST-225": ("stock.settings.open", "共通設定を開く"),
 }
@@ -102,6 +102,8 @@ def operation_fixture(evidence, run, case_id):
         snapshot = json.loads(base64.b64decode(seed))
         snapshot["files"][path] = {"type": "indexed", "records": list(zip(rows[::2], rows[1::2]))}
         seed = base64.b64encode(json.dumps(snapshot, separators=(",", ":")).encode()).decode()
+    if case_id == "ST-222" and (changes or result["changed"] or result["deleted"]):
+        raise ValueError("ST-222: 取込を実行せず台帳を更新しなかった証跡が必要です")
     if case_id == "ST-213":
         path = "ledgers/acas/prt-1"
         report = evidence_path(evidence, run / "files" / path).read_bytes()

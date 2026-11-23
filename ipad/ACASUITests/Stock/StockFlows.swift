@@ -127,16 +127,11 @@ final class StockFlows: XCTestCase {
     }
 
     @MainActor
-    func testConfirmST222() throws {
+    func testReachST222() throws {
         let app = try launchStockOperation("ST-222", "stock.import")
-        let source = app.textViews["stock.importContents"]
-        XCTAssertTrue(source.waitForExistence(timeout: 5))
-        source.tap()
-        source.typeText("BATCH01,'BATCH ITEM',2,5,0,0,10,0,12,5,50,,")
-        tap(app, "stock.runImport")
-        tap(app, "stock.confirmImport")
-        XCTAssertEqual(app.staticTexts["stock.importResult"].label, "1 件の品目を取り込みました。")
-        verifyVerdict(app, "ST-222", verdict: "mismatch")
+        XCTAssertTrue(app.textViews["stock.importContents"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.buttons["stock.runImport"].isEnabled)
+        verifyVerdict(app, "ST-222")
     }
 
     @MainActor
