@@ -7,6 +7,14 @@
 "gl.posting.open-batch" = "未確認のバッチがあるため転記できません。バッチ状況を確認してください。";
 "gl.posting.invalid" = "仕訳データまたは勘定科目が無効なため、転記できません。";
 "gl.posting.failed" = "仕訳を転記できませんでした。";
+"gl.cycle-close" = "期間締め";
+"gl.cycle-close.backup" = "実行する前に、台帳データのバックアップを確認してください。";
+"gl.cycle-close.cancel" = "期間締めを中止";
+"gl.cycle-close.run" = "期間締めを実行";
+"gl.cycle-close.confirm" = "バックアップは確認済みですか？ 現在の会計サイクルの期間締めを実行します。";
+"gl.cycle-close.done" = "期間締めが完了しました。";
+"gl.cycle-close.unfinished" = "未確認のバッチがあるため期間締めを実行できません。";
+"gl.cycle-close.failed" = "期間締めを実行できませんでした。";
 "gl.trial-balance" = "試算表";
 "gl.trial-balance.detail" = "詳細試算表を出力";
 "gl.trial-balance.ready" = "詳細試算表を出力しました";

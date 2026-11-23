@@ -25,6 +25,8 @@ struct GeneralLedgerMenu: View {
                     .accessibilityIdentifier("gl.batch-status")
                 NavigationLink(ledgerText("posting")) { LedgerPostingForm(workspace: workspace) }
                     .accessibilityIdentifier("gl.posting")
+                NavigationLink(ledgerText("cycle-close")) { LedgerCycleCloseForm(workspace: workspace) }
+                    .accessibilityIdentifier("gl.cycle-close")
                 NavigationLink(ledgerText("trial-balance")) { TrialBalanceMenu(workspace: workspace) }
                     .accessibilityIdentifier("gl.trial-balance")
                 NavigationLink("section.system") { SystemMenu(workspace: workspace) }
