@@ -2,6 +2,56 @@ import Foundation
 
 extension SalesInvoices {
     public static let printPath = "ledgers/acas/prt-2"
+    public static let deletionReportPath = SalesProofReport.exportPath
+    static let deletedNumbersPath = "ledgers/acas/delinvno.dat"
+
+    public func printDeletedInvoices() throws -> Int {
+        let system = try settings()
+        let store = context.store
+        let saved = store.readRaw(Self.deletedNumbersPath)
+        let records = saved ?? []
+        let layout = Layout("del-inv-nos-record", [
+            ("number", .n9(digits: 8, scale: 0, signed: false)),
+            ("date", .native(bytes: 4, signed: true)),
+            ("customer", .x(7)),
+        ])
+        guard records.count.isMultiple(of: layout.size) else { throw Error.invalidInput }
+        let dateForm = Int(system.int("date-form"))
+        func date(_ day: Int64) -> String {
+            guard (1...3_067_671).contains(day) else { return Cobol.x("", 10) }
+            return Maps04.format(Maps04.toDate(Int(day)), dateForm: dateForm)
+        }
+        var output: [UInt8] = []
+        func write(_ separators: [UInt8], _ data: [UInt8]) {
+            output += separators + [0, 132, 0, 0] + data
+        }
+        var page: Int64 = 0
+        var line = 0
+        func headings() {
+            page += 1
+            let heading = Cobol.x("SL200 (3.01.04)", 29) + Cobol.x("Invoice Deletion Report", 32)
+                + Cobol.x(date(system.int("run-date")), 12) + "Page " + Pic.edit("z9", value: page, scale: 0)
+            write([page == 1 ? 0x0a : 0x0c], SJIS.encode(heading, size: 132))
+            write([0x0a, 0x0a], SJIS.encode("   Invoice No       Date         Cust No", size: 132))
+            write([0x0a], SJIS.encode("", size: 132))
+            line = 4
+        }
+        headings()
+        if records.isEmpty {
+            write(saved == nil ? [0x0a, 0x0a] : [0x0a], SJIS.encode("       None to report", size: 132))
+        } else {
+            for offset in stride(from: 0, to: records.count, by: layout.size) {
+                let record = Record(layout, bytes: Array(records[offset..<offset + layout.size]))
+                let row = "   " + Pic.edit("z(9)9", value: record.int("number"), scale: 0)
+                    + "     " + date(record.int("date")) + "   "
+                write([0x0a], SJIS.encode(row, size: 31) + record.raw("customer") + SJIS.encode("", size: 94))
+                line += 1
+                if line > 70 { headings() }
+            }
+        }
+        try store.writeRaw(Self.deletionReportPath, output + [0x0a])
+        return records.count / layout.size
+    }
 
     public func printInvoices(_ selection: [Number]? = nil) throws -> [Invoice] {
         let system = try settings()
