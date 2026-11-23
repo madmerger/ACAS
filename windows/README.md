@@ -16,6 +16,8 @@ dotnet run --project Acas.App -c Release --no-build
 
 業務画面の追加方法は [Windows 版 ACAS の開発手順](docs/DEVELOPING.md) を参照してください。
 
+計算画面の同一性、FlaUI による画面操作、日本語監査の実行方法は [検証手順](docs/TESTING.md) を参照してください。
+
 ## 既知事項
 
 - 旧環境の運用区分と印刷先は設定データとして保持します。Windows 版の保存先はローカル SQLite に固定され、実際の印刷先は Windows の印刷ダイアログで指定します。
