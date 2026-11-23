@@ -67,6 +67,7 @@ try {
     $process.WaitForInputIdle(10000) | Out-Null
     $window = Find-Element $ae::RootElement $ae::ProcessIdProperty $process.Id
 
+    (Find-Id 'SmokeRoot').GetCurrentPattern([System.Windows.Automation.ExpandCollapsePattern]::Pattern).Expand()
     Select-Item 'SmokeNavigation'
     $input = Open-Form
     Find-Id 'ScreenMenuBack' | Out-Null
@@ -97,6 +98,14 @@ try {
     Find-Id 'ScreenMenu' | Out-Null
     if ($ae::FocusedElement.Current.AutomationId -ne 'SmokeNavigation') { throw 'Focus did not return to navigation.' }
     'UIA PASS: business menu -> form -> header back -> form -> same tree item -> menu and tree focus restored'
+
+    Select-Item 'SmokeConfirmation'
+    $dialog = Find-Element $ae::RootElement $ae::AutomationIdProperty 'Confirmation'
+    if ($dialog.Current.ProcessId -ne $process.Id) { throw 'Confirmation dialog is not owned by the smoke application.' }
+    $cancel = Find-Element $dialog $ae::AutomationIdProperty 'ConfirmationCancel'
+    $cancel.GetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern).Invoke()
+    Find-Id 'ScreenMessage' | Out-Null
+    'UIA PASS: selecting a navigation item returns before its modal confirmation is cancelled'
 } finally {
     if ($process -and !$process.HasExited) {
         $process.CloseMainWindow() | Out-Null
