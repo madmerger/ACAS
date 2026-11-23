@@ -101,6 +101,7 @@ struct BookkeepingAccountForm: View {
                         Text(row.name).tag(Optional(row.id))
                     }
                 }
+                .accessibilityIdentifier("irs.chooseAccount")
                 .onChange(of: selection) { _, next in
                     guard let next, let row = service.accounts.first(where: { $0.id == next }) else { return }
                     code = String(row.code)
@@ -142,9 +143,10 @@ struct BookkeepingDefaultForm: View {
     let workspace: Workspace
     let editing: Bool
     @State private var slot = 1
+    @State private var loadedSlot: Int?
     @State private var account = ""
     @State private var label = ""
-    @State private var tax = false
+    @State private var tax = BookkeepingService.DefaultTax.none
     @State private var message = ""
 
     private var service: BookkeepingService { BookkeepingService(workspace.context) }
@@ -164,12 +166,17 @@ struct BookkeepingDefaultForm: View {
             if slot < 30 {
                 TextField(irsText("field.abbreviation"), text: $label)
                     .accessibilityIdentifier("irs.defaultLabel")
-                Toggle(irsText("field.usesTax"), isOn: $tax)
+                Picker(irsText("field.tax"), selection: $tax) {
+                    ForEach(BookkeepingService.DefaultTax.allCases, id: \.self) {
+                        Text($0.title).tag($0)
+                    }
+                }
+                .accessibilityIdentifier("irs.defaultTax")
             }
             Button(irsText("action.save")) {
                 guard let code = Int(account) else { message = irsText("error.accountCode"); return }
                 do {
-                    try service.saveDefault(slot: slot, account: code, label: label, usesTax: tax)
+                    try service.saveDefault(slot: slot, account: code, label: label, tax: tax)
                     message = irsText("result.defaultSaved")
                 } catch { message = bookkeepingError(error) }
                 workspace.completed("irs.defaults")
@@ -183,11 +190,62 @@ struct BookkeepingDefaultForm: View {
     }
 
     private func load() {
+        guard loadedSlot != slot else { return }
+        loadedSlot = slot
         let row = service.defaults[slot - 1]
         account = row.account == 0 ? "" : String(row.account)
         label = row.label
-        tax = row.usesTax
+        tax = row.tax
         message = ""
+    }
+}
+
+struct BookkeepingStatementSettingsForm: View {
+    let workspace: Workspace
+    @State private var settings: BookkeepingService.StatementSettings
+    @State private var account: String
+    @State private var message = ""
+
+    init(workspace: Workspace) {
+        self.workspace = workspace
+        let settings = BookkeepingService(workspace.context).statementSettings
+        _settings = State(initialValue: settings)
+        _account = State(initialValue: String(settings.appropriationAccount))
+    }
+
+    var body: some View {
+        Form {
+            Button(irsText("action.save"), action: save)
+                .accessibilityIdentifier("irs.saveStatementSettings")
+            if !message.isEmpty { Text(message).accessibilityIdentifier("irs.statementSettingsResult") }
+            rows(0..<14, title: "statement.profitAndLoss")
+            rows(14..<26, title: "statement.balanceSheet")
+            TextField(irsText("statement.appropriation"), text: $account).keyboardType(.numberPad)
+        }
+        .navigationTitle(irsText("defaults.statementSettings"))
+    }
+
+    private func save() {
+        guard let value = Int(account) else { message = irsText("error.accountCode"); return }
+        settings.appropriationAccount = value
+        do {
+            try BookkeepingService(workspace.context).saveStatementSettings(settings)
+            message = irsText("result.statementSettingsSaved")
+            workspace.completed("irs.statementSettings")
+        } catch { message = bookkeepingError(error) }
+    }
+
+    private func rows(_ indices: Range<Int>, title: String) -> some View {
+        Section(irsText(title)) {
+            ForEach(indices, id: \.self) { index in
+                HStack {
+                    Text(verbatim: String(UnicodeScalar(65 + index)!)).monospaced()
+                    TextField(irsText("statement.heading"), text: $settings.headings[index])
+                        .accessibilityIdentifier("irs.statementHeading.\(index)")
+                    TextField(irsText("statement.sign"), text: $settings.signs[index]).frame(width: 80)
+                }
+            }
+        }
     }
 }
 

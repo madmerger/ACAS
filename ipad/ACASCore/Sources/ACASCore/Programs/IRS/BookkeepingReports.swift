@@ -1,7 +1,52 @@
 import Foundation
 
 extension BookkeepingService {
-    public enum Report { case accounts, defaults }
+    public enum Report { case accounts, defaults, trialBalance(summary: Bool, zeroBalances: Bool) }
+
+    public struct TrialBalanceRow: Identifiable {
+        public let account: Account
+        public let debit: Int64
+        public let credit: Int64
+        public var id: String { account.id }
+    }
+
+    public struct TrialBalance {
+        public let rows: [TrialBalanceRow]
+        public let debit: Int64
+        public let credit: Int64
+        fileprivate let orphanCount: Int64
+    }
+
+    public func trialBalance(summary: Bool, zeroBalances: Bool) -> TrialBalance {
+        let balanceLimit: Int64 = 1_000_000_000
+        var main: Account?
+        var debit: Int64 = 0
+        var credit: Int64 = 0
+        var orphanCount: Int64 = 0
+        var rows: [TrialBalanceRow] = []
+        func append(_ account: Account, debit: Int64, credit: Int64) {
+            if debit == credit, !zeroBalances { return }
+            rows.append(TrialBalanceRow(account: account, debit: max(0, (debit - credit) % balanceLimit),
+                                        credit: max(0, (credit - debit) % balanceLimit)))
+        }
+        for account in accounts {
+            if !summary {
+                append(account, debit: account.debit, credit: account.credit)
+            } else if account.child == 0 {
+                if let main { append(main, debit: debit, credit: credit) }
+                main = account
+                debit = account.debit % balanceLimit
+                credit = account.credit % balanceLimit
+            } else {
+                if main?.code != account.code { orphanCount = (orphanCount + 1) % 10_000 }
+                debit = (debit + account.debit) % balanceLimit
+                credit = (credit + account.credit) % balanceLimit
+            }
+        }
+        if summary, let main { append(main, debit: debit, credit: credit) }
+        return TrialBalance(rows: rows, debit: rows.reduce(0) { ($0 + $1.debit) % balanceLimit },
+                            credit: rows.reduce(0) { ($0 + $1.credit) % balanceLimit }, orphanCount: orphanCount)
+    }
 
     @discardableResult
     public func printReport(_ report: Report) throws -> Data {
@@ -55,6 +100,39 @@ extension BookkeepingService {
                 }
                 line(data)
             }
+        case let .trialBalance(summary, zeroBalances):
+            let balance = trialBalance(summary: summary, zeroBalances: !summary || zeroBalances)
+            func money(_ cents: Int64, showZero: Bool = false) -> [UInt8] {
+                if cents == 0, !showZero { return spaces(12) }
+                let digits = Array((String(cents / 100) + "." + Cobol.z(cents % 100, 2)).utf8)
+                return spaces(12 - digits.count) + digits
+            }
+            func heading(_ page: Int) {
+                if page > 1 { output.append(0x0c) }
+                line(settings.raw("suser") + spaces(5) + field(summary ? "Summary" : "Detail", 8)
+                     + field("Trial Balance", 13) + spaces(6) + date
+                     + spaces(7) + field("Page ", 5) + number(Int64(page), 3), after: page == 1 ? 1 : 0)
+                line(settings.raw("client") + field("    Start Date - ", 17) + settings.raw("start-date")
+                     + field("           End Date - ", 22) + settings.raw("end-date"), after: 2)
+                line(field(" Account     ----------Name----------", 37) + field("   Type", 19)
+                     + field("   --Debit--   --Credit-", 24), after: 2)
+                line([])
+            }
+            heading(1)
+            for (index, row) in balance.rows.enumerated() {
+                let account = row.account
+                let child = account.child != 0
+                let name = try accountRecord(account.code, account.child).raw("name")
+                line(number(Int64(child ? account.child : account.code), 6) + spaces(6)
+                     + name + spaces(4) + field(child ? "Sub" : "Main", 16)
+                     + money(row.debit) + money(row.credit))
+                if (index + 1) % 70 == 0 { heading((index + 1) / 70 + 1) }
+            }
+            let rule = spaces(57) + field("=========== ===========", 23)
+            line(rule, after: 3)
+            line(number(balance.orphanCount, 4) + spaces(37) + field("T o t a l", 15)
+                 + money(balance.debit, showZero: true) + money(balance.credit, showZero: true))
+            line(rule)
         }
         if !output.isEmpty { output.append(0x0a) }
         try store.writeRaw(directory + "prt-1", output)

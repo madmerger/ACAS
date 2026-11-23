@@ -25,6 +25,7 @@ struct StockImportView: View {
             if !message.isEmpty { Text(message).accessibilityIdentifier("stock.importResult") }
         }
         .navigationTitle(stockText("import.title"))
+        .onAppear { workspace.completed("stock.import.open") }
         .fileImporter(isPresented: $choosingFile, allowedContentTypes: [.commaSeparatedText, .plainText, .data]) { result in
             do {
                 let file = try result.get()

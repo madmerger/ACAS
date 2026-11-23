@@ -32,11 +32,17 @@ public struct BookkeepingService {
         public var id: String { "\(code)-\(child)" }
     }
 
+    public enum DefaultTax: String, CaseIterable {
+        case none = "N"
+        case input = "I"
+        case output = "O"
+    }
+
     public struct DefaultAccount: Identifiable {
         public let id: Int
         public let account: Int
         public let label: String
-        public let usesTax: Bool
+        public let tax: DefaultTax
     }
 
     public struct Posting: Identifiable {
@@ -207,12 +213,13 @@ public struct BookkeepingService {
             let offset = index - 1
             let number = Cobol.numval(SJIS.decode(config[(5 * offset)..<(5 * offset + 5)])).0
             let label = Cobol.rtrim(SJIS.decode(config[(160 + 2 * offset)..<(162 + 2 * offset)]))
+            let taxCode = SJIS.decode(config[(224 + offset)..<(225 + offset)])
             return DefaultAccount(id: index, account: Int(number), label: number == 0 && label == "00" ? "" : label,
-                                  usesTax: config[224 + offset] == 0x59)
+                                  tax: taxCode == "Y" ? .input : (DefaultTax(rawValue: taxCode) ?? .none))
         }
     }
 
-    public func saveDefault(slot: Int, account: Int, label: String, usesTax: Bool) throws {
+    public func saveDefault(slot: Int, account: Int, label: String, tax: DefaultTax) throws {
         guard (1...32).contains(slot), (0...99999).contains(account) else { throw Failure.invalidInput }
         if account != 0 { _ = try accountRecord(account) }
         let reserved: [Int: String] = [30: "OB", 31: "VI", 32: "VO"]
@@ -222,7 +229,8 @@ public struct BookkeepingService {
         var bytes = defaultBytes
         bytes.replaceSubrange((5 * index)..<(5 * index + 5), with: Array(Cobol.z(account, 5).utf8))
         bytes.replaceSubrange((160 + 2 * index)..<(162 + 2 * index), with: SJIS.encode(name, size: 2))
-        bytes[224 + index] = usesTax && reserved[slot] == nil ? 0x59 : 0x4e
+        let taxCode = reserved[slot] == nil ? tax : .none
+        bytes[224 + index] = SJIS.encode(taxCode.rawValue, size: 1)[0]
         try writeLine(defaultsPath, bytes)
     }
 }
