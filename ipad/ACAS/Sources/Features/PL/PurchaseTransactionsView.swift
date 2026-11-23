@@ -70,7 +70,9 @@ struct PurchaseTransactionsView: View {
                 .accessibilityIdentifier("pl.transactions.table")
             } else {
                 Table(rows) {
-                    TableColumn(plString("purchase.invoice.number")) { Text(String($0.id)) }
+                    TableColumn(plString("purchase.invoice.number")) {
+                        Text(String($0.id)).accessibilityIdentifier("pl.transaction.number")
+                    }
                     TableColumn(plString("purchase.invoice.date")) { Text($0.date.formatted(.dateTime.year().month().day())) }
                     TableColumn(plString("purchase.supplier.code"), value: \.supplier)
                     TableColumn(plString("purchase.invoice.type")) { Text($0.type.japaneseTitle) }

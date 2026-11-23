@@ -71,13 +71,26 @@ final class PurchaseFlows: XCTestCase {
         let app = try launch("PL-413")
         tap(app, "pl.transaction.proof")
         tap(app, "pl.proof.generate")
-        XCTAssertTrue(app.tables["pl.transactions.table"].exists || app.staticTexts["SUPP018"].exists)
+        let folios = app.staticTexts.matching(identifier: "pl.transaction.number")
+        XCTAssertTrue(folios.firstMatch.waitForExistence(timeout: 5), "検証帳票の取引行がありません")
+        XCTAssertEqual(folios.count, 1, "検証帳票の取引行数")
+        XCTAssertEqual(folios.firstMatch.label, "1")
+        for label in ["SUPP018", "請求書", "100.00", "20.00"] {
+            XCTAssertTrue(app.staticTexts[label].exists, "検証帳票の取引行に「\(label)」がありません")
+        }
         finish(app, "PL-413")
     }
 
     private func launch(_ id: String) throws -> XCUIApplication {
         continueAfterFailure = false
-        let url = try XCTUnwrap(Bundle(for: Self.self).url(forResource: id, withExtension: "json", subdirectory: "fixtures"))
+        let url = try XCTUnwrap(
+            Bundle(for: Self.self).url(forResource: id, withExtension: "json", subdirectory: "fixtures"),
+            """
+            \(id) のフィクスチャがありません。リポジトリのルートで以下を実行してから再ビルドしてください。
+            python3 ipad/ACASUITests/PL/generate_fixtures.py "$HOME/acas-ipad-oracle"
+            xcodegen generate --spec ipad/project.yml
+            """
+        )
         let app = XCUIApplication()
         app.launchEnvironment["ACAS_FIXTURE"] = try Data(contentsOf: url).base64EncodedString()
         app.launchArguments += ["-AppleLanguages", "(ja)", "-AppleLocale", "ja_JP"]
