@@ -21,6 +21,23 @@ public final class Session: @unchecked Sendable {
     /// プログラム間で受け渡す共有領域 (LINKAGE 相当)
     public var shared: [String: Any] = [:]
     public var programs: [String: Program] = [:]
+
+    // MARK: プログラム間で参照渡しされる領域 (LINKAGE: ws-calling-data / system-record / to-day 等)
+    /// system-record (system.dat RRN 1)。サブシステムメニューが読み込み、終了時に書き戻す。
+    public var sys = Record(SystemLayout.layout)
+    /// default-record (RRN 2), final-record (RRN 3), system-record-4 (RRN 4) の生バイト
+    public var defaultRecord = [UInt8](repeating: 0x20, count: 1024)
+    public var finalRecord = [UInt8](repeating: 0x20, count: 1024)
+    public var sysRecord4 = [UInt8](repeating: 0x20, count: 1024)
+    /// to-day (dd/mm/ccyy、UK 形式)
+    public var toDay = "00/00/0000"
+    /// ws-calling-data
+    public var termCode = 0
+    public var caller = ""
+    public var called = ""
+    public var delLink = ""
+    public var processFunc = 0
+    public var subFunction = 0
     /// 帳票が出力された時に UI へ知らせる
     public var onReport: (@Sendable (String) -> Void)?
 

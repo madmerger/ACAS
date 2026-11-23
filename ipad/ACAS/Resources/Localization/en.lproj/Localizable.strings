@@ -1,3 +1,33 @@
+/* ---- gl.en.strings ---- */
+/* general.cbl — 総勘定元帳メニュー */
+"gl.gl001" = "GL001 System 1 read err = ";
+"gl.gl002" = "GL002 System 2 read err = ";
+"gl.gl003" = "GL003 System 4 read err = ";
+"gl.hit_return" = " hit return";
+"gl.menu_title" = "General Ledger System Menu";
+"gl.item_a" = "(A)  Date Entry";
+"gl.item_b" = "(B)  Chart Of Accounts";
+"gl.item_c" = "(C)  Default Account Maintenance";
+"gl.item_d" = "(D)* Final Accounts Set-Up";
+"gl.item_e" = "(E)  Enter Transactions";
+"gl.item_f" = "(F)  Proof/Modify Transactions";
+"gl.item_g" = "(G)  Batch Status Report";
+"gl.item_h" = "(H)  Transaction Posting";
+"gl.item_i" = "(I)  End Of Cycle Processing";
+"gl.item_j" = "(J)  Print Trial Balance";
+"gl.item_k" = "(K)  Print P&L and Balance Sheet";
+"gl.item_l" = "(L)  Print Ledgers";
+"gl.item_m" = "(M)* Print Final Accounts";
+"gl.item_x" = "(X)  Exit to ";
+"gl.item_z" = "(Z)  System Set Up";
+"gl.not_yet_available" = "Sorry not yet available";
+"gl.client" = "Client -";
+/* gl000.cbl — Start Of Day */
+"gl000.title" = "General Ledger  Start Of Day";
+"gl000.enter_date_uk" = "Enter todays date as dd/mm/yyyy - [          ]";
+"gl000.enter_date_usa" = "Enter todays date as mm/dd/yyyy - [          ]";
+"gl000.enter_date_intl" = "Enter todays date as yyyy/mm/dd - [          ]";
+"gl000.gl009" = "GL009 Invalid Date";
 /* ---- sys.en.strings ---- */
 /* ACAS.cbl — システムメニュー (英語 = レガシー原文) */
 "sys.sy006" = "SY006 Program Arguments limited to two and you have specified ";

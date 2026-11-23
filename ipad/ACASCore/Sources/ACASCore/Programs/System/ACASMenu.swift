@@ -99,11 +99,11 @@ public enum ACASMenu {
                         continue
                     }
                     if let name = called {
-                        s.shared["ws-term-code"] = 0
-                        s.shared["ws-caller"] = "ACAS"
-                        s.shared["to-day"] = toDay
+                        s.termCode = 0
+                        s.caller = "ACAS"
+                        s.called = name
                         try s.call(name)
-                        if (s.shared["ws-term-code"] as? Int ?? 0) > 7 { throw StopRun() }
+                        if s.termCode > 7 { throw StopRun() }
                         break menu
                     }
                 }
@@ -112,10 +112,10 @@ public enum ACASMenu {
     }
 
     static func callSystemSetup(_ s: Session) throws {
-        s.shared["ws-term-code"] = 0
-        try s.call("sys002")
-        if (s.shared["ws-term-code"] as? Int ?? 0) > 7 { throw StopRun() }
-        if s.programs["sys002"] == nil { throw StopRun(code: 1) }
+        s.termCode = 0
+        s.called = "sys002"
+        if try !s.call("sys002") { throw StopRun(code: 1) }
+        if s.termCode > 7 { throw StopRun() }
     }
 
     /// mapser: システムファイル新規作成 (会社名と利用サブシステムの入力)

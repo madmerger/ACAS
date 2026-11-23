@@ -1,0 +1,29 @@
+/* general.cbl — 総勘定元帳メニュー */
+"gl.gl001" = "GL001 システム1読込エラー=";
+"gl.gl002" = "GL002 システム2読込エラー=";
+"gl.gl003" = "GL003 システム4読込エラー=";
+"gl.hit_return" = " Return押下";
+"gl.menu_title" = "総勘定元帳 メニュー";
+"gl.item_a" = "(A)  日付入力";
+"gl.item_b" = "(B)  勘定科目表";
+"gl.item_c" = "(C)  既定勘定の保守";
+"gl.item_d" = "(D)* 決算書設定";
+"gl.item_e" = "(E)  取引入力";
+"gl.item_f" = "(F)  取引の検証/修正";
+"gl.item_g" = "(G)  バッチ状況一覧";
+"gl.item_h" = "(H)  取引転記";
+"gl.item_i" = "(I)  期末処理";
+"gl.item_j" = "(J)  試算表の印刷";
+"gl.item_k" = "(K)  損益計算書/貸借対照表の印刷";
+"gl.item_l" = "(L)  元帳の印刷";
+"gl.item_m" = "(M)* 決算書の印刷";
+"gl.item_x" = "(X)  終了    ";
+"gl.item_z" = "(Z)  システム設定";
+"gl.not_yet_available" = "まだ利用できません";
+"gl.client" = "会社 -";
+/* gl000.cbl — Start Of Day */
+"gl000.title" = "総勘定元帳  業務開始";
+"gl000.enter_date_uk" = "本日の日付を入力 dd/mm/yyyy     - [          ]";
+"gl000.enter_date_usa" = "本日の日付を入力 mm/dd/yyyy     - [          ]";
+"gl000.enter_date_intl" = "本日の日付を入力 yyyy/mm/dd     - [          ]";
+"gl000.gl009" = "GL009 日付が不正";
