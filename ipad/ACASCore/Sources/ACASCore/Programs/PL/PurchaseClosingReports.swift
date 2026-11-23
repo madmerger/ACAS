@@ -4,8 +4,14 @@ extension PurchaseLedger {
     private var closingDayBookPath: String { base + "closing-day-book.prt" }
     private var lastPurchaseAnalysisPath: String { base + "last-purchase-analysis.prt" }
 
-    public var closedPurchaseDayBook: Data? { store.readRaw(closingDayBookPath).map { Data($0) } }
-    public var lastPurchaseAnalysisReport: Data? { store.readRaw(lastPurchaseAnalysisPath).map { Data($0) } }
+    public var closedPurchaseDayBook: Data? {
+        guard let bytes = store.readRaw(closingDayBookPath), !bytes.isEmpty else { return nil }
+        return Data(bytes)
+    }
+    public var lastPurchaseAnalysisReport: Data? {
+        guard !periodCloseStatus.needsPurchaseAnalysis else { return nil }
+        return store.readRaw(lastPurchaseAnalysisPath).map { Data($0) }
+    }
 
     private func appearsInDayBook(_ header: Record) -> Bool {
         (1...3).contains(header.int("ih-type")) && ["z", "Z"].contains(header.str("ih-status"))
@@ -13,8 +19,10 @@ extension PurchaseLedger {
     }
 
     func archiveClosingDayBook() throws {
-        guard headers().contains(where: appearsInDayBook), let report = try purchaseDayBook() else { return }
-        try store.writeRaw(closingDayBookPath, Array(report))
+        let report = try purchaseDayBook()
+        if report != nil || closedPurchaseDayBook != nil {
+            try store.writeRaw(closingDayBookPath, Array(report ?? Data()))
+        }
     }
 
     public func purchaseDayBook() throws -> Data? {
