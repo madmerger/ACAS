@@ -11,7 +11,7 @@ public static partial class Gl051
     {
         var t = c.Crt;
         Rec? b = null;          // FD レコード領域。未読込の間は LOW-VALUES (レガシー実測: ^@ 表示)
-        bool firstTime = false;
+        bool firstTime = false; int menu = 0;
         string wsDate = Common.ToForm(c, toDay);
         while (true)
         {
@@ -25,7 +25,7 @@ public static partial class Gl051
             t.D("(3)  Print Proof Reports - One Batch", 1201);
             t.D("(4)  Print all Transactions", 1301);
             t.D("(9)  Exit to system menu", 1601);
-            int menu = (int)await t.AN(0843, 1, 0);
+            menu = (int)await t.AN(0843, 1, menu);
             if (menu == 9) return 0;
             if (menu is 1 or 3)
             {
