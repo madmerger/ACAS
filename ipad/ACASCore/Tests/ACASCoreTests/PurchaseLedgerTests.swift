@@ -256,6 +256,18 @@ final class PurchaseLedgerTests: XCTestCase {
         XCTAssertEqual(ledger.supplierRecord(supplier.code)?.bytes, before)
     }
 
+    func testSupplierFormRejectsTwoBlankAddressFields() throws {
+        let ledger = try makeLedger()
+        var supplier = ledger.newSupplier
+        supplier.code = "SUPP01"
+        supplier.address1 = " "
+        supplier.address2 = ""
+        XCTAssertThrowsError(try ledger.saveSupplier(supplier, creating: true, joiningAddressLines: true)) {
+            XCTAssertEqual($0 as? PurchaseLedger.Error, .invalidAddress)
+        }
+        XCTAssertTrue(ledger.suppliers().isEmpty)
+    }
+
     func testPostingPreviewUsesSignedFixedWidthHeaderTotals() throws {
         let ledger = try makeLedger()
         var transaction = PurchaseLedger.Transaction(date: ledger.processingDate)
