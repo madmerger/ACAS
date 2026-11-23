@@ -92,7 +92,7 @@ public struct SalesDayBook {
         p.after(2, Cobol.x("", 23) + "Goods     Discount   Prompt Pay     Carriage          Net          Vat        Gross")
         p.after(1, "")
         for (title, amounts) in zip(["Receipts", "Invoices", "Credit Notes", "    Totals"], totals) {
-            p.after(1, Cobol.x(title, 17) + amounts.map { Pic.edit("z(7)9.99cr", value: $0, scale: 2) }.joined())
+            p.after(2, Cobol.x(title, 17) + amounts.map { Pic.edit("z(7)9.99cr", value: $0, scale: 2) }.joined())
         }
         try p.close()
         return entries

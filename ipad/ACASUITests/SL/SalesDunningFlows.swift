@@ -6,7 +6,12 @@ final class SalesDunningFlows: XCTestCase {
         continueAfterFailure = false
         var system = [UInt8](repeating: 0, count: 1024)
         system[14] = 60
+        system.replaceSubrange(19..<23, with: withUnsafeBytes(of: Int32(155_555).littleEndian, Array.init))
         system[275 + 18] = 0x31
+        system[327] = 0x31
+        system[554] = 0x59
+        var sortedSystem = system
+        sortedSystem[554] = 0x4e
         let key = Array("CUST011".utf8) + [1, 0, 0, 0]
         let item = key + [UInt8](repeating: 0, count: 114 - key.count)
         let seed = try JSONSerialization.data(withJSONObject: [
@@ -16,8 +21,15 @@ final class SalesDunningFlows: XCTestCase {
             ],
         ])
         let fixture = try JSONSerialization.data(withJSONObject: [
-            "id": "SL-督促状試験", "title": "督促状の基準日入力", "workflow": "ui-test-only",
-            "dateSeconds": 1_795_440_000, "seed": seed.base64EncodedString(), "changes": [], "reports": [:],
+            "id": "SL-督促状試験", "title": "督促状の基準日入力", "workflow": "sales-dunning",
+            "dateSeconds": 1_795_440_000, "seed": seed.base64EncodedString(),
+            "changes": [[
+                "file": "ledgers/acas/system.dat", "key": "00000001",
+                "before": hex(system), "after": hex(sortedSystem),
+            ]],
+            "reports": [
+                "ledgers/acas/oisort.wrk": hex(item), "letter.001": "", "letter.002": "", "letter.003": "",
+            ],
         ])
         let app = XCUIApplication()
         app.launchEnvironment["ACAS_FIXTURE"] = fixture.base64EncodedString()
@@ -44,6 +56,7 @@ final class SalesDunningFlows: XCTestCase {
         XCTAssertTrue(error.waitForExistence(timeout: 5))
         XCTAssertEqual(error.label, "旧システムと同じ制約により、基準日を確定できません。督促状は出力されません。")
         XCTAssertTrue(next.exists)
+        XCTAssertTrue(app.staticTexts["case.verdict.match"].waitForExistence(timeout: 5))
         let screenshot = XCTAttachment(screenshot: app.screenshot())
         screenshot.name = "督促状の基準日入力"
         screenshot.lifetime = .keepAlways
