@@ -2,6 +2,22 @@ import XCTest
 @testable import ACASCore
 
 final class SalesInvoicesTests: XCTestCase {
+    func testBatchPrintOnlyClearsReportWhenInvoicingAndAnalysisAreEnabled() throws {
+        let (service, _) = try makeInvoice()
+        let store = service.context.store
+        var system = try service.settings()
+        for (invoicing, status, expected) in [(0, "1", [UInt8(42)]), (1, "0", [UInt8(42)]), (1, "1", [])] {
+            system.setInt("full-invoicing", Int64(invoicing))
+            var flags = system.raw("file-statuses")
+            flags[14] = Array(status.utf8)[0]
+            system.setRaw("file-statuses", flags)
+            try service.systemFile.write(1, system.bytes)
+            try store.writeRaw(SalesInvoices.printPath, [42])
+            try service.openBatchPrint()
+            XCTAssertEqual(store.readRaw(SalesInvoices.printPath), expected)
+        }
+    }
+
     func testFixedDataValidatesAndPersistsCobolFields() throws {
         let (service, _) = try makeInvoice()
         var system = try service.settings()

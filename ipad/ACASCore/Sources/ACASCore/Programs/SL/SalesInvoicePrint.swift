@@ -7,6 +7,8 @@ extension SalesInvoices {
     static let deletedNumbersPath = "ledgers/acas/delinvno.dat"
 
     public func openBatchPrint() throws {
+        let system = try settings()
+        guard system.int("full-invoicing") != 0, system.raw("file-statuses")[14] == 0x31 else { return }
         try context.store.writeRaw(Self.printPath, [])
     }
 
