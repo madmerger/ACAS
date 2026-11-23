@@ -590,6 +590,11 @@ final class PurchaseLedgerTests: XCTestCase {
         XCTAssertEqual(pendingInvoice.int("oi-cr"), 500_000)
         XCTAssertThrowsError(try ledger.postPayments())
         XCTAssertEqual(try ledger.proofPayments().map(\.number), [paymentNumber])
+        let report = try XCTUnwrap(ledger.store.readRaw(PurchaseLedger.reportPath))
+        let detail = try XCTUnwrap(String(bytes: report, encoding: .ascii)?.split(separator: "\n")
+            .first { $0.hasPrefix(String(repeating: " ", count: 90) + Pic.edit("z(7)9", value: number, scale: 0)) })
+        XCTAssertTrue(detail.contains("50.00"))
+        XCTAssertTrue(detail.contains("70.00"))
         payment.number = paymentNumber
         payment.amount = 12_500
         payment.allocations = [.init(invoice: number, amount: 12_000)]
