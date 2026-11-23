@@ -328,6 +328,9 @@ private struct LedgerBatchEditor: View {
             dismiss()
         } catch let problem as LedgerBatches.Error {
             error = ledgerText("batch-error." + String(describing: problem))
+            if problem == .cycleTooEarly || problem == .cycleTooLate {
+                workspace.completed("gl-batch-cycle-" + String(describing: problem))
+            }
         } catch {
             self.error = ledgerText("batch-error.storage")
         }

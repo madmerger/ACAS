@@ -54,6 +54,8 @@
 "gl.batch-remove-line" = "明細を削除";
 "gl.batch-error.missingCompany" = "先に会社設定を保存してください";
 "gl.batch-error.cycle" = "現在または次の会計サイクルを指定してください";
+"gl.batch-error.cycleTooEarly" = "GL108：指定した会計サイクルは現在より前です";
+"gl.batch-error.cycleTooLate" = "GL109：指定できるのは次の会計サイクルまでです";
 "gl.batch-error.missingDefault" = "登録済みの既定勘定を選択してください";
 "gl.batch-error.date" = "日付が正しくありません";
 "gl.batch-error.items" = "明細を１件以上入力し、件数は９９以下にしてください";
