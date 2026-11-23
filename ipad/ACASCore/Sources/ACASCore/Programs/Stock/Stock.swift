@@ -13,7 +13,8 @@ enum Stock {
             // aa010-get-system-recs
             guard let sys = s.readSystem() else {
                 c.display(s.t("st.st001") + Cobol.z(s.systemFile.status == "00" ? 23 : Int(s.systemFile.status) ?? 23, 2), at: c.term.cursorLine, c.term.cursorCol)
-                try s.call("maps99")
+                try ST.maps99(s, 33)
+                try ST.maps99(s, 15)
                 throw StopRun()
             }
             s.sys = sys
@@ -28,7 +29,8 @@ enum Stock {
             }
             s.toDay = Maps04.toDate(Int(s.sys.int("run-date")))
             if s.sys.int("level-4") != 1 {
-                try s.call("maps99")
+                try ST.maps99(s, 1)
+                try ST.maps99(s, 15)
                 return
             }
             var opDisplay = ""

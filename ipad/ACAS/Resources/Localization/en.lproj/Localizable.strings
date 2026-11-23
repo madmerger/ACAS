@@ -50,6 +50,68 @@
 "st000.enter_date_usa" = "Enter todays date as mm/dd/yyyy - [          ]";
 "st000.enter_date_intl" = "Enter todays date as yyyy/mm/dd - [          ]";
 "st000.st005" = "ST005 Invalid Date";
+"st.st000" = "ST000 Error on Writing to Stock File";
+/* FileStat-Msgs.cpy */
+"st.fs_00" = "Success";
+"st.fs_02" = "Success Duplicate";
+"st.fs_04" = "Success Incomplete";
+"st.fs_05" = "Success Optional";
+"st.fs_07" = "Success No Unit";
+"st.fs_10" = "End Of File";
+"st.fs_14" = "Out Of Key Range";
+"st.fs_21" = "Key Invalid";
+"st.fs_22" = "Key Exists";
+"st.fs_23" = "Key Not Exists";
+"st.fs_30" = "Permanent Error";
+"st.fs_31" = "Inconsistent Filename";
+"st.fs_34" = "Boundary Violation";
+"st.fs_35" = "File Not Found";
+"st.fs_37" = "Permission Denied";
+"st.fs_38" = "Closed With Lock";
+"st.fs_39" = "Conflict Attribute";
+"st.fs_41" = "Already Open";
+"st.fs_42" = "Not Open";
+"st.fs_43" = "Read Not Done";
+"st.fs_44" = "Record Overflow";
+"st.fs_46" = "Read Error";
+"st.fs_47" = "Input Denied";
+"st.fs_48" = "Output Denied";
+"st.fs_49" = "I/O Denied";
+"st.fs_51" = "Record Locked";
+"st.fs_52" = "End-Of-Page";
+"st.fs_57" = "I/O Linage";
+"st.fs_61" = "File Sharing Failure";
+"st.fs_91" = "File Not Available";
+/* st040.cbl */
+"st040.title" = "Stock Activity Reset";
+"st040.can_clear" = "Can I clear this ";
+"st040.quarter" = "Quarter";
+"st040.week" = "   Week";
+"st040.month" = "  Month";
+"st040.totals" = " Totals? [ ] (N/Y)";
+"st040.clear_year" = "Can I clear End of Year Totals on Stock records [ ] (N/Y)";
+"st040.st401" = "ST401 Stock File not found";
+"st040.st402" = "ST402 Y or N only";
+"st040.will_clear_period" = "Will Clear Period totals";
+"st040.will_clear_year" = "Will Clear Year totals";
+"st040.no_audit" = "You have NOT run audit reports";
+"st040.sure" = "Have you made backups of your data and are you sure?  [ ] (N/Y)";
+"st040.updating" = "Updating your Stock file as requested";
+/* st050.cbl */
+"st050.title" = "Stock Compression Utility";
+"st050.st501" = "ST501 Stock File not found";
+"st050.st502" = "ST502 Y or N only";
+"st050.st503" = "ST503 Error opening temp file";
+"st050.st504" = "ST504 Error writing to temp file";
+"st050.st505" = "ST505 Error: Length of Stock File not same as Temp File";
+"st050.st506" = "ST506 Error opening Stock File";
+"st050.stock_file" = "Stock File = ";
+"st050.temp_file" = "Temp  File = ";
+"st050.clean_up" = "This process will clean up the Stock File of deleted records";
+"st050.recovery" = "Is this a recovery from a previous run of this process - [ ] (N/Y)";
+"st050.confirm" = "Confirm you wish this to happen & that you have a backup [ ] (N/Y)";
+"st050.recreating" = "recreating Stock file from temp file as requested";
+"st050.updating" = "Updating your Stock file as requested";
 /* ---- sys.en.strings ---- */
 /* ACAS.cbl — システムメニュー (英語 = レガシー原文) */
 "sys.sy006" = "SY006 Program Arguments limited to two and you have specified ";
@@ -89,3 +151,6 @@
 "acas.opt_invoicing" = "/ Invoicing";
 "acas.opt_stock" = "/ Stock ";
 "acas.opt_oe" = "/ Order Entry";
+/* ---- sys002.en.strings ---- */
+/* maps99.cbl / error.txt */
+"maps99.not_in_file" = "Error not in error.txt. Hit return to close";
