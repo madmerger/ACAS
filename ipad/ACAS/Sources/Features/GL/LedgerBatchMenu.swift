@@ -49,9 +49,16 @@ struct LedgerBatchMaintenanceMenu: View {
     var body: some View {
         List {
             NavigationLink(ledgerText("batch-amend.title")) {
-                List(LedgerBatches(workspace.context).all.filter { !$0.posted }) { batch in
-                    Button("\(batch.id)　\(batch.description)") { editingBatch = batch }
-                        .accessibilityIdentifier("gl.batch.amend.\(batch.id)")
+                let batches = LedgerBatches(workspace.context).all.filter { !$0.posted }
+                List {
+                    if batches.isEmpty {
+                        Text(ledgerText("batch-amend.empty"))
+                            .accessibilityIdentifier("gl.batch.amend.empty")
+                    }
+                    ForEach(batches) { batch in
+                        Button("\(batch.id)　\(batch.description)") { editingBatch = batch }
+                            .accessibilityIdentifier("gl.batch.amend.\(batch.id)")
+                    }
                 }
                 .navigationTitle(ledgerText("batch-amend.title"))
                 .onAppear { workspace.completed("gl-batch-amend-menu") }
