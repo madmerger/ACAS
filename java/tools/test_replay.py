@@ -8,6 +8,19 @@ import ui_replay
 
 
 class ReplayTest(unittest.TestCase):
+    def test_nohup_mask_preserves_application_text(self):
+        for notice, col in [(replay.OS_OUTPUT, 2), (replay.OS_OUTPUT, 73), (replay.OS_ERROR, 1)]:
+            with self.subTest(notice=notice, col=col):
+                text = "L" * col + notice + "right"
+                other = "L" * col + "X" * len(notice) + "WRONG"
+                split = lambda s: [s[i:i + 80] for i in range(0, len(s), 80)]
+                want, got, count = replay.mask_os_output(split(text), split(other))
+                self.assertEqual(count, 1)
+                self.assertTrue(want[-1].endswith("right"))
+                self.assertTrue(got[-1].endswith("WRONG"))
+                self.assertEqual(want[0][:col], got[0][:col])
+                self.assertNotEqual(want, got)
+
     def test_missing_evidence_is_unverified(self):
         case = {
             "id": "GL-test", "title": "比較証跡", "baseline": "biz",
