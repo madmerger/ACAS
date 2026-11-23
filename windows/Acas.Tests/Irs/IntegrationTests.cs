@@ -1,3 +1,4 @@
+using System.Buffers.Binary;
 using System.Text;
 using Acas.Core.Engine;
 using Acas.Core.Programs.Integration;
@@ -7,6 +8,28 @@ namespace Acas.Tests.Irs;
 
 public class IntegrationTests
 {
+    [Fact]
+    public void 売掛貸方票は指定した請求書を先に消し込む()
+    {
+        using var db = new Db();
+        db.LoadBaseline("sl-printed");
+        const string invoices = "ledgers/acas/invoice.dat", items = "ledgers/acas/openitm3.dat";
+        var template = db.Scan(invoices).First(x => x.Key.EndsWith("/00", StringComparison.Ordinal)).Data;
+        for (int number = 1; number <= 3; number++)
+        {
+            byte[] header = number == 3 ? [.. template, 0, 0, 0, 0, 32, 32] : (byte[])template.Clone();
+            Encoding.ASCII.GetBytes(number.ToString("D8")).CopyTo(header, 0);
+            header[31] = number == 3 ? (byte)'3' : (byte)'2';
+            if (number == 3) BinaryPrimitives.WriteInt32LittleEndian(header.AsSpan(134), 2);
+            db.Put(invoices, $"{number:D8}/ /00", header);
+        }
+
+        new LedgerTransfer(db).TransferInvoices(TransferLedger.Sales, new DateTime(2026, 11, 23), TransferDestination.Dedicated);
+
+        Assert.Equal((byte)'0', db.Read(items, "CUST011/00000001")![89]);
+        Assert.Equal((byte)'1', db.Read(items, "CUST011/00000002")![89]);
+    }
+
     [Fact]
     public void 買掛請求を総勘定元帳へ転記する()
     {

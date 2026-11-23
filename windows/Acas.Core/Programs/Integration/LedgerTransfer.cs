@@ -19,13 +19,14 @@ public sealed partial class LedgerTransfer(Db db)
     private static readonly CultureInfo Invariant = CultureInfo.InvariantCulture;
     private static readonly Layout PurchaseInvoice = InvoiceLayout(false);
     private static readonly Layout SalesInvoice = InvoiceLayout(true);
+    private static readonly Layout SalesInvoiceWithReference = InvoiceLayout(true, includeReference: true);
     private static readonly Layout PurchaseParty = PartyLayout(false);
     private static readonly Layout SalesParty = PartyLayout(true);
 
     private Rec Settings() => db.Read(SystemFile, SystemKey) is { Length: 1024 } data
         ? Layouts.System.From(data) : throw new IrsException("元帳のシステム設定がありません。");
 
-    private static Layout InvoiceLayout(bool sales)
+    private static Layout InvoiceLayout(bool sales, bool includeReference = false)
     {
         var layout = new Layout().N9("number", 8);
         if (sales) layout.X("letter", 1);
@@ -37,9 +38,12 @@ public sealed partial class LedgerTransfer(Db db)
         if (sales) layout.X("printFlags", 5);
         layout.BChar("lines").BChar("deductDays").Comp("deductAmount", 3, 2)
             .Comp("deductTax", 3, 2).BChar("days");
-        if (!sales) layout.BLong("creditInvoice").X("dayBook", 1).X("updated", 1);
-        return layout.Fill((sales ? 134 : 129) - layout.Size);
+        if (!sales || includeReference) layout.BLong("creditInvoice").X("dayBook", 1).X("updated", 1);
+        return layout.Fill((sales ? includeReference ? 140 : 134 : 129) - layout.Size);
     }
+
+    private static Rec ReadInvoice(bool sales, byte[] data) => Read(!sales ? PurchaseInvoice :
+        data.Length == SalesInvoiceWithReference.Size ? SalesInvoiceWithReference : SalesInvoice, data);
 
     private static Layout PartyLayout(bool sales)
     {
@@ -88,10 +92,9 @@ public sealed partial class LedgerTransfer(Db db)
         bool sales = ledger == TransferLedger.Sales;
         string title = TransferTitle(sales);
         string invoiceFile = InvoiceFile(sales), partyFile = PartyFile(sales);
-        Layout invoices = sales ? SalesInvoice : PurchaseInvoice;
         Layout parties = sales ? SalesParty : PurchaseParty;
         var pending = db.Scan(invoiceFile).Where(x => x.Key.EndsWith("/00", StringComparison.Ordinal))
-            .Select(x => (x.Key, Row: Read(invoices, x.Data)))
+            .Select(x => (x.Key, Row: ReadInvoice(sales, x.Data)))
             .Where(x => x.Row.I("test") == 0 && x.Row.I("type") is >= 1 and <= 3 &&
                 (sales ? x.Row.St("printFlags").Contains('L') && x.Row.St("status") is not ("z" or "Z")
                     : x.Row.St("status") is "P" or "p")).ToArray();
@@ -288,7 +291,7 @@ public sealed partial class LedgerTransfer(Db db)
             row.SetN(field, row.I("type") == 3 ? -invoice.N(field) : invoice.N(field));
         foreach (string field in new[] { "extra", "discount", "extratax", "deductAmount", "deductTax" })
             row.SetN(field, sales && row.I("type") == 3 ? -invoice.N(field) : invoice.N(field));
-        if (!sales) row.SetN("creditInvoice", invoice.I("creditInvoice"));
+        if (invoice.L.F.ContainsKey("creditInvoice")) row.SetN("creditInvoice", invoice.I("creditInvoice"));
         return row;
     }
 
