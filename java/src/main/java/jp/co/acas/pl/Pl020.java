@@ -381,7 +381,7 @@ public class Pl020 extends PlBase {
             show(9, 11, pad("", 23));
             eraseEol(23, 1);
             selectedDeletedFolio = null;
-            nextFolioAfterSave = sys.longv("next-folio") + 1;
+            nextFolioAfterSave = followingFolio(sys.longv("next-folio"));
             ih.setNum("ih-invoice", 0);
             if (delExists) getADeletedInvoice();
             if (ih.longv("ih-invoice") == 0) {
@@ -393,7 +393,7 @@ public class Pl020 extends PlBase {
                     return true;
                 }
                 ih.setNum("ih-invoice", number);
-                nextFolioAfterSave = number + 1;
+                nextFolioAfterSave = followingFolio(number);
             }
             show(7, 50, ih.str("ih-invoice"));
             show(3, 1, purch.str("purch-name"));
@@ -431,7 +431,7 @@ public class Pl020 extends PlBase {
             cursor = entry.getKey();
             del.load(entry.getValue());
             long number = del.longv("del-inv-nos");
-            if (number == 0 || !folioAvailable(key, number)) continue;
+            if (!folioAvailable(key, number)) continue;
             selectedDeletedFolio = cursor;
             ih.setNum("ih-invoice", number);
             display(3, 45, "Using Deleted Folio Numbers");
@@ -439,7 +439,7 @@ public class Pl020 extends PlBase {
         }
         show(3, 45, pad("", 29));
         long nextInvoice = sys.longv("next-invoice");
-        if (nextInvoice > 0 && folioAvailable(key, nextInvoice)) {
+        if (folioAvailable(key, nextInvoice)) {
             ih.setNum("ih-invoice", nextInvoice);
         }
     }
@@ -447,14 +447,23 @@ public class Pl020 extends PlBase {
     private long nextAvailableFolio() {
         if (!invoiceFile.isOpen()) return 0;
         Rec key = invHeaderRec();
-        for (long number = Math.max(1, sys.longv("next-folio")); number <= MAX_FOLIO; number++) {
+        long start = sys.longv("next-folio");
+        if (start < 1 || start > MAX_FOLIO) start = 1;
+        long number = start;
+        do {
             if (folioAvailable(key, number)) return number;
-        }
+            number = followingFolio(number);
+        } while (number != start);
         return 0;
+    }
+
+    private static long followingFolio(long number) {
+        return number < 1 || number >= MAX_FOLIO ? 1 : number + 1;
     }
 
     /** ヘッダーがなくても旧明細が残っている番号は使わない。 */
     private boolean folioAvailable(Rec key, long number) {
+        if (number < 1 || number > MAX_FOLIO) return false;
         key.setNum("ih-invoice", number);
         key.setNum("ih-test", 0);
         String status = invoiceFile.start(key, ">=");

@@ -156,6 +156,58 @@ class Pl020LinesTest {
         assertEquals(1, deleted.count());
     }
 
+    @Test
+    void 最大の伝票番号を保存した後は先頭の空きから採番する() throws Exception {
+        PlSession s = new PlSession("pl020-last-folio", "sl-ready");
+        var sys = SystemFile.shared(s.ctx);
+        sys.setNum("next-folio", 99_999_999);
+        addOldLine(s, 1);
+
+        s.keys("D").keys(HEADER).keys(newLines(1)).keys(TOTALS);
+        s.assertMenu();
+        assertEquals(1, sys.longv("next-folio"));
+        s.keys("D").keys(HEADER).keys(newLines(1)).keys(TOTALS);
+        s.assertMenu();
+
+        assertEquals(List.of(2L, 99_999_999L), savedFolios(s));
+        assertEquals(3, sys.longv("next-folio"));
+    }
+
+    @Test
+    void 上限まで空きがなければ先頭に戻って探索する() throws Exception {
+        PlSession s = new PlSession("pl020-wrap-search", "sl-ready");
+        var sys = SystemFile.shared(s.ctx);
+        sys.setNum("next-folio", 99_999_999);
+        addOldLine(s, 99_999_999);
+        addOldLine(s, 1);
+
+        s.keys("D").keys(HEADER).keys(newLines(1)).keys(TOTALS);
+        s.assertMenu();
+
+        assertEquals(List.of(2L), savedFolios(s));
+        assertEquals(3, sys.longv("next-folio"));
+    }
+
+    @Test
+    void 保存済みの次番号が範囲外でも先頭から採番する() throws Exception {
+        PlSession s = new PlSession("pl020-overflow-folio", "sl-ready");
+        var sys = SystemFile.shared(s.ctx);
+        sys.setNum("next-folio", 100_000_000);
+
+        s.keys("D").keys(HEADER).keys(newLines(1)).keys(TOTALS);
+        s.assertMenu();
+
+        assertEquals(List.of(1L), savedFolios(s));
+        assertEquals(2, sys.longv("next-folio"));
+    }
+
+    private static List<Long> savedFolios(PlSession s) {
+        return s.records("pinvoice.dat", PlBase::invHeaderRec).stream()
+                .filter(r -> r.intv("ih-test") == 0)
+                .map(r -> r.longv("ih-invoice"))
+                .toList();
+    }
+
     private static void addOldLine(PlSession s, long folio) {
         var invoice = CobFile.indexed(s.ctx.store, s.ctx.path("pinvoice.dat"), 0, 9);
         invoice.open(CobFile.Mode.IO, true);
