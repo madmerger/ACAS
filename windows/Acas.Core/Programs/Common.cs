@@ -73,11 +73,11 @@ public static class Common
     }
 
     /// <summary>xx000 Start of Day: 処理日入力。toDay(UK) を更新し Run-Date を設定する。</summary>
-    public static async Task<string> StartOfDay(Ctx c, string prog, string title, int titlePos, string errMsg)
+    public static async Task<string> StartOfDay(Ctx c, string prog, string title, int titlePos, string errMsg, int timePos = 0370)
     {
         var t = c.Crt;
         string u = c.Now().ToString("dd/MM/yyyy");
-        ClientHead(c, prog, title, titlePos);
+        ClientHead(c, prog, title, titlePos, timePos);
         while (true)
         {
             int f = c.Sys.I("Date-Form");

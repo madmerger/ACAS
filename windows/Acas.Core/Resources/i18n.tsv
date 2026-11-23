@@ -460,3 +460,158 @@ Delimiter <\> assumed	区切文字 <\> 使用
   S-L Data 2 Complete   	  SL設定2 完了
     P-L Data Complete   	    PL設定 完了
   Stock Data Complete   	  在庫設定 完了
+(X)  Exit To 	(X)  終了→
+Aged Debtors Analysis	売掛金年齢分析
+Alphabetical Customer List	得意先名簿(名称順)
+Customer File Dump	得意先ファイル出力
+Customer File Maintenance	得意先ファイル保守
+Customer Turnover Report	得意先別売上高表
+Date Entry	処理日入力
+Dunning Letters Generation	督促状作成
+End of Cycle Processing	サイクル末処理
+Invoice Sub-System	請求サブシステム
+Payment Amend	入金修正
+Payment Input	入金入力
+Payment Post	入金転記
+Payment Proof	入金プルーフ
+Sales Analysis Report	売上分析表
+Sales Day Book	売上日記帳
+Sales Ledger  Start Of Day	売掛元帳  業務開始
+Sales Ledger Enquiry	売掛元帳照会
+Sales Ledger System Menu	売掛元帳システムメニュー
+Sales Transactions Amend	売上取引修正
+Sales Transactions Input	売上取引入力
+Sales Transactions Post	売上取引転記
+Sales Transactions Proof	売上取引プルーフ
+Set-Up Sales Analysis Codes	売上分析コード設定
+Statement Production	取引明細書作成
+Using acasbkup.sh	acasbkup.sh使用
+(1)  Set-up customer records	(1)  得意先登録
+(2)  Amend Customer records	(2)  得意先変更
+(3)  Delete Customer records	(3)  得意先削除
+(4)  Print Customer records	(4)  得意先印刷
+(5)  Display Customer records	(5)  得意先表示
+(9)  Return to system menu	(9)  メニューへ戻る
+Customer File Set-Up & Maintenance	得意先ファイル登録・保守
+Function  Menu	機能メニュー
+T-019 Error not in error.txt. Hit return to close	T-019 エラー定義なし。Enterで終了
+T-030 Error not in error.txt. Hit return to close	T-030 エラー定義なし。Enterで終了
+T-011 Error not in error.txt. Hit return to close	T-011 エラー定義なし。Enterで終了
+*A/C Nos  [       ]*Ref    [          ]*	*取引先   [       ]*参照   [          ]*
+*Date  [          ]*                   *	*日付  [          ]*                   *
+*Invoice [        ]*Order  [          ]*	*請求No  [        ]*注文   [          ]*
+F1 = Setup new Customer; F8 = Only Show delivery details	F1 = 得意先新規登録; F8 = 納品先のみ表示
+Invoicing Data Entry	請求データ入力
+Type [ ]  <1> = Receipt; <2> = Account; <3> = Credit Note; <4> = Pro-Forma	種別 [ ]  <1>=領収; <2>=掛売; <3>=赤伝; <4>=見積請求
+*A/C Nos   [       ]*Ref   [          ]*	*取引先    [       ]*参照  [          ]*
+*Date   [  /  /    ]*                  *	*日付   [  /  /    ]*                  *
+*Invoice [00000000] *Order [          ]*	*請求No  [00000000] *注文  [          ]*
+F8 = Only Show delivery details on 'A/C nos' entry	F8 = 取引先入力時に納品先のみ表示
+Invoicing Data Amend	請求データ修正
+Invoice Proof Report	請求プルーフ表
+SL120 No Transactions to proof! ...Press return for menu.	SL120 プルーフ対象取引なし  Enterでメニューへ
+OK to post Sales transactions (YES/NO) ?  [   ]	売上取引を転記しますか (YES/NO) ?         [   ]
+(1)  Set-up P/A records	(1)  分析コード登録
+(2)  Amend/Delete P/A records	(2)  分析コード変更・削除
+(3)  Print P/A records	(3)  分析コード印刷
+(4)  Print All P/A records	(4)  分析コード全件印刷
+(5)  Display P/A records	(5)  分析コード表示
+Product Analysis File Set-Up & Maintenance	商品分析ファイル登録・保守
+- [00000] [_] Enter invoice value & operator	- [00000] [_] 請求金額と演算子を入力
+- [00000] [_] Enter number of days & operator	- [00000] [_] 日数と演算子を入力
+[00000] [_] Enter number of invoices & operator	[00000] [_] 請求件数と演算子を入力
+<L> Live;<D> Dormant;< > All	<L>有効;<D>休眠;< >全て
+Average Value	平均金額
+Credit Period	与信期間
+Customer File	得意先
+Customer Number - [______]	得意先番号      - [______]
+Date Entered-[__________] [_] Enter date & operator	登録日      -[__________] [_] 日付と演算子を入力
+Enter characters in positions to match	照合する桁に文字を入力
+Enter number of days & operator	日数と演算子を入力
+for credit periods < than	与信期間が未満
+for credit periods = to	与信期間が一致
+for credit periods > than	与信期間が超過
+Invoice Activity	請求件数
+Overdue A/Cs	延滞取引先
+Report Attributes	帳票条件
+Status	状態
+Details Ok To File (Y/N) ...........[Y]	保存してよいですか (Y/N) ...........[Y]
+Extra Charge Discount Account	追加料金・値引勘定
+Extra Charge/Discount Description - [	追加料金/値引 摘要                -
+Extra Charge/Discount Percentage  - [     ]	追加料金/値引 率                  - [     ]
+Extra Charge/Discount Type (C/D)  - [ ]	追加料金/値引 種別 (C/D)          - [ ]
+Invoice Entry Level (1, 2) 	請求入力レベル (1, 2)
+Invoice to Stock Audit - [ ]	請求→在庫 監査     -     [ ]
+Invoice to Stock Link  - [ ]	請求→在庫 連携     -     [ ]
+Invoicing Fixed Data	請求固定項目
+Next Invoice	次回請求番号
+Print Extra on Invoices (N/Y)     - [ ]	追加料金を請求書に印刷 (N/Y)      - [ ]
+Proforma Retention In Days 	見積請求の保持日数
+Vat Account	VAT勘定
+Confirm end of Cycle Processing to be Run (Y/N) - [N]	サイクル末処理を実行しますか (Y/N)              - [N]
+Have you made a Backup of ALL DATA FILES? If so;	全データのバックアップは取得済みですか?
+WARNING: MAKE SURE THAT DATE IS AT END OF CYCLE.IE END OF MONTH	警告: 日付がサイクル末(月末)であることを確認
+* <B> = Back      *	* <B> = 戻る      *
+* <K> = Deleted   *	* <K> = 削除      *
+* <Q> = Quit      *	* <Q> = 終了      *
+* <S> = Save      *	* <S> = 保存      *
+* Escape Code [ ] *	* 操作コード  [ ] *
+Code	ｺｰﾄﾞ
+Description	摘要
+G/L Nos	GL番号
+Print All P/A Records	分析コード全件印刷
+Ref	参
+Set-Up P/A Records	分析コード登録
+Type	種別
+(1)  Amend Invoicing Fixed Data	(1)  請求固定項目の変更
+(2)  Enter Invoices For Batch Printing	(2)  請求入力(一括印刷)
+(3)  Enter Invoice For Immediate Printing	(3)  請求入力(即時印刷)
+(4)  Amend Invoices	(4)  請求修正
+(5)  Delete Invoices	(5)  請求削除
+(6)  Invoice Deletion Report	(6)  請求削除帳票
+(7)  Print Invoices	(7)  請求書印刷
+(8)  Print Delivery Notes/Picking Lists	(8)  納品書・ピッキングリスト印刷
+(9)  Return To System menu	(9)  メニューへ戻る
+Invoice Printing	請求書印刷
+Invoicing Menu	請求メニュー
+Print Or Re-Print.............  (P/R) ? - [P]	印刷 / 再印刷.................  (P/R) ? - [P]
+SL002 Note error and hit return	SL002 エラーを控えEnter
+SL121 Error writing to Open Item 2 File	SL121 未決済明細2 書込エラー
+Working...........Please Wait	処理中...........お待ち下さい
+: [             ] Ext: [    ]	: [             ] 内線:[    ]
+Addr: [                                                ]	住所: [                                                ]
+Check Digit { }	検査数字    { }
+Credit limit : [0000000] Discount : [00.00]	与信限度額   : [0000000] 値引率   : [00.00]
+Credit period: [00]	与信期間     : [00]
+Current Bal	現在残高
+Customer Name: [                              ]	得意先名     : [                              ]
+Customer Nos : [      ]	得意先番号   : [      ]
+Customer Note: [                                                ]	得意先メモ   : [                                                ]
+Customer Record Creation	得意先登録
+Delivery name: [                              ]	納品先名     : [                              ]
+Email Sales	営業Email
+EMail-Inv:[ ] Stat: [ ] Dun : [ ]	請求Mail: [ ] 明細: [ ] 督促: [ ]
+Fax : [             ]	Fax : [             ]
+Last invoice : {          }	最終請求日   : {          }
+Last payment : {          }	最終入金日   : {          }
+Late charges : [ ]	延滞料       : [ ]
+Late letters : [ ]	督促状       : [ ]
+Maximum late charge	延滞料上限
+Minimum balance before late charge : [0000]	延滞料対象の最低残高               : [0000]
+Telephone	電話
+Unapplied Bal: {            }	未充当残高   : {            }
+Customer Nos : [       ]	得意先番号   : [       ]
+Customer Record Amendment	得意先変更
+* <D> = Dormant   *	* <D> = 休眠      *
+* <K> = Kill      *	* <K> = 抹消      *
+Customer Record Deletion	得意先削除
+Customer Record Display 	得意先表示
+Amend/Delete P/A Records	分析コード変更・削除
+Print P/A Records	分析コード印刷
+Display P/A Records	分析コード表示
+Enter <X> to exit or <Return> to continue...[ ]	<X>で終了 / <Enter>で続行...................[ ]
+*A/C Nos   [       ]*                 **	*取引先    [       ]*                 **
+*Invoice [00000000 ]*Order [          ]*	*請求No  [00000000 ]*注文  [          ]*
+Invoicing Data Deletion	請求データ削除
+Type [ ]  <1> = Receipt; <2> = Account; <3> = CrediT Note; <4> = Pro-Forma	種別 [ ]  <1>=領収; <2>=掛売; <3>=赤伝; <4>=見積請求
+Delivery / Picking Note Print	納品書・ピッキングリスト印刷

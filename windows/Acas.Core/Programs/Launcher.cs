@@ -57,8 +57,18 @@ public static partial class Launcher
                 t.D("(G)  Epos", 1604);
                 t.D("(X)  Exit To system", 1444);
                 t.D("(Z)  System Setup", 1644);
+                bool noise = c.BackupNoise;
+                if (noise)
+                {
+                    // レガシー実測 (SL-241): 終了時バックアップスクリプト acasbkup.sh が無く、nohup の出力が画面に混入する
+                    c.BackupNoise = false;
+                    t.V("nohup: appending output to 'nohup.out", 0644);
+                    t.V("'", 0701);
+                    t.V(" nohup: failed to run command 'acasbkup.sh': No such file or directory", 0801);
+                }
             acceptLoop:
-                var reply = (await t.A(0644, 1, auto: true)).ToUpperInvariant();
+                var reply = (await t.A(0644, 1, init: noise ? "n" : null, auto: true)).ToUpperInvariant();
+                noise = false;
                 switch (reply)
                 {
                     case "X": t.D(" ", 0101, eos: true); throw new StopRun();

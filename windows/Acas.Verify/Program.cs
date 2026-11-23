@@ -43,7 +43,7 @@ foreach (var c in doc.RootElement.GetProperty("cases").EnumerateArray())
     {
         if (r.Error != null) Console.WriteLine("   ERR " + r.Error.Split('\n')[0]);
         foreach (var d in r.Diffs) Console.WriteLine("   " + d);
-        foreach (var u in r.Untranslated.Take(15)) Console.WriteLine("   未翻訳: " + u);
+        foreach (var u in r.Untranslated.Take(Environment.GetEnvironmentVariable("ACAS_UNTR_ALL") == "1" ? 9999 : 15)) Console.WriteLine("   未翻訳: " + u);
     }
     results.Add(new { id, match = r.Match, screens = r.ScreensMatch, records = r.RecordsMatch, reports = r.ReportsMatch, japanese = r.Japanese, diffs = r.Diffs, untranslated = r.Untranslated, error = r.Error });
 }
