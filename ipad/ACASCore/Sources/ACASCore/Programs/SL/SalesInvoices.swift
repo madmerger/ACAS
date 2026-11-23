@@ -241,7 +241,7 @@ public struct SalesInvoices {
 
     public func delete(_ number: Number) throws {
         guard let header = header(number) else { throw Error.missingInvoice }
-        guard number.value != 0, header.str("ih-status") != "z" else { throw Error.locked }
+        guard number.value != 0, !["z", "Z"].contains(header.str("ih-status")) else { throw Error.locked }
         let store = context.store
         let path = file.path
         guard store.delete(path, key: key(number)) else { throw Error.missingInvoice }

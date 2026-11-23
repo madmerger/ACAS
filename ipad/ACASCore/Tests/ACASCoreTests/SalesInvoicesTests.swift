@@ -23,6 +23,22 @@ final class SalesInvoicesTests: XCTestCase {
         XCTAssertEqual(service.header(invoice.id)?.str("ih-ref"), "AMENDED   ")
     }
 
+    func testAppliedInvoiceCannotBeDeletedWithEitherStatusCase() throws {
+        let (service, invoice) = try makeInvoice()
+        for status in ["z", "Z"] {
+            var header = try XCTUnwrap(service.header(invoice.id))
+            header["ih-status"] = status
+            XCTAssertTrue(service.context.store.rewrite(
+                service.file.path, key: service.key(invoice.id), data: Array(header.bytes.prefix(SalesInvoices.recordSize))
+            ))
+            let before = service.context.store.snapshot()
+            XCTAssertThrowsError(try service.delete(invoice.id)) {
+                XCTAssertEqual($0 as? SalesInvoices.Error, .locked)
+            }
+            XCTAssertEqual(service.context.store.snapshot(), before)
+        }
+    }
+
     private func makeInvoice() throws -> (SalesInvoices, SalesInvoices.Invoice) {
         let store = try FileStore()
         let date = Date(timeIntervalSince1970: 1_700_000_000)
