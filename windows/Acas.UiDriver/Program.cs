@@ -40,6 +40,8 @@ internal static class Program
             };
             var started = DateTimeOffset.UtcNow;
             var stopwatch = Stopwatch.StartNew();
+            if (scenarios.Any(s => s.Group == 1))
+                Console.WriteLine($"ケース計時の開始：{started.ToLocalTime():O}");
             if (scenarios.Any(s => s.Group == 2))
                 Console.WriteLine($"ドライバ開始日時：{started.ToLocalTime():O}");
             if (scenarios.Any(s => s.Group == 3))

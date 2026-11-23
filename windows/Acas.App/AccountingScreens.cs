@@ -44,12 +44,20 @@ internal sealed partial class AccountingScreens(Db database)
             new("MenuCompanyParameters", "会社・期間設定", Open: () => Settings()),
             new("MenuOperatingParameters", "運用環境設定", Open: () => OperatingSettings()),
             new("MenuGeneralLedgerParameters", "総勘定元帳の設定", Open: () => GeneralLedgerSettings()),
+            new("MenuSubledgerParameters", "補助台帳の設定", Open: SubledgerSettingsMenu),
             new("MenuSettingsReport", "設定内容の印刷", Open: SettingsReportMenu)
-        ], Open: SettingsMenu)
+        ], Open: SettingsMenu),
+        new("MenuOrders", "受注管理", Open: () => Unavailable("受注管理")),
+        new("MenuPayroll", "給与計算", Open: () => Unavailable("給与計算")),
+        new("MenuPointOfSale", "販売時点管理", Open: () => Unavailable("販売時点管理"))
     ];
 
     public Screen Start() => _settings.Read() == null ? Setup() :
-        new InformationScreen("業務メニュー", "左側のメニューから操作を選択してください。");
+        BusinessMenu();
+
+    private static Screen BusinessMenu() => new InformationScreen("業務メニュー", "左側のメニューから操作を選択してください。");
+
+    private static Screen Unavailable(string title) => new InformationScreen(title, "この機能は現在利用できません。");
 
     private Screen Setup(string name = "", CompanySetup? model = null, string? error = null)
     {
@@ -90,6 +98,7 @@ internal sealed partial class AccountingScreens(Db database)
             new TextField("PostalCode", "郵便番号", contact.PostCode, 12),
             new TextField("Country", "国", contact.Country, 24),
             new TextField("TaxRegistration", "税登録番号", contact.TaxRegistration, 11),
+            Toggle("PrintTaxNumber", "税登録番号を印刷", draft?.PrintTaxNumber ?? system.St("SL-VAT-Printed") == "Y"),
             new DateField("PeriodStart", "期首日", draft?.Start ?? SystemSettings.Date(system, "Start-Date")),
             new DateField("PeriodEnd", "期末日", draft?.End ?? SystemSettings.Date(system, "End-Date")),
             new TextField("CurrentCycle", "現在の会計期間", (draft?.Cycle ?? system.I("Cyclea")).ToString(), 2),
@@ -98,17 +107,27 @@ internal sealed partial class AccountingScreens(Db database)
             new ChoiceField("DateFormat", "保存データの日付順",
                 [new("1", "日・月・年"), new("2", "月・日・年"), new("3", "年・月・日")],
                 (draft?.DateFormat ?? Math.Clamp(system.I("Date-Form"), 1, 3)).ToString()),
+            new TextField("CurrentQuarter", "現在の四半期", (draft?.Quarter ?? system.I("Current-Quarter")).ToString(), 1),
+            .. Enumerable.Range(1, 5).Select(i => new TextField($"VatRate{i}", $"税率{i}",
+                (draft?.TaxRates?[i - 1] ?? system.N($"Vat-Rate-{i}")).ToString("0.00", System.Globalization.CultureInfo.InvariantCulture), 5)),
             Toggle("SalesStockLink", "売掛と在庫の連携", draft?.SalesStockLink ?? system.S("SL-Stock-Link") == "Y")
         ], "確認へ", values =>
         {
             if (values.Date("PeriodStart") is not { } start || values.Date("PeriodEnd") is not { } end ||
                 !Number(values.Text("CurrentCycle"), out int cycle) || !Number(values.Text("CyclePeriod"), out int period) ||
-                !Number(values.Text("PageLines"), out int lines) || !Number(values.Choice("DateFormat"), out int format))
+                !Number(values.Text("PageLines"), out int lines) || !Number(values.Choice("DateFormat"), out int format) ||
+                !Number(values.Text("CurrentQuarter"), out int quarter))
                 return Settings(draft, "日付と数値の入力内容を確認してください。");
+            var rates = new decimal[5];
+            for (int i = 0; i < rates.Length; i++)
+                if (!decimal.TryParse(values.Text($"VatRate{i + 1}"), System.Globalization.NumberStyles.AllowDecimalPoint,
+                    System.Globalization.CultureInfo.InvariantCulture, out rates[i]))
+                    return Settings(draft, "税率の入力内容を確認してください。");
             var parameters = new CompanyParameters(values.Text("ParameterName"), start, end,
                 cycle, period, lines, format, Enabled(values, "SalesStockLink"),
                 new(values.Text("Address1"), values.Text("Address2"), values.Text("Address3"), values.Text("Address4"),
-                    values.Text("PostalCode"), values.Text("Country"), values.Text("TaxRegistration")));
+                    values.Text("PostalCode"), values.Text("Country"), values.Text("TaxRegistration")))
+                { Quarter = quarter, TaxRates = rates, PrintTaxNumber = Enabled(values, "PrintTaxNumber") };
             if (lines < 29) return Settings(parameters with { PageLines = 48 }, "帳票の行数は２９以上を指定してください。");
             return new ConfirmationScreen("会社・期間設定", "入力した設定を保存しますか。", "保存",
                 () => _settings.SaveParameters(parameters) ? new InformationScreen("会社・期間設定", "設定を保存しました。") :
@@ -145,43 +164,58 @@ internal sealed partial class AccountingScreens(Db database)
         new("GeneralTrialBalance", "試算表", Open: TrialBalanceMenu),
         new("GeneralArchivedLedger", "元帳印刷", Open: ArchivedLedgerMenu),
         new("GeneralFinancialStatements", "決算書印刷", Open: FinancialStatements),
-        new("GeneralSettings", "共通設定", Open: SettingsMenu)
+        new("GeneralFinalSetup", "決算書設定", Open: () => Unavailable("決算書設定")),
+        new("GeneralFinalPrint", "最終決算帳票", Open: GeneralMenu),
+        new("GeneralSettings", "共通設定", Open: SettingsMenu),
+        new("GeneralBack", "総勘定元帳を閉じる", Open: BusinessMenu)
     ]);
 
     private Screen ChartMenu()
     {
         var system = _settings.Read();
-        int first = system?.S("P-C") is "P" or "B" ? 2 : 1;
+        bool divisions = system?.S("P-C") is "P" or "B";
+        bool divisionKeyInitialized = divisions;
+        int first = divisions ? 2 : 1;
         int display = first + (system?.S("Ledger-2nd-Index") == "Y" ? 3 : 2);
-        return new MenuScreen("勘定科目管理",
+        return Menu();
+
+        Screen Menu() => new MenuScreen("勘定科目管理",
         [
-            new("ChartAdd", "科目登録", first, Open: () => AccountForm(null)),
-            new("ChartEdit", "科目変更・削除", first + 1, Open: () => AccountLookup(true)),
-            new("ChartList", "科目一覧表示", display, Open: () => AccountLookup(false)),
+            new("ChartAdd", "科目登録", first, Open: () => AccountForm(Menu, () => divisionKeyInitialized, null)),
+            new("ChartEdit", "科目変更・削除", first + 1, Open: () => AccountLookup(Menu, InitializeDivisionKey, true)),
+            new("ChartList", "科目一覧表示", display, Open: () => AccountLookup(Menu, InitializeDivisionKey, false)),
+            new("ChartPrint", "勘定科目一覧を印刷", display + 1,
+                Open: () => LedgerReport("勘定科目一覧", _ledgerReports.PrintChart(), Menu)),
             new("ChartBack", "総勘定元帳に戻る", 9, Open: GeneralMenu)
         ]);
+
+        void InitializeDivisionKey() => divisionKeyInitialized = true;
     }
 
-    private Screen AccountLookup(bool edit, string? error = null) => new FormScreen(
+    private Screen AccountLookup(Func<Screen> menu, Action initializeDivisionKey, bool edit, string? error = null) => new FormScreen(
         edit ? "科目変更・削除" : "科目一覧表示",
         edit ? CodeFields(null) : [new TextField("StartAccount", "照会を開始する勘定コード", "", 6)],
         edit ? "検索" : "表示", values =>
         {
             if (edit)
             {
-                if (ReadCode(values) is { } code && _ledger.Find(code) is { } account)
-                    return new MenuScreen("科目変更・削除",
-                    [
-                        new("UpdateAccount", "選択した科目を変更", Open: () => AccountForm(account, true)),
-                        new("DeleteAccount", "選択した科目を削除", Open: () => DeleteAccount(account)),
-                        new("AccountLookupBack", "検索に戻る", Open: () => AccountLookup(true))
-                    ]);
-                return AccountLookup(true, "指定された勘定科目は存在しません。");
+                if (ReadCode(values) is { Ledger: not 0 } code)
+                {
+                    initializeDivisionKey();
+                    if (_ledger.Find(code) is { } account)
+                        return new MenuScreen("科目変更・削除",
+                        [
+                            new("UpdateAccount", "選択した科目を変更", Open: () => AccountForm(menu, () => true, account, true)),
+                            new("DeleteAccount", "選択した科目を削除", Open: () => DeleteAccount(account, () => AccountLookup(menu, initializeDivisionKey, true))),
+                            new("AccountLookupBack", "検索に戻る", Open: () => AccountLookup(menu, initializeDivisionKey, true))
+                        ]);
+                }
+                return AccountLookup(menu, initializeDivisionKey, true, "指定された勘定科目は存在しません。");
             }
             var start = values.Text("StartAccount");
-            if (start.Length > 0 && !Number(start, out _)) return AccountLookup(false, "勘定コードは数字で入力してください。");
+            if (start.Length > 0 && !Number(start, out _)) return AccountLookup(menu, initializeDivisionKey, false, "勘定コードは数字で入力してください。");
             return Accounts(start.PadLeft(6, '0'));
-        }, ChartMenu, error);
+        }, menu, error);
 
     private Screen Accounts(string start) => new TableScreen("勘定科目一覧", "AccountList",
         ["勘定コード", "部門", "科目名", "種類", "配置", "階層", "残高"],
@@ -190,7 +224,7 @@ internal sealed partial class AccountingScreens(Db database)
                 Kind(a.Type), a.Placement == ' ' ? "" : Classes[PlacementIndex(a.Placement)],
                 a.Level.ToString(), a.Balance.ToString("N2")])).ToArray());
 
-    private Screen AccountForm(Account? draft, bool edit = false, string? error = null)
+    private Screen AccountForm(Func<Screen> menu, Func<bool> divisionKeyInitialized, Account? draft, bool edit = false, string? error = null)
     {
         var fields = edit ? new List<Field>() : CodeFields(draft?.Code).ToList();
         fields.AddRange([
@@ -204,21 +238,21 @@ internal sealed partial class AccountingScreens(Db database)
             var code = edit ? draft?.Code : ReadCode(values);
             if (code == null || _settings.Read() is not { } system ||
                 !Number(values.Choice("AccountType"), out int type) || !Number(values.Choice("AccountLevel"), out int level))
-                return AccountForm(draft, edit, "勘定コードと入力内容を確認してください。");
+                return AccountForm(menu, divisionKeyInitialized, draft, edit, "勘定コードと入力内容を確認してください。");
             var account = new Account(code.Value, values.Text("AccountName"), type, values.Choice("AccountPlacement")![0], level);
-            var result = edit ? _ledger.Amend(system, account) : _ledger.Register(system, account);
+            var result = edit ? _ledger.Amend(system, account) : _ledger.Register(system, account, divisionKeyInitialized());
             return result == AccountError.None
                 ? new InformationScreen(edit ? "科目変更" : "科目登録", edit ? "科目を変更しました。" : "科目を登録しました。")
-                : AccountForm(account, edit, AccountMessage(result));
-        }, ChartMenu, error);
+                : AccountForm(menu, divisionKeyInitialized, account, edit, AccountMessage(result));
+        }, menu, error);
     }
 
-    private Screen DeleteAccount(Account account) => new ConfirmationScreen("勘定科目の削除",
+    private Screen DeleteAccount(Account account, Func<Screen> cancel) => new ConfirmationScreen("勘定科目の削除",
         $"「{account.Name}」を削除しますか。", "削除", () =>
         {
             var result = _ledger.Delete(account.Code);
             return new InformationScreen("勘定科目の削除", result == AccountError.None ? "科目を削除しました。" : AccountMessage(result));
-        }, () => AccountLookup(true));
+        }, cancel);
 
     private IReadOnlyList<Field> CodeFields(AccountCode? code)
     {
@@ -243,10 +277,20 @@ internal sealed partial class AccountingScreens(Db database)
 
     private Screen DefaultsMenu() => new MenuScreen("既定勘定の管理",
     [
+        new("DefaultsAdd", "既定勘定登録", 1, Open: RegisterDefaults),
         new("DefaultsEdit", "既定勘定修正", 2, Open: () => DefaultAccounts(true)),
         new("DefaultsList", "既定勘定表示", 3, Open: () => DefaultAccounts(false)),
         new("DefaultsBack", "総勘定元帳に戻る", 9, Open: GeneralMenu)
     ]);
+
+    private Screen RegisterDefaults() => new ConfirmationScreen("既定勘定登録",
+        "既存の既定勘定に追加しますか。既存の内容を消去する場合は取り消してください。",
+        "追加する", () => DefaultAccounts(true), () => new FormScreen("既定勘定の初期化",
+            [new PasswordField("DefaultResetPassword", "締め処理用の暗証文字", 4)], "初期化する", values =>
+                _settings.ResetDefaults(values.Text("DefaultResetPassword"))
+                    ? DefaultAccounts(true)
+                    : new InformationScreen("既定勘定の初期化", "暗証文字が一致しないため初期化していません。"),
+            DefaultsMenu));
 
     private Screen DefaultAccounts(bool edit) => new TableScreen("既定勘定一覧", "DefaultAccountList",
         ["番号", "勘定コード", "取引区分", "税区分"], _settings.DefaultAccounts()

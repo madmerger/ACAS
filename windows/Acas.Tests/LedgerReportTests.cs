@@ -8,6 +8,35 @@ public class LedgerReportTests
     private static readonly DateTime RunDate = new(2025, 4, 1);
 
     [Fact]
+    public void 勘定科目一覧は見出しと明細を印刷し予約科目を除外する()
+    {
+        using var db = OpenCompany();
+        Account(db, 300000, 0, 1, "Revenue", "A");
+        Account(db, 300001, 0, 0, "Sales", "A");
+        Account(db, 999900, 0, 0, "Sentinel", "Z");
+
+        var body = new LedgerReports(db).PrintChart();
+        Assert.NotNull(body);
+        Assert.Matches(@"(?m)^  1 +3000\.00 +直接収益 +Revenue\r?$", body);
+        Assert.Matches(@"(?m)^ {27}3000\.01 +Sales\r?$", body);
+        Assert.DoesNotContain("Sentinel", body);
+        Assert.Equal(body, Assert.Single(db.Spool()).Body);
+    }
+
+    [Fact]
+    public void データがない会社でも仕訳とバッチ状況の帳票を作成する()
+    {
+        using var db = OpenCompany();
+        var batches = new JournalBatches(db);
+
+        Assert.Contains("仕訳がありません", batches.PrintTransactions());
+        var status = batches.PrintStatus();
+        Assert.Contains("バッチ状況帳票", status);
+        Assert.Contains("01/04/2025", status);
+        Assert.Equal(2, db.Spool().Count);
+    }
+
+    [Fact]
     public void 試算表は借方と貸方を分け前期と直近の四半期を表示する()
     {
         using var db = OpenCompany();
@@ -20,14 +49,23 @@ public class LedgerReportTests
         var reports = new LedgerReports(db);
         var detailed = reports.TrialBalance(false);
         Assert.NotNull(detailed);
-        Assert.Contains("Sales　0.00　120.00　0.00　70.00　-31.00　-22.00", detailed);
-        Assert.Contains("合計　120.00　120.00　70.00　70.00", detailed);
+        string sales = detailed.Split('\n').Single(line => line.StartsWith("3000.01", StringComparison.Ordinal));
+        Assert.Equal("", sales[50..62].Trim());
+        Assert.Equal("120.00", sales[62..73].Trim());
+        Assert.Equal("", sales[77..89].Trim());
+        Assert.Equal("70.00", sales[89..100].Trim());
+        Assert.Equal("31.00CR", sales[104..117].Trim());
+        Assert.Equal("22.00CR", sales[119..132].Trim());
+        Assert.Matches(@"合計 +120\.00 +120\.00 +70\.00 +70\.00", detailed);
         Assert.DoesNotContain("Sentinel", detailed);
         var structured = reports.TrialBalance(true);
         Assert.NotNull(structured);
         Assert.Contains("部門別試算表", structured);
-        Assert.Contains("3000.00　第1階層　0.00　120.00", structured);
-        Assert.Contains("合計　120.00　120.00", structured);
+        Assert.Matches(@"(?m)^3000\.00 +120\.00 *\r?$", structured);
+        Assert.Matches(@"合計 +120\.00 +120\.00", structured);
+        var salesRows = structured.Split('\n').Where(line => line.StartsWith("    3000.01", StringComparison.Ordinal)).ToArray();
+        Assert.Equal(2, salesRows.Length);
+        Assert.DoesNotContain("120.00", salesRows[1]);
         Assert.Equal(2, db.Spool().Count);
     }
 
@@ -47,10 +85,10 @@ public class LedgerReportTests
 
         var body = new LedgerReports(db).FinancialStatements();
         Assert.NotNull(body);
-        Assert.Contains("損益計算書　2025年4月1日", body);
-        Assert.Contains("Revenue　300.00　0.00", body);
-        Assert.Contains("売上総利益　255.00　0.00", body);
-        Assert.Contains("当期純利益　260.00　0.00", body);
+        Assert.Matches(@"(?m)^ {32}損益計算書　対象期間末日 +01/04/2025\r?$", body);
+        Assert.Matches(@"(?m)^ {20}Revenue {28}300\.00\r?$", body);
+        Assert.Matches(@"(?m)^売上総利益 {61}255\.00\r?$", body);
+        Assert.Matches(@"(?m)^当期純利益 {61}260\.00\r?$", body);
         Assert.Contains("貸借対照表", body);
         Assert.Equal(new[] { "A30000000", "E40000000", "I50000000", "O60000000" },
             db.Scan(LedgerReports.FinalFile).Select(row => row.Key));

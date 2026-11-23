@@ -11,6 +11,29 @@ public class AccountingTests
         1, 3, 48, 1, false);
 
     [Fact]
+    public void 買掛元帳を使用する初期登録では仕入先住所の区切り文字を設定する()
+    {
+        using var db = new Db();
+        var settings = new SystemSettings(db);
+        Assert.True(settings.Initialize(Company, Start));
+        Assert.True(new Acas.Core.Programs.Purchase.PurchaseLedger(db).ValidAddress(@"1 SUPPLY ROAD\LONDON\UK", ""));
+    }
+
+    [Fact]
+    public void 既定勘定の初期化には締め処理用の暗証文字が必要()
+    {
+        using var db = new Db();
+        var settings = new SystemSettings(db);
+        Assert.True(settings.Initialize(Company, Start));
+        Assert.True(settings.AmendDefault(new(1, 3100m, "01", "I")));
+
+        Assert.False(settings.ResetDefaults("WXYZ"));
+        Assert.Equal(3100m, settings.DefaultAccounts()[0].Code);
+        Assert.True(settings.ResetDefaults("ABCD"));
+        Assert.All(settings.DefaultAccounts(), account => Assert.Equal(0m, account.Code));
+    }
+
+    [Fact]
     public void 元帳設定は部門区分に応じて収益勘定の制限と仕訳保管を保存する()
     {
         using var db = new Db();
@@ -34,14 +57,24 @@ public class AccountingTests
         using var db = new Db();
         var settings = new SystemSettings(db);
         Assert.True(settings.Initialize(Company, Start));
-        Assert.True(settings.SaveParameters(Parameters with { Contact = new("Address", "", "", "", "1234567", "Country", "123") }));
+        Assert.True(settings.SaveParameters(Parameters with
+        {
+            Contact = new("Address", "", "", "", "1234567", "Country", "123"),
+            Quarter = 1, TaxRates = [20m, 5m, 0m, 0m, 0m]
+        }));
         Assert.True(settings.SaveOperatingParameters(new(1, 6, 1, "Primary", "Ledger", "")));
         Assert.Equal("Primary", settings.ReadOperatingParameters()!.Queue3);
         var body = settings.PrintSettings();
         Assert.NotNull(body);
-        Assert.Contains("住所1　Address", body);
-        Assert.Contains("共通の印刷先　Primary", body);
-        Assert.Contains("総勘定元帳の印刷先　Ledger", body);
+        string[] rows = body.Split('\n', '\f');
+        Assert.Matches(@"^ {10}住所1 {12}Address", rows[6]);
+        Assert.Matches(@"^ {10}共通の印刷先 {5}Primary", rows[29]);
+        Assert.Matches(@"^ {10}総勘定元帳印刷先 Ledger$", rows[30]);
+        Assert.EndsWith("住所区切り" + new string(' ', 18) + settings.Read()!.St("PL-Delim"), rows[23]);
+        Assert.EndsWith("入金勘定" + new string(' ', 15) + settings.Read()!.I("SL-Pay-Ac").ToString("000000"), rows[48]);
+        Assert.Matches(@"^ {10}在庫監査番号 {5}00000000$", rows[63]);
+        Assert.Matches(@"^ {10}四半期 {12}1", rows[16]);
+        Assert.Matches(@"^ {10}税率1/4 {10}20\.00", rows[13]);
         Assert.DoesNotContain("ABCD", body);
         Assert.DoesNotContain(settings.Read()!.S("Pass-Word"), body);
         Assert.Equal(body, Assert.Single(db.Spool()).Body);
@@ -86,6 +119,23 @@ public class AccountingTests
         Assert.Equal(stockLink, system.S("SL-Stock-Link"));
         Assert.Equal(Start, SystemSettings.Date(system, "Start-Date"));
         Assert.Equal(Start.AddDays(1), SystemSettings.Date(system, "Run-Date"));
+    }
+
+    [Fact]
+    public void 部門検索キー未設定時は親勘定が見つからない()
+    {
+        using var db = new Db();
+        var settings = new SystemSettings(db);
+        Assert.True(settings.Initialize(Company, Start));
+        var ledger = new GeneralLedger(db);
+        var system = settings.Read()!;
+        var header = new Account(new(3000, 0), "Header", 0, 'A', 1);
+        var detail = new Account(new(3000, 4), "Detail", 1, ' ', 0);
+
+        Assert.Equal(AccountError.None, ledger.Register(system, header, divisionKeyInitialized: false));
+        Assert.Equal(AccountError.MissingHeader, ledger.Register(system, detail, divisionKeyInitialized: false));
+        Assert.Null(ledger.Find(detail.Code));
+        Assert.Equal(AccountError.None, ledger.Register(system, detail, divisionKeyInitialized: true));
     }
 
     [Fact]

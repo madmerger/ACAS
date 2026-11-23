@@ -121,6 +121,9 @@ internal sealed partial class AccountingScreens
 
         return new FormScreen(index == null ? "仕訳明細の追加" : "仕訳明細の修正", fields, index == null ? "追加" : "変更", values =>
         {
+            if (values.Date("JournalLineDate") is not { } date)
+                return JournalLineForm(header, lines, index, draft, "日付が無効です。");
+
             int division = 0, rate = 1;
             decimal? tax = null;
             if (vat && values.Text("JournalLineTaxAmount") is { Length: > 0 } taxText)
@@ -128,7 +131,7 @@ internal sealed partial class AccountingScreens
                 if (!JournalAmount(taxText, out var value)) return JournalLineForm(header, lines, index, draft, JournalMessage(JournalError.Line));
                 tax = value;
             }
-            if (values.Date("JournalLineDate") is not { } date || !JournalAmount(values.Text("JournalLineAccount"), out decimal code) ||
+            if (!JournalAmount(values.Text("JournalLineAccount"), out decimal code) ||
                 code is < 1000 or >= 9999 || (divisions && !Number(values.Text("JournalLineDivision"), out division)) ||
                 !JournalAmount(values.Text("JournalLineAmount"), out decimal amount) ||
                 (vat && !Number(values.Choice("JournalLineTaxRate"), out rate)))

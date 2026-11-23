@@ -7,9 +7,8 @@ public sealed record AnalysisCode(string Ledger, string Code, string Account, st
 
 public sealed partial class SalesLedger
 {
-    private static readonly Layout AnalysisLayout = new Layout()
-        .X("ledger", 1).X("code", 2).N9("account", 6).X("description", 24).X("print", 3);
-    private const string AnalysisDefinition = "レコード定義/売上分析";
+    private static readonly Layout AnalysisLayout = AnalysisFiles.AnalysisLayout;
+    private const string AnalysisDefinition = AnalysisFiles.Definition;
 
     public void ImportAnalysisRecordLength(int bytes)
     {

@@ -1,6 +1,6 @@
 namespace Acas.Verify;
 
-public enum ActionType { Tree, Menu, Submit, Confirm, Cancel, Text, Choice, Check, TableRow }
+public enum ActionType { Tree, Menu, Submit, Confirm, Cancel, Text, Choice, Check, TableRow, DateText, Key, RejectChoice, Close }
 
 public sealed record ScreenAction(ActionType Type, string Id = "", string Value = "");
 
@@ -20,9 +20,183 @@ public sealed record GroupOnePlan(string LegacyScreen, IReadOnlyList<ScreenActio
         const string chart = "MenuChart", defaults = "MenuDefaults", journal = "MenuJournalEntry", proof = "MenuJournalProof";
         const string batch = "MenuBatchStatus", trial = "MenuTrialBalance", close = "MenuJournalClose";
 
+        ScreenAction[] Setup()
+        {
+            string[] setup = Input(1), company = Input(2), operating = Input(4), queues = Input(5);
+            return [
+                Tree("MenuCompanySetup"), Check("CompanyName"), Text("CompanyName", setup[0]),
+                Text("PeriodPassword", scenario.Id == "SYS-001" ? "PASS" : "AAAA"),
+                Choice("EnableGeneral", setup[scenario.Id == "SYS-001" ? 2 : 1]),
+                Choice("EnableSales", setup[scenario.Id == "SYS-001" ? 4 : 2]), Choice("EnablePurchasing", setup[3]),
+                Choice("EnableInvoicing", setup[scenario.Id == "SYS-001" ? 5 : 4]),
+                Choice("EnableOrders", setup[scenario.Id == "SYS-001" ? 7 : 5]), Choice("EnableStock", setup[6]), Submit, Confirm,
+                Check("ParameterName"), Text("Address1", company[0]), Text("PostalCode", company[4]),
+                Text("Country", company[5]), DateText("PeriodStart", company[7]), DateText("PeriodEnd", company[8]),
+                Text("PageLines", company[9].TrimStart('0')), Text("CurrentCycle", company[15]), Text("TaxRegistration", company[16]),
+                Text("CyclePeriod", company[20]), Choice("SalesStockLink", company[17]),
+                .. (scenario.Id == "SYS-001" ? new[] { Text("CurrentQuarter", company[18]), Text("VatRate1", company[10]),
+                    Text("VatRate2", company[12]), Text("VatRate3", company[14]), Text("VatRate4", company[11]),
+                    Text("VatRate5", company[13]), Choice("PrintTaxNumber", company[17]) } : []),
+                Submit, Confirm,
+                Tree("MenuOperatingParameters"), Check("OperatingSystem"), Choice("SystemHost", operating[0]),
+                Choice("OperatingSystem", operating[1]), Choice("DataCapture", operating[2]), Submit,
+                Check("Queue1"), Text("Queue1", queues[0]), Text("Queue2", queues[1]), Text("Queue3", queues[2]),
+                Submit, Confirm,
+                .. (scenario.Id == "SYS-001" ? new[] { Tree("MenuGeneralLedgerParameters"),
+                    Choice("LedgerMinimumValidation", Input(7)[5]), Choice("LedgerAutomaticTax", Input(7)[9]),
+                    Choice("LedgerUseIncompleteRecords", Input(7)[11]), Submit, Confirm } : []),
+                .. (scenario.Id == "SYS-001" ? ApplySubledgerSetup() : []),
+                Tree("MenuSettingsReport"), Menu("CreateSettingsReport"), Check("Confirmation"),
+                .. (scenario.Id == "SYS-001" ? new[] { Confirm, Check("ReportDocument") } : new[] { Cancel })
+            ];
+        }
+
+        IEnumerable<ScreenAction> ApplySubledgerSetup()
+        {
+            ScreenAction Set(string field, string value) => Text("Subledger-" + field, value);
+            ScreenAction Select(string field, string value) => Choice("Subledger-" + field, value);
+            string[] sales = Input(9), headings = Input(11), purchase = Input(13), stock = Input(15);
+
+            yield return Tree("MenuSubledgerParameters");
+            yield return Menu("ConfigureReceivables");
+            foreach (var (field, index) in new[] { ("SL-Dunning", 0), ("SL-Charges", 1), ("SL-Own-Nos", 8), ("SL-Stock-Link", 11) })
+                yield return Select(field, sales[index]);
+            foreach (var (field, index) in new[] { ("SL-Credit", 2), ("SL-Disc", 3), ("SL-Min", 4), ("SL-Max", 5),
+                ("SL-Limit", 6), ("SL-Delim", 7), ("SL-Late-Per", 9), ("First-Sl-Batch", 10), ("SL-Pay-Ac", 12),
+                ("SL-Sales-Ac", 13), ("S-Debtors", 14) })
+                yield return Set(field, sales[index]);
+            for (int i = 0; i < 4; i++)
+                yield return Select("SL-Comp-Head-" + new[] { "Inv", "Stat", "Lets", "Pick" }[i], headings[i]);
+            yield return Submit;
+            yield return Confirm;
+
+            yield return Tree("MenuSubledgerParameters");
+            yield return Menu("ConfigurePayables");
+            yield return Select("PL-Stock-Link", purchase[1]);
+            foreach (var (field, index) in new[] { ("PL-Delim", 0), ("BL-Next-Batch", 2), ("BL-Pay-Ac", 3),
+                ("BL-Purch-Ac", 4), ("P-Creditors", 5) })
+                yield return Set(field, purchase[index]);
+            yield return Submit;
+            yield return Confirm;
+
+            yield return Tree("MenuSubledgerParameters");
+            yield return Menu("ConfigureInventory");
+            string[] options = ["Stk-Debug", "Stk-Manu-Used", "Stk-OE-Used", "Stk-Audit-Used", "Stk-Mov-Audit",
+                "Stk-Period-Cur", "Stk-Period-dat", "Stk-Averaging", "Stk-Activity-Rep-Run"];
+            for (int i = 0; i < options.Length; i++) yield return Select(options[i], stock[i]);
+            yield return Set("Stk-Audit-No", stock[9]);
+            yield return Submit;
+            yield return Confirm;
+        }
+
+        IEnumerable<ScreenAction> BusinessSetup()
+        {
+            string[] firstAccount = Input(29), accounts = Input(30);
+            IEnumerable<ScreenAction> Account(string[] code)
+            {
+                yield return Menu("ChartAdd");
+                foreach (var action in AccountCode(code)) yield return action;
+                if (code[1] == "00")
+                    foreach (var action in AccountFields(code)) yield return action;
+                else yield return Text("AccountName", code[2]);
+                yield return Submit;
+                yield return Check("ScreenMessage|登録しました");
+                yield return Menu("ScreenMenuBack");
+            }
+            yield return Tree(chart);
+            foreach (var action in Account(firstAccount)) yield return action;
+            yield return Menu("ChartEdit");
+            foreach (var action in AccountCode(firstAccount)) yield return action;
+            yield return Submit;
+            yield return Menu("UpdateAccount");
+            yield return Menu("FormBack");
+            for (int index = 0; index + 2 < accounts.Length;)
+            {
+                int count = accounts[index + 1] == "00" ? 6 : 3;
+                foreach (var action in Account(accounts[index..(index + count)])) yield return action;
+                index += count;
+            }
+            foreach (var (index, correctedAddress) in new[] { (39, 54), (42, 57) })
+            {
+                string[] customer = Input(index + 1);
+                yield return Tree("SalesNavigation");
+                yield return DateText("SalesStartDate", Input(22)[0]);
+                yield return Submit;
+                yield return Menu("SalesCustomers");
+                yield return Menu("SalesCustomerCreate");
+                yield return Text("SalesNewCustomerCode", Input(index)[0]);
+                yield return Text("SalesCustomerName", customer[0]);
+                yield return Text("SalesCustomerAddress1", Input(correctedAddress)[1]);
+                string[] salesSetup = Input(9);
+                yield return Choice("SalesCustomerLateCharges", (customer.Length > 20 ? customer[12] : salesSetup[1]) is "Y" or "1" ? "1" : "0");
+                yield return Choice("SalesCustomerDunning", (customer.Length > 20 ? customer[14] : salesSetup[0]) is "Y" or "1" ? "1" : "0");
+                yield return Text("SalesCustomerCreditLimit", customer.Length > 20 ? customer[20] : salesSetup[6]);
+                if (index == 39) yield return Text("SalesCustomerAddress2", customer[2]);
+                if (customer.Length > 12)
+                {
+                    yield return Text("SalesCustomerPhone", customer[8]);
+                    yield return Text("SalesCustomerEmail", customer[11]);
+                    yield return Text("SalesCustomerCreditDays", customer[16]);
+                }
+                yield return Submit;
+                yield return Confirm;
+                yield return Check("SalesCustomerDetail|" + customer[0]);
+            }
+            yield return Tree("PurchaseNavigation");
+            yield return DateText("PurchaseProcessingDate", Input(22)[0]);
+            yield return Submit;
+            foreach (int index in new[] { 67, 70 })
+            {
+                string[] supplier = Input(index + 1);
+                if (index == 70) yield return Tree("PurchaseNavigation");
+                yield return Menu("PurchaseMenuB");
+                yield return Menu("PurchaseMenuB1");
+                yield return Text("PurchaseSupplierCode", Input(index)[0]);
+                yield return Submit;
+                yield return Text("PurchaseSupplierName", supplier[0]);
+                yield return Text("PurchaseSupplierAddressFirst", supplier[1]);
+                yield return Submit;
+                yield return Confirm;
+                yield return Check("ScreenMessage|仕入先を保存しました");
+            }
+            foreach (int index in new[] { 79, 86 })
+            {
+                string[] item = Input(index + 2);
+                yield return Tree("StockNavigation");
+                yield return DateText("StockRunDate", Input(22)[0]);
+                yield return Submit;
+                yield return Menu("StockMaintenance");
+                if (index == 86) yield return Menu("StockItemCreate");
+                yield return Text("StockKey", Input(index)[0]);
+                yield return Text("StockAbrev", Input(index + 1)[0]);
+                yield return Text("StockDesc", item[0]);
+                yield return Text("StockLocation", item[1]);
+                yield return Text("StockHeld", item[5]);
+                yield return Text("StockReorderPoint", item[7]);
+                yield return Text("StockStdReorder", item[9]);
+                yield return Text("StockRetail", Input(index + 3)[0].TrimStart('0'));
+                yield return Text("StockCost", Input(index + 4)[0].TrimStart('0'));
+                yield return Text("StockValue", Input(index + 5)[0].TrimStart('0'));
+                yield return Submit;
+                yield return Check("Confirmation|を登録しました");
+                yield return Cancel;
+            }
+        }
+
         switch (scenario.Id)
         {
             case "SYS-200": return new("ACAS System Menu", [Check("MenuGeneral"), Check("MenuSettings")]);
+            case "SYS-001":
+                return new("User Data", [.. Setup(), .. BusinessSetup()]);
+            case "SYS-201" or "SYS-207" or "SYS-208" or "SYS-209" or "SYS-210" or "SYS-211":
+                return new(scenario.Id switch
+                {
+                    "SYS-209" or "SYS-210" => "OPS  Data", "SYS-211" => "Do you want printed copy", _ => "User Data"
+                }, Setup());
+            case "SYS-202": return View("Sorry, not", "MenuOrders", "ScreenMessage|利用できません");
+            case "SYS-203": return View("Sorry, not", "MenuPayroll", "ScreenMessage|利用できません");
+            case "SYS-204": return View("Sorry, not", "MenuPointOfSale", "ScreenMessage|利用できません");
+            case "SYS-205": return new("ACAS System Menu", [Check("MenuGeneral"), new(ActionType.Close)]);
             case "SYS-002" or "SYS-206" or "GL-231": return View("User Data", "MenuCompanyParameters", "ParameterName");
             case "SYS-003": return View("ACAS System Menu", "MenuCompanyParameters", "SettingsCompany", Menu("FormBack"));
             case "SYS-004":
@@ -53,9 +227,9 @@ public sealed record GroupOnePlan(string LegacyScreen, IReadOnlyList<ScreenActio
             case "GL-020" or "GL-021" or "GL-022" or "GL-038":
             {
                 string[] values = Input(5);
-                if (scenario.Id == "GL-038") return new("NEW DETAIL",
+                if (scenario.Id == "GL-038") return new("Header Missing",
                     [Tree(chart), Menu("ChartAdd"), .. AccountCode(values), Text("AccountName", values[2]), Submit,
-                     Check("ScreenMessage|登録しました")]);
+                     Check("Status|上位の見出し勘定がありません")]);
                 if (scenario.Id == "GL-020") return new("TEST HEADER",
                     [Tree(chart), Menu("ChartAdd"), .. AccountCode(values), .. AccountFields(values), Submit, Check("ScreenMessage|登録しました")]);
                 return new("Chart Of Accounts Update",
@@ -74,9 +248,26 @@ public sealed record GroupOnePlan(string LegacyScreen, IReadOnlyList<ScreenActio
             }
             case "GL-032": return new("Does not exist!",
                 [Tree(chart), Menu("ChartEdit"), .. AccountCode(Input(5)), Submit, Check("Status|存在しません")]);
+            case "GL-028" or "GL-029" or "GL-030" or "GL-031":
+            {
+                string[] values = Input(5);
+                var (field, index, marker) = scenario.Id switch
+                {
+                    "GL-028" => ("AccountType", 3, "Invalid type!"),
+                    "GL-029" => ("AccountPlacement", 4, "Invalid Placement!"),
+                    _ => ("AccountLevel", 5, "Invalid!")
+                };
+                return new(marker, [Tree(chart), Menu("ChartAdd"), .. AccountCode(values), Text("AccountName", values[2]),
+                    .. (index >= 4 ? new[] { Choice("AccountType", values[3]) } : []),
+                    .. (index == 5 ? new[] { Choice("AccountPlacement", values[4]) } : []),
+                    new(ActionType.RejectChoice, field, values[index])]);
+            }
             case "GL-033" or "GL-206": return MenuView("Chart Of Account Utilities", chart, "ChartPrint", "ReportDocument");
             case "GL-034" or "GL-225": return MenuView("Trial Balance", trial, "DetailedTrialBalance", "ReportDocument");
             case "GL-035": return View("Ok to continue", "MenuFinancialStatements", "ReportDocument", Submit, Confirm);
+            case "GL-036":
+                return View("GL009", "MenuGeneralDate", "Status|有効な処理日",
+                    DateText("RunDate", Input(4)[0].TrimStart('\u001b', 'O', 'H')), Submit);
             case "GL-037": return View("General Ledger System Menu", close, "JournalCloseBackup", Menu("JournalCloseBackup"), Cancel);
             case "GL-040" or "GL-041":
             {
@@ -106,16 +297,34 @@ public sealed record GroupOnePlan(string LegacyScreen, IReadOnlyList<ScreenActio
                      Text("JournalTax", header[3]), Text("JournalDescription", header[4]), Submit,
                      Menu("JournalLineAdd"), Text("JournalLineAccount", line[1]), Text("JournalLineAmount", line[2]),
                      .. (scenario.Id is "GL-046" or "GL-047" ? new[] { Text("JournalLineDescription", line[3]) } : []),
-                     Submit, .. (scenario.Id is "GL-046" or "GL-047"
-                        ? new[] { Menu(scenario.Id == "GL-046" ? "JournalSave" : "JournalDiscard"), Confirm, Check("NewJournalBatch") }
-                        : new[] { Check("Status|明細") })]);
+                     Submit, .. (scenario.Id switch
+                     {
+                         "GL-046" => new[] { Menu("JournalLineAdd"), DateText("JournalLineDate", Input(13)[0] + "3/11/20"),
+                             Submit, Check("Status|日付が無効です"), Check("JournalLineDate") },
+                         "GL-047" => new[] { Menu("JournalDiscard"), Confirm, Check("NewJournalBatch") },
+                         _ => new[] { Check("Status|明細") }
+                     })]);
             }
             case "GL-045":
                 return new("Posting Set-Up", [Tree(journal), Menu("NewJournalBatch"), Menu("FormBack"), Confirm, Check("GeneralJournalEntry")]);
+            case "GL-050" or "GL-051":
+            {
+                string[] header = Input(11);
+                return new("Posting Input", [Tree(journal), Menu("NewJournalBatch"),
+                    Text("JournalTemporaryCode", Input(6)[0]), Choice("JournalTemporaryTax", Input(7)[0]),
+                    Text("JournalTemporaryReference", Input(8)[0]), Choice("JournalSide", Input(9)[0]),
+                    Text("JournalCycle", header[0]), Text("JournalItems", header[1]), Text("JournalGross", header[2]),
+                    Text("JournalTax", header[3]), Text("JournalDescription", header[4]), Submit,
+                    Menu("JournalLineAdd"), new(ActionType.Key, "JournalLineDate", scenario.Id == "GL-050" ? "Escape" : "F1"),
+                    Check("JournalLineDate"), Check("JournalLineAccount")]);
+            }
             case "GL-203": return MenuView("Chart of Accounts Set-Up", chart, "ChartAdd", "LedgerCode");
             case "GL-204": return MenuView("Chart Of Accounts Update", chart, "ChartEdit", "LedgerCode");
             case "GL-205": return MenuView("Chart Of Account Utilities", chart, "ChartList", "StartAccount");
+            case "GL-208": return MenuView("Default Accounts Set-Up", defaults, "DefaultsAdd", "Confirmation|既存の既定勘定に追加");
             case "GL-209": return MenuView("Default File Utilities", defaults, "DefaultsEdit", "DefaultAccountList");
+            case "GL-211":
+                return new("Sorry not yet available", [Tree("MenuGeneralDate"), Submit, Menu("GeneralFinalSetup"), Check("ScreenMessage|利用できません")]);
             case "GL-213": return MenuView("Posting Set-Up", journal, "NewJournalBatch", "JournalDefault");
             case "GL-215": return MenuView("Batch Amendment", proof, "EditJournalBatch", "JournalBatchNumber");
             case "GL-216": return MenuView("Batch Amendment", proof, "ProofAllBatches", "Confirmation");
@@ -124,6 +333,10 @@ public sealed record GroupOnePlan(string LegacyScreen, IReadOnlyList<ScreenActio
             case "GL-220": return MenuView("Batch Status Report", batch, "DisplayBatchStatus", "BatchStatusList");
             case "GL-221": return MenuView("Batch Status Report", batch, "PrintBatchStatus", "ReportDocument");
             case "GL-226": return MenuView("Trial Balance", trial, "StructuredTrialBalance", "ReportDocument");
+            case "GL-229":
+                return new("General Ledger System Menu", [Tree(chart), Menu("ChartBack"), Menu("GeneralFinalPrint"), Check("GeneralFinalPrint")]);
+            case "GL-230":
+                return new("ACAS System Menu", [Tree(chart), Menu("ChartBack"), Menu("GeneralBack"), Check("ScreenTitle|業務メニュー")]);
             default: return null;
         }
     }
@@ -136,6 +349,7 @@ public sealed record GroupOnePlan(string LegacyScreen, IReadOnlyList<ScreenActio
         return new(ActionType.Check, parts[0], parts.Length == 1 ? "" : parts[1]);
     }
     private static ScreenAction Text(string id, string value) => new(ActionType.Text, id, value);
+    private static ScreenAction DateText(string id, string value) => new(ActionType.DateText, id, value);
     private static ScreenAction Choice(string id, string value) => new(ActionType.Choice, id, value);
     private static readonly ScreenAction Submit = new(ActionType.Submit);
     private static readonly ScreenAction Confirm = new(ActionType.Confirm);
