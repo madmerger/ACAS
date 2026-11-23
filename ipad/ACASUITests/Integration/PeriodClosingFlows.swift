@@ -1,6 +1,25 @@
 import XCTest
 
 final class PeriodClosingFlows: XCTestCase {
+    private struct IRSFixture: Decodable {
+        struct Input: Decodable {
+            let client: String
+            let irsDirectory: String
+        }
+
+        let input: Input
+    }
+
+    @MainActor
+    func testStandaloneIRSWithIRSDirectory() throws {
+        try verifyStandaloneIRS("INT-400")
+    }
+
+    @MainActor
+    func testStandaloneIRSWithMainLedgerDirectory() throws {
+        try verifyStandaloneIRS("INT-401")
+    }
+
     @MainActor
     func testPurchaseInvoiceTransfer() throws {
         let id = "INT-405"
@@ -36,12 +55,35 @@ final class PeriodClosingFlows: XCTestCase {
     }
 
     @MainActor
-    private func launch(_ id: String) throws -> XCUIApplication {
-        continueAfterFailure = false
+    private func verifyStandaloneIRS(_ id: String) throws {
+        let fixture = try JSONDecoder().decode(IRSFixture.self, from: fixtureData(id))
+        let app = try launch(id, irsDirectory: fixture.input.irsDirectory)
+        tap(app, "section.incomplete")
+        tap(app, "irs.settings")
+        let client = app.textFields["irs.client"]
+        XCTAssertTrue(client.waitForExistence(timeout: 5))
+        let original = try XCTUnwrap(client.value as? String)
+        client.tap()
+        client.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: original.count) + fixture.input.client)
+        XCTAssertEqual(client.value as? String, fixture.input.client)
+        tap(app, "irs.saveSettings")
+        let result = app.staticTexts["irs.result"]
+        XCTAssertTrue(result.waitForExistence(timeout: 5))
+        XCTAssertEqual(result.label, "簡易記帳設定を保存しました。")
+        finish(app, id)
+    }
+
+    private func fixtureData(_ id: String) throws -> Data {
         let url = try XCTUnwrap(Bundle(for: Self.self).url(forResource: id, withExtension: "json", subdirectory: "fixtures"))
-        let fixture = try Data(contentsOf: url)
+        return try Data(contentsOf: url)
+    }
+
+    @MainActor
+    private func launch(_ id: String, irsDirectory: String? = nil) throws -> XCUIApplication {
+        continueAfterFailure = false
         let app = XCUIApplication()
-        app.launchEnvironment["ACAS_FIXTURE"] = fixture.base64EncodedString()
+        app.launchEnvironment["ACAS_FIXTURE"] = try fixtureData(id).base64EncodedString()
+        app.launchEnvironment["ACAS_IRS"] = irsDirectory
         app.launchArguments += ["-AppleLanguages", "(ja)", "-AppleLocale", "ja_JP"]
         XCUIDevice.shared.orientation = .landscapeLeft
         app.launch()
