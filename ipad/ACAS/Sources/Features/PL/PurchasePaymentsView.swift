@@ -99,7 +99,7 @@ struct PurchasePaymentsView: View {
     @State private var rows: [PurchaseLedger.Payment] = []
     @State private var reversing: PurchaseLedger.Payment?
     @State private var confirmation = false
-    @State private var generated = false
+    @State private var report: Data?
     @State private var error: PurchaseNotice?
 
     private var ledger: PurchaseLedger { PurchaseLedger(workspace.context) }
@@ -113,11 +113,11 @@ struct PurchasePaymentsView: View {
                         .accessibilityIdentifier("pl.payment.proof.generate")
                 } else {
                     Button(plString("purchase.action.post")) { confirmation = true }
-                        .disabled(rows.isEmpty || generated)
+                        .disabled(rows.isEmpty || report != nil)
                         .accessibilityIdentifier("pl.payment.post.start")
                 }
-                if generated, let bytes = workspace.context.store.readRaw(PurchaseLedger.reportPath) {
-                    ShareLink(item: Data(bytes), preview: SharePreview(plString("purchase.report.original")))
+                if let report {
+                    ShareLink(item: report, preview: SharePreview(plString("purchase.report.original")))
                 }
             }
             ForEach(rows) { payment in
@@ -155,17 +155,21 @@ struct PurchasePaymentsView: View {
     }
 
     private func proof() {
+        report = nil
         do {
-            rows = try ledger.proofPayments()
-            generated = !rows.isEmpty
+            let result = try ledger.generatePaymentProof()
+            rows = result.payments
+            report = result.report
             workspace.completed("pl.payment.proof")
         } catch { self.error = PurchaseNotice(error) }
     }
 
     private func post() {
+        report = nil
         do {
-            rows = try ledger.postPayments()
-            generated = true
+            let result = try ledger.postPaymentsWithReport()
+            rows = result.payments
+            report = result.report
             workspace.completed("pl.payment.post")
         } catch { self.error = PurchaseNotice(error) }
     }

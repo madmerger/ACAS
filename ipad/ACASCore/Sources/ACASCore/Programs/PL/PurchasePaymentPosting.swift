@@ -3,13 +3,17 @@ import Foundation
 extension PurchaseLedger {
     @discardableResult
     public func proofPayments() throws -> [Payment] {
+        try generatePaymentProof().payments
+    }
+
+    public func generatePaymentProof() throws -> (payments: [Payment], report: Data?) {
         try store.withTransaction { try writePaymentProof() }
     }
 
-    private func writePaymentProof() throws -> [Payment] {
+    private func writePaymentProof() throws -> (payments: [Payment], report: Data?) {
         let payments = pendingPayments()
         var settings = system
-        guard settings.int("p-flag-p") != 0 else { return payments }
+        guard settings.int("p-flag-p") != 0 else { return (payments, nil) }
         let sortPath = base + "oisort.wrk"
         let fields = ["oi-b-nos", "oi-b-item", "oi-type", "oi-date", "oi-invoice"]
         let sorted = openItemRecords().filter {
@@ -25,12 +29,19 @@ extension PurchaseLedger {
         settings["oi-5-flag"] = "Y"
         settings.setInt("p-flag-p", 2)
         try systemFile.write(1, settings.bytes)
-        return payments
+        return (payments, store.readRaw(Self.reportPath).map { Data($0) })
     }
 
     @discardableResult
     public func postPayments() throws -> [Payment] {
-        try store.withTransaction { try postPendingPayments() }
+        try postPaymentsWithReport().payments
+    }
+
+    public func postPaymentsWithReport() throws -> (payments: [Payment], report: Data?) {
+        try store.withTransaction {
+            let payments = try postPendingPayments()
+            return (payments, payments.isEmpty ? nil : store.readRaw(Self.reportPath).map { Data($0) })
+        }
     }
 
     private func postPendingPayments() throws -> [Payment] {
@@ -198,7 +209,7 @@ extension PurchaseLedger {
         let printer = PurchasePrinter(self)
         reportHeading(printer, id: id, title: title, columns: " Number   ---Date--- Supplier                         Payment      Deduction   Apportioned")
         printer.write(Cobol.x("", 90) + "Folio     Date      Approp.     Balance", after: 1)
-        let invoicesByPayment = Dictionary(grouping: items.filter { $0.int("oi-type") == 2 && $0.int("oi-paid") != 0 }) {
+        let invoicesByPayment = Dictionary(grouping: items.filter { $0.int("oi-type") == 2 && $0.int("oi-cr") != 0 }) {
             $0.int("oi-b-nos") * 1000 + $0.int("oi-b-item")
         }
         for payment in payments {
@@ -210,7 +221,7 @@ extension PurchaseLedger {
                 where Cobol.rtrim(item.str("oi-supplier")) == payment.supplier {
                 let reference = Pic.edit("z(7)9", value: item.int("oi-invoice"), scale: 0) + "  "
                 let date = reportDate(item.int("oi-date"))
-                let appropriation = min(item.int("oi-paid"), payment.allocated)
+                let appropriation = item.int("oi-cr") / 100
                 let amount = appropriation == 0 ? Cobol.x("", 9) : Pic.edit("z(5)9.99", value: appropriation, scale: 2)
                 let balance = PurchaseRecords.cr("z(7)9.99cr", itemGross(item) - item.int("oi-paid"), int: 8)
                 printer.write(Cobol.x("", 90) + reference + date + amount + balance, after: 1)
