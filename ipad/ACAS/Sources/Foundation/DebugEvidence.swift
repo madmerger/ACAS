@@ -9,6 +9,7 @@ final class DebugEvidence: Decodable, ObservableObject {
     let dateSeconds: TimeInterval
     let seed: Data?
     let changes: [RecordChange]
+    let recordFiles: Set<String>?
     let reports: [String: String]
     let calculation: DebugCalculation?
 
@@ -17,7 +18,7 @@ final class DebugEvidence: Decodable, ObservableObject {
     var date: Date { Date(timeIntervalSince1970: dateSeconds) }
 
     enum CodingKeys: String, CodingKey {
-        case id, title, workflow, dateSeconds, seed, changes, reports, calculation
+        case id, title, workflow, dateSeconds, seed, changes, recordFiles, reports, calculation
     }
 
     static func load() throws -> DebugEvidence? {
@@ -27,7 +28,8 @@ final class DebugEvidence: Decodable, ObservableObject {
     }
 
     func evaluate(store: FileStore, calculation actual: DebugCalculation?) {
-        let changesMatch = EvidenceComparison.diff(before: before, after: EvidenceComparison.snapshot(store)) == changes.sorted()
+        let actualChanges = EvidenceComparison.diff(before: before, after: EvidenceComparison.snapshot(store))
+        let changesMatch = actualChanges.filter { recordFiles?.contains($0.file) ?? true } == changes.sorted()
         let reportsMatch = EvidenceComparison.reportsAgree(reports, in: store)
         result = changesMatch && reportsMatch && actual == calculation ? "match" : "mismatch"
     }
