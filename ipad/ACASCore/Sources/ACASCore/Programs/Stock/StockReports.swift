@@ -27,8 +27,9 @@ extension StockService {
         }
     }
 
+    @discardableResult
     public func printReport(_ report: Report, date: Date, selection: ReportSelection = .all,
-                            byAbbreviation: Bool = false, from: String = "", through: String = "") throws {
+                            byAbbreviation: Bool = false, from: String = "", through: String = "") throws -> Data {
         guard ReportSelection.options(for: report).contains(selection) else { throw Failure.invalidInput }
         let system = Record(SystemLayout.layout, bytes: settings.read(1) ?? Record(SystemLayout.layout).bytes)
         let format = Int(system.int("date-form"))
@@ -240,5 +241,6 @@ extension StockService {
             output.append(0x0a)
         }
         try store.writeRaw(directory + "prt-1", output)
+        return Data(output)
     }
 }

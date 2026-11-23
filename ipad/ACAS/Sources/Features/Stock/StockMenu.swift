@@ -1,5 +1,6 @@
 import ACASCore
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct StockMenu: View {
     let workspace: Workspace
@@ -125,6 +126,8 @@ private struct StockReportForm: View {
     @State private var from = ""
     @State private var through = ""
     @State private var message = ""
+    @State private var document: StockReportDocument?
+    @State private var exporting = false
 
     var body: some View {
         Form {
@@ -145,18 +148,29 @@ private struct StockReportForm: View {
                 .autocorrectionDisabled()
             Button(stockText("action.generateReport")) {
                 do {
-                    try StockService(workspace.context).printReport(report, date: date, selection: selection,
-                                                                  byAbbreviation: abbreviation, from: from, through: through)
+                    let bytes = try StockService(workspace.context).printReport(report, date: date, selection: selection,
+                                                                               byAbbreviation: abbreviation, from: from, through: through)
+                    document = StockReportDocument(data: bytes)
                     message = stockText("result.reportGenerated")
                     workspace.completed("stock.report." + report.rawValue)
-                } catch { message = stockError(error) }
+                } catch {
+                    document = nil
+                    message = stockError(error)
+                }
             }
             .accessibilityIdentifier("stock.generateReport")
+            if document != nil {
+                Button(stockText("action.exportReport")) { exporting = true }
+                    .accessibilityIdentifier("stock.exportReport")
+            }
             if !message.isEmpty {
                 Text(message).accessibilityIdentifier("stock.reportResult")
             }
         }
         .navigationTitle(stockText("report." + report.rawValue))
+        .fileExporter(isPresented: $exporting, document: document, contentType: .data, defaultFilename: "prt-1") {
+            if case .failure = $0 { message = stockText("error.exportReport") }
+        }
     }
 }
 
@@ -215,6 +229,8 @@ private struct StockItemTable: View {
 private struct StockMasterReportView: View {
     let workspace: Workspace
     @State private var message = ""
+    @State private var document: StockReportDocument?
+    @State private var exporting = false
 
     var body: some View {
         let stock = StockService(workspace.context)
@@ -223,19 +239,43 @@ private struct StockMasterReportView: View {
                 HStack {
                     Button(stockText("action.generateReport")) {
                         do {
-                            try stock.printMasterReport()
+                            document = StockReportDocument(data: try stock.printMasterReport())
                             message = stockText("result.reportGenerated")
                             workspace.completed("stock.masterReport")
                         } catch {
+                            document = nil
                             message = stockError(error)
                         }
                     }
                     .buttonStyle(.borderedProminent)
                     .accessibilityIdentifier("stock.generateMasterReport")
+                    if document != nil {
+                        Button(stockText("action.exportReport")) { exporting = true }
+                            .accessibilityIdentifier("stock.exportReport")
+                    }
                     Text(message).accessibilityIdentifier("stock.masterReportResult")
                 }
                 .padding()
             }
+            .fileExporter(isPresented: $exporting, document: document, contentType: .data, defaultFilename: "prt-1") {
+                if case .failure = $0 { message = stockText("error.exportReport") }
+            }
+    }
+}
+
+private struct StockReportDocument: FileDocument {
+    static let readableContentTypes: [UTType] = [.data]
+    let data: Data
+
+    init(data: Data) { self.data = data }
+
+    init(configuration: ReadConfiguration) throws {
+        guard let data = configuration.file.regularFileContents else { throw CocoaError(.fileReadCorruptFile) }
+        self.data = data
+    }
+
+    func fileWrapper(configuration: WriteConfiguration) throws -> FileWrapper {
+        FileWrapper(regularFileWithContents: data)
     }
 }
 

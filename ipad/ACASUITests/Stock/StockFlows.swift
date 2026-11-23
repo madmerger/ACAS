@@ -206,6 +206,7 @@ final class StockFlows: XCTestCase {
             tap(app, button)
         }
         XCTAssertEqual(app.staticTexts["stock.reportResult"].label, "帳票を作成しました。", id)
+        XCTAssertTrue(app.buttons["stock.exportReport"].isHittable, id)
         verifyVerdict(app, id)
     }
 
