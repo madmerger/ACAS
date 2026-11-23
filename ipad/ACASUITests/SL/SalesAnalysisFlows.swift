@@ -30,17 +30,30 @@ final class SalesAnalysisFlows: XCTestCase {
         let account = app.textFields["sales.analysis.account"]
         account.tap()
         account.typeText("400001")
+        let printCode = app.textFields["sales.analysis.printCode"]
+        XCTAssertEqual(printCode.value as? String, "A")
+        printCode.tap()
+        printCode.typeText(XCUIKeyboardKey.delete.rawValue)
         tap("sales.analysis.save", in: app)
         tap("sales.analysis.display", in: app)
         let row = app.descendants(matching: .any)["sales.analysis.code.SA"].firstMatch
         XCTAssertTrue(row.waitForExistence(timeout: 5))
         XCTAssertEqual(row.value as? String, "400001")
+        XCTAssertFalse(row.label.contains("印字コード"))
         let standard = app.descendants(matching: .any)["sales.analysis.code.Sa"].firstMatch
         XCTAssertTrue(standard.label.contains("標準グループ"))
         let screenshot = XCTAttachment(screenshot: app.screenshot())
         screenshot.name = "登録した売上分析コード"
         screenshot.lifetime = .keepAlways
         add(screenshot)
+
+        app.navigationBars["売上分析コード表示"].buttons.firstMatch.tap()
+        tap("sales.analysis.printAll", in: app)
+        tap("sales.analysis.generate", in: app)
+        let purchaseCarriage = app.descendants(matching: .any)["sales.analysis.code.Pza"].firstMatch
+        if !purchaseCarriage.isHittable { app.swipeUp() }
+        XCTAssertTrue(purchaseCarriage.waitForExistence(timeout: 5))
+        XCTAssertTrue(purchaseCarriage.label.contains("仕入運賃"))
     }
 
     @MainActor

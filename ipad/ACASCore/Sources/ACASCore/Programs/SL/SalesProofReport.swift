@@ -59,8 +59,7 @@ public enum SalesProofReport {
         guard sys.raw("file-statuses")[15] != 0x30, store.exists("ledgers/acas/invoice.dat") else {
             throw Error.noTransactions
         }
-        let day = context.calendar.dateComponents([.day, .month, .year], from: context.now())
-        let s = Context(store: store, sys: sys, toDay: String(format: "%02d/%02d/%04d", day.day!, day.month!, day.year!))
+        let s = Context(store: store, sys: sys, toDay: Maps04.toDate(Int(sys.int("run-date"))))
         let w = WS()
         var entries: [Entry] = []
         func r(_ k: String, _ n: Int) -> String { Cobol.x(label(k), n) }
