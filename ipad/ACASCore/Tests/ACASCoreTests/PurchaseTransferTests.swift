@@ -109,6 +109,21 @@ final class PurchaseTransferTests: XCTestCase {
         let state = Record(SystemLayout.layout, bytes: try XCTUnwrap(settings.read(1)))
         XCTAssertEqual(state.int("p-flag-i"), 2)
         XCTAssertEqual(state.raw("file-statuses")[28], 0x31)
+
+        var shortPage = state
+        shortPage.setInt("page-lines", 8)
+        try settings.write(1, shortPage.bytes)
+        let invoicePath = prefix + "pinvoice.dat"
+        let header = try XCTUnwrap(store.all(invoicePath).first { $0.key.last == 0 })
+        var next = Record(PeriodRecords.pihLayout, bytes: header.data)
+        next.setInt("invoice", next.int("invoice") + 1)
+        next["status"] = "P"
+        let nextBytes = next.bytes + header.data.dropFirst(next.bytes.count)
+        XCTAssertTrue(store.write(invoicePath, key: Array(nextBytes.prefix(9)), data: nextBytes))
+        XCTAssertFalse(try transfer.postPending().isEmpty)
+        let report = try XCTUnwrap(store.readRaw(prefix + "prt-1"))
+        let pageBreak = try XCTUnwrap(report.firstIndex(of: 0x0c))
+        XCTAssertTrue(report[(pageBreak + 1)...].starts(with: "PL060".utf8))
     }
 
     private struct Timestamp: Decodable { let timestamp: Double }

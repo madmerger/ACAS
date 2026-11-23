@@ -147,8 +147,8 @@ public struct PurchaseTransfer {
         var lineCount = 0
         func headings() {
             page += 1
-            if page > 1 { lines.append([0x0c]) }
-            lines.append(SJIS.encode(Cobol.x("PL060 (3.01.07)", 54) + Cobol.x("Invoice Posting Report", 70)
+            let pageBreak: [UInt8] = page > 1 ? [0x0c] : []
+            lines.append(pageBreak + SJIS.encode(Cobol.x("PL060 (3.01.07)", 54) + Cobol.x("Invoice Posting Report", 70)
                 + "Page " + Pic.edit("zz9", value: Int64(page), scale: 0), size: 132))
             lines.append(SJIS.encode(settings.str("usera"), size: 122) + SJIS.encode(printedDate(today), size: 10))
             lines.append([])
