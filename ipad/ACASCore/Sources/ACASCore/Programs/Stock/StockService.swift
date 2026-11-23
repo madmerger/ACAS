@@ -56,11 +56,12 @@ public struct StockService {
 
     func movementRecord(_ code: String) throws -> Record {
         let normalized = code.uppercased()
+        if let row = try? record(normalized) { return row }
         if let abbreviation = try? key(normalized, 7),
            let row = records.first(where: { $0.raw("stock-abrev-key") == abbreviation }) {
             return row
         }
-        return try record(normalized)
+        throw Failure.missing
     }
 
     public func find(_ code: String) throws -> Item { Item(try record(code)) }
@@ -87,7 +88,8 @@ public struct StockService {
             let system = Record(SystemLayout.layout, bytes: raw)
             if system.int("stk-averaging") == 1 {
                 let work = system.int("stk-manu-used") == 1 ? row.int("stock-work-in-progress") : 0
-                value = Cobol.truncate((item.held + work) * item.cost / 100, digits: 11, signed: false)
+                let opening = Cobol.truncate(item.held * item.cost / 100, digits: 11, signed: false)
+                value = Cobol.truncate((opening * 100 + work * item.cost) / 100, digits: 11, signed: false)
             }
         }
         row.setInt("stock-value", value)

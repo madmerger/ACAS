@@ -159,7 +159,7 @@ struct StockItemForm: View {
                 guard let count = Int64(quantity) else { throw StockService.Failure.invalidInput }
                 let row = try stock.move(isReceipt ? .receipt : .issue, code: code, quantity: count,
                     price: isReceipt ? money(price) : 0,
-                    valueOverride: valueOverride.isEmpty ? nil : money(valueOverride), date: date)
+                    valueOverride: valueOverride.isEmpty ? nil : money(valueOverride), date: date, codeOnly: operation == .barcode)
                 message = String(format: stockText("result.held"), row.held.formatted())
             case .order:
                 guard let count = Int64(quantity), let back = Int64(backOrdered)

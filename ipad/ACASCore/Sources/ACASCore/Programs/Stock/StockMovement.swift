@@ -4,7 +4,15 @@ extension StockService {
     public enum Direction { case receipt, issue }
 
     public func move(_ direction: Direction, code: String, quantity: Int64, price: Int64 = 0,
-                     valueOverride: Int64? = nil, date: Date) throws -> Item {
+                     valueOverride: Int64? = nil, date: Date, codeOnly: Bool = false) throws -> Item {
+        try store.transaction {
+            try applyMovement(direction, code: code, quantity: quantity, price: price,
+                              valueOverride: valueOverride, date: date, codeOnly: codeOnly)
+        }
+    }
+
+    private func applyMovement(_ direction: Direction, code: String, quantity: Int64, price: Int64,
+                               valueOverride: Int64?, date: Date, codeOnly: Bool) throws -> Item {
         guard quantity != 0, (-999_998...999_998).contains(quantity), (0...99_999_999).contains(price),
               valueOverride.map({ (0...9_999_999_999).contains($0) }) ?? true else { throw Failure.invalidInput }
         var system = settings.read(1).map { Record(SystemLayout.layout, bytes: $0) } ?? Record(SystemLayout.layout)
@@ -18,7 +26,7 @@ extension StockService {
         let receiving = direction == .receipt
         let report = directory + "prt-1"
         if store.exists(path) { try store.writeRaw(report, []) }
-        var row = try movementRecord(code)
+        var row = try codeOnly ? record(code) : movementRecord(code)
         let held = row.int("stock-held")
         let work = row.int("stock-work-in-progress")
         let cost = row.int("stock-cost")
@@ -76,7 +84,7 @@ extension StockService {
             system.setInt("stk-activity-rep-run", 0)
             try settings.write(1, system.bytes)
         }
-        store.rewrite(path, key: row.raw("stock-key"), data: row.bytes)
+        guard store.rewrite(path, key: row.raw("stock-key"), data: row.bytes) else { throw Failure.missing }
         let current = context.calendar.dateComponents([.hour, .minute], from: today)
         let printed = Maps04.format(Maps04.toDate(day(today)), dateForm: format) + " "
             + Cobol.z(current.hour ?? 0, 2) + ":" + Cobol.z(current.minute ?? 0, 2)

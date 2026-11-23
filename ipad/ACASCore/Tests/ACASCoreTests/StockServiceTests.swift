@@ -1,8 +1,49 @@
 import Foundation
+import SQLite3
 import XCTest
 @testable import ACASCore
 
 final class StockServiceTests: XCTestCase {
+    func testPostingReportFailureRollsBackStockAndAudit() throws {
+        let path = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString).path
+        defer { try? FileManager.default.removeItem(atPath: path) }
+        let store = try FileStore(path: path)
+        let service = StockService(BusinessContext(store: store))
+        var settings = Record(SystemLayout.layout)
+        settings.setInt("stk-audit-used", 1)
+        try service.settings.write(1, settings.bytes)
+        var item = StockService.Item()
+        item.code = "ITEM001"
+        item.abbreviation = "ITEM"
+        item.name = "品目"
+        try service.save(item)
+        var db: OpaquePointer?
+        defer { sqlite3_close(db) }
+        XCTAssertEqual(sqlite3_open(path, &db), SQLITE_OK)
+        let sql = "CREATE TRIGGER reject_report BEFORE UPDATE ON files WHEN NEW.name LIKE '%/prt-1' BEGIN SELECT RAISE(ABORT, 'blocked'); END"
+        XCTAssertEqual(sqlite3_exec(db, sql, nil, nil, nil), SQLITE_OK)
+        XCTAssertThrowsError(try service.move(.receipt, code: "ITEM001", quantity: 2, date: service.today))
+        XCTAssertEqual(try service.find("ITEM001").held, 0)
+        XCTAssertNil(store.readRaw("ledgers/acas/staudit.dat"))
+        XCTAssertNil(store.readRaw("ledgers/acas/prt-1"))
+    }
+
+    func testPrimaryCodeWinsAndBarcodeDoesNotUseAbbreviation() throws {
+        let service = StockService(BusinessContext(store: try FileStore()))
+        var item = StockService.Item()
+        item.code = "ITEM001"
+        item.abbreviation = "ITEM"
+        item.name = "品目"
+        try service.save(item)
+        item.code = "ITEM"
+        item.abbreviation = "OTHER"
+        try service.save(item)
+        let updated = try service.move(.receipt, code: "ITEM", quantity: 2, date: service.today)
+        XCTAssertEqual(updated.code, "ITEM")
+        XCTAssertEqual(try service.find("ITEM001").held, 0)
+        XCTAssertThrowsError(try service.move(.receipt, code: "OTHER", quantity: 1, date: service.today, codeOnly: true))
+    }
+
     func testItemValidationAndPreservesEnteredValuation() throws {
         let service = StockService(BusinessContext(store: try FileStore()))
         var item = StockService.Item()
