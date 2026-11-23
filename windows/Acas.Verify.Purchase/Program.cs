@@ -46,6 +46,8 @@ static Result Check(JsonElement entry, string evidence)
         if (referenceDirectory != null)
             foreach (var row in BTreeRows(Path.Combine(referenceDirectory, "before-files", PurchaseLedger.AnalysisFile)))
                 db.Put(PurchaseLedger.AnalysisFile, Encoding.ASCII.GetString(row.Key), row.Data);
+        if (id == "PL-414" && referenceDirectory != null)
+            LoadLegacyPostingLines(db, referenceDirectory);
         var before = Rows(db);
         var reference = RecordChanges(evidence, targets);
         if (id == "PL-090")
@@ -128,6 +130,20 @@ static Result Check(JsonElement entry, string evidence)
         differences.Add(error is InvalidOperationException ? error.Message : $"検証手順を完了できませんでした（{error.GetType().Name}）。");
     }
     return new(id, differences.Count == 0 ? "一致" : "不一致", differences, knownLegacyIssue);
+}
+
+static void LoadLegacyPostingLines(Db db, string referenceDirectory)
+{
+    const int nativeCodeOffset = 8 + 1 + 12;
+    const int legacyCodeOffset = 8 + 1 + 13; // purchase/fdpinv2.cob as read by PL055
+    foreach (var (key, record) in BTreeRows(Path.Combine(referenceDirectory, "before-files", PurchaseLedger.InvoiceFile)))
+    {
+        if (key.Length != 9 || key[8] == 0) continue;
+        var lineKey = FormattableString.Invariant($"{Encoding.ASCII.GetString(key, 0, 8)}/{key[8]:00}");
+        if (db.Read(PurchaseLedger.InvoiceFile, lineKey) is not { } line) continue;
+        record.AsSpan(legacyCodeOffset, 2).CopyTo(line.AsSpan(nativeCodeOffset, 2));
+        db.Put(PurchaseLedger.InvoiceFile, lineKey, line);
+    }
 }
 
 static void Exercise(JsonElement entry, string id, Db db, List<string> differences)

@@ -130,6 +130,18 @@ public sealed class PurchaseLedgerTests
     }
 
     [Fact]
+    public void 旧分析マスターの台帳でも新規伝票は入力した分析コードに集計する()
+    {
+        using var db = Fixture("sl-ready");
+        var ledger = new PurchaseLedger(db);
+        db.Put(PurchaseLedger.AnalysisFile, "Pa1", new byte[66]);
+        Assert.True(ledger.SaveInvoice(Sample(ledger), true));
+        Assert.Single(ledger.PostInvoices()!);
+        Assert.Contains(ledger.PurchaseAnalysisTotals()!, row => row is { Code: "a1", Current: 100m, Year: 100m });
+        Assert.DoesNotContain(ledger.PurchaseAnalysisTotals()!, row => row.Code == "1");
+    }
+
+    [Fact]
     public void 仕入転記は明細の当期と年累計を分析帳票に追加する()
     {
         using var db = Fixture("pl-invoice");

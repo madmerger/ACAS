@@ -1,4 +1,3 @@
-using System.Text;
 using Acas.Core.Engine;
 
 namespace Acas.Core.Programs.Purchase;
@@ -26,18 +25,8 @@ public sealed partial class PurchaseLedger
             ("zb", invoice => invoice.Discount)
         };
         foreach (var invoice in invoices)
-            for (int index = 0; index < invoice.Lines.Count; index++)
-            {
-                var line = invoice.Lines[index];
-                var code = line.Code;
-                if (legacyAnalysisUnavailable)
-                {
-                    // PL055 reads the analysis code after a 13-byte product field in the legacy file.
-                    var bytes = database.Read(InvoiceFile, InvoiceKey(invoice.Folio, index + 1))!;
-                    code = Encoding.Latin1.GetString(bytes, InvoiceLine.F["analysis"].Off + 1, 2);
-                }
-                if (!AddPurchaseAnalysis(code, 1, invoice.Type == 3 ? -line.Net : line.Net, legacyAnalysisUnavailable)) return false;
-            }
+            foreach (var line in invoice.Lines)
+                if (!AddPurchaseAnalysis(line.Code, 1, invoice.Type == 3 ? -line.Net : line.Net, legacyAnalysisUnavailable)) return false;
         foreach (var (code, amount) in specials)
         {
             var values = invoices.Select(amount).Where(value => value != 0).ToArray();
