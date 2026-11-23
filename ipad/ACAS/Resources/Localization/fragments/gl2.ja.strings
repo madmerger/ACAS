@@ -1,3 +1,6 @@
+/* GnuCOBOL runtime (COB_EXIT_WAIT) */
+"runtime.end_of_program" = "end of program, please press a key to exit";
+
 /* maps99.cbl — error.txt */
 "maps99.not_found" = "Error not in error.txt. Hit return to close";
 "maps99.e001" = "**Unauthorised Usage Aborting**";
@@ -432,3 +435,32 @@
 "gl090b.p_pc" = "  P/C ";
 "gl090b.p_branch" = "Branch";
 "gl090b.p_total" = "T o t a l";
+
+/* gl100.cbl */
+"gl100.title" = "Ledger Print - Sort";
+"gl100.gl114" = "GL114 Enter <0> to signify change made or <9> to abort this run :- [ ]";
+"gl100.gl115" = "GL115 Ensure Archive USB Memory Stick is in path";
+"gl100.current_path" = "Current path/name is :";
+
+/* gl105.cbl */
+"gl105.title" = "Ledger Print";
+"gl105.gl114" = "GL114 Enter <0> to signify change made or <9> to abort this run :- [ ]";
+"gl105.gl115" = "GL115 Ensure Archive USB Memory Stick is in path";
+"gl105.gl118" = "GL118 A/C Not Found";
+"gl105.gl119" = "GL119 P/C Not Found";
+"gl105.all_accounts" = "Print All Accounts? (Y/N) [ ]";
+"gl105.enter_account" = "Enter Account to print   [     ]";
+"gl105.all_pcs" = "Print all P/Cs ?    (Y/N) [ ]";
+"gl105.enter_pc" = "Enter P/C to Print       [     ]";
+"gl105.unknown" = "***Unknown***";
+"gl105.current_path" = "Current path is :";
+"gl105.p_title" = "Ledger - Print";
+"gl105.p_page" = "Page ";
+"gl105.p_account" = "Account - ";
+"gl105.p_sep" = " / ";
+"gl105.p_sheet" = "Sheet ";
+"gl105.p_h1a" = "Transaction     Code    <--Date-->    <------------Legend------------>     ";
+"gl105.p_h1b" = "<--Contra-->   <--Debit-->   <-Credit-->    <--Balance-->";
+"gl105.p_h2" = "Account P.C.";
+"gl105.p_rule" = "===========   ===========";
+"gl105.p_balance" = "B a l a n c e";

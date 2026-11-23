@@ -394,7 +394,8 @@ enum GLTrans {
     static func prePath(_ s: Session) -> String { s.ledgers + "pretrans.tmp" }
     static func postPath(_ s: Session) -> String { s.ledgers + "postrans.tmp" }
     /// line sequential の全レコード (各行を 70 バイトへ空白で伸長)
-    static func readAll(_ s: Session, _ path: String) -> [Record]? {
+    static func readAll(_ s: Session, _ path: String) -> [Record]? { readAll(s, path, layout) }
+    static func readAll(_ s: Session, _ path: String, _ layout: Layout) -> [Record]? {
         guard let d = s.store.readRaw(path) else { return nil }
         var out: [Record] = []
         for line in d.split(separator: 0x0a, omittingEmptySubsequences: false).dropLast(d.last == 0x0a || d.isEmpty ? 1 : 0) {
@@ -405,6 +406,12 @@ enum GLTrans {
         return out
     }
     /// line sequential の WRITE は末尾の空白を落とす
+    /// gl080/gl100 の disk-change が書き換える file-2 (general の file-defs 上にあり、呼び出しをまたいで残る)
+    static func file2(_ s: Session) -> String { (s.shared["gl.file-2"] as? String) ?? (s.ledgers + "archive.dat") }
+    /// string file-24 "archives" 区切り 名前 into Arg-Test (x(525))
+    static func archivesPath(_ s: Session, _ name: String) -> String {
+        Cobol.rtrim(Cobol.x(s.ledgers + "archives/" + name, 525))
+    }
     static func append(_ s: Session, _ path: String, _ r: Record) {
         var b = r.bytes
         while b.last == 0x20 { b.removeLast() }

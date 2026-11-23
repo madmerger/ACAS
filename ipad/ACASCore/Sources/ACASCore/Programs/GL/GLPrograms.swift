@@ -14,6 +14,8 @@ public enum GLPrograms {
         s.programs["gl090"] = GL090.run
         s.programs["gl090a"] = GL090A.run
         s.programs["gl090b"] = GL090B.run
+        s.programs["gl100"] = GL100.run
+        s.programs["gl105"] = GL105.run
         s.programs["gl070"] = GL070.run
         s.programs["gl071"] = GL071.run
         s.programs["gl072"] = GL072.run

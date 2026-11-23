@@ -206,7 +206,8 @@ enum GL080 {
     static func diskChange(_ ws: WS) throws {
         let s = ws.s, c = ws.c
         // file-24 + "archives" + 区切り + file-2 (ソースのまま)
-        ws.file2 = s.ledgers + "archives/" + s.ledgers + "archive.dat"
+        ws.file2 = GLTrans.archivesPath(s, GLTrans.file2(s))
+        s.shared["gl.file-2"] = ws.file2
         c.display(ws.t("gl115"), at: 1201, color: 2, eraseEOL: true)
         c.display(ws.t("gl114"), at: 1301, color: 2, eraseEOL: true)
         while true {
@@ -216,6 +217,7 @@ enum GL080 {
             c.display(ws.t("current_path"), at: 1401, color: 2, eraseEOL: true)
             c.display(ws.file2, at: 1501, color: 2, eraseEOL: true)
             ws.file2 = Cobol.rtrim(try c.accept(at: 1501, size: 532, initial: ws.file2, options: [.update], color: 2))
+            s.shared["gl.file-2"] = ws.file2
             if ws.file2.isEmpty || ws.file2.hasPrefix(" ") { continue }
             return
         }
