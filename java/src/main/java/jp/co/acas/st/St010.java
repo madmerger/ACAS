@@ -322,14 +322,14 @@ public class St010 extends StProgram {
             if (!stock.str("stock-pa-group").isBlank()) {
                 stock.set("stock-pa-system", "P");
                 anal.set("pa-code", stock.str("stock-pa-code"));
-                if (!analFile.start(anal, "=").equals("00")) { display(L23, 1, "ST111 Cannot find Purchase Ledger Analysis Code", 4); continue; }
+                if (analFile.start(anal, "=").charAt(0) == '2') { display(L23, 1, "ST111 Cannot find Purchase Ledger Analysis Code", 4); continue; }
             }
             stock.set("stock-sa-group", stock.str("stock-sa-group").toLowerCase(java.util.Locale.ROOT));
             show(10, 21, stock.str("stock-sa-group"));
             if (!stock.str("stock-sa-group").isBlank()) {
                 stock.set("stock-sa-system", "S");
                 anal.set("pa-code", stock.str("stock-sa-code"));
-                if (!analFile.start(anal, "=").equals("00")) { display(L23, 1, "ST110 Cannot find Sales Ledger Analysis Code", 4); continue; }
+                if (analFile.start(anal, "=").charAt(0) == '2') { display(L23, 1, "ST110 Cannot find Sales Ledger Analysis Code", 4); continue; }
             }
             display01C();
             // 金額項目
@@ -427,7 +427,7 @@ public class St010 extends StProgram {
                 return;
             }
         }
-        open(analFile, CobFile.Mode.INPUT);
+        open(analFile, CobFile.Mode.INPUT);   // 原文は結果を検査しない（開けない場合、分析コードの START は INVALID KEY にならない）
         boolean outline = true;
         while (true) {
             if (outline) {
