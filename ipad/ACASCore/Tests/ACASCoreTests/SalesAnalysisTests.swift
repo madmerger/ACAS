@@ -24,10 +24,14 @@ final class SalesAnalysisTests: XCTestCase {
         try service.save(group: "A", account: 1, description: name, printCode: "売A")
 
         let before = store.snapshot()
-        for (description, printCode) in [(name + "売", "売A"), (name, "売上")] {
+        let invalidFields: [(String, String, SalesAnalysis.Error)] = [
+            (name + "売", "売A", .invalidDescription),
+            (name, "売上", .invalidPrintCode),
+        ]
+        for (description, printCode, expected) in invalidFields {
             XCTAssertThrowsError(try service.save(group: "A", account: 1, description: description,
                                                   printCode: printCode, replacing: true)) {
-                XCTAssertEqual($0 as? SalesAnalysis.Error, .invalidInput)
+                XCTAssertEqual($0 as? SalesAnalysis.Error, expected)
             }
             XCTAssertEqual(store.snapshot(), before)
         }

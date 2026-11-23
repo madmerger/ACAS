@@ -30,10 +30,26 @@ final class SalesAnalysisFlows: XCTestCase {
         let account = app.textFields["sales.analysis.account"]
         account.tap()
         account.typeText("400001")
+        let description = app.textFields["sales.analysis.description"]
+        description.tap()
+        let longDescription = String(repeating: "A", count: 25)
+        description.typeText(longDescription)
+        tap("sales.analysis.save", in: app)
+        let descriptionError = app.alerts["説明は24バイト以内で入力してください（全角のみなら12文字まで）"]
+        XCTAssertTrue(descriptionError.waitForExistence(timeout: 5))
+        descriptionError.buttons.firstMatch.tap()
+        description.tap()
+        description.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: longDescription.count))
         let printCode = app.textFields["sales.analysis.printCode"]
         XCTAssertEqual(printCode.value as? String, "A")
         printCode.tap()
-        printCode.typeText(XCUIKeyboardKey.delete.rawValue)
+        printCode.typeText("BCD")
+        tap("sales.analysis.save", in: app)
+        let printCodeError = app.alerts["印字コードは3バイト以内で入力してください（全角のみなら1文字まで）"]
+        XCTAssertTrue(printCodeError.waitForExistence(timeout: 5))
+        printCodeError.buttons.firstMatch.tap()
+        printCode.tap()
+        printCode.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: 4))
         tap("sales.analysis.save", in: app)
         tap("sales.analysis.display", in: app)
         let row = app.descendants(matching: .any)["sales.analysis.code.SA"].firstMatch
