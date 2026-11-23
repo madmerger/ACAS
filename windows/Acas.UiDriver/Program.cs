@@ -37,7 +37,9 @@ internal static class Program
                 Content = new Border { Background = new SolidColorBrush(Color.FromRgb(23, 43, 69)),
                     Padding = new Thickness(14, 8, 14, 8), Child = text }
             };
+            var started = DateTimeOffset.Now;
             var stopwatch = Stopwatch.StartNew();
+            if (scenarios.Any(s => s.Group == 2)) Console.WriteLine($"ドライバ開始日時：{started:O}");
             ui.Startup += async (_, _) =>
             {
                 try
@@ -100,6 +102,15 @@ internal static class Program
                             position(accounting.PrepareRecording());
                             outcome = accounting.RunGroupOne(scenario, options.Evidence, plan);
                         }
+                        else if (scenario.Group == 2)
+                        {
+                            accounting = new Desktop(app, baseline: scenario.Baseline,
+                                prepare: database => Desktop.PrepareSales(database, scenario));
+                            var bounds = accounting.PrepareRecording();
+                            position(bounds);
+                            Console.WriteLine($"アプリの画面範囲：左 {bounds.Left}、上 {bounds.Top}、幅 {bounds.Width}、高さ {bounds.Height}");
+                            outcome = accounting.RunGroupTwo(scenario, options.Evidence);
+                        }
                         else if (scenario.Group == 4)
                         {
                             accounting = new Desktop(app, baseline: scenario.Baseline,
@@ -120,7 +131,8 @@ internal static class Program
                     }
                     catch (Exception e)
                     {
-                        outcome = Outcome.Compare(scenario, false, "", e.Message, "実画面");
+                        outcome = scenario.Group == 2 ? Outcome.Missing(scenario, e.Message) :
+                            Outcome.Compare(scenario, false, "", e.Message, "実画面");
                     }
                 }
                 outcomes.Add(outcome with { VideoSeconds = elapsed });

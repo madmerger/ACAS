@@ -144,6 +144,25 @@ public sealed class SalesTests
     }
 
     [Fact]
+    public void InvoiceComparisonChecksLivePrintTimeSeparatelyFromInvoiceDate()
+    {
+        var legacy = "事業者\n住所\nInvoice\nPage 1 of 1 23/11/2026 04:01\nInv: 0\n" +
+            "得意先".PadRight(69) + "A/C : CUST011\n" +
+            new string(' ', 69) + "Order: ORDER001\n" +
+            new string(' ', 69) + "Ref : EQUIVREF\nProduct Code  Item Description\n" +
+            "Credit Terms:  30".PadRight(65) + "100.00".PadRight(11) + "20.00\n" +
+            "Totals".PadRight(65) + "100.00".PadRight(11) + "20.00\nTotal Due: 120.00";
+        const string live = "請求書\n掛売請求書\n事業者　事業者\n住所\n請求番号　0\n日付　2026年11月23日　15:42\n" +
+            "得意先　CUST011　得意先\n注文番号　ORDER001　参照番号　EQUIVREF\n品目コード　品目名\nページ　1／1\n" +
+            "支払期限（日数）　30　100.00　20.00\n税抜額　100.00　税額　20.00　請求合計　120.00";
+        Assert.NotNull(SalesReportValues.Difference(legacy, live));
+        Assert.Null(SalesReportValues.Difference(legacy, live.Replace("15:42", "04:01")));
+        Assert.Null(SalesReportValues.Difference(legacy, live, time => time == "15:42"));
+        Assert.NotNull(SalesReportValues.Difference(legacy, live, time => time == "15:43"));
+        Assert.NotNull(SalesReportValues.Difference(legacy, live.Replace("11月23日", "11月24日"), time => time == "15:42"));
+    }
+
+    [Fact]
     public void ProofComparisonRequiresSameOrderedTaxValues()
     {
         var header = "SL050".PadRight(49) + "Unapplied Sales Transaction Report".PadRight(75) + "Page 1";
