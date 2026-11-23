@@ -217,7 +217,7 @@ public class Pl015 extends PlBase {
     }
 
     private void printScreen() {
-        Printer p = new Printer("prt-1");
+        Printer p = new Printer("prt-1", 80);
         String stars = "*".repeat(40);
         String line0 = pad(PROG_NAME, 16) + pad("", 13) + "Purchase Ledger Enquiry" + pad("", 18) + fromUk(toDay());
         String[] heads = {

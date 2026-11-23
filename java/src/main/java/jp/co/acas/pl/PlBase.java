@@ -153,10 +153,13 @@ abstract class PlBase extends Program {
     protected final class Printer {
         private final String name;
         private final StringBuilder sb = new StringBuilder();
-        Printer(String name) { this.name = name; }
-        void after(String line, int n) { sb.append("\n".repeat(n)).append(rtrim(line)); }
-        void before(String line, int n) { sb.append(rtrim(line)).append("\n".repeat(n)); }
-        void afterPage(String line) { sb.append("\f").append(rtrim(line)); }
+        private final int width;
+        Printer(String name) { this(name, 132); }
+        /** width は印刷レコード長（固定長レコードのため改ページ時は前行の直後に続く）。 */
+        Printer(String name, int width) { this.name = name; this.width = width; }
+        void after(String line, int n) { sb.append("\n".repeat(n)).append(pad(line, width)); }
+        void before(String line, int n) { sb.append(pad(line, width)).append("\n".repeat(n)); }
+        void afterPage(String line) { sb.append("\f").append(pad(line, width)); }
         void close() {
             CobFile f = CobFile.lineSequential(ctx.store, ctx.path(name));
             f.open(CobFile.Mode.OUTPUT);

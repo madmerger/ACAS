@@ -50,7 +50,8 @@ public class Purchase extends PlBase {
         };
     }
 
-    private void displayMenu() {
+    /** display-menu 段落のみ（Conv-date の手前まで）。 */
+    private void displayMenuPara() {
         clearScreen();
         toDay = toDay();
         termCode(0);
@@ -61,6 +62,11 @@ public class Purchase extends PlBase {
         show(24, 20, Num.z9(now.getYear(), 4));
         display(24, 24, " Applewood Computers", 3);
         show(1, 1, sys.str("usera"));
+    }
+
+    private void displayMenu() {
+        displayMenuPara();
+        LocalDateTime now = ctx.now();
         show(1, 71, fromUk(toDay));
         display(3, 1, PROG_NAME);
         display(3, 26, "Purchase Ledger System Menu");
@@ -110,7 +116,7 @@ public class Purchase extends PlBase {
     private void overrewrite() { SystemFile.rewrite(ctx); }
 
     private void messageRun(int code) {
-        displayMenu();
+        displayMenuPara();
         maps99(code);
         maps99(15);
     }
