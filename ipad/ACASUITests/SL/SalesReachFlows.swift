@@ -152,7 +152,7 @@ final class SalesReachFlows: XCTestCase {
             XCTAssertTrue(print.waitForExistence(timeout: 5))
             XCTAssertTrue(print.isSelected)
             XCTAssertTrue(app.buttons["再印刷"].exists)
-            XCTAssertEqual(app.staticTexts["sales.invoice.deliveryPrint.date"].label, "23/11/2026")
+            XCTAssertEqual(app.staticTexts["sales.invoice.deliveryPrint.date"].label, "処理日、23/11/2026")
         }
     }
 

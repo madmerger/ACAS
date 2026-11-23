@@ -12,7 +12,7 @@ struct SalesDeliveryPrintView: View {
     var body: some View {
         Form {
             if let processingDate {
-                LabeledContent(slText("sales.date.title")) {
+                LabeledContent(slText("sales.date.field")) {
                     Text(processingDate).accessibilityIdentifier("sales.invoice.deliveryPrint.date")
                 }
                 Picker(slText("sales.invoice.deliveryPrint.mode"), selection: $mode) {
