@@ -98,6 +98,16 @@ final class SalesReachFlows: XCTestCase {
         }
     }
 
+    func testSL236() throws {
+        try reach("SL-236", through: ["sales.invoice.menu", "sales.invoice.deletionReport"], title: "請求書削除帳票") { app in
+            app.buttons["sales.invoice.deletionReport.generate"].tap()
+            let result = app.staticTexts["sales.invoice.deletionReport.result"]
+            XCTAssertTrue(result.waitForExistence(timeout: 5))
+            XCTAssertEqual(result.label, "帳票に記載する削除済み請求書はありません")
+            XCTAssertTrue(app.buttons["sales.invoice.deletionReport.export"].exists)
+        }
+    }
+
     func testSL239() throws { try periodConfirmation("SL-239") }
     func testSL240() throws { try customerReport("SL-240") }
 

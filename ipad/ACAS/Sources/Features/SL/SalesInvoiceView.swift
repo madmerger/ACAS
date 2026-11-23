@@ -64,11 +64,52 @@ struct SalesInvoiceMenu: View {
                 .accessibilityIdentifier("sales.invoice.amend")
             NavigationLink(slText("sales.invoice.deleteTitle")) { SalesInvoiceList(workspace: workspace, action: .delete) }
                 .accessibilityIdentifier("sales.invoice.remove")
+            NavigationLink(slText("sales.invoice.deletionReport.title")) { SalesInvoiceDeletionReportView(workspace: workspace) }
+                .accessibilityIdentifier("sales.invoice.deletionReport")
             NavigationLink(slText("sales.invoice.printTitle")) { SalesInvoiceList(workspace: workspace, action: .print) }
                 .accessibilityIdentifier("sales.invoice.print")
         }
         .navigationTitle(slText("sales.invoice.menuTitle"))
         .task { workspace.completed("sales-invoice-menu-view") }
+    }
+}
+
+private struct SalesInvoiceDeletionReportView: View {
+    let workspace: Workspace
+    @State private var count: Int?
+    @State private var document: SalesReportDocument?
+    @State private var failure: String?
+
+    var body: some View {
+        Form {
+            Button(slText("sales.invoice.generate"), systemImage: "printer") {
+                count = nil
+                document = nil
+                failure = nil
+                do {
+                    count = try SalesInvoices(workspace.context).printDeletedInvoices()
+                    document = workspace.context.store.readRaw(SalesInvoices.deletionReportPath).map(SalesReportDocument.init)
+                    workspace.completed("sales-invoice-deletion-report")
+                } catch {
+                    failure = SalesInvoiceMessage.text(for: error)
+                }
+            }
+            .accessibilityIdentifier("sales.invoice.deletionReport.generate")
+            if let count {
+                Text(count == 0 ? slText("sales.invoice.deletionReport.empty") : slText("sales.invoice.deletionReport.count \(count)"))
+                    .accessibilityIdentifier("sales.invoice.deletionReport.result")
+            }
+            if let failure { Text(failure).foregroundStyle(.red) }
+        }
+        .navigationTitle(slText("sales.invoice.deletionReport.title"))
+        .toolbar {
+            if let document {
+                ToolbarItem(placement: .primaryAction) {
+                    SalesReportExport(report: document, identifier: "sales.invoice.deletionReport.export",
+                                      filename: slText("sales.invoice.deletionReport.title"))
+                }
+            }
+        }
     }
 }
 

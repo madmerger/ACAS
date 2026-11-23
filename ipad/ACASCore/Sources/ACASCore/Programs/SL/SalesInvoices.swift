@@ -282,7 +282,7 @@ public struct SalesInvoices {
         if (1...40).contains(count) {
             for line in 1...count { store.delete(path, key: key(number, line: line)) }
         }
-        try store.appendRaw("ledgers/acas/delinvno.dat",
+        try store.appendRaw(Self.deletedNumbersPath,
                         header.raw("ih-invoice") + header.raw("ih-date") + header.raw("ih-customer"))
     }
 }

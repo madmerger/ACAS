@@ -225,6 +225,9 @@
 "sales.invoice.immediateTitle" = "請求書即時印刷";
 "sales.invoice.editTitle" = "請求書修正";
 "sales.invoice.deleteTitle" = "請求書削除";
+"sales.invoice.deletionReport.title" = "請求書削除帳票";
+"sales.invoice.deletionReport.empty" = "帳票に記載する削除済み請求書はありません";
+"sales.invoice.deletionReport.count %lld" = "削除済み請求書：%lld件";
 "sales.invoice.printTitle" = "請求書一括印刷";
 "sales.invoice.menuTitle" = "請求書サブシステム";
 "sales.invoice.details" = "請求情報";
