@@ -3,6 +3,7 @@ import SwiftUI
 
 struct BookkeepingMenu: View {
     let workspace: Workspace
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
 
     private var service: BookkeepingService { BookkeepingService(workspace.context) }
 
@@ -52,7 +53,12 @@ struct BookkeepingMenu: View {
 
     private func accountTable(_ title: String) -> some View {
         Table(service.accounts) {
-            TableColumn(irsText("field.accountCode")) { Text(verbatim: String($0.code)) }
+            TableColumn(irsText("field.accountCode")) { account in
+                VStack(alignment: .leading) {
+                    Text(verbatim: String(account.code))
+                    if horizontalSizeClass == .compact { Text(account.name) }
+                }
+            }
             TableColumn(irsText("field.accountName"), value: \.name)
             TableColumn(irsText("field.category")) { Text($0.category?.title ?? "") }
             TableColumn(irsText("field.debit")) { Text((Decimal($0.debit) / 100).formatted()) }

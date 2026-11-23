@@ -1,5 +1,5 @@
 import Foundation
 
 func irsText(_ key: String) -> String {
-    NSLocalizedString("irs." + key, tableName: "IRS", comment: "")
+    NSLocalizedString("bookkeeping." + key, tableName: "IRS", comment: "")
 }
