@@ -8,6 +8,8 @@ from pathlib import Path
 
 WORKFLOWS = {
     "SYS-001": ("company", "会社・各台帳設定と業務用マスタ投入"),
+    "SYS-002": ("system-company-data", "会社の登録内容を表示"),
+    "SYS-003": ("system-company-cancel", "会社設定を保存せずに戻る"),
     "GL-020": ("gl-account-add", "新規の見出し勘定を登録"),
     "GL-023": ("gl-chart-inquiry", "指定した勘定科目を起点に照会"),
     "GL-033": ("gl-chart-print", "勘定科目一覧を出力"),
@@ -98,7 +100,9 @@ def fixture(evidence, case):
     for path, source in report_paths.items():
         if "/files/spool/" in path and source.read_bytes().hex() not in reports.values():
             raise ValueError(f"帳票スプールと原本が一致しません: {path}")
-    seeded = workflow in {"sales-proof", "gl-account-add"} or workflow.startswith(("gl-chart-", "gl-batch-status-"))
+    seeded = workflow in {"sales-proof", "gl-account-add"} or workflow.startswith(
+        ("system-company-", "gl-chart-", "gl-batch-status-")
+    )
     seed = snapshot_seed(evidence, run) if seeded else None
     with evidence_path(evidence, run / "terminal.cast").open(encoding="utf-8") as recording:
         date = json.loads(recording.readline())["timestamp"]

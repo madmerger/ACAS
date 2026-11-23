@@ -3,6 +3,7 @@ import SwiftUI
 
 struct CompanyForm: View {
     let workspace: Workspace
+    @Environment(\.dismiss) private var dismiss
     @State private var settings: CompanySettings
     @State private var textDraft: [String: String] = [:]
     @State private var dateDraft: [String: String] = [:]
@@ -66,6 +67,15 @@ struct CompanyForm: View {
             }
         }
         .navigationTitle(String(localized: "system.company", table: "System"))
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button(String(localized: "system.company.cancel", table: "System")) {
+                    workspace.completed("system-company-cancel")
+                    dismiss()
+                }
+                .accessibilityIdentifier("system.company.cancel")
+            }
+        }
         .alert(systemSetting("invalid"), isPresented: $invalid) {
             Button("action.close", role: .cancel) {}
         }
@@ -142,6 +152,9 @@ struct CompanyForm: View {
             }
         }
         .navigationTitle(systemSetting(group.rawValue))
+        .onAppear {
+            if group == .company { workspace.completed("system-company-data") }
+        }
     }
 
     @ViewBuilder
