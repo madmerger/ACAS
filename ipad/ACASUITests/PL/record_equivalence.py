@@ -39,6 +39,7 @@ def main():
         command = [
             "xcodebuild", "test-without-building", "-xctestrun", str(args.xctestrun),
             "-destination", f"platform=iOS Simulator,id={args.udid}", "-parallel-testing-enabled", "NO",
+            "-collect-test-diagnostics", "never",
             "-resultBundlePath", str(args.output / "PL.xcresult"),
             *[f"-only-testing:ACASUITests/PurchaseFlows/testPL{case}" for case in cases],
         ]
