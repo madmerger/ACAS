@@ -66,7 +66,7 @@ struct MainMenu: View {
         case .sales:
             SalesMenu(workspace: workspace) {
                 exitedSales = true
-                section = .system
+                self.section = .system
                 workspace.completed("sales-exit")
             }
         default:
