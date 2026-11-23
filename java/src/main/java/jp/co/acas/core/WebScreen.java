@@ -123,6 +123,7 @@ final class WebScreen {
     }
 
     private static String clean(String s) {
+        if (s.strip().equals("OR")) return "または";
         return s.strip().replaceFirst("^\\*+\\s*", "").replaceAll("(?:\\s*:-)?[\\s\\[\\]{}:*]+$", "")
                 .replace("Return", "確定").replace("RETURN", "確定").replace("Enter", "確定")
                 .replace("Escape", "取消").replaceAll("\\bEsc\\b", "取消")
