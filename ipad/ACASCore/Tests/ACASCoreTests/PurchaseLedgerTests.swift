@@ -58,7 +58,7 @@ final class PurchaseLedgerTests: XCTestCase {
         try ledger.postTransactions()
         try ledger.postTransactions()
         let path = ledger.base + "value.dat"
-        for (key, amount) in [("P1 ", 10_000), ("Pvi", 2_000)] {
+        for (key, amount) in [("P1 ", 10_000), ("Pvi", 2_000), ("Pv ", 2_000)] {
             let bytes = try XCTUnwrap(ledger.store.read(path, key: Array(key.utf8)))
             XCTAssertEqual(bytes.count, 66)
             let actual = Record(PurchaseRecords.valueLayout, bytes: bytes)
@@ -67,6 +67,27 @@ final class PurchaseLedgerTests: XCTestCase {
             XCTAssertEqual(actual.int("last-count"), 0)
             XCTAssertEqual(actual.int("this-net"), Int64(amount))
             XCTAssertEqual(actual.int("year-net"), Int64(amount))
+        }
+    }
+
+    func testFirstPostingCreatesAnalysisSubtotalsWithoutExistingMaster() throws {
+        let ledger = try makeLedger()
+        var transaction = PurchaseLedger.Transaction(date: ledger.processingDate)
+        transaction.supplier = try addSupplier(ledger)
+        transaction.lines[0].code = "a1"
+        transaction.lines[0].net = 10_000
+        try ledger.saveTransaction(transaction)
+        XCTAssertFalse(ledger.store.exists(ledger.analysisPath))
+
+        try ledger.postTransactions()
+
+        for code in ["Pvi", "Pv "] {
+            let key = Array(code.utf8)
+            XCTAssertNotNil(ledger.store.read(ledger.analysisPath, key: key))
+            let raw = try XCTUnwrap(ledger.store.read(ledger.base + "value.dat", key: key))
+            let value = Record(PurchaseRecords.valueLayout, bytes: raw)
+            XCTAssertEqual(value.int("this-count"), 1)
+            XCTAssertEqual(value.int("this-net"), 2_000)
         }
     }
 

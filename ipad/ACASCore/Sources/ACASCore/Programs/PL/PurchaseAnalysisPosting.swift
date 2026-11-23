@@ -9,7 +9,7 @@ struct PurchaseAnalysisPosting {
 
     func accumulate(headers: [Record]) {
         guard !headers.isEmpty else { return }
-        let compatible = !ledger.hasIncompatibleAnalysis && store.exists(ledger.analysisPath)
+        let compatible = !ledger.hasIncompatibleAnalysis
         var specials = [(Int64, Int64)](repeating: (0, 0), count: 4)
         for header in headers {
             let number = header.int("ih-invoice")
