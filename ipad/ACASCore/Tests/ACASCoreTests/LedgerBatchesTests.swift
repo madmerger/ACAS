@@ -188,6 +188,7 @@ final class LedgerBatchesTests: XCTestCase {
         XCTAssertEqual(Array(sentinel.prefix(12)), Array("999999000099".utf8))
         XCTAssertTrue(batches.all.isEmpty)
         XCTAssertTrue(store.exists("ledgers/acas/posting.dat"))
+        XCTAssertEqual(store.readRaw("ledgers/acas/posting.dat"), [])
     }
 
     func testBatchAndPostingBytesAndValidation() throws {
