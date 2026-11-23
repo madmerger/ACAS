@@ -1,7 +1,10 @@
+import Foundation
+
 public struct SalesAnalysis {
     public enum Error: Swift.Error {
         case invalidLayout, invalidInput, missingGroup, groupUsed, duplicate, missingCode, writeFailed
         case invalidDescription, invalidPrintCode
+        case unsupportedDescription, unsupportedPrintCode
     }
 
     public struct Code: Identifiable {
@@ -55,8 +58,8 @@ public struct SalesAnalysis {
         let group = Cobol.rtrim(group)
         guard (1...2).contains(group.utf8.count), group.utf8.allSatisfy({ (0x21...0x7e).contains($0) }),
               (0...999_999).contains(account) else { throw Error.invalidInput }
-        guard Cobol.rtrim(fixed(description, 24)) == Cobol.rtrim(description) else { throw Error.invalidDescription }
-        guard Cobol.rtrim(fixed(printCode, 3)) == Cobol.rtrim(printCode) else { throw Error.invalidPrintCode }
+        try validate(description, width: 24, overflow: .invalidDescription, unsupported: .unsupportedDescription)
+        try validate(printCode, width: 3, overflow: .invalidPrintCode, unsupported: .unsupportedPrintCode)
         let key = "S" + group
         try store.withTransaction {
             try validAnalysis()
@@ -223,6 +226,22 @@ public struct SalesAnalysis {
     }
 
     private func fixed(_ text: String, _ size: Int) -> String { SJIS.decode(SJIS.encode(text, size: size)[...]) }
+
+    private func validate(_ text: String, width: Int, overflow: Error, unsupported: Error) throws {
+        let text = Cobol.rtrim(text)
+        var byteCount = 0
+        for character in text {
+            if let ascii = character.asciiValue, ascii >= 0x20 {
+                byteCount += 1
+            } else {
+                let value = String(character)
+                guard let bytes = value.data(using: .shiftJIS),
+                      SJIS.decode(Array(bytes)[...]) == value else { throw unsupported }
+                byteCount += bytes.count
+            }
+        }
+        guard byteCount <= width else { throw overflow }
+    }
 
     private func edited(_ picture: String, _ value: Int64, width: Int, scale: Int) -> String {
         value == 0 ? Cobol.x("", width) : Pic.edit(picture, value: value, scale: scale)
