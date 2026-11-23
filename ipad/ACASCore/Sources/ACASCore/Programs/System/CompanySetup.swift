@@ -48,6 +48,25 @@ public struct CompanySetup {
         return paths
     }
 
+    public func prepareInitialRecord(_ settings: CompanySettings) throws {
+        try context.store.transaction {
+            guard file.read(1) == nil else { return }
+            let name = Cobol.rtrim(settings.record.str("usera"))
+            guard !name.isEmpty else { throw Error.invalidName }
+            var record = self.settings.record
+            record["usera"] = name
+            record["user-code"] = LegacyCompanyCode.encode(name)
+            record["pass-word"] = "CEJE"
+            for field in ["level-1", "level-2", "level-3", "level-4", "level-5", "full-invoicing"] {
+                record.setInt(field, settings.record.int(field))
+            }
+            record.setInt("page-lines", 0)
+            record.setInt("period", 0)
+            try file.write(1, record.bytes)
+            try prepareAuxiliaryRecords()
+        }
+    }
+
     public func save(_ settings: CompanySettings, printReport: Bool = false,
                      archivePaths: SystemReportPaths? = nil) throws {
         var record = settings.record
@@ -58,15 +77,23 @@ public struct CompanySetup {
             let bytes = try JSONEncoder().encode(archivePaths)
             try context.store.writeRaw(Self.archivePathsKey, Array(bytes))
         }
-        if file.read(1) == nil {
+        if let stored = file.read(1) {
+            let initial = Record(SystemLayout.layout, bytes: stored)
+            record.setRaw("user-code", initial.raw("user-code"))
+            record.setRaw("pass-word", initial.raw("pass-word"))
+        } else {
             record["user-code"] = LegacyCompanyCode.encode(record.str("usera"))
             record["pass-word"] = "CEJE"
         }
         try file.write(1, record.bytes)
+        try prepareAuxiliaryRecords()
+        if printReport { try context.store.writeRaw(Self.reportPath, SystemSettingsReport.render(record, paths: paths)) }
+    }
+
+    private func prepareAuxiliaryRecords() throws {
         if file.read(2) == nil { try file.write(2, SystemAuxRecords.initialDefault()) }
         if file.read(3) == nil { try file.write(3, SystemAuxRecords.initialFinal()) }
         if file.read(4) == nil { try file.write(4, SystemAuxRecords.initialRecord4()) }
-        if printReport { try context.store.writeRaw(Self.reportPath, SystemSettingsReport.render(record, paths: paths)) }
     }
 
     public static let reportPath = "ledgers/acas/prt-1"

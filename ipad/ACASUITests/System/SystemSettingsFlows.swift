@@ -28,6 +28,7 @@ final class SystemSettingsFlows: XCTestCase {
         XCTAssertTrue(app.staticTexts["次のバッチ番号"].exists)
         app.navigationBars.buttons.firstMatch.tap()
         tap(app, "action.save")
+        tap(app, "system.settings.confirm-save")
         XCTAssertTrue(app.staticTexts["会社設定を保存しました"].waitForExistence(timeout: 5))
         tap(app, "system.settings.report")
         XCTAssertTrue(app.navigationBars["設定内容の帳票"].waitForExistence(timeout: 5))

@@ -42,6 +42,9 @@
 "system.settings.stock" = "在庫管理の設定";
 "system.settings.report" = "設定内容の帳票";
 "system.settings.include-report" = "保存時に設定帳票を作成する";
+"system.settings.confirm-initial-report" = "設定帳票の出力確認";
+"system.settings.confirm-report-on" = "設定を保存し、帳票を作成します。";
+"system.settings.confirm-report-off" = "帳票を作成せずに設定を保存します。";
 "system.settings.invalid" = "入力可能な文字・数値・範囲を確認してください";
 "system.settings.enabled" = "有効";
 "system.settings.disabled" = "無効";
