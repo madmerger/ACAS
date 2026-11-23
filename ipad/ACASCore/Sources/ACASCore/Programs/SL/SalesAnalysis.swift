@@ -156,7 +156,8 @@ public struct SalesAnalysis {
 
     private func totalsReport(_ entries: [Totals], system: Record) throws {
         let printer = SalesProofRecords.Printer(store)
-        let limit = Int(system.int("page-lines"))
+        let configuredLines = Int(system.int("page-lines"))
+        let limit = configuredLines > 28 ? configuredLines : 48
         var lines = limit
         var page: Int64 = 0
         var ratio: Int64 = 0

@@ -2,6 +2,18 @@ import XCTest
 @testable import ACASCore
 
 final class SalesAnalysisTests: XCTestCase {
+    func testUnconfiguredPageLengthDoesNotProduceEmptyAnalysisPage() throws {
+        let store = try FileStore()
+        let context = BusinessContext(store: store)
+        try CompanySetup(context).save(name: "TEST")
+        let service = SalesAnalysis(context)
+        try service.prepare()
+
+        XCTAssertEqual(try service.printTotals()?.map(\.code.group), ["a", "v", "z"])
+        let report = try XCTUnwrap(store.readRaw(SalesAnalysis.exportPath))
+        XCTAssertFalse(report.contains(0x0c))
+    }
+
     func testRejectsDescriptionsAndPrintCodesThatExceedRecordWidths() throws {
         let store = try FileStore()
         let context = BusinessContext(store: store)
