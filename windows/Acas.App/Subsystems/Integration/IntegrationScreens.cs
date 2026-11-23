@@ -103,7 +103,8 @@ public sealed class IntegrationScreens : ISubsystemScreens
                         [new("N", "いいえ"), new("Y", "はい")], "N"));
                 return new FormScreen(name, fields, "期末処理を実行", v => Guard(name, () =>
                 {
-                    TransferLedger[] ledgers = v.Choice("IntegrationClosingLedgers") switch
+                    string? selection = options.HasSales && options.HasPurchases ? v.Choice("IntegrationClosingLedgers") : null;
+                    TransferLedger[] ledgers = selection switch
                     {
                         "B" => [TransferLedger.Sales, TransferLedger.Purchases],
                         "S" => [TransferLedger.Sales],
