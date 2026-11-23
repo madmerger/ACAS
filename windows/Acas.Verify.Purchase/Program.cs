@@ -47,10 +47,7 @@ static Result Check(JsonElement entry, string evidence)
         var reference = RecordChanges(evidence, targets);
         if (id == "PL-090")
         {
-            var supplierRows = reference.Where(change => change.File == PurchaseLedger.SupplierFile).ToArray();
-            if (supplierRows.Length != 2 || supplierRows.Any(row => !before.TryGetValue((row.File, row.Key), out string? hex) || hex != row.After))
-                differences.Add("共通設定で作成された仕入先二件と同梱初期データが一致しません。");
-            differences.Add("共通設定からの新規投入操作は買掛画面から実行できません。");
+            VerifySupplierSetup(db, reference, differences);
         }
         else
         {
@@ -71,7 +68,9 @@ static Result Check(JsonElement entry, string evidence)
                 after.TryGetValue(key, out string? newHex);
                 if (!expected.TryGetValue(key, out var record))
                 {
-                    if (oldHex != newHex) differences.Add($"{key.File}／{key.Key}：追加のレコード差分があります。");
+                    if (oldHex != newHex) differences.Add(id == "PL-414" && key.File == PurchaseLedger.SystemFile
+                        ? "旧版では転記フラグがメモリ上で変わりますが、買掛終了までシステムレコードを書き戻しません。証跡は買掛メニューで停止し、移行版は転記と同じトランザクションで保存します。"
+                        : $"{key.File}／{key.Key}：追加のレコード差分があります。");
                 }
                 else if (record.Before != oldHex || record.After != newHex)
                     differences.Add($"{key.File}／{key.Key}：更新前後のレコードバイト列が異なります。");
@@ -83,23 +82,42 @@ static Result Check(JsonElement entry, string evidence)
                 .Select(Convert.ToHexString).Distinct().Count();
             int appReports = db.Spool().Count;
             if (legacyReports != appReports) differences.Add($"帳票数が異なります（既存 {legacyReports}、移行 {appReports}）。");
+            else if (id == "PL-232" && legacyReports == 1)
+                VerifyScheduledPaymentReport(evidence, targets, db, differences);
+            else if (id is "PL-221" or "PL-413" or "PL-414" && legacyReports == 1)
+            {
+                var report = db.Spool().Single();
+                string path = EvidenceFile(evidence, targets.GetProperty("report_files")[0].GetString()!);
+                if (!LegacyPurchaseReport.Matches(path, report.Body, report.Name, id == "PL-414", id == "PL-221"))
+                    differences.Add("帳票の項目、順序またはページ構成が異なります。");
+            }
+            else if (id == "PL-222" && legacyReports == 1)
+            {
+                string path = EvidenceFile(evidence, targets.GetProperty("report_files")[0].GetString()!);
+                string contents = File.ReadAllText(path, Encoding.Latin1);
+                if (!new PurchaseLedger(db).HasInvalidAnalysisLength || contents.Count(c => c == '\f') < 2 ||
+                    !contents.Contains("\0\0     010000", StringComparison.Ordinal))
+                    differences.Add("全件印刷の旧証跡に既知の異常を確認できません。");
+                else
+                    differences.Add("旧版はレコード長不一致で開けない分析ファイルを全件読み取りし、同一の不正明細を多数ページに出力しました。移行版では無効レコードを印刷しません。");
+            }
             else if (legacyReports != 0)
                 differences.Add("帳票の全項目・改ページの同一性は未確認です。");
         }
     }
     catch (Exception error) when (error is IOException or InvalidOperationException or ArgumentException or KeyNotFoundException)
     {
-        differences.Add($"検証手順を完了できませんでした（{error.GetType().Name}）。");
+        differences.Add(error is InvalidOperationException ? error.Message : $"検証手順を完了できませんでした（{error.GetType().Name}）。");
     }
     return new(id, differences.Count == 0 ? "一致" : "不一致", differences);
 }
 
 static void Exercise(JsonElement entry, string id, Db db, List<string> differences)
 {
-    var root = SubsystemScreens.Load(typeof(MainWindow).Assembly, db).Single(menu => menu.Id == "PurchaseNavigation");
+    var root = PurchaseNavigation(db);
     var path = entry.GetProperty("menu_path").EnumerateArray().Skip(1).Select(part => part.GetString()!).ToArray();
     var date = new DateTime(2026, 11, 23);
-    var screen = root.Open!();
+    var screen = PurchaseScreenAudit.Check(root.Open!());
     if (id == "PL-241")
     {
         Require(screen is FormScreen form && form.Fields.OfType<DateField>().Any(field => field.Id == "PurchaseProcessingDate"), differences,
@@ -186,17 +204,74 @@ static void Exercise(JsonElement entry, string id, Db db, List<string> differenc
         "S" or "S6" => screen is MenuScreen cheques && cheques.Items.Select(item => item.Number).SequenceEqual((int?[])[1, 2, 3, 4, 5, 6, 9]),
         "S1" => HasField(screen, "PurchaseChequeAge"),
         "S2" => HasField(screen, "PurchaseChequeSupplier"),
+        "S3" => screen is ReportScreen { Title: "支払予定の検証" },
         "S4" => screen is InformationScreen { Message: "処理するデータがありません。" },
         "S5" => Submit(screen) is ConfirmationScreen,
         "T" => Submit(screen) is ConfirmationScreen,
         "U" => HasField(screen, "PurchaseNextFolio"),
         "X" => screen is InformationScreen { Message: "買掛元帳を閉じました。" },
+        "Z" => HasField(screen, "PurchaseSetupUsera") && HasField(screen, "PurchaseSetupStartDate") &&
+            HasField(screen, "PurchaseSetupPageLines") && HasField(screen, "PurchaseSetupTax5"),
         _ => false
     };
     Require(same, differences, "証跡に対応する画面状態または処理に到達していません。");
 }
 
+static void VerifyScheduledPaymentReport(string evidence, JsonElement targets, Db db, List<string> differences)
+{
+    var legacyPath = EvidenceFile(evidence, targets.GetProperty("report_files")[0].GetString()!);
+    var nonblank = File.ReadLines(legacyPath).Select(line => line.Trim()).Where(line => line.Length != 0).ToArray();
+    var body = db.Spool().Single().Body;
+    var lines = body.Split('\n', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+    Require(nonblank.Length >= 3 && nonblank[0].Contains("Payments Due Proof Report", StringComparison.Ordinal) &&
+        nonblank[0].EndsWith("Page   1", StringComparison.Ordinal) && lines.Contains("ページ 1") &&
+        lines.Length >= 3 && nonblank[1].StartsWith(lines[1], StringComparison.Ordinal) &&
+        nonblank[1].EndsWith("23/11/2026", StringComparison.Ordinal) && lines[2] == "処理日　2026年11月23日" &&
+        nonblank[2] == "Folio M    Date     Invoice      Current       30 +        60 +        90 +       Total to Pay" &&
+        lines.Contains("伝票番号　支払方法　支払日　請求書番号") && lines.Contains("当期　30日以上　60日以上　90日以上　支払額"),
+        differences, "支払予定検証帳票の表題、事業者、処理日、ページ番号、列見出しが異なります。");
+    if (nonblank.Length == 3 && !File.Exists(Path.Combine(Path.GetDirectoryName(legacyPath)!, "pay.dat")) &&
+        new FileInfo(legacyPath).Length > 1_000_000)
+        differences.Add("旧版の証跡は支払予定ファイルがなく、見出しの後に大量の空行が続き、合計欄・完了時の改ページを確認できません。移行版はゼロ件の合計を出力して終了します。");
+    else
+        differences.Add("支払予定検証帳票の明細・合計・改ページは未照合です。");
+}
+
+static void VerifySupplierSetup(Db db, Change[] reference, List<string> differences)
+{
+    var supplierRows = reference.Where(change => change.File == PurchaseLedger.SupplierFile)
+        .ToDictionary(change => change.Key, StringComparer.Ordinal);
+    Require(supplierRows.Count == 2 && supplierRows.Values.All(row => row.Before is null), differences,
+        "仕入先二件の新規作成を示す証跡がありません。");
+    db.Remove(PurchaseLedger.SupplierFile);
+    var before = Rows(db);
+    var root = PurchaseNavigation(db);
+    var menu = Submit(PurchaseScreenAudit.Check(root.Open!()), ("PurchaseProcessingDate", new DateTime(2026, 11, 23)));
+    menu = Accept(Submit(Open(menu, "Z")));
+    var suppliers = Open(menu, "B");
+    foreach (var (code, name, address) in new[]
+    {
+        ("SUPP01", "ALPHA SUPPLIER", @"1 SUPPLY ROAD\LONDON\UK"),
+        ("SUPP02", "BETA SUPPLIER", @"2 SUPPLY ROAD\LONDON\UK")
+    })
+    {
+        var form = Submit(Open(suppliers, "B1"), ("PurchaseSupplierCode", code));
+        var result = Accept(Submit(form, ("PurchaseSupplierName", name), ("PurchaseSupplierAddressFirst", address)));
+        Require(result is InformationScreen { Message: "仕入先を保存しました。" }, differences, $"仕入先 {code} の登録が完了していません。");
+    }
+    var after = Rows(db);
+    var actual = after.Where(row => row.Key.File == PurchaseLedger.SupplierFile).ToArray();
+    Require(actual.Length == supplierRows.Count && actual.All(row =>
+        supplierRows.TryGetValue(row.Key.Key, out var expected) && expected.After == row.Value), differences,
+        "新規作成した仕入先のレコードバイト列が証跡と異なります。");
+    Require(before.All(row => after.GetValueOrDefault(row.Key) == row.Value) &&
+        after.Keys.All(key => key.File == PurchaseLedger.SupplierFile || before.ContainsKey(key)) && db.Spool().Count == 0,
+        differences, "仕入先以外のデータに予期しない変更があります。");
+}
+
 static bool HasField(Screen screen, string id) => screen is FormScreen form && form.Fields.Any(field => field.Id == id);
+static MenuItem PurchaseNavigation(Db db) => PurchaseScreenAudit.Navigation(
+    SubsystemScreens.Load(typeof(MainWindow).Assembly, db).Single(menu => menu.Id == "PurchaseNavigation"));
 static void Require(bool condition, List<string> differences, string message)
 {
     if (!condition) differences.Add(message);
@@ -205,7 +280,7 @@ static void Require(bool condition, List<string> differences, string message)
 static Screen Open(Screen screen, string code) => MenuAction(screen, "PurchaseMenu" + code);
 
 static Screen MenuAction(Screen screen, string id) => screen is MenuScreen menu
-    ? menu.Items.Single(item => item.Id == id).Open!()
+    ? PurchaseScreenAudit.Check(menu.Items.Single(item => item.Id == id).Open!())
     : throw new InvalidOperationException("操作一覧が表示されていません。");
 
 static Screen Submit(Screen screen, params (string Id, object? Value)[] overrides)
@@ -223,11 +298,11 @@ static Screen Submit(Screen screen, params (string Id, object? Value)[] override
         if (!values.ContainsKey(id)) throw new InvalidOperationException("入力項目が見つかりません。");
         values[id] = value;
     }
-    return form.Submit(new FormValues(values));
+    return PurchaseScreenAudit.Check(form.Submit(new FormValues(values)));
 }
 
 static Screen Accept(Screen screen) => screen is ConfirmationScreen confirmation
-    ? confirmation.Confirm() : throw new InvalidOperationException("確認画面が表示されていません。");
+    ? PurchaseScreenAudit.Check(confirmation.Confirm()) : throw new InvalidOperationException("確認画面が表示されていません。");
 
 static Dictionary<(string File, string Key), string> Rows(Db db) =>
     db.Snapshot().SelectMany(file => file.Value.Select(row => (Key: (file.Key, row.Key), row.Value))).ToDictionary(row => row.Key, row => row.Value);

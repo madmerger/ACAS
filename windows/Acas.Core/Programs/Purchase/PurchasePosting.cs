@@ -24,7 +24,7 @@ public sealed partial class PurchaseLedger
             var system = System();
             if (system.S("Irs-Instead") == "Y") return false;
             var pending = Invoices().Where(invoice => !invoice.Posted).ToArray();
-            if (pending.Length == 0 || pending.Any(invoice => invoice.Type is not (1 or 2))) return false;
+            if (pending.Length == 0 || pending.Any(invoice => invoice.Type is < 1 or > 3)) return false;
             int quarter = system.I("Current-Quarter");
             if (quarter is < 1 or > 4) return false;
             int nextBatch = system.I("Next-Batch");
@@ -48,6 +48,7 @@ public sealed partial class PurchaseLedger
                     if (!database.Rewrite(InvoiceFile, invoiceKey, header.B)) return false;
                     if (!ApplySupplierInvoice(supplier, invoice, quarter)) return false;
                     var item = NewOpenItem(invoice);
+                    if (invoice.Type == 3 && !ApplyCredit(item)) return false;
                     if (!database.Write(OpenItemFile, $"{invoice.Supplier}/{invoice.Folio}", item.B)) return false;
                     posted.Add(invoice with { Posted = true });
                 }
@@ -77,18 +78,25 @@ public sealed partial class PurchaseLedger
     private bool ApplySupplierInvoice(Rec supplier, PurchaseInvoice invoice, int quarter)
     {
         int count = supplier.I("activity");
-        if (count == int.MaxValue) return false;
-        decimal average = (count * supplier.N("average") + invoice.Net) / (count + 1);
-        decimal balance = supplier.N("current") + (invoice.Type == 2 ? invoice.Total : 0);
+        bool credit = invoice.Type == 3;
+        if (!credit && count == int.MaxValue) return false;
+        decimal runningTotal = count * supplier.N("average");
+        decimal average = credit
+            ? (runningTotal == 0 ? supplier.N("average") : (runningTotal - invoice.Net) / count)
+            : (runningTotal + invoice.Net) / (count + 1);
+        decimal balance = supplier.N("current") + (invoice.Type == 2 ? invoice.Total : credit ? -invoice.Total : 0);
+        decimal unapplied = supplier.N("unapplied") + Math.Max(0, -balance);
         string quarterField = "q" + quarter;
-        decimal turnover = supplier.N(quarterField) + invoice.Net;
-        if (average > int.MaxValue || balance > 99999999.99m || turnover > 99999999.99m) return false;
-        supplier.SetN("activity", count + 1);
+        decimal turnover = supplier.N(quarterField) + (credit ? -invoice.Net : invoice.Net);
+        if (average is < int.MinValue or > int.MaxValue || balance > 99999999.99m || unapplied > 99999999.99m ||
+            Math.Abs(turnover) > 99999999.99m) return false;
+        if (!credit) supplier.SetN("activity", count + 1);
         supplier.SetN("average", average);
         supplier.SetN(quarterField, turnover);
-        supplier.SetN("lastInvoice", EncodeDate(invoice.Date));
-        if (invoice.Type == 1) supplier.SetN("lastPayment", EncodeDate(invoice.Date));
-        supplier.SetN("current", balance);
+        if (!credit) supplier.SetN("lastInvoice", EncodeDate(invoice.Date));
+        if (invoice.Type is 1 or 3) supplier.SetN("lastPayment", EncodeDate(invoice.Date));
+        supplier.SetN("current", Math.Max(0, balance));
+        supplier.SetN("unapplied", unapplied);
         supplier.SetN("status", 1);
         return database.Rewrite(SupplierFile, invoice.Supplier, supplier.B);
     }
@@ -96,6 +104,7 @@ public sealed partial class PurchaseLedger
     private static Rec NewOpenItem(PurchaseInvoice invoice)
     {
         var item = OpenItem.New();
+        int sign = invoice.Type == 3 ? -1 : 1;
         item.Set("supplier", invoice.Supplier);
         item.Set("folio", invoice.Folio);
         item.SetN("date", EncodeDate(invoice.Date));
@@ -103,15 +112,45 @@ public sealed partial class PurchaseLedger
         item.Set("reference", invoice.Reference);
         item.Set("order", invoice.Order);
         item.Set("unapplied", "\0");
-        item.SetN("net", invoice.Net);
-        item.SetN("carriage", invoice.Carriage);
-        item.SetN("tax", invoice.Tax);
-        item.SetN("carriageTax", invoice.CarriageTax);
+        item.SetN("net", sign * invoice.Net);
+        item.SetN("carriage", sign * invoice.Carriage);
+        item.SetN("tax", sign * invoice.Tax);
+        item.SetN("carriageTax", sign * invoice.CarriageTax);
+        item.SetN("creditFolio", invoice.CreditFolio);
         item.SetN("creditDays", invoice.CreditDays);
         item.SetN("discountDays", invoice.DiscountDays);
         item.SetN("discountAmount", invoice.Discount);
         return item;
     }
+
+    private bool ApplyCredit(Rec credit)
+    {
+        string supplier = credit.St("supplier");
+        decimal gross = -OpenItemGross(credit);
+        decimal remaining = gross;
+        foreach (var (key, bytes) in database.Scan(OpenItemFile, supplier + "/")
+            .TakeWhile(row => row.Key.StartsWith(supplier + "/", StringComparison.Ordinal))
+            .OrderBy(row => row.Key != $"{supplier}/{credit.I("creditFolio"):00000000}"))
+        {
+            if (remaining == 0) break;
+            if (bytes.Length != OpenItem.Size) return false;
+            var item = OpenItem.From(bytes);
+            if (item.I("closed") != 0 || item.I("type") != 2) continue;
+            decimal balance = OpenItemGross(item) - item.N("paid");
+            if (balance < 0) continue;
+            decimal applied = Math.Min(balance, remaining);
+            item.SetN("paid", item.N("paid") + applied);
+            item.SetN("pc", item.N("pc") + applied);
+            if (balance == applied) item.SetN("closed", 1);
+            if (!database.Rewrite(OpenItemFile, key, item.B)) return false;
+            remaining -= applied;
+        }
+        credit.SetN("paid", gross);
+        credit.SetN("closed", 1);
+        return true;
+    }
+
+    private static decimal OpenItemGross(Rec item) => item.N("net") + item.N("carriage") + item.N("tax") + item.N("carriageTax");
 
     private bool WriteBatch(Rec system, PurchaseInvoice[] invoices, int batch, int start)
     {
@@ -119,8 +158,9 @@ public sealed partial class PurchaseLedger
         for (int i = 0; i < invoices.Length; i++)
         {
             var invoice = invoices[i];
-            net += invoice.Net + invoice.Carriage;
-            tax += invoice.Tax + invoice.CarriageTax;
+            int sign = invoice.Type == 3 ? -1 : 1;
+            net += sign * (invoice.Net + invoice.Carriage);
+            tax += sign * (invoice.Tax + invoice.CarriageTax);
             if (GetSupplier(invoice.Supplier) is not { } supplier) return false;
             var posting = Layouts.Posting.New();
             posting.SetN("batch", batch);
@@ -129,11 +169,11 @@ public sealed partial class PurchaseLedger
             posting.Set("post-date", invoice.Date.ToString("dd/MM/yy", CultureInfo.InvariantCulture));
             posting.SetN("post-dr", system.N("BL-Purch-Ac"));
             posting.SetN("post-cr", system.N("P-Creditors"));
-            posting.SetN("post-amount", invoice.Net + invoice.Carriage);
+            posting.SetN("post-amount", sign * (invoice.Net + invoice.Carriage));
             posting.Set("post-legend", $"{invoice.Folio.TrimStart('0')} : {supplier.St("name")}");
             posting.SetN("vat-ac", system.N("Vat-Ac"));
             posting.Set("post-vat-side", "DR");
-            posting.SetN("vat-amount", invoice.Tax + invoice.CarriageTax);
+            posting.SetN("vat-amount", sign * (invoice.Tax + invoice.CarriageTax));
             if (!database.Write(PostingFile, (start + i).ToString("00000000", CultureInfo.InvariantCulture), posting.B)) return false;
         }
         var header = Layouts.Batch.New();

@@ -38,26 +38,47 @@ internal sealed partial class PurchaseScreens
             if (!PurchaseLedger.FitsRecord(order, 10) || !PurchaseLedger.FitsRecord(reference, 10))
                 return Notice(title, "注文番号または請求書番号に台帳へ保存できない文字が含まれています。");
             if (!int.TryParse(values.Choice("PurchaseInvoiceType"), out int type)) return Notice(title, "取引区分を選択してください。");
-            if (type == 3) return Unsupported("貸方票");
-            return EditInvoiceLines(title, new(folio, code, date.Value, order, reference, type, original?.Lines ?? [],
+            var invoice = new PurchaseInvoice(folio, code, date.Value, order, reference, type, original?.Lines ?? [],
                 original?.CreditDays ?? (type == 2 ? supplier.I("credit") : 0), original?.Discount ?? 0,
-                original?.DiscountDays ?? 0, original?.Carriage ?? 0, original?.CarriageTax ?? 0), original == null);
+                original?.DiscountDays ?? 0, original?.Carriage ?? 0, original?.CarriageTax ?? 0,
+                CreditFolio: type == 3 ? original?.CreditFolio ?? 0 : 0);
+            return type == 3 ? CreditTarget(title, invoice, original == null) : EditInvoiceLines(title, invoice, original == null);
         });
     }
 
-    private Screen EditInvoiceLines(string title, PurchaseInvoice invoice, bool create) => new MenuScreen(title,
+    private Screen CreditTarget(string title, PurchaseInvoice invoice, bool create) => new FormScreen(title,
+        [Text("CreditFolio", "貸方の対象となる掛仕入伝票番号（指定なしは０）",
+            invoice.CreditFolio.ToString(CultureInfo.InvariantCulture), 8)], "明細へ", values =>
+        {
+            if (!Number(values, "CreditFolio", out int number) || number is < 0 or >= 99999999)
+                return Notice(title, "対象の伝票番号を確認してください。");
+            var next = invoice with { CreditFolio = number };
+            if (number == 0) return EditInvoiceLines(title, next, create);
+            string folio = number.ToString("00000000", CultureInfo.InvariantCulture);
+            if (folio == invoice.Folio) return Notice(title, "貸方票自身を対象にできません。");
+            if (_ledger.Invoice(folio) is not { } target)
+                return new ConfirmationScreen(title,
+                    "対象の伝票が見つかりません。同じ仕入先の掛仕入伝票であることを確認して続けますか。", "続ける",
+                    () => EditInvoiceLines(title, next, create, true), () => CreditTarget(title, next, create));
+            if (target.Type != 2 || target.Supplier != invoice.Supplier)
+                return Notice(title, "同じ仕入先の掛仕入伝票を指定してください。");
+            return EditInvoiceLines(title, next, create);
+        });
+
+    private Screen EditInvoiceLines(string title, PurchaseInvoice invoice, bool create, bool acceptMissingCreditTarget = false) => new MenuScreen(title,
     [
-        new("PurchaseInvoiceAddLine", "明細を追加", Open: () => InvoiceLineForm(title, invoice, create, invoice.Lines.Count)),
+        new("PurchaseInvoiceAddLine", "明細を追加", Open: () => InvoiceLineForm(title, invoice, create, invoice.Lines.Count, acceptMissingCreditTarget)),
         new("PurchaseInvoiceViewLines", "明細の確認・修正", Open: () => new TableScreen(title, "PurchaseInvoiceLines",
             ["分析コード", "摘要", "税抜額", "税額"], invoice.Lines.Select((line, index) => new TableRow(
                 [line.Code, CleanDescription(line.Description), Money(line.Net), Money(line.Tax)],
-                () => InvoiceLineForm(title, invoice, create, index), [line.Code, line.Description, line.Net, line.Tax])).ToArray())),
-        new("PurchaseInvoiceTotals", "合計・保存へ", Open: () => InvoiceTotals(title, invoice, create))
+                () => InvoiceLineForm(title, invoice, create, index, acceptMissingCreditTarget),
+                [line.Code, line.Description, line.Net, line.Tax])).ToArray())),
+        new("PurchaseInvoiceTotals", "合計・保存へ", Open: () => InvoiceTotals(title, invoice, create, acceptMissingCreditTarget))
     ]);
 
     private static string CleanDescription(string text) => text.Replace("\0", "");
 
-    private Screen InvoiceLineForm(string title, PurchaseInvoice invoice, bool create, int index)
+    private Screen InvoiceLineForm(string title, PurchaseInvoice invoice, bool create, int index, bool acceptMissingCreditTarget)
     {
         if (index >= 40) return Notice(title, "明細は四十件まで登録できます。");
         var line = index < invoice.Lines.Count ? invoice.Lines[index] : null;
@@ -84,11 +105,11 @@ internal sealed partial class PurchaseScreens
             var next = new PurchaseLine(code.PadRight(2), net, taxCode, vat, analysis?.St("description") ?? "");
             if (index == lines.Count) lines.Add(next);
             else lines[index] = next;
-            return EditInvoiceLines(title, invoice with { Lines = lines }, create);
+            return EditInvoiceLines(title, invoice with { Lines = lines }, create, acceptMissingCreditTarget);
         });
     }
 
-    private Screen InvoiceTotals(string title, PurchaseInvoice invoice, bool create)
+    private Screen InvoiceTotals(string title, PurchaseInvoice invoice, bool create, bool acceptMissingCreditTarget)
     {
         if (invoice.Lines.Count == 0) return Notice(title, "明細を一件以上追加してください。");
         var fields = new List<Field>
@@ -116,8 +137,9 @@ internal sealed partial class PurchaseScreens
             var next = invoice with { CreditDays = credit, DiscountDays = discount == 0 ? 0 : discountDays,
                 Discount = discount, Carriage = carriage, CarriageTax = tax };
             return new ConfirmationScreen(title, $"伝票「{invoice.Folio}」、合計 {Money(next.Total)} を保存しますか。", "保存",
-                () => Notice(title, _ledger.SaveInvoice(next, create) ? "仕入取引を保存しました。" : "入力内容または台帳の状態を確認してください。"),
-                () => EditInvoiceLines(title, invoice, create));
+                () => Notice(title, _ledger.SaveInvoice(next, create, acceptMissingCreditTarget)
+                    ? "仕入取引を保存しました。" : "入力内容または台帳の状態を確認してください。"),
+                () => EditInvoiceLines(title, invoice, create, acceptMissingCreditTarget));
         });
     }
 
@@ -175,14 +197,14 @@ internal sealed partial class PurchaseScreens
     {
         const string title = "仕入の検証帳票";
         if (!_ledger.InvoicesPending) return Notice(title, "検証する仕入取引がありません。");
-        return new FormScreen(title, [], "帳票を作成", _ => InvoiceReport(title, _ledger.Invoices().Where(invoice => !invoice.Posted), true));
+        return new FormScreen(title, [], "帳票を作成", _ => InvoiceJournal(title, _ledger.Invoices().Where(invoice => !invoice.Posted).ToArray()));
     }
 
     private Screen DayBook()
     {
         const string title = "仕入日計帳";
         if (!_ledger.InvoiceFileAvailable) return Notice(title, "仕入伝票ファイルがありません。");
-        return new FormScreen(title, [], "帳票を作成", _ => InvoiceReport(title, _ledger.Invoices().Where(invoice => invoice.Posted), false));
+        return new FormScreen(title, [], "帳票を作成", _ => InvoiceJournal(title, _ledger.Invoices().Where(invoice => invoice.Posted).ToArray()));
     }
 
     private Screen InvoicePost()
@@ -191,31 +213,99 @@ internal sealed partial class PurchaseScreens
         if (!_ledger.InvoicesPending) return Notice(title, "転記する仕入取引がありません。");
         return new FormScreen(title, [], "転記内容を確認", _ => new ConfirmationScreen(title, "仕入取引を転記しますか。", "転記", () =>
         {
+            var balances = _ledger.Suppliers().ToDictionary(record => record.St("key"),
+                record => record.N("current") - record.N("unapplied"), StringComparer.Ordinal);
             var posted = _ledger.PostInvoices();
-            return posted is null ? Notice(title, "未対応の取引、または台帳の状態により転記できません。") : InvoiceReport(title, posted, false);
+            return posted is null ? Notice(title, "未対応の取引、または台帳の状態により転記できません。") : InvoiceJournal(title, posted, balances);
         }, MainMenu));
     }
 
-    private Screen InvoiceReport(string title, IEnumerable<PurchaseInvoice> invoices, bool details)
+    private Screen InvoiceJournal(string title, IReadOnlyList<PurchaseInvoice> invoices, Dictionary<string, decimal>? balances = null)
     {
-        var body = ReportHeading(title).AppendLine("伝票番号　仕入日　仕入先コード　仕入先名　区分　税抜額　税額　合計");
-        foreach (var group in invoices.GroupBy(invoice => invoice.Type))
+        bool posting = balances != null;
+        int page = 0, line = 0, pageSize = Math.Max(12, _ledger.System().I("Page-Lines"));
+        var body = new System.Text.StringBuilder();
+        NewPage();
+        foreach (var invoice in invoices)
         {
-            int sign = group.Key == 3 ? -1 : 1;
-            foreach (var invoice in group)
+            if (!posting && line > pageSize) NewPage();
+            decimal sign = invoice.Type == 3 ? -1 : 1;
+            string supplier = _ledger.GetSupplier(invoice.Supplier)?.St("name") ?? "仕入先不明";
+            body.AppendLine($"{invoice.Folio.TrimStart('0')}　{DateText(invoice.Date)}　{invoice.Supplier}　{supplier}　{InvoiceTypes[invoice.Type - 1].Label}");
+            if (balances != null)
             {
-                string supplier = _ledger.GetSupplier(invoice.Supplier)?.St("name") ?? "仕入先不明";
-                body.AppendLine($"{invoice.Folio}　{DateText(invoice.Date)}　{invoice.Supplier}　{supplier}　{InvoiceTypes[invoice.Type - 1].Label}　{Money(sign * invoice.Net)}　{Money(sign * invoice.Tax)}　{Money(sign * invoice.Total)}");
-                if (details)
+                decimal previous = balances.GetValueOrDefault(invoice.Supplier);
+                decimal next = previous + (invoice.Type == 1 ? 0 : sign * invoice.Total);
+                balances[invoice.Supplier] = next;
+                body.AppendLine($"前残高 {Money(previous)}　新残高 {Money(next)}");
+            }
+            else
+                body.AppendLine($"商品額 {Money(sign * invoice.Net)}");
+            body.AppendLine($"税抜額 {Money(sign * (invoice.Net + invoice.Carriage))}　税額 {Money(sign * (invoice.Tax + invoice.CarriageTax))}　合計 {Money(sign * invoice.Total)}");
+            line += posting ? 1 : 2;
+            if (posting && line > pageSize) NewPage();
+            if (!posting)
+            {
+                foreach (var item in invoice.Lines)
                 {
-                    foreach (var line in invoice.Lines)
-                        body.AppendLine($"　分析　{line.Code}　{CleanDescription(line.Description)}　{Money(sign * line.Net)}　{line.TaxCode}　{Money(sign * line.Tax)}");
-                    if (invoice.Discount != 0) body.AppendLine($"　早期支払割引　{Money(invoice.Discount)}");
-                    if (invoice.Carriage != 0) body.AppendLine($"　送料　{Money(sign * invoice.Carriage)}　税額　{Money(sign * invoice.CarriageTax)}");
+                    body.AppendLine($"分析 {item.Code.TrimEnd()}　金額 {Money(sign * item.Net)}　税区分 {item.TaxCode}");
+                    if (++line > pageSize) NewPage();
+                }
+                if (line > pageSize - 2) NewPage();
+                if (invoice.Discount != 0)
+                {
+                    body.AppendLine($"早期支払割引 {Money(invoice.Type == 2 ? -invoice.Discount : invoice.Discount)}");
+                    line++;
+                }
+                if (invoice.Carriage != 0)
+                {
+                    body.AppendLine($"送料 {Money(sign * invoice.Carriage)}　税区分 {(invoice.CarriageTax == 0 ? 0 : 1)}");
+                    line++;
                 }
             }
-            body.AppendLine($"区分合計　税抜額 {Money(sign * group.Sum(invoice => invoice.Net + invoice.Carriage))}　税額 {Money(sign * group.Sum(invoice => invoice.Tax + invoice.CarriageTax))}　合計 {Money(sign * group.Sum(invoice => invoice.Total))}");
+        }
+        if (!posting || line > pageSize - 7) NewPage(summary: !posting);
+        if (!posting)
+            body.AppendLine("商品額　送料　税抜額　税額　合計　早期支払割引");
+        for (int type = 1; type <= 3; type++)
+        {
+            var rows = invoices.Where(invoice => invoice.Type == type).ToArray();
+            decimal sign = type == 3 ? -1 : 1;
+            body.Append($"{InvoiceTypes[type - 1].Label}合計　");
+            if (!posting)
+                body.Append($"商品額 {Money(sign * rows.Sum(invoice => invoice.Net))}　送料 {Money(sign * rows.Sum(invoice => invoice.Carriage))}　");
+            body.Append($"税抜額 {Money(sign * rows.Sum(invoice => invoice.Net + invoice.Carriage))}　税額 {Money(sign * rows.Sum(invoice => invoice.Tax + invoice.CarriageTax))}　合計 {Money(sign * rows.Sum(invoice => invoice.Total))}");
+            if (!posting)
+                body.Append($"　早期支払割引 {Money((type == 2 ? -1 : 1) * rows.Sum(invoice => invoice.Discount))}");
+            body.AppendLine();
+        }
+        if (!posting)
+        {
+            body.AppendLine("税額照合　領収　掛仕入　貸方票");
+            for (int code = 1; code <= 3; code++)
+            {
+                body.Append($"税区分 {code}　税率 {Money(_ledger.TaxRate(code))}％");
+                for (int type = 1; type <= 3; type++)
+                {
+                    var rows = invoices.Where(invoice => invoice.Type == type);
+                    var tax = rows.Sum(invoice => invoice.Lines.Where(item => item.TaxCode == code).Sum(item => item.Tax)
+                        + (code == 1 ? invoice.CarriageTax : 0));
+                    body.Append($"　{Money(type == 3 ? -tax : tax)}");
+                }
+                body.AppendLine();
+            }
         }
         return _ledger.Report(title, body.ToString());
+
+        void NewPage(bool summary = false)
+        {
+            if (page != 0) body.Append('\f');
+            page++;
+            line = 5;
+            body.Append(ReportHeading(title)).AppendLine($"ページ {page}");
+            if (!summary)
+                body.AppendLine("伝票番号　仕入日　仕入先コード　仕入先名　区分")
+                    .AppendLine((posting ? "前残高　新残高" : "商品額") + "　税抜額　税額　合計");
+        }
     }
 }

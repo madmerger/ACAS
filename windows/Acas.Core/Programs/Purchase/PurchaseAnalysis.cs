@@ -13,7 +13,7 @@ public sealed partial class PurchaseLedger
     public bool HasInvalidAnalysisLength => database.Scan(AnalysisFile).Any(row => row.Data.Length != AnalysisLayout.Size);
     public bool AnalysisValuesAvailable => database.Exists(ValuesFile);
     public bool PaymentDataAvailable => database.Count(PaymentFile) != 0;
-    public bool PaymentPending => System().I("P-Flag-P") == 1;
+    public bool PaymentPending => System().I("P-Flag-P") != 0;
 
     private static string AnalysisKey(string code) => "P" + code.PadRight(2);
     public Rec? Analysis(string code) => database.Read(AnalysisFile, AnalysisKey(code)) is { } data && data.Length == AnalysisLayout.Size

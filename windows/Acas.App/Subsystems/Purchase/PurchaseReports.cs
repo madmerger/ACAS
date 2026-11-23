@@ -65,17 +65,18 @@ internal sealed partial class PurchaseScreens
 
     private ReportScreen SupplierTurnoverReport(string title, IEnumerable<Rec> records)
     {
-        const string columns = "仕入先コード　仕入先名　支払猶予日数　与信限度額　請求件数　平均請求額　第１四半期　第２四半期　第３四半期　第４四半期　現在残高　前回残高　最終仕入日　最終支払日";
         int pageLines = _ledger.System().I("Page-Lines");
         int page = 1, line = 6;
         var body = new StringBuilder();
         AddHeading();
         foreach (var row in records)
         {
-            body.AppendLine(string.Join("　", row.St("key"), row.St("name"), Whole(row.N("credit")), Whole(row.N("limit")),
-                Whole(row.N("activity")), Whole(row.N("average")), Whole(row.N("q1")), Whole(row.N("q2")), Whole(row.N("q3")),
-                Whole(row.N("q4")), Whole(row.N("current") - row.N("unapplied")), Whole(row.N("last")),
-                DateText(PurchaseLedger.DecodeDate(row.I("lastInvoice"))), DateText(PurchaseLedger.DecodeDate(row.I("lastPayment")))));
+            body.AppendLine($"{row.St("key")}　{row.St("name")}")
+                .AppendLine($"猶予日数 {Whole(row.N("credit"))}　与信限度 {Whole(row.N("limit"))}　請求件数 {Whole(row.N("activity"))}　平均額 {Whole(row.N("average"))}")
+                .AppendLine($"四半期別取引額　１ {Whole(row.N("q1"))}　２ {Whole(row.N("q2"))}　３ {Whole(row.N("q3"))}　４ {Whole(row.N("q4"))}")
+                .AppendLine($"現在残高 {Whole(row.N("current") - row.N("unapplied"))}　前回残高 {Whole(row.N("last"))}")
+                .AppendLine($"最終仕入日 {DateText(PurchaseLedger.DecodeDate(row.I("lastInvoice")))}　最終支払日 {DateText(PurchaseLedger.DecodeDate(row.I("lastPayment")))}")
+                .AppendLine();
             if (++line > pageLines)
             {
                 body.Append('\f');
@@ -86,8 +87,7 @@ internal sealed partial class PurchaseScreens
         }
         return _ledger.Report(title, body.ToString());
 
-        void AddHeading() => body.Append(ReportHeading(title)).Append("ページ ").AppendLine(page.ToString(CultureInfo.InvariantCulture))
-            .AppendLine(columns).AppendLine();
+        void AddHeading() => body.Append(ReportHeading(title)).Append("ページ ").AppendLine(page.ToString(CultureInfo.InvariantCulture)).AppendLine();
 
         static string Whole(decimal value) => decimal.Truncate(value).ToString(CultureInfo.InvariantCulture);
     }
@@ -175,10 +175,39 @@ internal sealed partial class PurchaseScreens
         string title = all ? "仕入分析コード全件印刷" : "仕入分析コード印刷";
         return new ConfirmationScreen(title, "分析コードの帳票を作成しますか。", "作成", () =>
         {
-            var body = ReportHeading(title).AppendLine("分析コード　勘定コード　摘要　帳票参照コード");
+            var body = new StringBuilder();
+            int line = 5, page = 1;
+            bool missingAccount = false;
+            bool irs = _ledger.System().S("Irs-Instead") == "Y";
+            AddHeading();
             foreach (var row in _ledger.AnalysisRecords(all))
-                body.AppendLine($"{row.St("code")}　{row.S("account")}　{row.St("description")}　{row.St("reference")}");
+            {
+                bool group = row.S("code")[1] == ' ' && row.I("account") == 0;
+                if (group)
+                {
+                    body.AppendLine();
+                    if (++line > 70) NewPage();
+                }
+                else if (row.S("code")[1] != ' ' && row.I("account") == 0)
+                    missingAccount = true;
+                string ledger = all ? (group ? row.S("system") : "") + "　" : "";
+                int account = irs ? row.I("account") : row.I("account") / 100;
+                body.AppendLine($"{ledger}{row.St("code")}　{account:000000}　{row.St("description")}　{row.St("reference")}　{(group ? "グループ" : "明細")}");
+                if (++line > 70) NewPage();
+            }
+            if (missingAccount) body.AppendLine("勘定コードにゼロが含まれています。");
             return _ledger.Report(title, body.ToString());
+
+            void NewPage()
+            {
+                body.Append('\f');
+                page++;
+                line = 5;
+                AddHeading();
+            }
+
+            void AddHeading() => body.Append(ReportHeading(title)).Append("ページ ").AppendLine(page.ToString(CultureInfo.InvariantCulture))
+                .Append(all ? "元帳　" : "").AppendLine("分析コード　勘定コード　摘要　帳票参照コード　区分");
         }, AnalysisMenu);
     }
 
@@ -196,25 +225,13 @@ internal sealed partial class PurchaseScreens
                 () => Unsupported("買掛・売掛の期間締め"), MainMenu);
         });
 
-    private Screen PaymentEntry() => !OpenItemsAvailable()
-        ? Notice("支払入力・消込", "未決済明細ファイルがありません。") : Unsupported("支払入力・消込");
-
-    private Screen PaymentAmend() => !OpenItemsAvailable()
-        ? Notice("支払修正", "未決済明細ファイルがありません。") : Unsupported("支払修正");
-
-    private Screen PaymentProof() => !OpenItemsAvailable()
-        ? Notice("支払の検証帳票", "未決済明細ファイルがありません。") : Unsupported("支払の検証帳票");
-
-    private Screen PaymentPost() => !_ledger.PaymentPending
-        ? Notice("支払転記", "転記待ちの支払がありません。") : Unsupported("支払転記");
-
     private MenuScreen ChequeMenu() => new("小切手・送金", ChequeItems());
 
     private MenuItem[] ChequeItems() =>
     [
         Item("S1", 1, "支払予定生成", ChequeDue),
         Item("S2", 2, "支払予定修正", ChequeAmend),
-        Item("S3", 3, "支払予定の検証", () => Unsupported("支払予定の検証")),
+        Item("S3", 3, "支払予定の検証", ScheduledPaymentProof),
         Item("S4", 4, "小切手データ生成", () => !_ledger.PaymentDataAvailable
             ? Notice("小切手データ生成", "処理するデータがありません。") : Unsupported("小切手データ生成")),
         Item("S5", 5, "小切手・銀行振込台帳印刷", () => new FormScreen("小切手・銀行振込台帳印刷", [], "確認", _ =>
@@ -231,6 +248,57 @@ internal sealed partial class PurchaseScreens
     private static Screen ChequeAmend() => new FormScreen("支払予定修正",
         [new TextField("PurchaseChequeSupplier", "仕入先コード", MaxLength: 7),
             new TextField("PurchaseChequeNumber", "支払予定番号", MaxLength: 2)], "照会", _ => Unsupported("支払予定修正"));
+
+    private Screen ScheduledPaymentProof()
+    {
+        const string title = "支払予定の検証";
+        if (_ledger.ScheduledPayments() is not { } payments)
+            return Notice(title, "支払予定ファイルのレコード長が定義と一致しません。");
+        int pageSize = Math.Max(6, _ledger.System().I("Page-Lines"));
+        int page = 1, line = 5;
+        decimal[] totals = new decimal[4];
+        decimal total = 0;
+        var report = new StringBuilder();
+        AddHeading();
+        for (int i = 0; i < payments.Count; i++)
+        {
+            var payment = payments[i];
+            decimal balance = 0;
+            bool first = true;
+            do
+            {
+                foreach (var item in payment.Lines)
+                {
+                    if (first)
+                    {
+                        report.AppendLine($"{payment.Supplier}/{payment.Number:00}　{_ledger.GetSupplier(payment.Supplier)?.St("name") ?? "仕入先不明"}");
+                        first = false;
+                    }
+                    balance += item.Amount;
+                    decimal[] ages = new decimal[4];
+                    if (item.Period is 0 or 30 or 60 or 90)
+                        totals[item.Period / 30] += ages[item.Period / 30] = item.Amount;
+                    report.AppendLine($"{item.Folio}　{(payment.BankTransfer ? "振込" : "小切手")}　{DateText(payment.Date)}　{item.Reference}");
+                    report.AppendLine($"当期 {Money(ages[0])}　30日以上 {Money(ages[1])}　60日以上 {Money(ages[2])}　90日以上 {Money(ages[3])}　支払額 {Money(balance)}");
+                    if (++line > pageSize)
+                    {
+                        report.Append('\f');
+                        page++;
+                        line = 5;
+                        AddHeading();
+                    }
+                }
+                if (!payment.Continues || i + 1 == payments.Count || payments[i + 1].Supplier != payment.Supplier) break;
+                payment = payments[++i];
+            } while (true);
+            total += balance;
+        }
+        report.AppendLine($"合計　当期 {Money(totals[0])}　30日以上 {Money(totals[1])}　60日以上 {Money(totals[2])}　90日以上 {Money(totals[3])}　支払額 {Money(total)}");
+        return _ledger.Report(title, report.ToString(), ChequeMenu);
+
+        void AddHeading() => report.Append(ReportHeading(title)).Append("ページ ").AppendLine(page.ToString(CultureInfo.InvariantCulture))
+            .AppendLine("伝票番号　支払方法　支払日　請求書番号").AppendLine("当期　30日以上　60日以上　90日以上　支払額");
+    }
 
     private static Screen Unsupported(string title) => Notice(title, "この処理は移植されていません。");
 }

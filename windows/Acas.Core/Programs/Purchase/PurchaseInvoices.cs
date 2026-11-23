@@ -7,7 +7,7 @@ public sealed record PurchaseLine(string Code, decimal Net, int TaxCode, decimal
 
 public sealed record PurchaseInvoice(string Folio, string Supplier, DateTime Date, string Order,
     string Reference, int Type, IReadOnlyList<PurchaseLine> Lines, int CreditDays, decimal Discount,
-    int DiscountDays, decimal Carriage, decimal CarriageTax, bool Posted = false)
+    int DiscountDays, decimal Carriage, decimal CarriageTax, bool Posted = false, int CreditFolio = 0)
 {
     public decimal Net => Lines.Sum(line => line.Net);
     public decimal Tax => Lines.Sum(line => line.Tax);
@@ -65,7 +65,7 @@ public sealed partial class PurchaseLedger
         }
         return new(folio, header.St("supplier"), date, header.St("order"), header.St("reference"), header.I("type"), lines,
             header.I("creditDays"), header.N("discount"), header.I("discountDays"), header.N("carriage"), header.N("carriageTax"),
-            header.S("status") is "Z" or "z");
+            header.S("status") is "Z" or "z", header.I("creditFolio"));
     }
 
     public IEnumerable<PurchaseInvoice> Invoices() => database.Scan(InvoiceFile)
@@ -74,13 +74,14 @@ public sealed partial class PurchaseLedger
 
     private static bool AmountFits(decimal amount, decimal limit) => amount >= 0 && amount <= limit && decimal.Round(amount, 2) == amount;
 
-    public bool SaveInvoice(PurchaseInvoice invoice, bool create)
+    public bool SaveInvoice(PurchaseInvoice invoice, bool create, bool acceptMissingCreditTarget = false)
     {
         if (invoice.Type is < 1 or > 3 || invoice.Lines.Count is < 1 or > 40 || EncodeDate(invoice.Date) <= 0
             || !FitsRecord(invoice.Order, 10) || !FitsRecord(invoice.Reference, 10)
             || !AmountFits(invoice.Net, 9999999.99m) || !AmountFits(invoice.Tax, 9999999.99m)
             || !AmountFits(invoice.Carriage, 9999999.99m) || !AmountFits(invoice.CarriageTax, 999999.99m)
             || !AmountFits(invoice.Discount, 999.99m) || invoice.CreditDays is < 0 or > 99 || invoice.DiscountDays is < 0 or > 99
+            || invoice.CreditFolio is < 0 or >= 99999999 || (invoice.Type != 3 && invoice.CreditFolio != 0)
             || invoice.Lines.Any(line => !FitsRecord(line.Code, 2) || string.IsNullOrWhiteSpace(line.Code)
                 || !AmountFits(line.Net, 9999999.99m) || line.Net == 0 || !AmountFits(line.Tax, 999999.99m) || line.TaxCode is < 0 or > 3))
             return false;
@@ -95,7 +96,14 @@ public sealed partial class PurchaseLedger
             var originalHeader = database.Read(InvoiceFile, headerKey);
             if (create ? originalHeader != null || invoice.Folio != NextFolio : before is not { Posted: false })
                 return false;
-            if (invoice.Type == 3) return false;
+            if (invoice.CreditFolio != 0)
+            {
+                string targetFolio = invoice.CreditFolio.ToString("00000000", CultureInfo.InvariantCulture);
+                if (targetFolio == invoice.Folio) return false;
+                var target = Invoice(targetFolio);
+                if (target is null ? !acceptMissingCreditTarget : target.Type != 2 || target.Supplier != invoice.Supplier)
+                    return false;
+            }
             for (int i = 1; i <= invoice.Lines.Count; i++)
                 if (i > (before?.Lines.Count ?? 0) && database.Read(InvoiceFile, InvoiceKey(invoice.Folio, i)) != null)
                     return false;
@@ -116,6 +124,7 @@ public sealed partial class PurchaseLedger
             header.SetN("discountDays", invoice.DiscountDays);
             header.SetN("carriage", invoice.Carriage);
             header.SetN("carriageTax", invoice.CarriageTax);
+            header.SetN("creditFolio", invoice.CreditFolio);
             database.Put(InvoiceFile, headerKey, header.B);
             for (int i = 1; i <= invoice.Lines.Count; i++)
             {

@@ -1,3 +1,4 @@
+using System.Buffers.Binary;
 using Acas.Core.Engine;
 using Acas.Core.Programs.Purchase;
 
@@ -5,6 +6,31 @@ namespace Acas.Tests.Purchase;
 
 public sealed class PurchaseLedgerTests
 {
+    [Fact]
+    public void 支払予定は二百三十七バイトの明細と継続フラグを読み取る()
+    {
+        using var db = new Db();
+        var ledger = new PurchaseLedger(db);
+        Assert.Empty(ledger.ScheduledPayments()!);
+        var raw = new byte[237];
+        "SUPP018"u8.CopyTo(raw);
+        raw[7] = 2;
+        raw[8] = (byte)'C';
+        BinaryPrimitives.WriteInt32LittleEndian(raw.AsSpan(9), 155555);
+        BinaryPrimitives.WriteInt32LittleEndian(raw.AsSpan(17), 123456);
+        BinaryPrimitives.WriteInt32LittleEndian(raw.AsSpan(30), 10);
+        raw[34] = 60;
+        Convert.FromHexString("000010050C").CopyTo(raw, 35);
+        "REF-10    "u8.CopyTo(raw.AsSpan(43));
+        db.Put("ledgers/acas/pay.dat", "SUPP018/02", raw);
+        var payment = Assert.Single(ledger.ScheduledPayments()!);
+        Assert.Equal(("SUPP018", 2, new DateTime(2026, 11, 23), true, true),
+            (payment.Supplier, payment.Number, payment.Date!.Value, payment.BankTransfer, payment.Continues));
+        Assert.Equal(new ScheduledPurchaseLine(10, 60, 100.50m, "REF-10"), Assert.Single(payment.Lines));
+        db.Put("ledgers/acas/pay.dat", "SUPP018/03", new byte[236]);
+        Assert.Null(ledger.ScheduledPayments());
+    }
+
     [Theory]
     [InlineData("test01", "TEST011")]
     [InlineData("SUPP01", "SUPP018")]
@@ -96,6 +122,61 @@ public sealed class PurchaseLedgerTests
         Assert.True(ledger.HasInvalidAnalysisLength);
         Assert.False(ledger.SaveAnalysis(ledger.NewAnalysis("Z"), true));
         Assert.Equal(1, db.Count(PurchaseLedger.AnalysisFile));
+    }
+
+    [Fact]
+    public void 貸方票は対象伝票の残高と仕入先の残高を減らす()
+    {
+        using var db = Fixture("pl-invoice");
+        var ledger = new PurchaseLedger(db);
+        Assert.Single(ledger.PostInvoices()!);
+        db.Put(PurchaseLedger.AnalysisFile, "Pa1", new byte[66]);
+        var note = Sample(ledger) with { Type = 3, CreditFolio = 1, Lines = [new("a1", 25m, 1, 5m, "")] };
+        Assert.False(ledger.SaveInvoice(note with { Supplier = "SUPP026" }, true));
+        Assert.False(ledger.SaveInvoice(note with { CreditFolio = 99 }, true));
+        Assert.True(ledger.SaveInvoice(note, true));
+        Assert.Equal(1, ledger.Invoice(note.Folio)!.CreditFolio);
+        Assert.Single(ledger.PostInvoices()!);
+        Assert.Equal(90m, ledger.GetSupplier("SUPP018")!.N("current"));
+        const string file = "ledgers/acas/openitm5.dat";
+        Assert.Equal("000003000c", Convert.ToHexString(db.Read(file, "SUPP018/00000001")!.AsSpan(84, 5)).ToLowerInvariant());
+        var item = db.Read(file, $"SUPP018/{note.Folio}")!;
+        Assert.Equal(1, BinaryPrimitives.ReadInt32LittleEndian(item.AsSpan(100, 4)));
+        Assert.Equal((byte)'1', item[89]);
+    }
+
+    [Fact]
+    public void 支払は消込の取消と再入力ができ検証後に残高へ転記される()
+    {
+        using var db = Fixture("pl-invoice");
+        var ledger = new PurchaseLedger(db);
+        Assert.Single(ledger.PostInvoices()!);
+        var date = new DateTime(2026, 11, 23);
+        const string supplier = "SUPP018";
+        const string file = "ledgers/acas/openitm5.dat";
+        const string invoice = "SUPP018/00000001";
+        var before = db.Read(file, invoice);
+        var allocations = new Dictionary<int, decimal> { [1] = 50m };
+        Assert.False(ledger.SavePayment(supplier, date, 40m, false, allocations));
+        Assert.Equal(before, db.Read(file, invoice));
+        Assert.True(ledger.SavePayment(supplier, date, 60m, false, allocations));
+        Assert.Equal("000005000C", Convert.ToHexString(db.Read(file, invoice)!.AsSpan(84, 5)));
+        Assert.Equal(120m, ledger.GetSupplier(supplier)!.N("current"));
+        Assert.Null(ledger.PostPayments());
+        var first = Assert.Single(ledger.Payments()!);
+        Assert.True(ledger.CancelPayment(supplier, first.Folio, new Dictionary<int, decimal>()));
+        Assert.Equal(before, db.Read(file, invoice));
+        Assert.True(ledger.SavePayment(supplier, date, 60m, false, allocations));
+        var proof = Assert.Single(ledger.ProvePayments()!);
+        Assert.Equal(50m, Assert.Single(proof.Lines).Applied);
+        Assert.Equal(2, db.Count("ledgers/acas/poisort.wrk"));
+        var posted = Assert.Single(ledger.PostPayments()!);
+        Assert.Equal((120m, 60m), (posted.OldBalance!.Value, posted.NewBalance!.Value));
+        var account = ledger.GetSupplier(supplier)!;
+        Assert.Equal(70m, account.N("current"));
+        Assert.Equal(10m, account.N("unapplied"));
+        Assert.False(ledger.PaymentPending);
+        Assert.Empty(ledger.Payments()!);
     }
 
     [Fact]

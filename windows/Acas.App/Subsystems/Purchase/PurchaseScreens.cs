@@ -99,7 +99,56 @@ internal sealed partial class PurchaseScreens : ISubsystemScreens
         return Notice(MainTitle, "買掛元帳を閉じました。");
     }
 
-    private static Screen OpenSetup() => Notice("共通設定", "左側の業務メニューから共通設定を開いてください。");
+    private Screen OpenSetup()
+    {
+        const string title = "共通設定・事業者情報";
+        if (!_ledger.IsConfigured) return Notice(title, "事業者の初期設定が必要です。");
+        var system = _ledger.System();
+        var textFields = new (string Name, string Label, int Width)[]
+        {
+            ("Usera", "事業者名", 32), ("Address-1", "住所１", 24), ("Address-2", "住所２", 24),
+            ("Address-3", "住所３", 24), ("Address-4", "住所４", 24),
+            ("Post-Code", "郵便番号", 12), ("Country", "国", 24), ("VAT-Reg-Number", "税登録番号", 11)
+        };
+        List<Field> fields = textFields.Select(field =>
+            (Field)new TextField("PurchaseSetup" + field.Name, field.Label, system.St(field.Name), field.Width)).ToList();
+        fields.Add(new DateField("PurchaseSetupStartDate", "期間開始日", PurchaseLedger.DecodeDate(system.I("Start-Date"))));
+        fields.Add(new DateField("PurchaseSetupEndDate", "期間終了日", PurchaseLedger.DecodeDate(system.I("End-Date"))));
+        fields.Add(new TextField("PurchaseSetupPageLines", "帳票の一ページ当たりの行数",
+            system.I("Page-Lines").ToString(CultureInfo.InvariantCulture), 3));
+        for (int i = 1; i <= 5; i++)
+            fields.Add(new TextField($"PurchaseSetupTax{i}", $"税率 {i}", Money(system.N($"Vat-Rate-{i}")), 5));
+        return new FormScreen(title, fields, "確認", values =>
+        {
+            var next = system.Clone();
+            foreach (var (name, label, width) in textFields)
+            {
+                string value = values.Text("PurchaseSetup" + name);
+                if (!PurchaseLedger.FitsRecord(value, width)) return Notice(title, $"{label}を確認してください。");
+                next.Set(name, value);
+            }
+            var start = values.Date("PurchaseSetupStartDate");
+            var end = values.Date("PurchaseSetupEndDate");
+            if (start is null || end is null || end < start || PurchaseLedger.EncodeDate(start.Value) <= 0)
+                return Notice(title, "開始日と終了日を確認してください。");
+            if (!Number(values, "SetupPageLines", out int lines) || lines is < 7 or > 255)
+                return Notice(title, "帳票の行数を確認してください。");
+            next.SetN("Start-Date", PurchaseLedger.EncodeDate(start.Value));
+            next.SetN("End-Date", PurchaseLedger.EncodeDate(end.Value));
+            next.SetN("Page-Lines", lines);
+            for (int i = 1; i <= 5; i++)
+            {
+                if (!Amount(values, $"SetupTax{i}", out decimal rate) || rate is < 0 or > 99.99m)
+                    return Notice(title, "税率を確認してください。");
+                next.SetN($"Vat-Rate-{i}", rate);
+            }
+            return new ConfirmationScreen(title, "事業者情報を保存しますか。", "保存", () =>
+            {
+                _ledger.SaveSystem(next);
+                return MainMenu();
+            }, OpenSetup);
+        });
+    }
     private static InformationScreen Notice(string title, string message) => new(title, message);
     private static string Money(decimal amount) => amount.ToString("0.00", CultureInfo.InvariantCulture);
     private static string DateText(DateTime? date) => date?.ToString("yyyy年M月d日", CultureInfo.InvariantCulture) ?? "";
