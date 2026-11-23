@@ -108,6 +108,26 @@ public abstract class SlProgram extends Program {
     protected static Rec valueRec() { return fdRec("copybooks/fdval.cob", "value-record"); }
     protected CobFile analysisFile(Rec r) { return CobFile.indexed(ctx.store, ctx.path(F_ANALYSIS), r, "pa-code"); }
     protected CobFile valueFile(Rec r) { return CobFile.indexed(ctx.store, ctx.path(F_VALUE), r, "va-code"); }
+    protected static Rec oiHeader() { return Layout.of("sales/wsoi.cob", "oi-header").newRec(); }
+    protected static Rec oi3Rec() { return fdRec("sales/fdoi3.cob", "open-item-record-3"); }
+    protected static Rec invoiceRec() { return fdRec("sales/fdinv2.cob", "invoice-record"); }
+    protected static Rec invoiceHeader() { return Layout.of("sales/fdinv2.cob", "invoice-header").newRec(); }
+    protected static Rec invoiceLine() { return Layout.of("sales/fdinv2.cob", "invoice-line").newRec(); }
+    protected CobFile oi3File(Rec r) { return CobFile.indexed(ctx.store, ctx.path(F_OI3), r, "oi3-key"); }
+    protected CobFile invoiceFile(Rec r) { return CobFile.indexed(ctx.store, ctx.path(F_INVOICE), r, "invoice-key"); }
+    /** レコード域の共有（同一 FD の別 01、READ ... INTO / WRITE ... FROM）: src の先頭を dst へ複写する。 */
+    protected static void move(Rec src, Rec dst) {
+        byte[] a = src.bytes(), b = dst.bytes();
+        System.arraycopy(a, 0, b, 0, Math.min(a.length, b.length));
+        for (int i = a.length; i < b.length; i++) b[i] = ' ';
+    }
+    /** UNSTRING src DELIMITED BY delim INTO (size 桁) WITH POINTER ptr。戻り値 {取り出した文字列, 新ポインタ}。 */
+    protected static Object[] unstring(String src, String delim, int ptr, int size) {
+        if (ptr < 1 || ptr > src.length()) return new Object[] {null, ptr};
+        int i = src.indexOf(delim, ptr - 1);
+        String part = i < 0 ? src.substring(ptr - 1) : src.substring(ptr - 1, i);
+        return new Object[] {pad(part, size), i < 0 ? src.length() + 1 : i + delim.length() + 1};
+    }
     protected CobFile salesFile(Rec r) { return CobFile.indexed(ctx.store, ctx.path(F_SALES), r, "sales-key"); }
     protected CobFile deliveryFile(Rec r) { return CobFile.indexed(ctx.store, ctx.path(F_DELIVERY), r, "deliv-key"); }
     protected static boolean invalidKey(CobFile f) { return f.status.charAt(0) == '2'; }

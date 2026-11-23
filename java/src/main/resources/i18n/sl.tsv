@@ -148,3 +148,43 @@ Escape Code [ ]	操作コード  [ ]
 <Q> = Quit	<Q> = 中止
 <K> = Deleted	<K> = 削除
 Enter <X> to exit or <Return> to continue...[ ]	<X> で終了、<Enter> で続行              ...[ ]
+SL111 Error On Writing Work File. Hit Return To Abort	SL111 作業ファイル書込エラー。Enter で中止
+SL112 Can't open file	SL112 ファイルを開けません
+SL113 Can't find it	SL113 見つかりません
+SL114 Record not found	SL114 該当レコードなし
+SL115 Error On Rewrite	SL115 更新エラー
+SL116 Note: and hit return to continue	SL116 確認後 Enter で続行
+SL117 No Work File Created..No Data	SL117 作業ファイル未作成（データなし）
+SL118 Work file Created	SL118 作業ファイルを作成しました
+Sales Ledger Enquiry	売掛元帳照会
+****************************************	****************************************
+*A/C Nos [       ]*Balance             *	*顧客番号[       ]*残高                *
+*Ytd              *Unapplied           *	*年累計           *未消込              *
+*Credit           *Unposted            *	*与信限度         *未転記              *
+* A/C Nos	* 顧客番号
+*Balance	*残高
+* YTD	* 年累計
+*Unapplied	*未消込
+* Credit	* 与信
+*Unposted	*未転記
+Customer:	顧客:
+Address :	住所:
+Number	番号
+Date	日付
+Description	摘要
+Invoiced	請求額
+Paid	入金
+Balance	残高
+Inv #	件数
+Total O/S	未収合計
+Current	当月
+Select: 'P'rint, 'N'ext enquiry, 'T'oggle query flag, 	選択: 'P'印刷, 'N'次の照会, 'T'照会フラグ切替,
+'M'ore or 'E'nd [ ]	'M'続き / 'E'終了[ ]
+or 'E'nd [ ]	/ 'E'終了[ ]
+For Account:        . Give invoice no. to toggle [        ]	対象顧客:           . 切替える請求書番号を入力   [        ]
+Receipt	入金
+Goods -	商品 -
+CN.Re Inv -	CN 対象請求
+Payment	支払
+Journal Payment	振替入金
+>> screen overflow <<	>> 画面あふれ <<
