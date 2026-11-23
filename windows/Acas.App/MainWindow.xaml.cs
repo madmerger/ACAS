@@ -232,8 +232,8 @@ public partial class MainWindow : Window
                 var height = imageable?.ExtentHeight ?? dialog.PrintableAreaHeight;
                 document.PageWidth = Math.Max(left + width, capabilities.OrientedPageMediaWidth ?? 0);
                 document.PageHeight = Math.Max(top + height, capabilities.OrientedPageMediaHeight ?? 0);
-                document.PagePadding = new Thickness(left, top, document.PageWidth - left - width,
-                    document.PageHeight - top - height);
+                document.PagePadding = new Thickness(left, top, Math.Max(0, document.PageWidth - left - width),
+                    Math.Max(0, document.PageHeight - top - height));
                 document.ColumnWidth = width;
                 dialog.PrintDocument(((IDocumentPaginatorSource)document).DocumentPaginator, report.Title);
             }
