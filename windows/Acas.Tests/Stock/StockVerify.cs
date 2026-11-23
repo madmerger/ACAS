@@ -70,8 +70,9 @@ public static class StockVerify
         return null;
     }
 
-    private static string? SafeEvidenceDir(string root, string relative)
+    private static string? SafeEvidenceDir(string root, string relative, out string? error)
     {
+        error = null;
         try
         {
             if (Path.IsPathRooted(relative) || relative.StartsWith(@"\\", StringComparison.Ordinal)) return null;
@@ -86,6 +87,7 @@ public static class StockVerify
         }
         catch (Exception e) when (e is ArgumentException or IOException or NotSupportedException or UnauthorizedAccessException)
         {
+            error = e.Message;
             return null;
         }
     }
@@ -113,8 +115,14 @@ public static class StockVerify
             LegacyVerdict = lr.GetProperty("verdict").GetString() ?? "",
         };
         var evidence = lr.TryGetProperty("evidence", out var ev) ? ev.EnumerateArray().Select(e => e.GetString()!).ToList() : [];
-        string? full = evidence.Count == 0 ? null : SafeEvidenceDir(root, evidence[0]);
-        if (full == null) { r.Verdict = "対象外"; r.Diffs.Add(evidence.Count == 0 ? "レガシー未実施（証跡なし）" : "証跡パスが証跡ルート外、またはリンクを含むため読み込まない"); return r; }
+        if (evidence.Count == 0) { r.Verdict = "対象外"; r.Diffs.Add("レガシー未実施（証跡なし）"); return r; }
+        string? full = SafeEvidenceDir(root, evidence[0], out var pathError);
+        if (full == null)
+        {
+            r.Verdict = "不一致";
+            r.Diffs.Add(pathError != null ? "証跡の走査に失敗したため比較できない: " + pathError : "証跡パスが証跡ルート外、またはリンクを含むため読み込まない");
+            return r;
+        }
         if (!Directory.Exists(full)) { r.Verdict = "対象外"; r.Diffs.Add("レガシー未実施（証跡なし）"); return r; }
         string dir = full;
         try
