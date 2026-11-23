@@ -4,6 +4,8 @@ import Foundation
 public enum SystemPrograms {
     public static func register(_ s: Session) {
         s.programs["acas"] = ACASMenu.run
+        Sys002Part.register(s)
+        XL150Part.register(s)
     }
 }
 
