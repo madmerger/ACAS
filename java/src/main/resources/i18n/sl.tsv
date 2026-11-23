@@ -455,3 +455,35 @@ Cash Posting Report	入金転記帳票
 Cr Journal	貸方振替
 Payment Totals	入金 合計
 Journal Totals	振替 合計
+Customer File	顧客ファイル
+Report Attributes	帳票の抽出条件
+Customer Number - [	顧客番号        - [
+Enter characters in positions to match	一致させる桁位置に文字を入力
+Status          - [	状態            - [
+<L> Live;<D> Dormant;< > All	<L> 有効;<D> 休止;< > 全て
+Credit Period   - [	与信日数        - [
+Enter number of days & operator	日数と演算子を入力
+<L>  for credit periods < than	<L>  指定値より小さい
+<G>  for credit periods > than	<G>  指定値より大きい
+<E>  for credit periods = to	<E>  指定値と等しい
+Invoice Activity  [	請求件数          [
+Enter number of invoices & operator	請求件数と演算子を入力
+Average Value   - [	平均金額        - [
+Enter invoice value & operator	請求金額と演算子を入力
+Overdue A/Cs    - [	延滞顧客        - [
+Date Entered-[	登録日      -[
+Enter date & operator	日付と演算子を入力
+SL005 Invalid Date	SL005 日付が不正です
+SL170 Not Found - 	SL170 見つかりません - 
+Customer Alphabetical Listing	顧客名順一覧
+Report On : 	出力対象  : 
+Customer  Status    <---------------Name & Address-------------->     ----Telephone---- -----Fax-----     Late       Credit	顧客      状態      <----------------名称・住所----------------->     ------電話------- -----FAX-----     延滞       与信
+Disc 	値引 
+Number   ------	番号     ------
+Chg  Let   Limit/Days    %	料   督促  限度/日数     %
+Active	有効
+Dormant	休止
+Record not found	レコードなし
+   Deliver	   配送先
+y Address	住所
+Notes: 	備考: 
