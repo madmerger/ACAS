@@ -358,3 +358,31 @@
 "sl910.amount_os" = "Amount O/S on Invoice is ";
 "sl910.of_which" = "of which";
 "sl910.is_late" = "is Late Charges";
+
+/* sl960 */
+"sl960.cust_nos" = "Customer Nos : [";
+"sl960.check_digit" = "Check Digit {";
+"sl960.cust_name" = "Customer Name: [";
+"sl960.addr" = "Addr: [";
+"sl960.deliv_name" = "Delivery name: [";
+"sl960.telephone" = "Telephone    : [";
+"sl960.ext" = "Ext: [";
+"sl960.fax" = "Fax : [";
+"sl960.email" = "Email Sales  : [";
+"sl960.late_charges" = "Late charges : [";
+"sl960.min_balance" = "Minimum balance before late charge : [";
+"sl960.late_letters" = "Late letters : [";
+"sl960.max_late" = "Maximum late charge";
+"sl960.credit_period" = "Credit period: [";
+"sl960.credit_limit" = "Credit limit : [";
+"sl960.discount" = "] Discount : [";
+"sl960.unapplied" = "Unapplied Bal: {";
+"sl960.current" = "Current Bal  : {";
+"sl960.escape" = "* Escape Code [";
+"sl960.last_invoice" = "Last invoice : {";
+"sl960.last_payment" = "Last payment : {";
+"sl960.esc_b" = "* <B> = Back      *";
+"sl960.esc_s" = "* <S> = Save      *";
+"sl960.esc_q" = "* <Q> = Quit      *";
+"sl960.addr_err" = "Addr Err";
+"sl960.error" = "Error";

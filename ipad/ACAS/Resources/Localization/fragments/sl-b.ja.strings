@@ -358,3 +358,31 @@
 "sl910.amount_os" = "請求書の未決済額は       ";
 "sl910.of_which" = "うち";
 "sl910.is_late" = "が遅延損害金";
+
+/* sl960 */
+"sl960.cust_nos" = "得意先番号   : [";
+"sl960.check_digit" = "検査数字    {";
+"sl960.cust_name" = "得意先名     : [";
+"sl960.addr" = "住所: [";
+"sl960.deliv_name" = "納品先名     : [";
+"sl960.telephone" = "電話番号     : [";
+"sl960.ext" = "内線:[";
+"sl960.fax" = "FAX : [";
+"sl960.email" = "営業メール   : [";
+"sl960.late_charges" = "遅延損害金   : [";
+"sl960.min_balance" = "遅延損害金の対象となる最低残高     : [";
+"sl960.late_letters" = "督促状       : [";
+"sl960.max_late" = "遅延損害金の上限";
+"sl960.credit_period" = "与信期間     : [";
+"sl960.credit_limit" = "与信限度額   : [";
+"sl960.discount" = "] 値引率   : [";
+"sl960.unapplied" = "未充当残高   : {";
+"sl960.current" = "現在残高     : {";
+"sl960.escape" = "* 終了コード  [";
+"sl960.last_invoice" = "最終請求日   : {";
+"sl960.last_payment" = "最終入金日   : {";
+"sl960.esc_b" = "* <B> = 戻る      *";
+"sl960.esc_s" = "* <S> = 保存      *";
+"sl960.esc_q" = "* <Q> = 終了      *";
+"sl960.addr_err" = "住所不正";
+"sl960.error" = "不正";
