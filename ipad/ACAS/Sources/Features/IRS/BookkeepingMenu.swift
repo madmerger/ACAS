@@ -3,7 +3,6 @@ import SwiftUI
 
 struct BookkeepingMenu: View {
     let workspace: Workspace
-    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
 
     private var service: BookkeepingService { BookkeepingService(workspace.context) }
 
@@ -52,23 +51,7 @@ struct BookkeepingMenu: View {
     }
 
     private func accountTable(_ title: String) -> some View {
-        Table(service.accounts) {
-            TableColumn(irsText("field.accountCode")) { account in
-                VStack(alignment: .leading) {
-                    Text(verbatim: String(account.code))
-                    if horizontalSizeClass == .compact {
-                        Text(account.name)
-                        LabeledContent(irsText("field.debit"), value: (Decimal(account.debit) / 100).formatted())
-                        LabeledContent(irsText("field.credit"), value: (Decimal(account.credit) / 100).formatted())
-                    }
-                }
-            }
-            TableColumn(irsText("field.accountName"), value: \.name)
-            TableColumn(irsText("field.category")) { Text($0.category?.title ?? "") }
-            TableColumn(irsText("field.debit")) { Text((Decimal($0.debit) / 100).formatted()) }
-            TableColumn(irsText("field.credit")) { Text((Decimal($0.credit) / 100).formatted()) }
-        }
-        .navigationTitle(title)
+        BookkeepingAccountTable(service: service, title: title)
     }
 
     private func defaultTable(_ title: String) -> some View {
@@ -95,6 +78,34 @@ struct BookkeepingMenu: View {
             }
             .navigationTitle(title)
         }
+    }
+}
+
+private struct BookkeepingAccountTable: View {
+    let service: BookkeepingService
+    let title: String
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    @State private var accounts: [BookkeepingService.Account] = []
+
+    var body: some View {
+        Table(accounts) {
+            TableColumn(irsText("field.accountCode")) { account in
+                VStack(alignment: .leading) {
+                    Text(verbatim: String(account.code))
+                    if horizontalSizeClass == .compact {
+                        Text(account.name)
+                        LabeledContent(irsText("field.debit"), value: (Decimal(account.debit) / 100).formatted())
+                        LabeledContent(irsText("field.credit"), value: (Decimal(account.credit) / 100).formatted())
+                    }
+                }
+            }
+            TableColumn(irsText("field.accountName"), value: \.name)
+            TableColumn(irsText("field.category")) { Text($0.category?.title ?? "") }
+            TableColumn(irsText("field.debit")) { Text((Decimal($0.debit) / 100).formatted()) }
+            TableColumn(irsText("field.credit")) { Text((Decimal($0.credit) / 100).formatted()) }
+        }
+        .navigationTitle(title)
+        .onAppear { accounts = service.accounts }
     }
 }
 

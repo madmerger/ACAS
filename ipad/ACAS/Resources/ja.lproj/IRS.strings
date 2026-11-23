@@ -43,7 +43,7 @@
 "bookkeeping.field.date" = "取引日";
 "bookkeeping.field.debit" = "借方";
 "bookkeeping.field.password" = "現在のパスワード";
-"bookkeeping.field.newPassword" = "新しいパスワード（変更時のみ）";
+"bookkeeping.field.newPassword" = "新しいパスワード（変更時のみ・シフトJISで4バイト以内）";
 "bookkeeping.field.debitAccount" = "借方科目";
 "bookkeeping.field.defaultAccount" = "既定勘定";
 "bookkeeping.field.defaultType" = "既定勘定の区分";
