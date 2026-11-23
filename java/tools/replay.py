@@ -7,7 +7,7 @@
 比較対象: 画面テキスト（レガシー原文面, 時刻はマスク）、レコード差分（追加/更新/削除の 16 進）、帳票（prt-*）。
 画面操作そのもの（ブラウザ UI）の確認・録画は tools/ui_replay.py を使う。
 """
-import argparse, difflib, json, os, re, sys, urllib.parse, urllib.request
+import argparse, difflib, http.cookiejar, json, os, re, sys, urllib.parse, urllib.request
 from pathlib import Path
 
 ESC = {"\x1bOH": "HOME", "\x1b[A": "UP", "\x1b[B": "DOWN", "\x1b[C": "RIGHT", "\x1b[D": "LEFT",
@@ -69,7 +69,8 @@ class Api:
     def __init__(self, url):
         self.origin = test_server_origin(url)
         self.url = url.rstrip("/")
-        self.opener = urllib.request.build_opener(urllib.request.ProxyHandler({}), NoRedirect())
+        self.opener = urllib.request.build_opener(urllib.request.ProxyHandler({}), NoRedirect(),
+                                                  urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar()))
 
     def call(self, method, path, body=None):
         url = self.url + path
@@ -180,7 +181,8 @@ def run_case(api, evid, case, verbose=False):
     missing_evidence = []
     for i, step in enumerate(runner["steps"]):
         keys = to_keys(step.get("text", "")) + ([step["key"]] if "key" in step else [])
-        api.call("POST", f"/api/sessions/{sid}/keys", {"keys": keys})
+        if keys:
+            api.call("POST", f"/api/sessions/{sid}/keys", {"keys": keys})
         scr = api.call("GET", f"/api/test/sessions/{sid}/screen?lang=en")
         if RESIDUE is not None:   # 日本語面に残った英語文言の収集（--residue）
             for l in api.call("GET", f"/api/test/sessions/{sid}/screen?lang=ja")["text"].split("\n"):
