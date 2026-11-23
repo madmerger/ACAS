@@ -21,12 +21,20 @@ def read_json(path):
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def seed_files(run):
+def evidence_path(root, path):
+    resolved = (root / path).resolve()
+    if not resolved.is_relative_to(root):
+        raise ValueError(f"証跡ルート外のパスです: {path}")
+    return resolved
+
+
+def seed_files(root, run):
     files = {}
-    for path, file in read_json(run / "before-records/records.json")["files"].items():
+    for path, file in read_json(evidence_path(root, run / "before-records/records.json"))["files"].items():
         basename = Path(path).name
         if basename == "system.dat":
-            files[path] = {"type": "relative", "hex": (run / "before-files" / path).read_bytes().hex()}
+            source = evidence_path(root, run / "before-files" / path)
+            files[path] = {"type": "relative", "hex": source.read_bytes().hex()}
         elif basename in KEY_LENGTHS:
             length = KEY_LENGTHS[basename] * 2
             files[path] = {"type": "indexed", "records": [
@@ -37,27 +45,28 @@ def seed_files(run):
 
 def fixture(root, case):
     legacy = case["legacy_result"]
-    run = root / legacy["evidence"][0]
+    run = evidence_path(root, legacy["evidence"][0])
     targets = legacy["comparison_targets"]
     changes = []
-    for change in read_json(root / targets["keyed_record_diff"])["changes"]:
+    for change in read_json(evidence_path(root, targets["keyed_record_diff"]))["changes"]:
         path = change["file"]
         length = KEY_LENGTHS.get(Path(path).name)
         before, after = (change[k]["hex"] if change[k] else None for k in ("before", "after"))
         key = (after or before)[:2 * length] if length else change["key"]
         changes.append(dict(file=path, key=key, before=before, after=after))
+    report_paths = {path: evidence_path(root, path) for path in targets["report_files"]}
     reports = {
-        str(Path(path).relative_to(Path(legacy["evidence"][0]) / "files")): (root / path).read_bytes().hex()
-        for path in targets["report_files"] if "/files/ledgers/" in path
+        str(Path(path).relative_to(Path(legacy["evidence"][0]) / "files")): source.read_bytes().hex()
+        for path, source in report_paths.items() if "/files/ledgers/" in path
     }
-    for path in targets["report_files"]:
-        if "/files/spool/" in path and (root / path).read_bytes().hex() not in reports.values():
+    for path, source in report_paths.items():
+        if "/files/spool/" in path and source.read_bytes().hex() not in reports.values():
             raise ValueError(f"帳票スプールと原本が一致しません: {path}")
-    with (run / "terminal.cast").open(encoding="utf-8") as recording:
+    with evidence_path(root, run / "terminal.cast").open(encoding="utf-8") as recording:
         date = json.loads(recording.readline())["timestamp"]
     workflow, title = WORKFLOWS[case["id"]]
     return {
-        "id": case["id"], "workflow": workflow, "title": title, "dateSeconds": date, "seed": seed_files(run),
+        "id": case["id"], "workflow": workflow, "title": title, "dateSeconds": date, "seed": seed_files(root, run),
         "changes": changes, "reports": reports, "calculation": None,
     }
 
@@ -67,10 +76,11 @@ def main():
     parser.add_argument("evidence", type=Path)
     parser.add_argument("--output", type=Path, default=Path(__file__).resolve().parents[2] / ".generated/fixtures")
     args = parser.parse_args()
-    cases = {c["id"]: c for c in read_json(args.evidence / "scenarios/catalog.json")["cases"]}
+    root = args.evidence.resolve()
+    cases = {c["id"]: c for c in read_json(evidence_path(root, "scenarios/catalog.json"))["cases"]}
     args.output.mkdir(parents=True, exist_ok=True)
     for case_id in WORKFLOWS:
-        result = fixture(args.evidence, cases[case_id])
+        result = fixture(root, cases[case_id])
         (args.output / f"{case_id}.json").write_text(json.dumps(result, ensure_ascii=False) + "\n", encoding="utf-8")
     print(f"買掛元帳 実 UI 用データ {len(WORKFLOWS)} 件")
 
