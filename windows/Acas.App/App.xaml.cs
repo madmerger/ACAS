@@ -19,9 +19,9 @@ public partial class App : Application
             MainWindow = new MainWindow(database);
             MainWindow.Show();
         }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or Microsoft.Data.Sqlite.SqliteException)
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException or Microsoft.Data.Sqlite.SqliteException)
         {
-            MessageBox.Show("会計データを開けませんでした。保存先とアクセス権を確認してください。", "起動エラー",
+            MessageBox.Show("会計データを開けませんでした。ローカルドライブ上の保存先とアクセス権を確認してください。", "起動エラー",
                 MessageBoxButton.OK, MessageBoxImage.Error);
             Shutdown(1);
         }

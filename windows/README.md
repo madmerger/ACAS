@@ -12,4 +12,4 @@ dotnet test Acas.sln -c Release --no-build
 dotnet run --project Acas.App -c Release --no-build
 ```
 
-保存先はユーザーごとのローカルアプリケーションデータ内の `ACAS\acas.db` です。検証で通常の業務データと分離する場合は `-- --database <検証用データベースのパス>` を指定します。
+保存先はユーザーごとのローカルアプリケーションデータ内の `ACAS\acas.db` です。検証で通常の業務データと分離する場合は `-- --database <検証用データベースのパス>` を指定します。共有パス、ネットワークドライブ、リンクを経由するパスは使用できません。

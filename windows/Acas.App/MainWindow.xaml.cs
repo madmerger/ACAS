@@ -21,7 +21,7 @@ public partial class MainWindow : Window
     public MainWindow(string? database = null)
     {
         InitializeComponent();
-        var path = Path.GetFullPath(database ?? Path.Combine(
+        var path = LocalDatabasePath.Resolve(database ?? Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "ACAS", "acas.db"));
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
         _database = new Db(path);
