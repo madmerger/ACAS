@@ -48,6 +48,8 @@ final class LedgerBatchFlows: XCTestCase {
         enter(app, "gl.batch-amount", "123.45")
         tap(app, "gl.batch.save")
         XCTAssertTrue(app.descendants(matching: .any)["gl.batch.row.1"].firstMatch.waitForExistence(timeout: 5))
+        app.navigationBars.buttons.firstMatch.tap()
+        tap(app, "gl.batches.maintenance")
         tap(app, "gl.batch.proof.one")
         tap(app, "gl.batch.proof.1")
         let status = app.staticTexts["gl.batch.proof.status"]

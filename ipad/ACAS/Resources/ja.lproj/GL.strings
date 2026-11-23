@@ -53,9 +53,10 @@
 "gl.batch-error.capacity" = "登録可能なバッチ番号または明細数を超えました";
 "gl.batch-error.storage" = "バッチを保存できませんでした";
 "gl.report.share" = "帳票原本を共有";
-"gl.batch-proof.title" = "仕訳バッチ検証";
+"gl.batch-proof.title" = "仕訳の検証・帳票";
 "gl.batch-proof.all" = "当期の全バッチを検証して帳票を出力";
 "gl.batch-proof.one" = "指定バッチを検証して帳票を出力";
+"gl.batch-proof.select" = "検証するバッチを選択";
 "gl.batch-proof.empty" = "検証対象のバッチはありません";
 "gl.batch-proof.verified" = "予定額と明細の合計が一致しました";
 "gl.batch-proof.differences" = "明細または合計に相違があります";

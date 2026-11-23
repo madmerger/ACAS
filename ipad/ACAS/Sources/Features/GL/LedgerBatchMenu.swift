@@ -6,8 +6,6 @@ struct LedgerBatchMenu: View {
     @State private var batches: [LedgerBatch] = []
     @State private var editing = false
     @State private var preparationFailed = false
-    @State private var proofReports: [LedgerBatchProof.Report] = []
-    @State private var proofStatus: String?
 
     var body: some View {
         List {
@@ -15,28 +13,6 @@ struct LedgerBatchMenu: View {
                 .accessibilityIdentifier("gl.batch.new")
                 .disabled(preparationFailed)
             if preparationFailed { Text(ledgerText("batch-error.storage")) }
-            Section(ledgerText("batch-proof.title")) {
-                Button(ledgerText("batch-proof.all")) { proof() }
-                    .accessibilityIdentifier("gl.batch.proof.all")
-                Menu(ledgerText("batch-proof.one")) {
-                    ForEach(batches) { batch in
-                        Button("\(batch.id)　\(batch.description)") { proof(batch.id) }
-                            .accessibilityIdentifier("gl.batch.proof.\(batch.id)")
-                    }
-                }
-                .disabled(batches.isEmpty)
-                .accessibilityIdentifier("gl.batch.proof.one")
-                if let proofStatus {
-                    Text(proofStatus).accessibilityIdentifier("gl.batch.proof.status")
-                }
-                ForEach(proofReports) { report in
-                    LabeledContent {
-                        LedgerReportShare(bytes: report.bytes)
-                    } label: {
-                        Text("\(report.id)　\(ledgerText(report.verified ? "batch-closed" : "batch-open"))")
-                    }
-                }
-            }
             Section(ledgerText("batch-list")) {
                 ForEach(batches) { batch in
                     LabeledContent("\(batch.id)　\(batch.description)", value: ledgerText(batch.posted ? "batch-posted" : batch.closed ? "batch-closed" : "batch-open"))
@@ -61,6 +37,59 @@ struct LedgerBatchMenu: View {
     }
 
     private func reload() { batches = LedgerBatches(workspace.context).all }
+}
+
+struct LedgerBatchMaintenanceMenu: View {
+    let workspace: Workspace
+    @State private var choosingBatch = false
+    @State private var proofReports: [LedgerBatchProof.Report] = []
+    @State private var proofStatus: String?
+
+    var body: some View {
+        List {
+            Button(ledgerText("batch-proof.all")) { proof() }
+                .accessibilityIdentifier("gl.batch.proof.all")
+            Button(ledgerText("batch-proof.one")) { choosingBatch = true }
+                .accessibilityIdentifier("gl.batch.proof.one")
+            if let proofStatus {
+                Text(proofStatus).accessibilityIdentifier("gl.batch.proof.status")
+            }
+            ForEach(proofReports) { report in
+                LabeledContent {
+                    LedgerReportShare(bytes: report.bytes)
+                } label: {
+                    Text("\(report.id)　\(ledgerText(report.verified ? "batch-closed" : "batch-open"))")
+                }
+            }
+        }
+        .navigationTitle(ledgerText("batch-proof.title"))
+        .onAppear { workspace.completed("gl-batch-maintenance-menu") }
+        .sheet(isPresented: $choosingBatch) {
+            NavigationStack {
+                let batches = LedgerBatches(workspace.context).all
+                List {
+                    if batches.isEmpty {
+                        Text(ledgerText("batch-proof.empty"))
+                            .accessibilityIdentifier("gl.batch.proof.empty")
+                    }
+                    ForEach(batches) { batch in
+                        Button("\(batch.id)　\(batch.description)") {
+                            choosingBatch = false
+                            proof(batch.id)
+                        }
+                        .accessibilityIdentifier("gl.batch.proof.\(batch.id)")
+                    }
+                }
+                .navigationTitle(ledgerText("batch-proof.select"))
+                .onAppear { workspace.completed("gl-batch-proof-select") }
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button("action.close") { choosingBatch = false }
+                    }
+                }
+            }
+        }
+    }
 
     private func proof(_ number: Int? = nil) {
         proofReports = []
@@ -69,7 +98,6 @@ struct LedgerBatchMenu: View {
             let key = proofReports.isEmpty ? "batch-proof.empty" :
                 proofReports.allSatisfy(\.verified) ? "batch-proof.verified" : "batch-proof.differences"
             proofStatus = ledgerText(key)
-            reload()
             workspace.completed(number == nil ? "gl-batch-proof-all" : "gl-batch-proof-one")
         } catch {
             proofStatus = ledgerText("batch-proof.failed")
