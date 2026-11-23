@@ -13,6 +13,102 @@ final class BookkeepingFlows: XCTestCase {
     }
 
     @MainActor
+    func testReachIRS002() throws { try verifyAccounts("IRS-002") }
+
+    @MainActor
+    func testReachIRS003() throws { try verifyDefaults("IRS-003") }
+
+    @MainActor
+    func testReachIRS010() throws { try verifyRecalculate("IRS-010") }
+
+    @MainActor
+    func testReachIRS200() throws {
+        try verifyReach("IRS-200", path: []) { app in
+            ["settings", "accounts", "defaults", "post"].forEach { expectLink(app, $0) }
+        }
+    }
+
+    @MainActor
+    func testReachIRS202() throws { try verifyAccounts("IRS-202") }
+
+    @MainActor
+    func testReachIRS205() throws {
+        try verifyReach("IRS-205", path: ["accounts", "accountList"]) { app in
+            XCTAssertTrue(app.staticTexts["BANK"].waitForExistence(timeout: 5))
+        }
+    }
+
+    @MainActor
+    func testReachIRS209() throws { try verifyDefaults("IRS-209") }
+
+    @MainActor
+    func testReachIRS211() throws {
+        try verifyReach("IRS-211", path: ["defaults", "defaultEdit"]) { app in
+            XCTAssertTrue(app.textFields.matching(NSPredicate(format: "value == %@", "30001")).firstMatch.waitForExistence(timeout: 5))
+            XCTAssertTrue(app.textFields.matching(NSPredicate(format: "value == %@", "BK")).firstMatch.waitForExistence(timeout: 5))
+        }
+    }
+
+    @MainActor
+    func testReachIRS212() throws {
+        try verifyReach("IRS-212", path: ["defaults", "defaultList"]) { app in
+            XCTAssertTrue(app.staticTexts["30001"].waitForExistence(timeout: 5))
+        }
+    }
+
+    @MainActor
+    func testReachIRS221() throws { try verifyRecalculate("IRS-221") }
+
+    @MainActor
+    private func verifyAccounts(_ id: String) throws {
+        try verifyReach(id, path: ["accounts"]) { app in
+            ["accountCreate", "accountEdit", "accountList", "accountPrint", "accountExport", "accountImport"]
+                .forEach { expectLink(app, $0) }
+        }
+    }
+
+    @MainActor
+    private func verifyDefaults(_ id: String) throws {
+        try verifyReach(id, path: ["defaults"]) { app in
+            ["defaultCreate", "defaultEdit", "defaultList", "defaultPrint", "statementSettings"]
+                .forEach { expectLink(app, $0) }
+        }
+    }
+
+    @MainActor
+    private func verifyRecalculate(_ id: String) throws {
+        try verifyReach(id, path: ["recalculate"]) { app in
+            XCTAssertTrue(app.secureTextFields["現在のパスワード"].waitForExistence(timeout: 5))
+            XCTAssertTrue(app.buttons["元帳を再計算"].waitForExistence(timeout: 5))
+        }
+    }
+
+    @MainActor
+    private func verifyReach(_ id: String, path: [String], assertDestination: (XCUIApplication) -> Void) throws {
+        continueAfterFailure = false
+        let url = try XCTUnwrap(Bundle(for: Self.self).url(forResource: id, withExtension: "json", subdirectory: "fixtures"))
+        let app = XCUIApplication()
+        app.launchEnvironment["ACAS_FIXTURE"] = try Data(contentsOf: url).base64EncodedString()
+        app.launchArguments += ["-AppleLanguages", "(ja)", "-AppleLocale", "ja_JP"]
+        XCUIDevice.shared.orientation = .landscapeLeft
+        app.launch()
+        XCTAssertTrue(app.staticTexts[id].waitForExistence(timeout: 10))
+        tap(app, "section.incomplete")
+        for link in path { tap(app, "irs." + link) }
+        assertDestination(app)
+        XCTAssertTrue(app.staticTexts["case.verdict.match"].waitForExistence(timeout: 5), id)
+        let screenshot = XCTAttachment(screenshot: app.screenshot())
+        screenshot.name = id
+        screenshot.lifetime = .keepAlways
+        add(screenshot)
+    }
+
+    @MainActor
+    private func expectLink(_ app: XCUIApplication, _ id: String) {
+        XCTAssertTrue(app.descendants(matching: .any)["irs." + id].firstMatch.waitForExistence(timeout: 5), id)
+    }
+
+    @MainActor
     func testPostFromDefaultBankAccount() throws {
         continueAfterFailure = false
         let id = "IRS-400"

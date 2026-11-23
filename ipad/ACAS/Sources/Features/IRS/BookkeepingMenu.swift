@@ -19,6 +19,7 @@ struct BookkeepingMenu: View {
             link(irsText("menu.analysis"), "analysis") { journal(irsText("menu.analysis")) }
             link(irsText("menu.recalculate"), "recalculate") { BookkeepingRecalculate(service: service) }
         }
+        .onAppear { workspace.completed("irs.menu.open") }
     }
 
     private var accountMenu: some View {
@@ -46,8 +47,11 @@ struct BookkeepingMenu: View {
 
     private func link<Content: View>(_ title: String, _ id: String,
                                      @ViewBuilder destination: () -> Content) -> some View {
-        NavigationLink(title, destination: destination)
-            .accessibilityIdentifier("irs." + id)
+        NavigationLink(title) {
+            destination()
+                .onAppear { workspace.completed("irs." + id + ".open") }
+        }
+        .accessibilityIdentifier("irs." + id)
     }
 
     private func accountTable(_ title: String) -> some View {
