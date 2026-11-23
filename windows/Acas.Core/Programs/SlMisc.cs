@@ -43,7 +43,12 @@ public static class Xl150
         t.D("Have you made a Backup of ALL DATA FILES? If so;", 0612);
         t.D("Confirm end of Cycle Processing to be Run (Y/N) - [N]", 0712);
         var r = await t.A(0763, 1, init: "N");
-        _ = r;
+        if (r.ToUpperInvariant() == "Y")
+        {
+            // TODO: パスワード照合後の期末処理本体は未移植
+            t.D("Give password [    ]", 1601);
+            await t.A(1616, 4, secure: true);
+        }
         return 0;
     }
 }
