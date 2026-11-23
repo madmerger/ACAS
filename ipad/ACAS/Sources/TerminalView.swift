@@ -40,7 +40,8 @@ final class TerminalModel: ObservableObject {
 
     func report(_ name: String) -> String {
         guard let b = session.store.readRaw(name) else { return "" }
-        return String(decoding: b, as: UTF8.self)
+        // 帳票はレガシーと同じ桁位置を保つため Shift_JIS (CP932) で保存している
+        return SJIS.decode(b[...])
     }
 }
 
