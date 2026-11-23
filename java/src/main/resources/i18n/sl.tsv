@@ -379,3 +379,9 @@ Total	合計
 Prompt Pay	早期支払
 Goods	商品
 Gross	総額
+Invoice Post Extract	請求書転記抽出
+Working...........Please Wait	処理中...........お待ちください
+SL002 Note error and hit return	SL002 エラーを確認し Enter を押してください
+SL121 Error writing to Open Item 2 File	SL121 未消込明細ファイル 2 の書込エラー
+SL122 Unprinted Invoices Exist. Correct & Run Again	SL122 未印刷の請求書があります。修正して再実行してください
+Emergency Name	仮登録名称
