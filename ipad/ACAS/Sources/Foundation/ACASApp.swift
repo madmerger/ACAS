@@ -21,6 +21,7 @@ struct ACASApp: App {
 @MainActor
 final class Workspace: ObservableObject {
     let context: BusinessContext
+    @Published var pendingInitialCompany: PendingInitialCompany?
     #if DEBUG
     let evidence: DebugEvidence?
     #endif
