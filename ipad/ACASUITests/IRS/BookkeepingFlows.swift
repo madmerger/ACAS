@@ -13,6 +13,9 @@ final class BookkeepingFlows: XCTestCase {
     }
 
     @MainActor
+    func testReachIRS001() throws { try verifyConfigurationAccess("IRS-001") }
+
+    @MainActor
     func testReachIRS002() throws { try verifyAccounts("IRS-002") }
 
     @MainActor
@@ -27,6 +30,9 @@ final class BookkeepingFlows: XCTestCase {
             ["settings", "accounts", "defaults", "post"].forEach { expectLink(app, $0) }
         }
     }
+
+    @MainActor
+    func testReachIRS201() throws { try verifyConfigurationAccess("IRS-201") }
 
     @MainActor
     func testReachIRS202() throws { try verifyAccounts("IRS-202") }
@@ -60,11 +66,108 @@ final class BookkeepingFlows: XCTestCase {
     func testReachIRS221() throws { try verifyRecalculate("IRS-221") }
 
     @MainActor
+    func testReachIRS223() throws { try verifyConfigurationAccess("IRS-223") }
+
+    @MainActor
+    private func verifyConfigurationAccess(_ id: String) throws {
+        try verifyReach(id, path: ["settings"]) { app in
+            XCTAssertTrue(app.secureTextFields["irs.settingsPassword"].waitForExistence(timeout: 5), id)
+            XCTAssertTrue(app.staticTexts["irs.processingDate"].exists, id)
+            XCTAssertFalse(app.textFields["irs.operatorName"].exists, id)
+        }
+    }
+
+    @MainActor
     func testCloseIRS222() throws {
         try verifyReach("IRS-222", path: []) { app in
             tap(app, "irs.close")
             XCTAssertTrue(app.staticTexts["メニューを選んでください"].waitForExistence(timeout: 5))
             XCTAssertFalse(app.buttons["irs.close"].exists)
+        }
+    }
+
+    @MainActor
+    func testSaveIRS090() throws {
+        struct Fixture: Decodable { let input: [String: String] }
+        let id = "IRS-090"
+        let url = try XCTUnwrap(Bundle(for: Self.self).url(forResource: id, withExtension: "json", subdirectory: "fixtures"))
+        let fields = try JSONDecoder().decode(Fixture.self, from: Data(contentsOf: url)).input
+        try verifyReach(id, path: ["settings"]) { app in
+            XCTAssertFalse(app.textFields["irs.operatorName"].exists)
+            tap(app, "irs.authenticateSettings")
+            for name in ["operatorName", "client", "street", "city", "country", "postcode"] {
+                let field = app.textFields["irs." + name]
+                XCTAssertTrue(field.waitForExistence(timeout: 5), name)
+                field.tap()
+                field.typeText(fields[name]!)
+            }
+            app.swipeUp()
+            for name in ["startDate", "endDate"] {
+                let picker = app.datePickers["irs." + name]
+                if !picker.isHittable { app.swipeUp() }
+                XCTAssertTrue(picker.waitForExistence(timeout: 5), name)
+                let date = fields[name]!.split(separator: "/").map { Int($0)! }
+                let wheels = picker.pickerWheels
+                XCTAssertEqual(wheels.count, 3, name)
+                wheels.element(boundBy: 0).adjust(toPickerWheelValue: "20\(date[2])年")
+                wheels.element(boundBy: 1).adjust(toPickerWheelValue: "\(date[1])月")
+                wheels.element(boundBy: 2).adjust(toPickerWheelValue: "\(date[0])日")
+            }
+            let output = app.textFields["irs.printDestination"]
+            if !output.isHittable { app.swipeUp() }
+            output.tap()
+            output.typeText(fields["printDestination"]!)
+            if !app.buttons["irs.saveSettings"].isHittable { app.swipeUp() }
+            tap(app, "irs.saveSettings")
+            XCTAssertEqual(app.staticTexts["irs.result"].label, "簡易記帳設定を保存しました。")
+        }
+    }
+
+    @MainActor
+    func testRegisterIRS091() throws {
+        struct Fixture: Decodable {
+            struct Input: Decodable {
+                struct Account: Decodable { let code: String; let name: String; let category: String }
+                struct Default: Decodable { let slot: Int; let code: String; let label: String; let usesTax: Bool }
+                let accounts: [Account]
+                let defaults: [Default]
+            }
+            let input: Input
+        }
+        let id = "IRS-091"
+        let url = try XCTUnwrap(Bundle(for: Self.self).url(forResource: id, withExtension: "json", subdirectory: "fixtures"))
+        let input = try JSONDecoder().decode(Fixture.self, from: Data(contentsOf: url)).input
+        let categories = ["R": "資産", "U": "負債", "A": "収益", "E": "費用", "C": "その他"]
+        let reserved = [30: "期首残高", 31: "仕入付加価値税", 32: "売上付加価値税"]
+        try verifyReach(id, path: ["accounts", "accountCreate"]) { app in
+            for account in input.accounts {
+                enter(app, "irs.accountCode", account.code)
+                enter(app, "irs.accountName", account.name)
+                tap(app, "irs.category")
+                tap(app, categories[account.category]!)
+                tap(app, "irs.saveAccount")
+                XCTAssertEqual(app.staticTexts["irs.result"].label, "勘定科目を保存しました。")
+            }
+            tap(app, "section.system")
+            tap(app, "section.incomplete")
+            tap(app, "irs.defaults")
+            tap(app, "irs.defaultCreate")
+            for row in input.defaults {
+                if row.slot != 1 {
+                    tap(app, "irs.defaultSlot")
+                    let title = reserved[row.slot] ?? String(row.slot)
+                    let option = app.descendants(matching: .any).matching(identifier: title).firstMatch
+                    for _ in 0..<6 where !option.isHittable { app.swipeUp() }
+                    tap(app, title)
+                }
+                enter(app, "irs.defaultAccount", row.code)
+                if row.slot < 30 {
+                    enter(app, "irs.defaultLabel", row.label)
+                    if row.usesTax { app.switches.firstMatch.tap() }
+                }
+                tap(app, "irs.saveDefault")
+                XCTAssertEqual(app.staticTexts["irs.result"].label, "既定勘定を保存しました。")
+            }
         }
     }
 
@@ -122,7 +225,7 @@ final class BookkeepingFlows: XCTestCase {
         for link in path { tap(app, "irs." + link) }
         assertDestination(app)
         XCTAssertTrue(app.staticTexts["case.verdict.match"].waitForExistence(timeout: 5), id)
-        let screenshot = XCTAttachment(screenshot: app.screenshot())
+        let screenshot = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
         screenshot.name = id
         screenshot.lifetime = .keepAlways
         add(screenshot)

@@ -197,7 +197,7 @@ public struct BookkeepingService {
     }
 
     var defaultBytes: [UInt8] {
-        let raw = readLine(defaultsPath) ?? Array((String(repeating: "0", count: 224) + String(repeating: " ", count: 32)).utf8)
+        let raw = readLine(defaultsPath) ?? [UInt8](repeating: 0x30, count: 256)
         return Array(raw.prefix(256)) + [UInt8](repeating: 0x20, count: max(0, 256 - raw.count))
     }
 
@@ -207,7 +207,8 @@ public struct BookkeepingService {
             let offset = index - 1
             let number = Cobol.numval(SJIS.decode(config[(5 * offset)..<(5 * offset + 5)])).0
             let label = Cobol.rtrim(SJIS.decode(config[(160 + 2 * offset)..<(162 + 2 * offset)]))
-            return DefaultAccount(id: index, account: Int(number), label: label, usesTax: config[224 + offset] == 0x59)
+            return DefaultAccount(id: index, account: Int(number), label: number == 0 && label == "00" ? "" : label,
+                                  usesTax: config[224 + offset] == 0x59)
         }
     }
 
