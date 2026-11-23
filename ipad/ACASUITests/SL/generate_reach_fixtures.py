@@ -60,7 +60,7 @@ CASES = {
     "SL-235": ("sales-invoice-delete-list-view", "請求書削除の到達確認"),
     "SL-236": ("sales-invoice-deletion-report", "請求書削除帳票・削除済み請求書なし"),
     "SL-237": ("sales-invoice-print-view", "請求書一括印刷・印刷種別の選択"),
-    "SL-238": ("ui-test-only", "納品書・ピッキングリスト印刷の到達確認"),
+    "SL-238": ("sales-invoice-delivery-print-view", "納品書・ピッキングリスト印刷の到達確認"),
     "SL-239": ("sales-period-view", "期間締めの確認画面"),
     "SL-240": ("sales-customer-report-view", "得意先ファイル帳票の抽出条件"),
     "SL-241": ("ui-test-only", "売掛元帳からメインメニューへ戻る"),

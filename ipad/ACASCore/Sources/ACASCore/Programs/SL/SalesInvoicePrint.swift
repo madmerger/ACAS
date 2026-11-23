@@ -2,8 +2,18 @@ import Foundation
 
 extension SalesInvoices {
     public static let printPath = "ledgers/acas/prt-2"
+    public static let deliveryPrintPath = "ledgers/acas/prt-3"
     public static let deletionReportPath = SalesProofReport.exportPath
     static let deletedNumbersPath = "ledgers/acas/delinvno.dat"
+
+    public func openDeliveryPrint() throws -> String? {
+        let system = try settings()
+        guard system.int("full-invoicing") != 0, system.raw("file-statuses")[14] == 0x31 else { return nil }
+        try context.store.writeRaw(Self.deliveryPrintPath, [])
+        let day = system.int("run-date")
+        guard (1...3_067_671).contains(day) else { return "" }
+        return Maps04.format(Maps04.toDate(Int(day)), dateForm: Int(system.int("date-form")))
+    }
 
     public func printDeletedInvoices() throws -> Int {
         let system = try settings()

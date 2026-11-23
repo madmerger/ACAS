@@ -146,11 +146,13 @@ final class SalesReachFlows: XCTestCase {
     func testSL239() throws { try periodConfirmation("SL-239") }
     func testSL240() throws { try customerReport("SL-240") }
     func testSL238() throws {
-        try reach("SL-238", through: ["sales.invoice.menu"], title: "請求書サブシステム", verdict: nil) { app in
-            XCTAssertEqual(buttons(in: app, containing: "請求書一括印刷").firstMatch.identifier, "sales.invoice.print")
-            for label in ["納品書", "ピッキング"] {
-                XCTAssertFalse(buttons(in: app, containing: label).firstMatch.exists)
-            }
+        try reach("SL-238", through: ["sales.invoice.menu", "sales.invoice.deliveryPrint"],
+                  title: "納品書・ピッキングリスト印刷") { app in
+            let print = app.buttons["印刷"]
+            XCTAssertTrue(print.waitForExistence(timeout: 5))
+            XCTAssertTrue(print.isSelected)
+            XCTAssertTrue(app.buttons["再印刷"].exists)
+            XCTAssertEqual(app.staticTexts["sales.invoice.deliveryPrint.date"].label, "処理日、23/11/2026")
         }
     }
 
@@ -170,10 +172,6 @@ final class SalesReachFlows: XCTestCase {
         }
     }
     func testSL244() throws { try invoiceFixedData("SL-244") }
-
-    private func buttons(in app: XCUIApplication, containing label: String) -> XCUIElementQuery {
-        app.buttons.matching(NSPredicate(format: "label CONTAINS %@", label))
-    }
 
     private func customerMenu(_ id: String) throws {
         try reach(id, through: ["sales.customers"], title: "得意先マスター管理") { app in
