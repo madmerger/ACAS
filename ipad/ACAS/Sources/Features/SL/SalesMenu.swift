@@ -47,6 +47,12 @@ struct SalesMenu: View {
                 NavigationLink(slText("sales.analysis.totals")) { SalesAnalysisReportView(workspace: workspace, kind: .totals) }
                     .accessibilityIdentifier("sales.analysis.totals")
             }
+            Section(slText("sales.period.section")) {
+                NavigationLink(slText("sales.dayBook.title")) { SalesDayBookView(workspace: workspace) }
+                    .accessibilityIdentifier("sales.dayBook")
+                NavigationLink(slText("sales.period.title")) { SalesPeriodCloseView(workspace: workspace) }
+                    .accessibilityIdentifier("sales.period")
+            }
             NavigationLink(String(localized: "sales.proof", table: "SL")) {
                 #if DEBUG
                 if workspace.evidence != nil, ProcessInfo.processInfo.environment["ACAS_COMPACT_REPORT"] == "1" {
