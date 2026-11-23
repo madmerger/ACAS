@@ -101,6 +101,10 @@ public struct LedgerBatches {
     }
 
     public func prepare() throws {
+        try context.store.transaction { try prepareFiles() }
+    }
+
+    private func prepareFiles() throws {
         if !context.store.exists(Self.batchPath) {
             var end = Record(Self.batchLayout)
             end.setInt("ledger", 9)
@@ -112,6 +116,10 @@ public struct LedgerBatches {
     }
 
     public func add(_ draft: LedgerBatchDraft, lines: [JournalLine]) throws -> Int {
+        try context.store.transaction { try insert(draft, lines: lines) }
+    }
+
+    private func insert(_ draft: LedgerBatchDraft, lines: [JournalLine]) throws -> Int {
         guard let bytes = system.read(1) else { throw Error.missingCompany }
         var settings = Record(SystemLayout.layout, bytes: bytes)
         let cycle = Int(settings.int("scycle"))
@@ -162,7 +170,7 @@ public struct LedgerBatches {
             return posting
         }
         guard batches.read(key: batches.key(of: batch)) == nil else { throw Error.storage }
-        try prepare()
+        try prepareFiles()
         for (index, record) in records.enumerated() { try postings.write(start + index + 1, record.bytes) }
         guard batches.write(batch) == "00" else { throw Error.storage }
         settings.setInt("next-batch", Int64(number + 1))
