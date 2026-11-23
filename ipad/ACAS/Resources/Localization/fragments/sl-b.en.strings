@@ -280,3 +280,14 @@
 "report.sl930.late_surcharge" = "Late Payment Surcharge";
 "report.sl930.prompt_pay" = "Prompt pay time:";
 "report.sl930.total_due" = "Total Due: ";
+/* sl950 */
+"sl950.title" = "Delivery / Picking Note Print";
+"report.sl950.title" = "Picking/Delivery Note";
+"report.sl950.h_abrev" = "  Abrev #";
+"report.sl950.h_product" = "Product Code";
+"report.sl950.h_desc" = "Item Description";
+"report.sl950.h_qty" = "   Qty";
+"report.sl950.h_location" = "Location";
+"report.sl950.type_receipt" = "Receipt Pick";
+"report.sl950.type_invoice" = "Invoice Pick";
+"report.sl950.total_items" = "                Total Item Count";

@@ -280,3 +280,14 @@
 "report.sl930.late_surcharge" = "延滞加算金";
 "report.sl930.prompt_pay" = "早期支払期限:";
 "report.sl930.total_due" = "請求合計: ";
+/* sl950 */
+"sl950.title" = "納品書 / ピッキングリスト印刷";
+"report.sl950.title" = "出荷指示 / 納品書";
+"report.sl950.h_abrev" = "  略号";
+"report.sl950.h_product" = "商品コード";
+"report.sl950.h_desc" = "品名";
+"report.sl950.h_qty" = "  数量";
+"report.sl950.h_location" = "保管場所";
+"report.sl950.type_receipt" = "領収出荷";
+"report.sl950.type_invoice" = "請求出荷";
+"report.sl950.total_items" = "                合計数量";
