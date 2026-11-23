@@ -10,7 +10,7 @@ public struct InitialCustomerSetup {
         public init() {}
     }
 
-    public enum Error: Swift.Error { case invalidInput, duplicate, storage }
+    public enum Error: Swift.Error { case invalidInput, invalidAddress, duplicate, storage }
 
     private let context: BusinessContext
 
@@ -44,6 +44,9 @@ public struct InitialCustomerSetup {
                 else { throw Error.invalidInput }
                 record[field] = value
             }
+            guard SalesLedger.validAddress(record.raw("sales-addr1") + record.raw("sales-addr2"),
+                                           delimiter: company.raw("sl-delim")[0])
+            else { throw Error.invalidAddress }
             record.setInt("sales-status", 1)
             record.setInt("sales-create-date", company.int("run-date"))
             for (field, setting) in [

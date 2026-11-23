@@ -67,6 +67,8 @@ private struct InitialCustomerForm: View {
             status = initialCustomerText("duplicate")
         } catch InitialCustomerSetup.Error.invalidInput {
             status = initialCustomerText("invalid")
+        } catch InitialCustomerSetup.Error.invalidAddress {
+            status = String(localized: "system.master.customer.invalidAddress", table: "System")
         } catch {
             status = initialCustomerText("failed")
         }

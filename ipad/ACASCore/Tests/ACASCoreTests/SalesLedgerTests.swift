@@ -10,6 +10,7 @@ final class SalesLedgerTests: XCTestCase {
         var system = Record(SystemLayout.layout)
         system["usera"] = "ACAS"
         system["sales-ledger"] = "N"
+        system["sl-delim"] = "\\"
         system["file-statuses"] = String(repeating: "0", count: 32)
         try SalesInvoices(context).systemFile.write(1, system.bytes)
         XCTAssertFalse(store.exists(SalesProofRecords.salesFile(store).path))
@@ -17,6 +18,13 @@ final class SalesLedgerTests: XCTestCase {
         var contact = InitialCustomerSetup.Contact()
         contact.code = "TEST01"
         contact.name = "得意先"
+        contact.address = "東京"
+        let before = store.snapshot()
+        XCTAssertThrowsError(try InitialCustomerSetup(context).add(contact)) {
+            XCTAssertEqual($0 as? InitialCustomerSetup.Error, .invalidAddress)
+        }
+        XCTAssertEqual(store.snapshot(), before)
+        contact.address = "東京\\日本"
         try InitialCustomerSetup(context).add(contact)
         XCTAssertEqual(store.kind(SalesProofRecords.salesFile(store).path), "indexed")
         XCTAssertEqual(store.kind(ledger.deliveryFile.path), "indexed")
@@ -27,6 +35,11 @@ final class SalesLedgerTests: XCTestCase {
         flags[13] = 0x31
         system.setRaw("file-statuses", flags)
         XCTAssertEqual(try ledger.systemRecord().bytes, system.bytes)
+        let code = contact.code + String(try XCTUnwrap(Maps09.checkDigit(contact.code)))
+        var saved = try ledger.customer(code: code)
+        saved.phone = "0123456789"
+        try ledger.update(saved)
+        XCTAssertEqual(try ledger.customer(code: code).phone, saved.phone)
     }
 
     func testAgeingRefusesOnlyPendingPaymentFlagOneWhenOpenItemsAreRegistered() throws {
