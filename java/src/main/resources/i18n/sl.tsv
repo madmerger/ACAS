@@ -310,3 +310,31 @@ Invoice To Credit - [         ]	赤伝対象請求書    - [         ]
 Do You Wish To Use This Invoice No.? {N}	この請求書番号を使いますか          ? {N}
 ..If So, You must ensure that it Belongs to the same Customer and that it is a 	..使う場合、同一顧客の請求書（領収ではない）であることを確認してください
 Invoice ie, not a Receipt	（請求書のみ可）
+Invoice Printing	請求書印刷
+Invoice Number - 	請求書番号     - 
+Already Invoiced!.....Re-Print  (Y/N) ? - [Y]	請求済みです..........再印刷    (Y/N) ? - [Y]
+Print Or Re-Print.............  (P/R) ? - [P]	印刷または再印刷..............  (P/R) ? - [P]
+Any Amended Invoices In This Batch? [N]	このバッチに修正済み請求書あり    ? [N]
+More To Print? [Y]	続けて印刷   ? [Y]
+Give Lowest Invoice No. [        ]	最小の請求書番号を入力  [        ]
+INVOICE	請求書
+Invoice	請求書
+Receipt	領収書
+Credit Note	赤伝
+Pro-Forma	見積書
+This is not a VAT Invoice	本書は税額票ではありません
+Inv:	請求:
+Order:	注文:
+Ref :	参照:
+A/C :	顧客:
+Product Code	商品コード
+Item Description	品名
+Qty	数量
+Cost	単価
+Disc	値引
+Net	税抜
+Vat	税額
+Credit Terms:	支払条件:
+Late Payment Surcharge	延滞料
+Prompt pay time:	早期支払期限:
+Total Due:	請求合計:

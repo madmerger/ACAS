@@ -64,6 +64,8 @@ def snap_diff(before, after):
 def norm_report(text):
     """帳票の正規化。実行環境のディレクトリを印字する行（Path to IRS / Ledgers）の値欄は環境依存のためマスクする。"""
     lines = norm_screen(text.replace("\f", ""))
+    # 印字時刻（日付の直後の HH:MM。sl930 請求書見出しなど）は実行時刻依存のためマスクする
+    lines = [re.sub(r"(\d\d/\d\d/\d{4}) \d\d:\d\d(?!:)", r"\1 HH:MM", l) for l in lines]
     return [l[:27] + "<PATH>".ljust(43) + l[70:] if l.startswith("          Path to ") else l for l in lines]
 
 
