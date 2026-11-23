@@ -105,6 +105,33 @@ public class IntegrationTests
         system.SetN("Cyclea", 3);
         db.Put(file, "00000001", system.B);
         var date = new DateTime(2026, 11, 30);
+        var ledgers = new[]
+        {
+            (PartyFile: "ledgers/acas/salesled.dat", ItemFile: "ledgers/acas/openitm3.dat",
+                Party: "CUST011", BalanceOffset: 252, DescriptionLength: 25, Balance: 150m),
+            (PartyFile: "ledgers/acas/purchled.dat", ItemFile: "ledgers/acas/openitm5.dat",
+                Party: "SUPP018", BalanceOffset: 242, DescriptionLength: 20, Balance: 275m)
+        };
+        foreach (var ledger in ledgers)
+        {
+            var party = new Layout().X("party", 7).Fill(ledger.BalanceOffset - 7).C3("current", 8, 2)
+                .C3("last", 8, 2).Fill(6).C3("quarter2", 8, 2).Fill(300 - ledger.BalanceOffset - 24).New();
+            party.Set("party", ledger.Party);
+            party.SetN("current", ledger.Balance);
+            party.SetN("quarter2", ledger.Balance);
+            db.Put(ledger.PartyFile, ledger.Party, party.B);
+            var item = new Layout().X("party", 7).BLong("invoice").Fill(10).N9("type", 1)
+                .Fill(ledger.DescriptionLength + 2).C3("current", 7, 2).Fill(40).N9("status", 1)
+                .Fill(14).X("applied", 1).BLong("cleared").New();
+            item.Set("party", ledger.Party);
+            item.SetN("type", 2);
+            item.SetN("invoice", 1);
+            item.SetN("current", ledger.Balance);
+            db.Put(ledger.ItemFile, ledger.Party + "/00000001", item.B);
+            item.SetN("invoice", 2);
+            item.SetN("status", 1);
+            db.Put(ledger.ItemFile, ledger.Party + "/00000002", item.B);
+        }
 
         new LedgerTransfer(db).ClosePeriod([TransferLedger.Sales, TransferLedger.Purchases], date, "", true, false);
 
@@ -112,6 +139,17 @@ public class IntegrationTests
         int day = (date - new DateTime(1600, 12, 31)).Days;
         Assert.Equal((4, 2, day, day, "Y", "Y"), (result.I("Cyclea"), result.I("Current-Quarter"),
             result.I("S-End-Cycle-Date"), result.I("BL-End-Cycle-Date"), result.S("Oi-3-Flag"), result.S("Oi-5-Flag")));
+        foreach (var ledger in ledgers)
+        {
+            var party = new Layout().Fill(ledger.BalanceOffset).C3("current", 8, 2).C3("last", 8, 2)
+                .Fill(6).C3("quarter2", 8, 2).From(db.Read(ledger.PartyFile, ledger.Party)!);
+            Assert.Equal((ledger.Balance, ledger.Balance, 0m), (party.N("current"), party.N("last"), party.N("quarter2")));
+            var retained = Assert.Single(db.Scan(ledger.ItemFile));
+            Assert.Equal(ledger.Party + "/00000001", retained.Key);
+            var item = new Layout().Fill(ledger.DescriptionLength + 24).C3("current", 7, 2)
+                .Fill(55).X("applied", 1).From(retained.Data);
+            Assert.Equal((0m, "z"), (item.N("current"), item.S("applied")));
+        }
     }
 
     [Fact]
