@@ -12,21 +12,29 @@ final class SalesCustomerReportTests: XCTestCase {
             var row = Record(SalesProofRecords.salesLayout)
             row["sales-key"] = code
             row["sales-name"] = name
+            row["sales-phone"] = "0123456789"
+            row["sales-ext"] = "123"
             row.setInt("turnover-q1", 123_456)
+            row.setInt("turnover-q2", 1_234_567_890)
             XCTAssertEqual(SalesProofRecords.salesFile(store).write(row), "00")
         }
         let filter = SalesCustomerReport.Filter()
         XCTAssertEqual(try service.generate(filter, kind: .alphabetical).map(\.code), ["CUST022", "CUST011"])
         let alpha = try XCTUnwrap(store.readRaw(SalesCustomerReport.exportPath))
         XCTAssertEqual(String(decoding: alpha[51..<80], as: UTF8.self), "Customer Alphabetical Listing")
+        let alphaRow = try XCTUnwrap(alpha.split(separator: 0x0a).first { $0.starts(with: "CUST011".utf8) })
+        XCTAssertEqual(String(decoding: alphaRow.dropFirst(70).prefix(18), as: UTF8.self), "0123456789 x123   ")
         XCTAssertEqual(store.readRaw("custsort.tmp"), [])
         try service.prepareTurnover()
         XCTAssertEqual(store.readRaw(SalesCustomerReport.exportPath), [])
-        XCTAssertEqual(try service.generate(filter, kind: .turnover).map(\.code), ["CUST011", "CUST022"])
+        let entries = try service.generate(filter, kind: .turnover)
+        XCTAssertEqual(entries.map(\.code), ["CUST011", "CUST022"])
+        XCTAssertEqual(entries.first?.quarterlyTurnover, [123_456, 1_234_567_890, 0, 0])
         let turnover = try XCTUnwrap(store.readRaw(SalesCustomerReport.exportPath))
         XCTAssertEqual(String(decoding: turnover[51..<79], as: UTF8.self), "Sales Ledger Turnover Report")
         let row = try XCTUnwrap(turnover.split(separator: 0x0a).first { $0.starts(with: "CUST011".utf8) })
         XCTAssertEqual(String(decoding: row.dropFirst(64).prefix(8), as: UTF8.self), "    1234")
+        XCTAssertEqual(String(decoding: row.dropFirst(72).prefix(8), as: UTF8.self), " 2345678")
     }
 
     func testUnappliedSalesReportUsesProcessingDateInHeading() throws {

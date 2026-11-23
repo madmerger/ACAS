@@ -10,7 +10,7 @@ public struct SalesStatements {
         public let balance: Int64
     }
 
-    public static let exportPath = "ledgers/acas/prt-2"
+    public static let exportPath = "ledgers/acas/sales-statements.prt"
     private let context: BusinessContext
 
     public init(_ context: BusinessContext) { self.context = context }

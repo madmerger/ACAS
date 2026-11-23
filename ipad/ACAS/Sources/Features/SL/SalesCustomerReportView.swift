@@ -54,8 +54,15 @@ struct SalesCustomerReportView: View {
         .sheet(item: $preview) { preview in
             NavigationStack {
                 List(preview.entries) { entry in
-                    LabeledContent(entry.code, value: entry.name)
-                        .accessibilityIdentifier("sales.customer.report.row." + entry.code)
+                    VStack(alignment: .leading) {
+                        LabeledContent(entry.code, value: entry.name)
+                            .accessibilityIdentifier("sales.customer.report.row." + entry.code)
+                        ForEach(entry.quarterlyTurnover.indices, id: \.self) { index in
+                            LabeledContent(slText("sales.customer.report.quarter \(index + 1)"),
+                                           value: (Decimal(entry.quarterlyTurnover[index]) / 100)
+                                           .formatted(.number.precision(.fractionLength(2))))
+                        }
+                    }
                 }
                 .overlay {
                     if preview.entries.isEmpty {
@@ -94,7 +101,7 @@ struct SalesCustomerReportView: View {
 
     private struct Preview: Identifiable {
         let id = UUID()
-        let entries: [SalesLedger.Customer]
+        let entries: [SalesCustomerReport.Entry]
         let document: SalesReportDocument?
     }
 
