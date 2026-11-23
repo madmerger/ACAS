@@ -1,0 +1,349 @@
+# 総勘定元帳（GL）: レガシー英語文言⇥日本語文言。日本語の表示幅（全角=2）は原文の長さ以下にすること。
+Client -	顧客 -
+General Ledger  Start Of Day	総勘定元帳  日次開始
+Enter todays date as dd/mm/yyyy - [          ]	本日の日付を入力 dd/mm/yyyy     - [          ]
+Enter todays date as mm/dd/yyyy - [          ]	本日の日付を入力 mm/dd/yyyy     - [          ]
+Enter todays date as yyyy/mm/dd - [          ]	本日の日付を入力 yyyy/mm/dd     - [          ]
+GL009 Invalid Date	GL009 日付不正
+General Ledger System Menu	総勘定元帳システムメニュー
+(A)  Date Entry	(A)  処理日入力
+(B)  Chart Of Accounts	(B)  勘定科目管理
+(C)  Default Account Maintenance	(C)  既定勘定の管理
+(D)* Final Accounts Set-Up	(D)* 決算書設定
+(E)  Enter Transactions	(E)  仕訳入力
+(F)  Proof/Modify Transactions	(F)  仕訳の検証・修正
+(G)  Batch Status Report	(G)  バッチ状態確認
+(H)  Transaction Posting	(H)  仕訳転記
+(I)  End Of Cycle Processing	(I)  期間締め
+(J)  Print Trial Balance	(J)  試算表印刷
+(K)  Print P&L and Balance Sheet	(K)  損益計算書・貸借対照表
+(L)  Print Ledgers	(L)  元帳印刷
+(M)* Print Final Accounts	(M)* 決算書印刷
+(X)  Exit to	(X)  終了
+(Z)  System Set Up	(Z)  システム設定
+Sorry not yet available	未提供の機能です
+Problem with opening system file. Hit return to clear	システムファイルを開けません。Enterで続行
+GL001 System 1 read err =	GL001 システム1読込異常=
+GL002 System 2 read err =	GL002 システム2読込異常=
+GL003 System 4 read err =	GL003 システム4読込異常=
+hit return	Enter押下
+& Credits the default A/c	既定勘定を貸方とする
+0 - Return to System Menu	0 - システムメニューへ
+Name :- [	名称 :- [
+% OK (Y/N) :- [Y]	% 可 (Y/N) :- [Y]
+% ok (Y/N) :- [Y]	% 可 (Y/N) :- [Y]
+(1)  Amend existing Batch	(1)  既存バッチの修正
+(1)  Detailed Trial Balance	(1)  明細試算表
+(1)  Display Batch Report	(1)  バッチ状況の表示
+(1)  Set up New Batch	(1)  新規バッチ登録
+(1)  Set-Up Default Accounts	(1)  既定勘定の登録
+(2)  Amend  Default Accounts	(2)  既定勘定の修正
+(2)  Branch Trial Balance	(2)  拠点別試算表
+(2)  Print Batch Report	(2)  バッチ状況の印刷
+(2)  Print Proof Reports - All Batches	(2)  検証帳票印刷 - 全バッチ
+(2)  Profit Centre Trial Balance	(2)  利益センター別試算表
+(2) Answering no (N)	(2) (N) と答えると
+(3)  Display The Defaults	(3)  既定勘定の表示
+(3)  Print Proof Reports - One Batch	(3)  検証帳票印刷 - 1 バッチ
+(4)  Print all Transactions	(4)  全仕訳の印刷
+(9)  Exit to system menu	(9)  メニューへ戻る
+(9)  Return To System Menu	(9)  メニューへ戻る
+-----------Name-----------  Type  Placement  Level	-----------名称-----------  種別  配置       階層
+/ Batch - 	/ バッチ- 
+/ Item  - 	/ 明細  - 
+33 - Set-up Temporary Default	33 - 一時既定の設定
+99 - Display current Defaults	99 - 現在の既定を表示
+<---------Name--------->    Type    Level --Placement--	<---------名称--------->    種別    階層  ----配置-----
+<9999>  Is reserved!	<9999>  は予約済み!
+<Esc> - to back-up one field	<Esc> - 1 項目戻る
+<I> - Input  VAT	<I> - 仮払消費税
+<N> - No     VAT	<N> - 消費税なし
+<N> Next; <I> Next ignore same code; <C> Cont; <Q> Quit :- [I]	<N>次 <I>同一コード無視で次 <C>継続 <Q>終了             :- [I]
+<O> - Output VAT	<O> - 仮受消費税
+A/C Nos	勘定No
+Account        [       ]	勘定           [       ]
+Add To Existing Defaults (Y/N) ? - [ ]	既存の既定へ追加しますか (Y/N) ? - [ ]
+Amend Batch Details? (Y/N) :- [N]	バッチ明細を修正? (Y/N)    :- [N]
+Amend Batch Header ? (Y/N) :- [N]	バッチ見出しを修正? (Y/N)  :- [N]
+Amount         [           ]	金額           [           ]
+Assigned Batch :- {     }	割当バッチ     :- {     }
+B - Back-up one field	B - 1 項目戻る
+Batch         :- {     }	バッチ        :- {     }
+Batch      - 	バッチ     - 
+Batch Amendment / Reporting Functions	バッチ修正・帳票機能
+Batch Data	バッチ情報
+Batch Desc.    :- [	バッチ摘要     :- [
+Batch Status Report	バッチ状況報告
+Branch	拠点
+Branch         [  ]	拠点           [  ]
+Chart Of Account Utilities	勘定科目ユーティリティ
+Chart of Accounts Set-Up	勘定科目の登録
+Checking Batches	バッチ確認中
+Code - 	区分 - 
+Code - [  ]	区分 - [  ]
+Code Vat	区分 税
+Contra A/C - 	相手勘定   - 
+Convention - 	貸借規約   - 
+Current path is :	現在のパス     :
+Current path/name is :	現在のパス/名称      :
+Cycle         :- [  ]	サイクル      :- [  ]
+Cycle - 	周期  - 
+DR - Debits the A/c posted to	DR - 転記先勘定を借方とする
+Date           [          ]	日付           [          ]
+Default    - 	既定       - 
+Default Accounts Amendment	既定勘定の修正
+Default Accounts Display	既定勘定の表示
+Default Accounts Set-Up	既定勘定の登録
+Default File Utilities	既定勘定ユーティリティ
+Default Set-Up	既定の設定
+Deletion Request Denied! Current Balance Not Zero	削除できません! 当期残高がゼロではありません
+Description   :- [	摘要          :- [
+Detailed Trial Balance	明細試算表
+Details OK to file ? (Y/N) :- [Y]	この内容で登録? (Y/N)      :- [Y]
+Does not exist!	存在しません!
+E - End	E -終了
+End Of Cycle Processing	サイクル末処理
+End of listing. Hit return for Menu.	一覧終了。Return でメニューへ。
+Enter <+> only to Delete	削除は <+> のみ入力
+Enter <DR> or <CR>	<DR> か <CR> 入力
+Enter <N> for next screen or <X> to exit :- [ ]	次画面は <N>、終了は <X>                 :- [ ]
+Enter <Y> to select the code. Space to de-select the code.<Q> to finish	<Y> でコード選択、空白で選択解除、<Q> で終了
+Enter Account to print   [     ]	印刷する勘定を入力       [     ]
+Enter Batch Number :- [     ]	バッチ番号を入力   :- [     ]
+Enter Cycle    :- [  ]	サイクル入力   :- [  ]
+Enter Number To Alter (Return to exit)  :- [  ]	修正する番号を入力 (Return で終了)      :- [  ]
+Enter P&L Date  (space to abort) - [	損益日付を入力  (空白で中止)     - [
+Enter P/C to Print       [     ]	印刷する P/C を入力      [     ]
+Enter Password  - [    ]	パスワード入力  - [    ]
+Enter Transaction Posting Date :- [        ]	仕訳の転記日付を入力           :- [        ]
+Enter the start Account - [      ]	開始勘定を入力          - [      ]
+Establishment Code :- [  ]	事業所コード       :- [  ]
+F - Force Write	F - 強制書込
+GL010 Hit Return	GL010 Return押下
+GL011 Invalid Date	GL011 日付不正
+GL012 Hit Return to Quit	GL012 Return で終了
+GL100 Chart of Accounts not set up	GL100 勘定科目が未登録です
+GL101 A code for Establishment must be input	GL101 事業所コードの入力が必要です
+GL102 Error! Ledger Code must be not less 1000	GL102 エラー! 勘定コードは 1000 以上
+GL103 No Ledger File to update	GL103 更新する元帳がありません
+GL104 Rewrite ERR 030-01. hit return to finish	GL104 更新エラー 030-01。Return で終了
+GL105 Deletion Request Denied! Current Balance Not Zero	GL105 削除できません! 当期残高がゼロではありません
+GL106 Ledger File Does Not Exist	GL106 元帳ファイルがありません
+GL107 Set Up P/C Branches First	GL107 先に P/C・拠点を登録
+GL108 Invalid. Too early	GL108 不正。早すぎます
+GL109 Invalid. Too forward	GL109 不正。先すぎます
+GL110 No check on items.	GL110 件数検査なし。
+GL111 Invalid code	GL111 コード不正
+GL114 Enter <0> to signify change made or <9> to abort this run :- [ ]	GL114 変更済みなら <0>、処理を中止するなら <9> を入力           :- [ ]
+GL115 Ensure Archive USB Memory Stick is in path	GL115 保管用 USB メモリの接続を確認
+GL116 Ensure you have done a file backup prior to running!!!	GL116 実行前にファイルのバックアップを取得してください!!!
+GL117 Hit Escape or press A to abort	GL117 中止は Esc または A
+GL118 A/C Not Found	GL118 勘定なし
+GL119 P/C Not Found	GL119 P/C なし
+General Ledger - Batch Amendment	総勘定元帳 - バッチ修正
+General Ledger - Posting Input	総勘定元帳 - 仕訳入力
+General Ledger - Posting Set-Up	総勘定元帳 - 仕訳設定
+General Ledger - Proof Report	総勘定元帳 - 検証帳票
+Gross Amount   :- [            ]	総額           :- [            ]
+Gross Value   :- [            ]	総額          :- [            ]
+Help Data	ヘルプ
+INVALID! Header Missing	不正! 見出しなし
+Input VAT	仮払税
+Invalid A/C number	勘定番号不正
+Invalid Date	日付不正
+Invalid Placement!	配置不正!
+Invalid Placement!.	配置不正!.
+Invalid code	コード不正
+Invalid start number!	開始番号不正!
+Invalid type!	種別不正!
+Invalid!	不正!
+Invalid! Code must be numeric or <n*>	不正! コードは数字か <n*>
+Invalid! Code must be numeric or <n*>.	不正! コードは数字か <n*>.
+Items         :- [  ]	件数          :- [  ]
+Ledger	元帳
+Ledger    Sub	元帳      副
+Ledger Print	元帳印刷
+Ledger Print - Sort	元帳印刷 - 整列
+N.B. (1) If first time set-up for this client answer no (N)	注   (1) この顧客の初回登録時は いいえ (N) と答える
+Name the Branches	拠点名の登録
+Name the Profit Centres	利益センター名の登録
+Narrative      [	摘要           [
+No VAT	税なし
+No VAT on this Batch.	このバッチは税なし。
+No match found !	該当なし !
+Number of Items:- [  ]	明細件数       :- [  ]
+Ok to continue ? (Y/N)	続行しますか ? (Y/N)
+Option :- [ ]	選択   :- [ ]
+Output VAT	仮受税
+P&L and Balance Sheet	損益計算書/貸借対照表
+Phase - 1.  Batch Check	段階  - 1.  バッチ確認
+Phase - 2.  Transaction Archiving	段階  - 2.  仕訳の保管
+Phase - 2.  Transaction Pre-process	段階  - 2.  仕訳の前処理
+Phase - 3.  Transaction Deletion	段階  - 3.  仕訳の削除
+Phase - 4.  Posting Contraction	段階  - 4.  仕訳ファイル圧縮
+Phase - 4.  Transaction Update	段階  - 4.  仕訳の更新
+Phase - 5.  End of Period Processing	段階  - 5.  期間末処理
+Press <Esc> key to exit	<Esc> キーで終了
+Press Return for next screen	Return で次画面
+Print All Accounts? (Y/N) [ ]	全勘定を印刷? (Y/N)       [ ]
+Print Out	印刷
+Print all P/Cs ?    (Y/N) [ ]	全 P/C を印刷?      (Y/N) [ ]
+Printing......please wait	印刷中......お待ち下さい
+Profit Centre  [  ]	利益センター   [  ]
+Profit centres/branches only valid for Revenue Accounts!	利益センター・拠点は損益勘定のみ有効です!
+Q - Quit Batch	Q - バッチ終了
+Select Default Branch          :- [  ]	既定の拠点を選択               :- [  ]
+Select Default Profit Centre   :- [  ]	既定の利益センターを選択       :- [  ]
+Select Option By Number :- [ ]	番号で選択              :- [ ]
+Select one of the following by letter  :- [ ]	次から英字で選択してください           :- [ ]
+Select one of the following by number :- [ ]	次から番号で選択してください          :- [ ]
+Select one of the following by number :- [1]	次から番号で選択してください          :- [1]
+Select the required function by number    [ ]	必要な機能を番号で選択                    [ ]
+Set-Up for Branches	拠点の登録
+Set-Up for Profit Centres	利益センターの登録
+Sorting.......Please wait	整列中.......お待ち下さい
+Structured Trial Balance	階層別試算表
+Sub	副
+Transaction Entry Functions	仕訳入力機能
+Transaction Posting	仕訳転記
+Trial Balance	試算表
+Type return to exit.	Return で終了。
+Unrecognised Account/P.C.	勘定/P.C. が不明
+VAT  - [ ]	税   - [ ]
+VAT A/C    - 	税勘定     - 
+VAT Amount     [           ]	税額           [           ]
+VAT Code       [ ]  {P or M or space}	税コード       [ ]  {P か M か空白}
+VAT Code       [ ]  {p or m or space}	税コード       [ ]  {p か m か空白}
+VAT Rate :- [ ]	税率     :- [ ]
+VAT Rate :- [1]	税率     :- [1]
+VAT Value     :- [            ]	税額          :- [            ]
+Vat   Amount   :- [            ]	税額           :- [            ]
+Vat A/C    - 	税勘定     - 
+Working.......Please wait	処理中.......お待ち下さい
+cycle - 	周期  - 
+default accounts display	既定勘定の表示
+destroys	消去:
+n - Back-up n records	n - n 件戻る
+select default number          :- [  ]	既定番号を選択                 :- [  ]
+select posting convention      :- [CR]	貸借規約を選択                 :- [CR]
+the existing defaults	既存の既定勘定
+GL000 (3.00.04)	GL000 (3.00.04)
+GL020 (3.00.02)	GL020 (3.00.02)
+GL030 (3.00.04)	GL030 (3.00.04)
+General (3.00.11)	General (3.00.11)
+gl050 (3.00.03)	gl050 (3.00.03)
+gl051 (3.00.04)	gl051 (3.00.04)
+gl060 (3.00.04)	gl060 (3.00.04)
+gl070 (3.00.02)	gl070 (3.00.02)
+gl072 (3.00.04)	gl072 (3.00.04)
+gl080 (3.00.02)	gl080 (3.00.02)
+gl090 (3.00.03)	gl090 (3.00.03)
+gl090a (3.00.04)	gl090a (3.00.04)
+gl090b (3.00.04)	gl090b (3.00.04)
+gl100 (3.00.01)	gl100 (3.00.01)
+gl105 (3.00.04)	gl105 (3.00.04)
+gl120 (3.00.04)	gl120 (3.00.04)
+Add New Accounts	勘定の新規登録
+Amend/Delete Existing Accounts	既存勘定の修正・削除
+Chart Of Accounts Display	勘定科目の表示
+Chart Of Accounts Update	勘定科目の更新
+Chart Of Accounts	勘定科目
+Display Chart of Accounts	勘定科目の表示
+Print Chart of Accounts	勘定科目の印刷
+Exit to system menu	メニューへ戻る
+Header	見出
+Detail	明細
+Sales	売上
+Purch.	仕入
+Special	特殊
+Sales Income	売上収益
+Direct Costs	直接原価
+Sundry Income	雑収入
+Indirect Costs	間接費
+Fixed Assets	固定資産
+Current Asset	流動資産
+Current Assets	流動資産
+Current Liab.	流動負債
+Current Liabilities	流動負債
+Capital A/Cs	資本勘定
+Shareholders Funds	株主資本
+Open	未締
+Waiting	転記待
+Processed	処理済
+Archived	保管済
+Actual	実績
+Page	頁
+Account	勘定
+Batch	ﾊﾞｯﾁ
+Cycle	周期
+General	総勘定
+Detail Trial Balance	明細試算表
+Profit Centre Trial Balance	利益センター別試算表
+Condensed Report	要約帳票
+Transaction Proof Report	仕訳検証帳票
+Ledger - Print	元帳 - 印刷
+Sheet	枚
+T o t a l	合    計
+t o t a l	合    計
+B a l a n c e	残      高
+brought forward	前期繰越
+Debit	借方
+Credit	貸方
+CRedit	貸方
+Gross Profit	売上総利益
+Net Profit	純利益
+Net Current Value	正味流動価値
+Profit & Loss Account	損益計算書
+For the period to	対象期間末
+Balance Sheet as at	貸借対照表 基準日
+Date Entered	入力日
+***Unknown***	***不明***
+Items	件数
+Last	最終
+Activity	処理日
+Status	状況
+Chart of Accounts	勘定科目表
+Name	名称
+Level	階層
+Placement	配置
+Batch Controls	バッチ統制
+Narative	摘要
+Number	番号
+Code	区分
+Date	日付
+Net Amount	純額
+VAT Amount	税額
+VAT Account	税勘定
+VAT Side	税貸借
+Gross	総額
+Net	純
+VAT	税
+Current Balance	当期残高
+Last Year Balance	前年残高
+Last  Year	前    年
+This  Year	当    年
+Quarter	四半期
+Contra	相手
+Balance	残高
+Legend	摘要
+Trans	仕訳
+Br/P C	拠/PC
+Account P.C.	勘定    P.C.
+Archiving.	保管中。
+Deleting.	削除中。
+Ledger  Batch  Status       Last	元帳    ﾊﾞｯﾁ   状態         最終
+---------Batch Controls---------	----------バッチ統制------------
+------  -----  ------     Activity	------  -----  ------     処理日
+Items  ---Gross---- -----VAT----	件数   ----総額---- ----税額----
+---Gross----	----総額----
+-----VAT----	----税額----
+Direct Income	直接収益
+Indirect Cost	間接費
+<----Detail	<----明細
+Level----><-------Level	階層----><-------階層
+4-------><-------Level	4-------><-------階層
+3-------><-------Level	3-------><-------階層
+2-------><-------Level	2-------><-------階層
+<--------This	<--------当
+Year-------->	年度-------->
+<--------Last	<--------前
