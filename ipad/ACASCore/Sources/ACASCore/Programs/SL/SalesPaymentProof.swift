@@ -53,7 +53,9 @@ public struct SalesPaymentProof {
             page = (page + 1) % 100
             let heading = Cobol.x("SL095 (3.01.07)", 48) + Cobol.x("Payment And Journal Proof Report", 76)
                 + "Page " + Pic.edit("zz9", value: page, scale: 0)
-            let subheading = Cobol.x(system.str("usera"), 48) + space(74) + date(system.int("run-date"))
+            let company = system.raw("usera")
+            let subheading = company + Array(repeating: UInt8(0x20), count: 122 - company.count)
+                + SJIS.encode(date(system.int("run-date")), size: 10)
             if page == 1 {
                 printer.before(1, heading)
                 printer.before(1, subheading)
@@ -95,13 +97,16 @@ public struct SalesPaymentProof {
                 else { total.add(paid: paid, applied: applied, deducted: deduction) }
                 let batchLabel = Self.edited("z(4)9", batch, width: 5, digits: 5, scale: 0)
                     + "/" + (item == 0 ? space(4) : Cobol.z(item, 3) + " ")
-                let name = customers.read(key: record.raw("customer"))?.str("sales-name") ?? "!! Customer Unknown"
+                let name = customers.read(key: record.raw("customer")).map { Array($0.raw("sales-name").prefix(29)) }
+                    ?? SJIS.encode("!! Customer Unknown", size: 29)
                 let paidText = Self.edited("z(5)9.99", paid, width: 9, digits: 8) + "  "
                 let appliedText = Self.edited("z(5)9.99", applied, width: 9, digits: 8) + "  "
                 let deductionText = Self.edited("z(3)9.99", deduction, width: 7, digits: 6) + "  "
                 if lines > pageLines { headings() }
-                printer.after(2, batchLabel + (journal ? "J " : "P ") + Cobol.x(date(record.int("date")), 11)
-                    + Cobol.x(account, 8) + Cobol.x(name, 29) + paidText + appliedText + deductionText)
+                let prefix = batchLabel + (journal ? "J " : "P ") + Cobol.x(date(record.int("date")), 11)
+                let accountBytes = record.raw("customer") + [0x20]
+                let amounts = paidText + appliedText + deductionText
+                printer.after(2, SJIS.encode(prefix, size: 22) + accountBytes + name + SJIS.encode(amounts, size: 73))
                 lines += 2
             }
         }
