@@ -81,7 +81,8 @@ public static class SalesReportValues
     {
         "Receipt" or "Receipts" or "現金売上" => "1",
         "Invoice" or "Invoices" or "掛売請求書" => "2",
-        "Cr. Note" or "Credit Notes" or "貸方伝票" => "3",
+        "Cr. Note" or "Credit Note" or "Credit Notes" or "貸方伝票" => "3",
+        "Pro-Forma" or "仮請求書" => "4",
         _ => throw new FormatException()
     };
 
@@ -142,7 +143,12 @@ public static class SalesReportValues
         if (page < 1 || head <= page + 2) throw new FormatException();
         var pageFields = Regex.Match(rows[page], @"Page\s+(\d+)\s+of\s+(\d+)\s+(\d{2}/\d{2}/\d{4})\s+(\d{2}:\d{2})");
         if (!pageFields.Success) throw new FormatException();
-        foreach (string line in rows.Take(page).Where(line => line.Trim() is not ("Invoice" or "=======")))
+        int heading = Array.FindIndex(rows, 0, page, line =>
+            line.Trim() is "Receipt" or "Invoice" or "Credit Note" or "Pro-Forma");
+        if (heading < 0) throw new FormatException();
+        yield return ["取引区分", Kind(rows[heading].Trim())];
+        foreach (string line in rows.Take(page).Where((line, i) =>
+            i != heading && !line.Trim().All(ch => ch == '=')))
             yield return ["事業者", line.Trim()];
         yield return ["ページ", Number(pageFields.Groups[1].Value), Number(pageFields.Groups[2].Value)];
         yield return ["日付", Date(pageFields.Groups[3].Value), pageFields.Groups[4].Value];
@@ -181,6 +187,7 @@ public static class SalesReportValues
         int order = Array.FindIndex(lines, line => line.StartsWith("注文番号" + Wide, StringComparison.Ordinal));
         int page = Array.FindIndex(lines, line => line.StartsWith("ページ" + Wide, StringComparison.Ordinal));
         if (number < 4 || order <= number + 2 || page != order + 2) throw new FormatException();
+        yield return ["取引区分", Kind(lines[1].Trim())];
         yield return ["事業者", Parts(lines[2])[1]];
         foreach (string line in lines[3..number]) yield return ["事業者", line.Trim()];
         yield return ["ページ", .. Parts(lines[page])[1].Split('／').Select(Number)];
