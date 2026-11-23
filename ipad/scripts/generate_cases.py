@@ -10,14 +10,24 @@ WORKFLOWS = {
     "SYS-001": ("company", "会社・各台帳設定と業務用マスタ投入"),
     "SYS-002": ("system-company-data", "会社の登録内容を表示"),
     "SYS-003": ("system-company-cancel", "会社設定を保存せずに戻る"),
+    "SYS-004": ("system-company-report", "有効な台帳の設定を確認して帳票を出力"),
+    "SYS-005": ("system-company-page-lines", "印刷行数に28行を入力"),
+    "SYS-006": ("system-company-page-lines", "印刷行数に29行を入力"),
+    "SYS-007": ("system-company-period", "会計サイクルの周期に13を入力"),
+    "SYS-008": ("system-company-period", "会計サイクルの周期に06を入力"),
+    "SYS-009": ("system-company-period", "会計サイクルの周期に99を入力"),
+    "SYS-010": ("system-company-report", "売掛元帳と在庫管理の連携を無効にする"),
     "GL-020": ("gl-account-add", "新規の見出し勘定を登録"),
     "GL-023": ("gl-chart-inquiry", "指定した勘定科目を起点に照会"),
     "GL-033": ("gl-chart-print", "勘定科目一覧を出力"),
+    "GL-034": ("gl-trial-balance-detail", "詳細試算表を出力"),
     "GL-205": ("gl-chart-inquiry-menu", "勘定科目一覧の照会画面を表示"),
     "GL-206": ("gl-chart-print", "勘定科目一覧の帳票を確認"),
     "GL-219": ("gl-batch-status-menu", "バッチ状況メニューを表示"),
     "GL-220": ("gl-batch-status-display", "バッチ状況を照会"),
     "GL-221": ("gl-batch-status-print", "バッチ状況帳票を出力"),
+    "GL-224": ("gl-trial-balance-menu", "試算表メニューを表示"),
+    "GL-225": ("gl-trial-balance-detail", "詳細試算表の帳票を確認"),
     "SL-104": ("sales-proof", "印刷済み請求書の未転記売上取引確認帳票"),
     "CALC-200": ("check-digit", "得意先コードのチェックディジット"),
 }
@@ -101,7 +111,7 @@ def fixture(evidence, case):
         if "/files/spool/" in path and source.read_bytes().hex() not in reports.values():
             raise ValueError(f"帳票スプールと原本が一致しません: {path}")
     seeded = workflow in {"sales-proof", "gl-account-add"} or workflow.startswith(
-        ("system-company-", "gl-chart-", "gl-batch-status-")
+        ("system-company-", "gl-chart-", "gl-batch-status-", "gl-trial-balance-")
     )
     seed = snapshot_seed(evidence, run) if seeded else None
     with evidence_path(evidence, run / "terminal.cast").open(encoding="utf-8") as recording:

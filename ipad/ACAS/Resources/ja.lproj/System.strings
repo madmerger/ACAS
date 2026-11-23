@@ -62,6 +62,7 @@
 "system.settings.start-date" = "期間開始日";
 "system.settings.end-date" = "期間終了日";
 "system.settings.page-lines" = "印刷１ページの行数";
+"system.settings.page-lines.minimum" = "29行以上を指定してください。48行に戻しました。";
 "system.settings.vat-rate-1" = "付加価値税率１";
 "system.settings.vat-rate-2" = "付加価値税率２";
 "system.settings.vat-rate-3" = "付加価値税率３";
@@ -72,6 +73,9 @@
 "system.settings.sl-vat-printed" = "付加価値税登録番号を印刷";
 "system.settings.scycle" = "現在の会計サイクル";
 "system.settings.period" = "四半期内のサイクル数";
+"system.settings.period.weekly" = "週次";
+"system.settings.period.fortnightly" = "隔週";
+"system.settings.period.monthly" = "月次";
 "system.settings.host" = "複数利用者の互換設定";
 "system.settings.op-system" = "互換運用環境の指定";
 "system.settings.data-capture-used" = "入力方式の指定";

@@ -2,6 +2,115 @@ import XCTest
 
 final class SystemCompanyDataFlows: XCTestCase {
     @MainActor
+    func testSYS004() throws {
+        let app = try openCompany("SYS-004")
+        for (group, field) in [
+            ("modules", "level-1"), ("company", "address-1"), ("general", "p-c"),
+            ("sales", "sl-credit"), ("purchases", "pl-delim"), ("stock", "stk-debug")
+        ] {
+            tap(app, "system.settings." + group)
+            XCTAssertTrue(app.descendants(matching: .any).matching(identifier: "system.settings." + field)
+                .firstMatch.waitForExistence(timeout: 5))
+            back(app)
+        }
+        checkReport(app, id: "SYS-004")
+    }
+
+    @MainActor
+    func testSYS005() throws {
+        try checkNumber("SYS-005", "page-lines", input: "028", display: "48",
+                        message: "29行以上を指定してください。48行に戻しました。")
+    }
+
+    @MainActor
+    func testSYS006() throws {
+        try checkNumber("SYS-006", "page-lines", input: "029", display: "29")
+    }
+
+    @MainActor
+    func testSYS007() throws {
+        try checkNumber("SYS-007", "period", input: "13", display: "13", message: "週次")
+    }
+
+    @MainActor
+    func testSYS008() throws {
+        try checkNumber("SYS-008", "period", input: "06", display: "06", message: "隔週")
+    }
+
+    @MainActor
+    func testSYS009() throws {
+        try checkNumber("SYS-009", "period", input: "99", display: "99", message: "月次")
+    }
+
+    @MainActor
+    func testSYS010() throws {
+        let app = try openCompany("SYS-010")
+        tap(app, "system.settings.sales")
+        let link = app.switches["system.settings.sl-stock-link"]
+        let form = app.collectionViews.containing(.switch, identifier: "system.settings.sl-dunning").firstMatch
+        for _ in 0..<3 where !link.isHittable { form.swipeUp() }
+        XCTAssertTrue(link.isHittable)
+        XCTAssertEqual(link.value as? String, "1")
+        link.coordinate(withNormalizedOffset: CGVector(dx: 0.95, dy: 0.5)).tap()
+        XCTAssertEqual(link.value as? String, "0")
+        back(app)
+        checkReport(app, id: "SYS-010")
+    }
+
+    @MainActor
+    private func checkReport(_ app: XCUIApplication, id: String) {
+        tap(app, "system.settings.operations")
+        let root = "/home/ubuntu/work/acas-equiv/runtime/ledgers/"
+        for (field, suffix) in [("archive-incomplete", "IRS/"), ("archive-ledgers", "ACAS/")] {
+            let input = app.textFields["system.settings." + field]
+            XCTAssertTrue(input.waitForExistence(timeout: 5))
+            input.tap()
+            input.typeText(root + suffix)
+            XCTAssertEqual(input.value as? String, root + suffix)
+        }
+        back(app)
+        tap(app, "action.save")
+        let report = app.buttons["system.settings.report"]
+        let form = app.collectionViews.containing(.textField, identifier: "system.company.name").firstMatch
+        for _ in 0..<3 where !report.isHittable { form.swipeUp() }
+        if !report.exists {
+            let screenshot = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+            screenshot.name = "\(id) 帳票ボタン未表示"
+            screenshot.lifetime = .keepAlways
+            add(screenshot)
+        }
+        XCTAssertTrue(app.staticTexts["会社設定を保存しました"].exists)
+        tap(app, "system.settings.report")
+        XCTAssertTrue(app.navigationBars["設定内容の帳票"].waitForExistence(timeout: 5))
+        captureMatch(app, id)
+    }
+
+    @MainActor
+    private func back(_ app: XCUIApplication) {
+        app.navigationBars.buttons["BackButton"].firstMatch.tap()
+    }
+
+    @MainActor
+    private func checkNumber(_ id: String, _ setting: String, input: String, display: String, message: String? = nil) throws {
+        let app = try openCompany(id)
+        tap(app, "system.settings.company")
+        let field = app.textFields["system.settings." + setting]
+        let form = app.collectionViews.containing(.textField, identifier: "system.settings.address-1").firstMatch
+        for _ in 0..<3 where !field.isHittable { form.swipeUp() }
+        XCTAssertTrue(field.isHittable)
+        field.tap()
+        let original = try XCTUnwrap(field.value as? String)
+        field.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: original.count) + input + "\n")
+        if let message {
+            let label = app.staticTexts[message]
+            for _ in 0..<3 where !label.isHittable { form.swipeUp() }
+            XCTAssertTrue(label.exists)
+        }
+        XCTAssertEqual(field.value as? String, display)
+        captureMatch(app, id)
+    }
+
+    @MainActor
     func testSYS002() throws {
         let app = try openCompany("SYS-002")
         XCTAssertEqual(app.textFields["system.company.name"].value as? String, "EQUIVALENCE BUSINESS")
