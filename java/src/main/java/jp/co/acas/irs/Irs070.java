@@ -82,6 +82,7 @@ public class Irs070 extends IrsBase {
             reverse();
             if (amend()) irsub4(7); else irsub4(8);
         }
+        show(1, 1, " ");   // display space（位置指定なし）: レガシー実測で 1 行 1 桁が空白になる
         irsub4(2);
         call("irsub1", nl, fa);
         display(3, 1, "Renumber the postings (Y/N) - [ ]");

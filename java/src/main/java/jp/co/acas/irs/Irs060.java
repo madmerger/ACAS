@@ -245,7 +245,9 @@ public class Irs060 extends IrsBase {
         char letter = (char) ('A' + y - 1);
         boolean read = false;   // false = by-pass から開始
         while (true) {
-            if (read && !readWork()) break;
+            // loop-1: 既に終端に達した後の READ は FILE STATUS 46（AT END ではない）となり、
+            // レガシーは直前のレコードのまま by-pass へ進む（PE009865 を繰り返す。レガシー実測）。
+            if (read) { boolean wasEof = wfEof; if (!readWork() && !wasEof) break; }
             read = true;
             // by-pass
             char ac = rec.str("nl-ac").charAt(0);

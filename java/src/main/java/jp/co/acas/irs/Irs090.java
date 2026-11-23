@@ -60,7 +60,7 @@ public class Irs090 extends IrsBase {
                 mths[mm] = mths[mm].add(work.num("output-amount"));
             }
         } catch (Abort a) {
-            prt.close();
+            closePrint(prt);
             stopRun();
         }
         // ld-output-final

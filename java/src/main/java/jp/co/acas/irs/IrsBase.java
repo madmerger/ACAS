@@ -80,21 +80,29 @@ public abstract class IrsBase extends Program {
     protected CobFile openPrint() {
         CobFile f = CobFile.lineSequential(ctx.store, ctx.irsPath("prt-1"));
         f.open(CobFile.Mode.OUTPUT);
-        f.writeLine("");
+        pendingLine = "";
         return f;
     }
-    protected static void writeAfter(CobFile f, String line, int after) {
+    /** 直前に書いた行（改行前）。AFTER PAGE は改行せず FF + 行を同じ物理行へ続けるため、1 行分だけ保留する。 */
+    private String pendingLine;
+    protected void writeAfter(CobFile f, String line, int after) {
+        f.writeLine(pendingLine);
         for (int i = 1; i < after; i++) f.writeLine("");
-        f.writeLine(line);
+        pendingLine = line;
     }
-    protected static void writeAfterPage(CobFile f, String line) { f.writeLine("\f" + line); }
+    protected void writeAfterPage(CobFile f, String line) { pendingLine = pendingLine.stripTrailing() + "\f" + line; }
+    protected void closePrint(CobFile f) {
+        if (pendingLine != null) f.writeLine(pendingLine);
+        pendingLine = null;
+        f.close();
+    }
     /** call "SYSTEM" using Print-Report（lpr による印刷指示）。IRS の prt-1 は IRS ディレクトリにあるため spool へ自前で複写する。 */
     protected void printReport(Rec sys, CobFile f) {
         printReport(sys, f, "orientation-requested=3 page-left=48 page-top=24 page-right=24");
     }
     /** print-spool-command.cob（横向き）/ print-spool-command-p.cob（縦向き）の lpr オプション違いを opts で渡す。 */
     protected void printReport(Rec sys, CobFile f, String opts) {
-        f.close();
+        closePrint(f);
         String src = ctx.irsPath("prt-1");
         if (!ctx.store.exists(src)) return;
         int max = 0;
