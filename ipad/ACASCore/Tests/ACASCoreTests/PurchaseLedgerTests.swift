@@ -14,7 +14,7 @@ final class PurchaseLedgerTests: XCTestCase {
             var supplier = ledger.newSupplier
             supplier.code = input
             supplier.name = input
-            supplier.address1 = "1 MAIN ROAD"
+            supplier.address1 = "1 MAIN ROAD\\CITY"
             let code = try ledger.saveSupplier(supplier, creating: true)
             var record = try XCTUnwrap(ledger.supplierRecord(code))
             record.setInt("purch-current", balance)
