@@ -357,3 +357,5 @@ Invoice Pick	請求ピック
 Abrev #	略号
 Location	棚番
 Total Item Count	品目数合計
+Addr Err	住所不正
+Check Digit { }	検査数字    { }
