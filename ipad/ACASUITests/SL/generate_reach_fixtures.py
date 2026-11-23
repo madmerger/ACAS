@@ -10,6 +10,7 @@ from generate_customer_fixtures import BASE, IPAD, customer_seed
 
 CASES = {
     "SL-002": ("sales-customers-menu-view", "得意先マスター管理を開く"),
+    "SL-003": ("ui-test-only", "売掛残高・明細照会"),
     "SL-004": ("sales-invoice-entry-view", "売上取引入力を開く"),
     "SL-005": ("sales-invoice-edit-list-view", "売上取引修正を開く"),
     "SL-006": ("sales-proof", "売上の確認帳票・取引なし"),
@@ -23,6 +24,7 @@ CASES = {
     "SL-014": ("sales-day-book-unavailable", "売上日計簿・必要ファイルなし"),
     "SL-015": ("sales-statement", "得意先明細書・売掛明細なし"),
     "SL-016": ("sales-dunning", "督促状出力・売掛明細なし"),
+    "SL-017": ("ui-test-only", "売掛金年齢表"),
     "SL-020": ("sales-invoice-fixed-data-view", "請求書の初回固定項目設定"),
     "SL-021": ("sales-period-view", "期間締めの確認画面"),
     "SL-022": ("sales-customer-report-view", "得意先ファイル帳票の抽出条件"),
@@ -32,6 +34,7 @@ CASES = {
     "SL-204": ("sales-customer-screen-edit", "得意先変更の到達確認"),
     "SL-205": ("sales-customer-screen-remove", "得意先削除の到達確認"),
     "SL-207": ("sales-customer-screen-view", "得意先表示の到達確認"),
+    "SL-208": ("ui-test-only", "売掛残高・明細照会の到達確認"),
     "SL-209": ("sales-invoice-entry-view", "売上取引入力の到達確認"),
     "SL-210": ("sales-invoice-edit-list-view", "売上取引修正の到達確認"),
     "SL-211": ("sales-proof", "売上の確認帳票・取引なし"),
@@ -48,6 +51,7 @@ CASES = {
     "SL-224": ("sales-day-book-unavailable", "売上日計簿・必要ファイルなし"),
     "SL-225": ("sales-statement", "得意先明細書・売掛明細なし"),
     "SL-226": ("sales-dunning", "督促状出力・売掛明細なし"),
+    "SL-227": ("ui-test-only", "売掛金年齢表の到達確認"),
     "SL-230": ("sales-invoice-fixed-data-view", "請求書サブシステムの初回固定項目設定"),
     "SL-231": ("sales-invoice-fixed-data-view", "請求書固定項目設定・次の請求書番号"),
     "SL-232": ("sales-invoice-entry-view", "一括印刷待ち請求書登録の到達確認"),
@@ -56,8 +60,11 @@ CASES = {
     "SL-235": ("sales-invoice-delete-list-view", "請求書削除の到達確認"),
     "SL-236": ("sales-invoice-deletion-report", "請求書削除帳票・削除済み請求書なし"),
     "SL-237": ("sales-invoice-print-view", "請求書一括印刷・印刷種別の選択"),
+    "SL-238": ("ui-test-only", "納品書・ピッキングリスト印刷の到達確認"),
     "SL-239": ("sales-period-view", "期間締めの確認画面"),
     "SL-240": ("sales-customer-report-view", "得意先ファイル帳票の抽出条件"),
+    "SL-241": ("ui-test-only", "売掛元帳からメインメニューへ戻る"),
+    "SL-242": ("ui-test-only", "共通設定を開く"),
     "SL-244": ("sales-invoice-fixed-data-view", "請求書固定項目設定・初回表示"),
 }
 
@@ -133,6 +140,29 @@ def save_analysis_reports(evidence, cases, fixtures):
             })
 
 
+def save_business_customers(evidence, case, fixtures):
+    run = BASE.evidence_path(evidence, case["legacy_result"]["evidence"][0])
+    path = "ledgers/acas/salesled.dat"
+    system_path = "ledgers/acas/system.dat"
+    records = BASE.read_json(BASE.evidence_path(evidence, run / "after-records/records.json"))["files"][path]["records"]
+    customers = {code: record["fields"]["name"] for code, record in records.items()}
+    if sorted(customers.values()) != sorted(case["expected_result"]["names"]):
+        raise ValueError("SL-090 の得意先名または件数が証跡と一致しません")
+    system = BASE.evidence_path(evidence, run / "files" / system_path).read_bytes()
+    seed = {"files": {
+        system_path: {"type": "relative", "hex": system.hex()},
+        path: {"type": "indexed", "records": [[record["hex"][:14], record["hex"]] for record in records.values()]},
+    }}
+    with BASE.evidence_path(evidence, run / "terminal.cast").open(encoding="utf-8") as recording:
+        date = json.loads(recording.readline())["timestamp"]
+    BASE.save(fixtures / "SL-090.json", {
+        "id": "SL-090", "title": "業務用得意先マスター2件の投入",
+        "workflow": "ui-test-only", "dateSeconds": date, "customers": customers,
+        "seed": base64.b64encode(json.dumps(seed, separators=(",", ":")).encode()).decode(),
+        "changes": [], "reports": {},
+    })
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("evidence", type=Path)
@@ -157,6 +187,7 @@ def main():
             "reports": reports,
         })
     print(f"売掛元帳の画面到達確認用データ {len(CASES)} 件")
+    save_business_customers(evidence, cases["SL-090"], fixtures)
     save_analysis_reports(evidence, cases, fixtures)
     print("売上分析コードの帳票比較用データ 3 件")
 
