@@ -14,7 +14,7 @@ final class SalesAnalysisTests: XCTestCase {
         XCTAssertFalse(report.contains(0x0c))
     }
 
-    func testRejectsDescriptionsAndPrintCodesThatExceedRecordWidths() throws {
+    func testDistinguishesOverlongAndUnsupportedDescriptionsAndPrintCodes() throws {
         let store = try FileStore()
         let context = BusinessContext(store: store)
         try CompanySetup(context).save(name: "TEST")
@@ -27,6 +27,8 @@ final class SalesAnalysisTests: XCTestCase {
         let invalidFields: [(String, String, SalesAnalysis.Error)] = [
             (name + "売", "売A", .invalidDescription),
             (name, "売上", .invalidPrintCode),
+            ("😀", "売A", .unsupportedDescription),
+            (name, "😀", .unsupportedPrintCode),
         ]
         for (description, printCode, expected) in invalidFields {
             XCTAssertThrowsError(try service.save(group: "A", account: 1, description: description,
