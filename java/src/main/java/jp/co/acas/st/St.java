@@ -43,6 +43,28 @@ final class St {
         };
     }
 
+    /** FD のレコード領域の初期状態: FILLER は LOW-VALUES（INITIALIZE は FILLER を初期化しない）。 */
+    static jp.co.acas.core.Rec fdRec(jp.co.acas.core.Layout layout) {
+        jp.co.acas.core.Rec r = layout.newRec();
+        fillers(layout.root, r.bytes(), null);
+        return r;
+    }
+    /** INITIALIZE: 英数字 = 空白、数字 = ゼロ。FILLER は直前の内容を保つ。 */
+    static void initialize(jp.co.acas.core.Rec r) {
+        byte[] saved = r.copyBytes();
+        r.initialize();
+        fillers(r.layout.root, r.bytes(), saved);
+    }
+    /** FILLER 項目の領域を from の内容（null なら LOW-VALUES）にする。 */
+    private static void fillers(jp.co.acas.core.Layout.Field f, byte[] data, byte[] from) {
+        if (f.redefines != null) return;
+        if (f.kind == jp.co.acas.core.Layout.Kind.GROUP) { for (jp.co.acas.core.Layout.Field c : f.children) fillers(c, data, from); return; }
+        if (!"filler".equals(f.name)) return;
+        int end = f.offset + f.size * f.occurs;
+        if (from == null) java.util.Arrays.fill(data, f.offset, end, (byte) 0);
+        else System.arraycopy(from, f.offset, data, f.offset, end - f.offset);
+    }
+
     /** PIC X(n) への MOVE（左詰め・空白埋め・切捨て）。 */
     static String x(String s, int n) { return s.length() >= n ? s.substring(0, n) : s + " ".repeat(n - s.length()); }
 

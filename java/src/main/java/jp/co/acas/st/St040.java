@@ -56,7 +56,7 @@ public class St040 extends StProgram {
             break;
         }
         eraseEol(L23, 1);
-        Rec stock = Layout.of("copybooks/fdstock.cob", "Stock-Record").newRec();
+        Rec stock = St.fdRec(Layout.of("copybooks/fdstock.cob", "Stock-Record"));
         CobFile f = St.stockFile(ctx, stock);
         String fs = f.open(CobFile.Mode.IO);
         if (!fs.equals("00")) {

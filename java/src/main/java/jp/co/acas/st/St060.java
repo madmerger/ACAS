@@ -48,7 +48,7 @@ public class St060 extends StProgram {
 
     /** ba000-Import-Stock。 */
     private void importStock(String name) {
-        stock = Layout.of("copybooks/fdstock.cob", "Stock-Record").newRec();
+        stock = St.fdRec(Layout.of("copybooks/fdstock.cob", "Stock-Record"));
         stockFile = St.stockFile(ctx, stock);
         importFile = CobFile.sequential(ctx.store, name);
         if (!stockFile.open(CobFile.Mode.IO).equals("00")) {
@@ -74,7 +74,7 @@ public class St060 extends StProgram {
             if (data == null) break;
             rec = St.x(data, 512);
             recordCount++;
-            stock.initialize();
+            St.initialize(stock);
             // ba030-Process-Comma
             b = 1;
             String key = unstring(13, false);

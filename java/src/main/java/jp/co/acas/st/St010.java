@@ -38,7 +38,7 @@ public class St010 extends StProgram {
         sys = SystemFile.shared(ctx);
         toDay = St.x((String) ctx.shared.getOrDefault("to-day", ""), 10);
         manu = sys.intv("stk-manu-used") == 1;
-        stock = Layout.of("copybooks/fdstock.cob", "Stock-Record").newRec();
+        stock = St.fdRec(Layout.of("copybooks/fdstock.cob", "Stock-Record"));
         purch = Layout.of("copybooks/fdpl.cob", "Purch-Record").newRec();
         anal = Layout.of("copybooks/fdanal.cob", "analysis-record").newRec();
         stockFile = St.stockFile(ctx, stock);
@@ -132,7 +132,7 @@ public class St010 extends StProgram {
     /** zz020-Display-Outline。 */
     private void displayOutline() {
         displayHeading();
-        stock.initialize();
+        St.initialize(stock);
         orderDate = orderDue = St.x("", 10);
         display01(null);
     }
@@ -433,7 +433,7 @@ public class St010 extends StProgram {
             if (outline) {
                 // ba010-Display-Stock-Headings
                 displayOutline();
-                stock.initialize();
+                St.initialize(stock);
                 stock.set("stock-services-flag", "N");
             }
             outline = true;
@@ -480,7 +480,7 @@ public class St010 extends StProgram {
             if (escapeCode.equals("B") || back()) { outline = false; continue; }
             String fs = stockFile.write(stock);
             if (!fs.equals("00")) { fileError(fs); break; }
-            stock.initialize();
+            St.initialize(stock);
             orderDate = orderDue = St.x("", 10);
         }
         stockFile.close(); analFile.close(); purchFile.close();
@@ -517,7 +517,7 @@ public class St010 extends StProgram {
             if (outline) displayOutline();
             outline = true;
             // ca020-Stock-Item-Accept
-            stock.initialize();
+            St.initialize(stock);
             orderDate = orderDue = St.x("", 10);
             show(4, 67, " ", 2);
             String key = accept(4, 21, 13);
@@ -538,7 +538,7 @@ public class St010 extends StProgram {
             if (escapeCode.equals("B") || back()) { outline = false; continue; }
             String fs = stockFile.rewrite(stock);
             if (!fs.equals("00")) { fileError(fs); break; }
-            stock.initialize();
+            St.initialize(stock);
             orderDate = orderDue = St.x("", 10);
         }
         stockFile.close(); analFile.close(); purchFile.close();
