@@ -22,6 +22,10 @@ public class IntegrationTests
         Assert.Equal(20.00m, posting.N("vat-amount"));
         Assert.Equal("PL", posting.S("post-code"));
         Assert.Contains("買掛請求の転記", report.Body);
+        byte[] openItem = Convert.FromHexString(
+            "5355505030313801000000a35f020000000000000032504c2d52454620202020504c2d4f5244455220202000000000000c000010000c000000000c000000000c000002000c000000000c000000000c000000000c000000000c3000000000000000000000000000002000000000");
+        Assert.Equal(openItem, db.Read("ledgers/acas/openitm5.dat", "SUPP018/00000001"));
+        Assert.Empty(db.Scan("ledgers/acas/openitm4.dat"));
     }
 
     [Fact]

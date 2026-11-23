@@ -258,12 +258,19 @@ public sealed partial class LedgerTransfer(Db db)
         row.Set("party", invoice.S("party"));
         row.Set("description", sales ? invoice.S("description")[..25] : invoice.S("reference") + invoice.S("order"));
         row.SetN("invoice", invoice.N("number"));
-        row.SetN("batch", batch);
-        row.SetN("item", item);
+        if (sales)
+        {
+            row.SetN("batch", batch);
+            row.SetN("item", item);
+        }
         foreach (string field in new[] { "date", "type", "goods", "extra", "shipping", "tax", "discount", "extratax",
             "shippingtax", "deductDays", "deductAmount", "deductTax", "days" })
             row.SetN(field, invoice.N(field));
-        if (!sales) row.SetN("creditInvoice", invoice.N("creditInvoice"));
+        if (!sales)
+        {
+            row.Set("unapplied", "\0");
+            row.SetN("creditInvoice", invoice.N("creditInvoice"));
+        }
         return row;
     }
 }

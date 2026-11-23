@@ -17,7 +17,7 @@ internal sealed partial class Desktop : IDisposable
     private readonly string _databasePath;
     public Window Window { get; }
 
-    public Desktop(string executable, bool audit = false, string? baseline = null)
+    public Desktop(string executable, bool audit = false, string? baseline = null, string? irsDirectory = null)
     {
         if (!File.Exists(executable)) throw new FileNotFoundException("アプリが見つかりません。", executable);
         _folder = Directory.CreateTempSubdirectory("acas-ui-").FullName;
@@ -36,6 +36,7 @@ internal sealed partial class Desktop : IDisposable
             var start = new ProcessStartInfo(Path.GetFullPath(executable)) { UseShellExecute = false };
             start.ArgumentList.Add("--database");
             start.ArgumentList.Add(_databasePath);
+            if (irsDirectory != null) start.Environment["ACAS_IRS"] = irsDirectory;
             _process = Process.Start(start) ?? throw new InvalidOperationException("アプリを起動できません。");
             Window = Wait(() =>
             {

@@ -61,7 +61,7 @@ public sealed partial class IrsScreens
          Text("IrsPostingTax", "付加価値税額（空欄なら自動計算）", "", 11)],
         "転記", v =>
         {
-            string tax = v.Text("IrsPostingTax");
+            string tax = v.Text("IrsPostingTax").Trim();
             var item = books.Post(selected.Slot, v.Choice("IrsPostingSide") == "DR",
                 Date(v, "IrsPostingDate"), Number(v.Text("IrsPostingAccount"), 99999),
                 Amount(v.Text("IrsPostingAmount")), v.Text("IrsPostingLegend"), tax == "" ? null : Amount(tax));

@@ -72,7 +72,7 @@ internal static class Program
     private static IReadOnlyList<Outcome> Run(string app, RunOptions options, IReadOnlyList<Scenario> scenarios,
         Stopwatch clock, Action<string> show, Action<System.Drawing.Rectangle> position)
     {
-        using var desktop = scenarios.Any(s => s.Group == 5 && !s.Excluded) ? new Desktop(app) : null;
+        using var desktop = scenarios.Any(s => s.Group is 4 or 5 && !s.Excluded) ? new Desktop(app) : null;
         if (desktop is not null)
         {
             var bounds = desktop.PrepareRecording();
@@ -99,6 +99,13 @@ internal static class Program
                             accounting = new Desktop(app, baseline: scenario.Baseline);
                             position(accounting.PrepareRecording());
                             outcome = accounting.RunGroupOne(scenario, options.Evidence, plan);
+                        }
+                        else if (scenario.Group == 4)
+                        {
+                            accounting = new Desktop(app, baseline: scenario.Baseline,
+                                irsDirectory: scenario.Id == "INT-401" ? "ledgers/acas" : "");
+                            position(accounting.PrepareRecording());
+                            outcome = accounting.RunGroupFour(scenario, options.Evidence);
                         }
                         else if (scenario.Group == 5)
                         {
