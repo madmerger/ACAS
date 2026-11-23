@@ -6,6 +6,7 @@ final class SalesReachFlows: XCTestCase {
     func testSL004() throws { try salesEntry("SL-004") }
     func testSL005() throws { try salesAmendment("SL-005") }
     func testSL006() throws { try noTransactionsToProof("SL-006") }
+    func testSL007() throws { try missingPostingWorkFile("SL-007") }
     func testSL008() throws { try paymentEntry("SL-008") }
     func testSL009() throws { try paymentAmend("SL-009") }
     func testSL010() throws { try paymentProof("SL-010") }
@@ -47,6 +48,7 @@ final class SalesReachFlows: XCTestCase {
     func testSL209() throws { try salesEntry("SL-209") }
     func testSL210() throws { try salesAmendment("SL-210") }
     func testSL211() throws { try noTransactionsToProof("SL-211") }
+    func testSL212() throws { try missingPostingWorkFile("SL-212") }
     func testSL213() throws { try paymentEntry("SL-213") }
     func testSL214() throws { try paymentAmend("SL-214") }
     func testSL215() throws { try paymentProof("SL-215") }
@@ -124,6 +126,16 @@ final class SalesReachFlows: XCTestCase {
             XCTAssertEqual(failure.label, "売掛明細のファイルがありません")
             XCTAssertFalse(app.buttons["sales.statement.generate"].exists)
             XCTAssertFalse(app.buttons["sales.dunning.next"].exists)
+        }
+    }
+
+    private func missingPostingWorkFile(_ id: String) throws {
+        try reach(id, through: ["sales.post"], title: "売上転記") { app in
+            let message = app.staticTexts["sales.post.unavailable"]
+            XCTAssertTrue(message.waitForExistence(timeout: 5))
+            XCTAssertEqual(message.label, "売上転記に必要な作業ファイルがありません")
+            XCTAssertFalse(app.buttons["sales.post.start"].exists)
+            XCTAssertFalse(app.buttons["sales.post.export"].exists)
         }
     }
 

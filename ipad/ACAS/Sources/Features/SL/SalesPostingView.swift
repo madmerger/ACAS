@@ -37,6 +37,9 @@ struct SalesPostingView: View {
                 try SalesPosting(workspace.context).checkAvailability()
             } catch {
                 setFailure(error)
+                if case SalesPosting.Error.missingWorkFile = error {
+                    workspace.completed("sales-posting-work-file-unavailable")
+                }
             }
         }
         .toolbar {
