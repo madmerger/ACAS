@@ -24,6 +24,7 @@ SCREEN_NAMES = {
 }
 MATCHED_ACTIONS = {
     "PL-090": "仕入先 SUPP018・SUPP026 を保存、各 300 B が原本と一致",
+    "PL-206": "仕入先一覧帳票の登録日条件を確認、帳票未生成・保存差分なし",
     "PL-400": "仕入先 SUPP018 の名称を更新、保存レコードは原本と一致",
     "PL-401": "残高ゼロの仕入先 SUPP026 を削除、削除結果は原本と一致",
     "PL-402": "仕入先 MISS001 の照会で該当なしを表示",
@@ -126,6 +127,8 @@ def observed_summary(case, current, reports):
         return "移行版の操作・照合を確定できず"
     if verdict == "一致" and case_id in MATCHED_ACTIONS:
         return MATCHED_ACTIONS[case_id]
+    if verdict == "一致" and (warning := re.search(r"移行版の警告：(T-[0-9]{3}：[^、]+)", reason)):
+        return f"{warning[1]} 対象画面へ進まず、保存差分なし"
     if verdict == "一致" and reason.startswith("条件画面到達：帳票未作成"):
         return "帳票条件画面に到達、帳票未作成（原本 0 B）"
     if verdict == "一致" and reason.startswith("旧証跡は"):
@@ -198,6 +201,7 @@ def main():
     excluded = []
     byte_checks = []
     supplier_rerun = []
+    corrected = []
     with (args.deliverables / "ACAS-PL.csv").open("w", encoding="utf-8-sig", newline="") as output:
         writer = csv.writer(output)
         writer.writerow(fields)
@@ -223,6 +227,9 @@ def main():
             if verdict == "不一致":
                 mismatches.append(f"- **{case_id}** {markdown_text(case['title'])}："
                                   + " / ".join(map(markdown_text, details)))
+            if verdict == "一致" and diagnosis and len(attempts) > 1 and attempts[-2][0]["verdict"] == "不一致":
+                corrected.append(f"- **{case_id}**：{markdown_text(diagnosis)}"
+                                 + (f"（{seconds:.2f}秒）" if seconds is not None else ""))
             if verdict in ("未判定", "未実行"):
                 unverified.append(f"- **{case_id}** {markdown_text(case['title'])}："
                                   + (" / ".join(map(markdown_text, details)) or verdict))
@@ -236,6 +243,7 @@ def main():
         f"push SHA: `{args.sha}`",
         *supplier_rerun,
         "## 不一致", "\n".join(mismatches) if mismatches else "なし",
+        *(["## 修正後の再実行", "\n".join(corrected)] if corrected else []),
         "## 対象外", "\n".join(excluded) if excluded else "なし",
         "## 再判定と比較範囲",
         "\n".join(f"- {case_id}：{markdown_text(diagnoses[case_id])}"

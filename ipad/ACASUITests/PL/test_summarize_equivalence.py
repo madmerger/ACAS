@@ -104,3 +104,9 @@ class RunHistoryTests(unittest.TestCase):
         case = {"id": "PL-003", "title": "Purchase Ledger Enquiry — 画面表示"}
         result = {"verdict": "対象外", "reason": "到達先ヘッダに無い: PL015"}
         self.assertEqual(observed_summary(case, result, []), "PL015 画面に到達、旧証跡では未実施")
+
+    def test_summary_reports_observed_rejection_instead_of_screen_arrival(self):
+        result = {"verdict": "一致", "reason": "旧版は T-025 で拒否、対象画面には進まない、"
+                  "移行版の警告：T-025： 仕入取引が転記されていません。"}
+        self.assertEqual(observed_summary({"id": "PL-003"}, result, []),
+                         "T-025： 仕入取引が転記されていません。 対象画面へ進まず、保存差分なし")
