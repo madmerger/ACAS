@@ -1,6 +1,7 @@
 """買掛元帳の実測証跡から実 UI テスト用の入力と期待値を作成する。"""
 import argparse
 import base64
+import hashlib
 import json
 from pathlib import Path
 
@@ -14,7 +15,9 @@ WORKFLOWS = {
     "PL-412": ("pl.transaction.reject", "未登録の仕入先を拒否"),
     "PL-413": ("pl.transaction.proof", "未転記の仕入取引の検証帳票"),
 }
-KEY_LENGTHS = {"purchled.dat": 7, "pinvoice.dat": 9, "analysis.dat": 3, "delivery.dat": 8}
+KEY_LENGTHS = {"purchled.dat": 7, "pinvoice.dat": 9, "analysis.dat": 3, "delivery.dat": 8,
+               "batch.dat": 6}
+RELATIVE_SIZES = {"posting.dat": 98}
 
 
 def read_json(path):
@@ -32,7 +35,7 @@ def seed_files(root, run):
     files = {}
     for path, file in read_json(evidence_path(root, run / "before-records/records.json"))["files"].items():
         basename = Path(path).name
-        if basename == "system.dat":
+        if basename == "system.dat" or basename in RELATIVE_SIZES:
             source = evidence_path(root, run / "before-files" / path)
             files[path] = {"type": "relative", "hex": source.read_bytes().hex()}
         elif basename in KEY_LENGTHS:
@@ -71,6 +74,50 @@ def fixture(root, case):
     }
 
 
+def equivalence_fixture(root, case):
+    case_id = case["id"]
+    legacy = case["legacy_result"]
+    run_path = Path(legacy["evidence"][0])
+    run = evidence_path(root, run_path)
+    targets = legacy["comparison_targets"]
+    changes = []
+    for change in read_json(evidence_path(root, targets["keyed_record_diff"]))["changes"]:
+        path = change["file"]
+        if case_id == "PL-090" and Path(path).name != "purchled.dat":
+            continue
+        before, after = (change[k]["hex"] if change[k] else None for k in ("before", "after"))
+        length = KEY_LENGTHS.get(Path(path).name)
+        key = (after or before)[:2 * length] if length else change["key"]
+        changes.append(dict(file=path, key=key, before=before, after=after))
+    reports = {}
+    for path in targets["report_files"]:
+        source = evidence_path(root, path)
+        if case_id != "PL-090" and "/files/ledgers/" in path:
+            data = source.read_bytes()
+            reports[str(Path(path).relative_to(run_path / "files"))] = {
+                "count": len(data), "sha256": hashlib.sha256(data).hexdigest(),
+            }
+    if case_id != "PL-090":
+        for path in targets["report_files"]:
+            if "/files/spool/" in path:
+                digest = hashlib.sha256(evidence_path(root, path).read_bytes()).hexdigest()
+                if digest not in {r["sha256"] for r in reports.values()}:
+                    raise ValueError(f"帳票スプールと原本が一致しません: {path}")
+    out_of_scope = legacy["reason"] if legacy["verdict"] != "合格" and not changes and not reports else None
+    with evidence_path(root, run / "terminal.cast").open(encoding="utf-8") as recording:
+        date = json.loads(recording.readline())["timestamp"]
+    return {
+        "id": case_id, "title": case["title"], "workflow": "pl.equivalence", "dateSeconds": date,
+        "seed": seed_files(root, run), "changes": changes, "reports": {}, "calculation": None,
+        "equivalence": {"reportDigests": reports, "outOfScope": out_of_scope,
+                        "unprintedReports": [path for path, report in reports.items() if report["count"] == 0]
+                        if case_id in ("PL-018", "PL-228") else [],
+                        "pathFilter": ["ledgers/acas/purchled.dat"] if case_id == "PL-090" else None,
+                        "relativeRecordSizes": {x["file"]: RELATIVE_SIZES[Path(x["file"]).name]
+                                                for x in changes if Path(x["file"]).name in RELATIVE_SIZES}},
+    }
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("evidence", type=Path)
@@ -82,7 +129,12 @@ def main():
     for case_id in WORKFLOWS:
         result = fixture(root, cases[case_id])
         (args.output / f"{case_id}.json").write_text(json.dumps(result, ensure_ascii=False) + "\n", encoding="utf-8")
-    print(f"買掛元帳 実 UI 用データ {len(WORKFLOWS)} 件")
+    pl_cases = [case for case in cases.values() if case["id"].startswith("PL-")]
+    for case in pl_cases:
+        if case["id"] not in WORKFLOWS:
+            result = equivalence_fixture(root, case)
+            (args.output / f"{case['id']}.json").write_text(json.dumps(result, ensure_ascii=False) + "\n", encoding="utf-8")
+    print(f"買掛元帳 実 UI 用データ {len(pl_cases)} 件")
 
 
 if __name__ == "__main__":

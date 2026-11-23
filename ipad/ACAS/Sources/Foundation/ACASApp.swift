@@ -38,7 +38,13 @@ final class Workspace: ObservableObject {
         if evidence != nil {
             root = try FileManager.default.url(
                 for: .cachesDirectory, in: .userDomainMask, appropriateFor: nil, create: true
-            ).appendingPathComponent(UUID().uuidString, isDirectory: true)
+            )
+            if let evidence, evidence.equivalence != nil {
+                let export = root.appendingPathComponent("pl-evidence").appendingPathComponent(evidence.id)
+                if FileManager.default.fileExists(atPath: export.path) { try FileManager.default.removeItem(at: export) }
+                evidence.exportDirectory = export
+            }
+            root = root.appendingPathComponent(UUID().uuidString, isDirectory: true)
             try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
         }
         #endif
@@ -47,7 +53,7 @@ final class Workspace: ObservableObject {
         if let evidence {
             if let seed = evidence.seed { try store.load(seed: seed) }
             context = BusinessContext(store: store, timeZone: .gmt, now: { evidence.date })
-            evidence.before = EvidenceComparison.snapshot(store)
+            evidence.before = evidence.snapshot(store)
             return
         }
         #endif
