@@ -26,6 +26,23 @@ final class St {
                 .alt(r.offset("stock-desc"), r.size("stock-desc"), true);
     }
 
+    /** FileStat-Msgs.cpy: FILE STATUS の説明（該当なしは直前値のまま＝空白）。 */
+    static String evalStatus(String fs) {
+        return switch (fs) {
+            case "00" -> "Success"; case "02" -> "Success Duplicate"; case "04" -> "Success Incomplete";
+            case "05" -> "Success Optional"; case "07" -> "Success No Unit"; case "10" -> "End Of File";
+            case "14" -> "Out Of Key Range"; case "21" -> "Key Invalid"; case "22" -> "Key Exists";
+            case "23" -> "Key Not Exists"; case "30" -> "Permanent Error"; case "31" -> "Inconsistent Filename";
+            case "34" -> "Boundary Violation"; case "35" -> "File Not Found"; case "37" -> "Permission Denied";
+            case "38" -> "Closed With Lock"; case "39" -> "Conflict Attribute"; case "41" -> "Already Open";
+            case "42" -> "Not Open"; case "43" -> "Read Not Done"; case "44" -> "Record Overflow";
+            case "46" -> "Read Error"; case "47" -> "Input Denied"; case "48" -> "Output Denied";
+            case "49" -> "I/O Denied"; case "51" -> "Record Locked"; case "52" -> "End-Of-Page";
+            case "57" -> "I/O Linage"; case "61" -> "File Sharing Failure"; case "91" -> "File Not Available";
+            default -> "";
+        };
+    }
+
     /** PIC X(n) への MOVE（左詰め・空白埋め・切捨て）。 */
     static String x(String s, int n) { return s.length() >= n ? s.substring(0, n) : s + " ".repeat(n - s.length()); }
 

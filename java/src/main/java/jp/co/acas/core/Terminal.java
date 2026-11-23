@@ -137,7 +137,7 @@ public final class Terminal {
     public int acceptScreen(List<Field> fields, int fg) {
         if (fields.isEmpty()) { crtStatus = 0; return 0; }
         int f = 0, idx = 0;
-        for (Field x : fields) if ((x.flags & SECURE) == 0) displayData(x.line, x.col, x.value, fg);
+        for (Field x : fields) if ((x.flags & SECURE) == 0) displayData(x.line, x.col, x.value.replace(' ', '_'), fg);
         while (true) {
             Field cur = fields.get(f);
             String k = take(cur.line - 1, cur.col - 1 + idx);
@@ -149,7 +149,7 @@ public final class Terminal {
                 if ((cur.flags & UPPER) != 0) ch = Character.toUpperCase(ch);
                 buf[idx] = ch;
                 cur.value = new String(buf);
-                if ((cur.flags & SECURE) == 0) displayData(cur.line, cur.col, cur.value, fg);
+                if ((cur.flags & SECURE) == 0) displayData(cur.line, cur.col, cur.value.replace(' ', '_'), fg);
                 if (idx < cur.size - 1) idx++;
                 else if (f < fields.size() - 1) { f++; idx = 0; }
                 continue;
@@ -171,13 +171,13 @@ public final class Terminal {
                     if (idx > 0) {
                         idx--; System.arraycopy(buf, idx + 1, buf, idx, cur.size - idx - 1); buf[cur.size - 1] = ' ';
                         cur.value = new String(buf);
-                        if ((cur.flags & SECURE) == 0) displayData(cur.line, cur.col, cur.value, fg);
+                        if ((cur.flags & SECURE) == 0) displayData(cur.line, cur.col, cur.value.replace(' ', '_'), fg);
                     }
                 }
                 case "DELETE" -> {
                     System.arraycopy(buf, idx + 1, buf, idx, cur.size - idx - 1); buf[cur.size - 1] = ' ';
                     cur.value = new String(buf);
-                    if ((cur.flags & SECURE) == 0) displayData(cur.line, cur.col, cur.value, fg);
+                    if ((cur.flags & SECURE) == 0) displayData(cur.line, cur.col, cur.value.replace(' ', '_'), fg);
                 }
                 default -> { }
             }
