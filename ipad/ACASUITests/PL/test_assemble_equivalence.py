@@ -31,6 +31,9 @@ class RecordingOrientationTests(unittest.TestCase):
 
     @unittest.skipUnless(shutil.which("ffmpeg") and shutil.which("ffprobe"), "ffmpeg / ffprobe がありません")
     def test_trim_keeps_timeline_when_no_source_frame_at_trim(self):
+        sections = subprocess.check_output(["ffprobe", "-v", "error", "-sections"], text=True)
+        if not any(line.rsplit("/", 1)[-1].split()[-1:] == ["stream_side_data"] for line in sections.splitlines()):
+            self.skipTest("ffprobe が stream_side_data をサポートしていません")
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             run = root / "run"
