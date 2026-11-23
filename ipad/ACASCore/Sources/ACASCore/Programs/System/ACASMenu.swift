@@ -125,7 +125,7 @@ public enum ACASMenu {
         c.display(s.t("acas.setup_title"), at: 122, color: 2)
         var sys = Record(SystemLayout.layout)
         sys.setInt("system-record-version-prime", 1)
-        sys.setInt("system-record-version-secondary", 3)
+        sys.setInt("system-record-version-secondary", 1)
         sys.setInt("date-form", 1)
         var usera = sys.str("usera")
         while true {

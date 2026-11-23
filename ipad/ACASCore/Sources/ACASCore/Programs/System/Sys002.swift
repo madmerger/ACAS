@@ -271,6 +271,9 @@ enum Sys002 {
             c.display(Cobol.x(st.sys.str("usera"), 32), at: 7, 12, color: 2)
             c.displayFields(fields(st, userFields))
             while true {
+                // ACCEPT user-data は画面定義の固定文言も再表示する
+                show(s, userLabels)
+                c.display(Cobol.x(st.sys.str("usera"), 32), at: 7, 12, color: 2)
                 try acceptScreen(s, st, userFields)
                 if c.crtStatus == esc { return }
                 switch st.sys.int("date-form") {
