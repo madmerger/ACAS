@@ -131,7 +131,7 @@ public struct SalesAnalysis {
             if lines > 70 { headings() }
         }
         if warning { printer.after(2, "Warning: One or more P.A. codes contain a zero value for General Ledger numbers") }
-        try printer.close()
+        try printer.close(terminateLine: !entries.isEmpty)
         return entries
     }
 
