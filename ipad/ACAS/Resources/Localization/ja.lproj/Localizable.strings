@@ -66,6 +66,41 @@
 "pl000.enter_date_intl" = "本日の日付を入力 yyyy/mm/dd     - [          ]";
 "pl000.pl005" = "PL005 日付が不正";
 "pl.maps99_not_found" = "error.txtに未登録のエラー。Returnで閉じる";
+/* pl015.cbl — 買掛元帳照会 */
+"pl015.title" = "買掛元帳照会";
+"pl015.box_acnos" = "*仕入先  [       ]*残高    [          ]*";
+"pl015.box_ytd" = "*年累計 [        ]*未充当   [         ]*";
+"pl015.box_credit" = "*与信   [        ]*未転記  [          ]*";
+"pl015.supplier" = "仕入先  : ";
+"pl015.address" = "住所    : ";
+"pl015.line6" = " 番号         日付       摘要                   請求額      支払額        残高";
+"pl015.line20" = "未払合計                      当月           30             60            90+";
+"pl015.select" = "選択: P=印刷 N=次の照会 T=保留切替 ";
+"pl015.more_or_end" = "M=続き E=終了   [ ]";
+"pl015.or_end" = "E=終了   [ ]";
+"pl015.screen_overflow" = ">> 画面あふれ <<";
+"pl015.desc_receipt" = "入金 ";
+"pl015.desc_goods" = "仕入 - ";
+"pl015.desc_cn" = "CN 元請求 -";
+"pl015.desc_payment" = "支払";
+"pl015.desc_journal" = "振替支払";
+"pl015.prt_acno" = "* 仕入先 [";
+"pl015.prt_balance" = "*残高    [";
+"pl015.prt_ytd" = "* 年累計 [";
+"pl015.prt_unapplied" = "]*未充当   [";
+"pl015.prt_credit" = "* 与信   [";
+"pl015.prt_unposted" = "]*未転記  [";
+"pl015.creating_work" = "請求ワークファイル作成中。お待ち下さい";
+"pl015.toggle_prompt" = "仕入先     :        . 切替える請求書番号を入力   [        ]";
+"pl015.pl111" = "PL111 ワークファイル書込エラー。Returnで中止";
+"pl015.pl112" = "PL112 ファイル開けず";
+"pl015.pl113" = "PL113 見つからない";
+"pl015.pl114" = "PL114 レコードなし";
+"pl015.pl115" = "PL115 更新エラー";
+"pl015.pl116" = "PL116 確認してReturnで続行";
+"pl015.pl117" = "PL117 ワークファイルなし.データなし";
+"pl015.pl118" = "PL118 ワークファイル済";
+"pl015.pl119" = "PL119 請求書のみ可";
 /* ---- sys.ja.strings ---- */
 /* ACAS.cbl — システムメニュー (日本語) */
 "sys.sy006" = "SY006 プログラム引数は2個までです。指定された数: ";
