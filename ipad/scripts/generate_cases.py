@@ -2,6 +2,7 @@
 import argparse
 import base64
 import json
+import re
 import subprocess
 from pathlib import Path
 
@@ -10,6 +11,7 @@ WORKFLOWS = {
     "SYS-001": ("company", "会社・各台帳設定と業務用マスタ投入"),
     "GL-020": ("gl-account-add", "新規の見出し勘定を登録"),
     "GL-023": ("gl-chart-inquiry", "指定した勘定科目を起点に照会"),
+    "GL-032": ("gl-account-edit-missing", "未登録の勘定科目を変更画面で検索"),
     "GL-033": ("gl-chart-print", "勘定科目一覧を出力"),
     "GL-205": ("gl-chart-inquiry-menu", "勘定科目一覧の照会画面を表示"),
     "GL-206": ("gl-chart-print", "勘定科目一覧の帳票を確認"),
@@ -84,6 +86,14 @@ def analysis_changes(evidence, run):
     return changes
 
 
+def recorded_field(evidence, run, pattern):
+    for screen in sorted(evidence_path(evidence, run).glob("*-screen.txt")):
+        match = re.search(pattern, evidence_path(evidence, screen).read_text(encoding="utf-8"))
+        if match:
+            return match.groups()
+    raise ValueError(f"画面証跡に対象項目がありません: {run}")
+
+
 def fixture(evidence, case):
     legacy = case["legacy_result"]
     targets = legacy.get("comparison_targets", {})
@@ -98,7 +108,9 @@ def fixture(evidence, case):
     for path, source in report_paths.items():
         if "/files/spool/" in path and source.read_bytes().hex() not in reports.values():
             raise ValueError(f"帳票スプールと原本が一致しません: {path}")
-    seeded = workflow in {"sales-proof", "gl-account-add"} or workflow.startswith(("gl-chart-", "gl-batch-status-"))
+    seeded = workflow in {"sales-proof", "gl-account-add", "gl-account-edit-missing"} or workflow.startswith(
+        ("gl-chart-", "gl-batch-status-")
+    )
     seed = snapshot_seed(evidence, run) if seeded else None
     with evidence_path(evidence, run / "terminal.cast").open(encoding="utf-8") as recording:
         date = json.loads(recording.readline())["timestamp"]
@@ -111,6 +123,9 @@ def fixture(evidence, case):
     if workflow == "gl-account-add":
         major, minor, name, _, placement, _ = text_inputs[3].split("\r")[:-1]
         values.update(account=major + minor, name=name, placement=placement)
+    if workflow == "gl-account-edit-missing":
+        code, branch = recorded_field(evidence, run, r"([0-9]{6})/([0-9]{2}) Does not exist!")
+        values.update(account=code, branch=branch)
     changes = expected_changes(evidence, targets.get("keyed_record_diff"))
     if workflow == "company":
         changes += analysis_changes(evidence, run)
