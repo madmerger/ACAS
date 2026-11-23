@@ -57,6 +57,8 @@ internal sealed class SalesScreens : ISubsystemScreens
 
 操作一覧から開いた業務画面は、ヘッダーの「メニューへ戻る」（`ScreenMenuBack`）で直前の操作一覧へ戻れます。左ツリーの同じ項目をクリックし直しても、その項目の最初の画面を開き直せます。
 
+Windows の対話デスクトップで `powershell -File .\Acas.Tests\UiSmoke\Test-MenuReturn.ps1` を実行すると、テスト専用サブシステムでこの経路を実操作できます。通常のビルドにはテスト画面は含まれません。
+
 ## 画面モデルと表示
 
 - ナビゲーションは `MenuItem`／`MenuScreen`（WPF の `TreeView`／`ListBox`）。レガシーの階層・項目番号を保ちます。
