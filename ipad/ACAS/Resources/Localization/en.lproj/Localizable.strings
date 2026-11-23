@@ -463,3 +463,28 @@
 "acas.opt_invoicing" = "/ Invoicing";
 "acas.opt_stock" = "/ Stock ";
 "acas.opt_oe" = "/ Order Entry";
+/* ---- xl150.en.strings ---- */
+/* common/xl150.cbl — 期末 (サイクル末) 処理 */
+"xl150.title" = "End of Cycle Processing";
+"xl150.warning_date" = "WARNING: MAKE SURE THAT DATE IS AT END OF CYCLE.IE END OF MONTH";
+"xl150.backup" = "Have you made a Backup of ALL DATA FILES? If so; ";
+"xl150.confirm" = "Confirm end of Cycle Processing to be Run (Y/N) - [ ]";
+"xl150.ok_to_proceed" = "ok to proceed (Y/N) - [Y]";
+"xl150.password" = "Give password [****]";
+"xl150.run_sales" = "Do you wish to run Sales Ledger? (Y/N) - [ ]";
+"xl150.run_purchase" = "Do you wish to run Purchase Ledger? (Y/N) - [ ]";
+"xl150.phase1_sales" = "Phase 1  - Sales";
+"xl150.please_wait_sales" = "Please wait.";
+"xl150.phase1_purchase" = "Phase 1  - Purchase";
+"xl150.please_wait_purchase" = "Please Wait";
+"xl150.value_reset" = "End of year; VALUE File reset";
+"xl150.end_of_quarter" = "Is this the end of a quarter (Y/N) - [ ]";
+"xl150.xl001" = "XL001 Aborting. Press return   ";
+"xl150.xl006" = "XL006 Program Arguments limited to two and you have specified ";
+"xl150.xl007" = "XL007 Program arguments incorrect: ";
+"xl150.xl008" = "XL008 Note message & Hit return";
+"xl150.xl009" = "XL009 Environment variables not yet set up : ABORTING";
+"xl150.xl101" = "XL101 WARNING..... Proofed but NOT posted invoices";
+"xl150.xl102" = "XL102 !!ERROR..... Proofed but NOT posted payments";
+"xl150.xl103" = "XL103 !!ERROR.... Sales Analysis NOT run";
+"xl150.xl104" = "XL104 I'm confused: You appear to have rejected the run, try again";
