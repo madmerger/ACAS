@@ -52,12 +52,9 @@
 "gl.account-code" = "勘定科目コード";
 "gl.account-branch" = "部門・拠点コード";
 "gl.account-name" = "勘定科目名";
-"gl.account-type" = "科目の種類";
-"gl.type-header" = "見出し";
-"gl.type-detail" = "明細";
-"gl.type-control" = "統制";
+"gl.account-type" = "科目の種類（0：見出し、1：明細、9：統制）";
 "gl.account-placement" = "決算書の配置コード";
-"gl.account-level" = "見出し階層";
+"gl.account-level" = "見出し階層（1～4）";
 "gl.account-balance" = "残高";
 "gl.account-delete" = "勘定科目を削除";
 "gl.account-edit.lookup" = "コードで勘定科目を検索";
@@ -68,9 +65,9 @@
 "gl.error.reservedCode" = "先頭４桁が９９９９のコードは予約済みです";
 "gl.error.invalidPrefix" = "売上または仕入に予約された先頭桁は使用できません";
 "gl.error.invalidName" = "勘定科目名は記録できる文字で、全角１２文字または半角２４文字以内で入力してください";
-"gl.error.invalidType" = "科目の種類を選択してください";
+"gl.error.invalidType" = "科目の種類に0、1、9のいずれかを入力してください";
 "gl.error.invalidPlacement" = "決算書の配置コードを半角英字１文字で入力してください";
-"gl.error.invalidLevel" = "見出し階層は１～４を選択してください";
+"gl.error.invalidLevel" = "見出し階層に1～4を入力してください";
 "gl.error.missingHeader" = "対応する見出し科目がありません";
 "gl.error.missingAccount" = "勘定科目が存在しません";
 "gl.error.duplicate" = "この勘定科目は登録済みです";
