@@ -113,21 +113,22 @@ def equivalence_fixture(root, case):
     run = evidence_path(root, run_path)
     targets = legacy["comparison_targets"]
     changes = []
+    excluded_paths = set()
     for change in read_json(evidence_path(root, targets["keyed_record_diff"]))["changes"]:
         path = change["file"]
         if case_id == "PL-090" and Path(path).name != "purchled.dat":
+            excluded_paths.add(path)
             continue
         before, after = (change[k]["hex"] if change[k] else None for k in ("before", "after"))
         length = KEY_LENGTHS.get(Path(path).name)
         key = (after or before)[:2 * length] if length else change["key"]
         changes.append(dict(file=path, key=key, before=before, after=after))
-    path_filter = ["ledgers/acas/purchled.dat"] if case_id == "PL-090" else None
     cleared_files = []
     if case_id == "PL-414":
         archive = "ledgers/acas/openitm5.dat"
         for key, data in archived_records(evidence_path(root, run / "files" / archive)):
             changes.append(dict(file=archive, key=key, before=None, after=data))
-        path_filter = sorted({change["file"] for change in changes})
+        excluded_paths.update(f"ledgers/acas/{name}" for name in ("analysis.dat", "value.dat", "system.dat"))
         staged = "ledgers/acas/openitm4.dat"
         if evidence_path(root, run / "files" / staged).stat().st_size == 0:
             cleared_files.append(staged)
@@ -173,7 +174,7 @@ def equivalence_fixture(root, case):
                         "clearedFiles": cleared_files,
                         "unprintedReports": [path for path, report in reports.items() if report["count"] == 0]
                         if case_id in ("PL-018", "PL-228") else [],
-                        "pathFilter": path_filter,
+                        "excludedPaths": sorted(excluded_paths),
                         "relativeRecordSizes": {f"ledgers/acas/{name}": size
                                                 for name, size in RELATIVE_SIZES.items()}},
     }

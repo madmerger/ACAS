@@ -25,7 +25,7 @@ final class DebugEvidence: Decodable, ObservableObject {
         let reportDigests: [String: Report]
         let outOfScope: String?
         let unprintedReports: [String]?
-        let pathFilter: [String]?
+        let excludedPaths: [String]?
         let relativeRecordSizes: [String: Int]
         let checkpoint: Checkpoint?
         let clearedFiles: [String]?
@@ -63,9 +63,12 @@ final class DebugEvidence: Decodable, ObservableObject {
     }
 
     func snapshot(_ store: FileStore) -> EvidenceComparison.Snapshot {
-        var snapshot = EvidenceComparison.snapshot(store, relativeRecordSizes: equivalence?.relativeRecordSizes ?? [:])
-        if let paths = equivalence?.pathFilter {
-            snapshot = snapshot.filter { paths.contains($0.key) }
+        var snapshot = EvidenceComparison.snapshot(store, relativeRecordSizes: equivalence?.relativeRecordSizes ?? [:],
+                                                   includeRawLedgers: equivalence != nil)
+        if let equivalence {
+            for path in (equivalence.excludedPaths ?? []) + (equivalence.clearedFiles ?? []) {
+                snapshot.removeValue(forKey: path)
+            }
         }
         return snapshot
     }

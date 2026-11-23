@@ -722,6 +722,19 @@ final class PurchaseLedgerTests: XCTestCase {
                                               after: EvidenceComparison.snapshot(store, relativeRecordSizes: sizes)).isEmpty)
     }
 
+    func testEvidenceSnapshotDetectsAnUnchangedLegacyRawLedgerBeingWritten() throws {
+        let ledger = try makeLedger()
+        let path = ledger.base + "unmodified.dat"
+        let store = ledger.store
+        let before = EvidenceComparison.snapshot(store, includeRawLedgers: true)
+        try store.writeRaw(PurchaseLedger.reportPath, [65])
+        try store.writeRaw(path, [66])
+        let after = EvidenceComparison.snapshot(store, includeRawLedgers: true)
+        let changes = EvidenceComparison.diff(before: before, after: after)
+        XCTAssertEqual(changes.map(\.file), [path])
+        XCTAssertEqual(changes.first?.after, "42")
+    }
+
     func testPostingAccumulatesLegacyAnalysisKeysAndTotals() throws {
         let ledger = try makeLedger()
         var value = PurchaseLedger.Transaction(date: ledger.processingDate)

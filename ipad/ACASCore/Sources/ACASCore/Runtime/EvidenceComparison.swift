@@ -14,7 +14,8 @@ public struct RecordChange: Codable, Equatable, Comparable {
 public enum EvidenceComparison {
     public typealias Snapshot = [String: [String: String]]
 
-    public static func snapshot(_ store: FileStore, relativeRecordSizes: [String: Int] = [:]) -> Snapshot {
+    public static func snapshot(_ store: FileStore, relativeRecordSizes: [String: Int] = [:],
+                                includeRawLedgers: Bool = false) -> Snapshot {
         var snapshot: Snapshot = [:]
         for file in store.fileNames() {
             let size = file.hasSuffix("/system.dat") ? 1024 : relativeRecordSizes[file]
@@ -28,6 +29,9 @@ public enum EvidenceComparison {
                 for (key, data) in store.all(file) {
                     snapshot[file, default: [:]][FileStore.hex(key)] = FileStore.hex(data)
                 }
+            } else if includeRawLedgers && file.hasPrefix("ledgers/") && file.hasSuffix(".dat"),
+                      let bytes = store.readRaw(file) {
+                snapshot[file] = ["raw": FileStore.hex(bytes)]
             }
         }
         return snapshot
