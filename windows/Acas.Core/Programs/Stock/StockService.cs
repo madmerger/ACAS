@@ -91,7 +91,7 @@ public sealed class StockService
     // ───────── 入出庫 (st020) ─────────
 
     /// <summary>数量入力 (pic 9(6) + 符号: 空白 または "-")。</summary>
-    public static bool TryQuantity(string text, out decimal qty, out bool reverse, out string? error)
+    public static bool TryQuantity(string text, out decimal qty, out bool reverse, out string? error, decimal max = MaxQuantity)
     {
         qty = 0; reverse = false; error = null;
         string t = text.TrimStart();
@@ -100,7 +100,7 @@ public sealed class StockService
         if (t.Length == 0) t = "0";
         if (!t.All(char.IsAsciiDigit)) { error = StockMessages.ST207; return false; }
         qty = decimal.Parse(t);
-        if (qty > MaxQuantity) { error = StockMessages.ST204; return false; }
+        if (qty > max) { error = StockMessages.ST204; return false; }
         return true;
     }
 
