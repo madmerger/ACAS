@@ -34,9 +34,11 @@ struct PurchaseTransactionsView: View {
                     Spacer()
                     if mode == .proof {
                         Button(plString("pl.report.generate"), systemImage: "doc.badge.plus") {
-                            rows = ledger.purchaseProof()
-                            generated = true
-                            workspace.completed("pl.transaction.proof")
+                            do {
+                                rows = try ledger.purchaseProof()
+                                generated = true
+                                workspace.completed("pl.transaction.proof")
+                            } catch { self.error = PurchaseNotice(error) }
                         }
                         .buttonStyle(.borderedProminent)
                         .accessibilityIdentifier("pl.proof.generate")
