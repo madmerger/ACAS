@@ -82,6 +82,10 @@ private struct LedgerBatchEditor: View {
         return selected == .input || selected == .output
     }
 
+    private var expectsTax: Bool {
+        CompanySetup(workspace.context).settings.text("vat") == "Y"
+    }
+
     private var temporaryDefault: TemporaryLedgerDefault {
         TemporaryLedgerDefault(account: temporaryAccount, code: temporaryCode, tax: temporaryTax)
     }
@@ -114,7 +118,7 @@ private struct LedgerBatchEditor: View {
                 field("batch-description", $description)
                 field("batch-count", $count, type: .numberPad)
                 field("batch-gross", $gross, type: .numbersAndPunctuation)
-                if usesTax { field("batch-tax", $tax, type: .numbersAndPunctuation) }
+                if expectsTax { field("batch-tax", $tax, type: .numbersAndPunctuation) }
             }
             ForEach($entries) { $entry in
                 Section(ledgerText("batch-line")) {
@@ -142,6 +146,7 @@ private struct LedgerBatchEditor: View {
         .environment(\.calendar, workspace.context.calendar)
         .environment(\.timeZone, workspace.context.timeZone)
         .navigationTitle(ledgerText("batch-new"))
+        .interactiveDismissDisabled(selectedDefault == 33)
         .toolbar {
             ToolbarItem(placement: .cancellationAction) {
                 Button("action.close", action: cancel).accessibilityIdentifier("gl.batch.cancel")
@@ -181,7 +186,7 @@ private struct LedgerBatchEditor: View {
             draft.description = description
             draft.expectedItems = Int(count.isEmpty ? "0" : count) ?? -1
             draft.gross = try money(gross)
-            draft.tax = usesTax ? try money(tax) : 0
+            draft.tax = expectsTax ? try money(tax) : 0
             draft.defaultBranch = defaultBranch
             if selectedDefault == 33 { draft.temporaryDefault = temporaryDefault }
             let lines = try entries.map {
@@ -217,6 +222,7 @@ private struct LedgerBatchEditor: View {
             do {
                 try LedgerBatches(workspace.context).retainTemporaryDefault(temporaryDefault,
                     branch: usesBranches ? defaultBranch : "00")
+            } catch GeneralLedgerSetup.Error.invalidDefault {
             } catch {
                 self.error = ledgerText("batch-error.storage")
                 return
