@@ -27,6 +27,15 @@ final class LedgerAccountsFlows: XCTestCase {
     }
 
     @MainActor
+    func testGL032() throws {
+        let app = try openEditList("GL-032")
+        try fill(app, "gl.accounts.lookup.code", "800008")
+        tap(app, "gl.accounts.lookup.submit")
+        XCTAssertEqual(app.staticTexts["gl.accounts.lookup.missing"].label, "勘定科目が存在しません")
+        captureMatch(app, "GL-032")
+    }
+
+    @MainActor
     func testGL038() throws {
         try checkRejected("GL-038", message: "対応する見出し科目がありません")
     }
