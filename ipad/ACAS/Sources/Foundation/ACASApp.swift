@@ -35,7 +35,7 @@ final class Workspace: ObservableObject {
         )
         #if DEBUG
         evidence = try DebugEvidence.load()
-        if evidence != nil {
+        if evidence != nil || ProcessInfo.processInfo.environment["ACAS_CALC_EVIDENCE"] != nil {
             root = try FileManager.default.url(
                 for: .cachesDirectory, in: .userDomainMask, appropriateFor: nil, create: true
             ).appendingPathComponent(UUID().uuidString, isDirectory: true)
