@@ -470,6 +470,7 @@ func bookkeepingError(_ error: Error) -> String {
     case .missingDefault: irsText("error.missingDefault")
     case .missingPosting: irsText("error.missingPosting")
     case .wrongPassword: irsText("error.wrongPassword")
+    case .accountArchiveTooLarge: irsText("archive.tooLarge")
     default: irsText("error.invalid")
     }
 }

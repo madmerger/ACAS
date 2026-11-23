@@ -1,7 +1,9 @@
 import Foundation
 
 public struct BookkeepingService {
-    public enum Failure: Error { case invalidInput, duplicateAccount, missingAccount, missingDefault, missingPosting, wrongPassword }
+    public enum Failure: Error {
+        case invalidInput, duplicateAccount, missingAccount, missingDefault, missingPosting, wrongPassword, accountArchiveTooLarge
+    }
 
     public struct Configuration {
         public var operatorName = ""

@@ -34,6 +34,7 @@
 "bookkeeping.archive.exported" = "科目を%d件書き出しました。";
 "bookkeeping.archive.imported" = "科目を%d件取り込みました。";
 "bookkeeping.archive.invalid" = "科目表のテキストを確認してください。";
+"bookkeeping.archive.tooLarge" = "科目表のファイルが大きすぎます。";
 "bookkeeping.statement.profitAndLoss" = "損益計算書";
 "bookkeeping.statement.balanceSheet" = "貸借対照表";
 "bookkeeping.statement.appropriation" = "損益処分勘定";

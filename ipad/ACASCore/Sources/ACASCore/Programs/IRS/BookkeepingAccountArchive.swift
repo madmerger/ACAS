@@ -2,6 +2,19 @@ import Foundation
 
 extension BookkeepingService {
     public static let accountArchiveName = "coa-archived.txt"
+    static let accountArchiveSizeLimit = 99_999 * (37 + 2)
+
+    public static func readAccountArchive(at url: URL) throws -> Data {
+        let file = try FileHandle(forReadingFrom: url)
+        defer { try? file.close() }
+        var data = Data()
+        while data.count <= accountArchiveSizeLimit {
+            let count = min(65_536, accountArchiveSizeLimit + 1 - data.count)
+            guard let chunk = try file.read(upToCount: count), !chunk.isEmpty else { return data }
+            data.append(chunk)
+        }
+        throw Failure.accountArchiveTooLarge
+    }
 
     public func exportAccountArchive() throws -> (data: Data, count: Int) {
         var data: [UInt8] = []
@@ -21,6 +34,7 @@ extension BookkeepingService {
     }
 
     public func importAccountArchive(_ data: Data) throws -> Int {
+        guard data.count <= Self.accountArchiveSizeLimit else { throw Failure.accountArchiveTooLarge }
         if data.contains(where: { $0 >= 0x80 }), String(data: data, encoding: .utf8) != nil {
             throw Failure.invalidInput
         }
