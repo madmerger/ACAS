@@ -15,7 +15,7 @@ class DumpBaselinesTest(unittest.TestCase):
                 root = Path(tmp)
                 evidence = root / "evidence"
                 link = evidence / relative
-                link.parent.mkdir(parents=True)
+                link.parent.mkdir(parents=True, exist_ok=True)
                 outside = root / "sample"
                 if relative.endswith(".dat"):
                     outside.write_text("synthetic fixture")
