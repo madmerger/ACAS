@@ -230,3 +230,28 @@
 "report.sl020.cn" = "返品 請求 -";
 "report.sl020.payment" = "入金";
 "report.sl020.journal" = "振替入金";
+
+/* sl050 */
+"sl050.title" = "請求書プルーフリスト";
+"sl050.sl120" = "SL120 プルーフ対象の取引なし ...Return でメニューへ";
+"report.sl050.title" = "未転記売上取引リスト";
+"report.sl050.page" = "頁   ";
+"report.sl050.line4a" = "    番号 ---日付--- <-------------得意先------------->  --種別--";
+"report.sl050.line4b" = "商品                  <--税抜-->  <-消費税->  <--税込-->";
+"report.sl050.unknown" = "!! 得意先未登録";
+"report.sl050.late_charge" = "延滞料      ";
+"report.sl050.discount" = "値引        ";
+"report.sl050.carriage" = "運賃        ";
+"report.sl050.receipt" = "領収";
+"report.sl050.invoice" = "請求書";
+"report.sl050.cr_note" = "赤伝";
+"report.sl050.line7" = " 商品        値引    早期割引        運賃        税抜      消費税        税込";
+"report.sl050.total" = "合計";
+"report.sl050.group1" = "領収";
+"report.sl050.group2" = "請求書";
+"report.sl050.group3" = "赤伝";
+"report.sl050.missing" = "警告 得意先ファイルにレコードなし";
+"report.sl050.line9" = "消費税照合                      領収         請求書           赤伝";
+"report.sl050.vat_code" = "税ｺｰﾄﾞ";
+"report.sl050.analysis" = "分析";
+"report.sl050.value" = "金額";

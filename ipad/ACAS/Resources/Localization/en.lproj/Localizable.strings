@@ -261,6 +261,31 @@
 "report.sl020.cn" = "CN.Re Inv -";
 "report.sl020.payment" = "Payment";
 "report.sl020.journal" = "Journal Payment";
+
+/* sl050 */
+"sl050.title" = "Invoice Proof Report";
+"sl050.sl120" = "SL120 No Transactions to proof! ...Press return for menu.";
+"report.sl050.title" = "Unapplied Sales Transaction Report";
+"report.sl050.page" = "Page ";
+"report.sl050.line4a" = "  Number ---Date--- <------------Customer------------>  --Type--";
+"report.sl050.line4b" = "Goods                 <---Net-->  <---Vat-->  <--Gross->";
+"report.sl050.unknown" = "!! Customer Unknown";
+"report.sl050.late_charge" = "Late Charge ";
+"report.sl050.discount" = "Discount    ";
+"report.sl050.carriage" = "Carriage    ";
+"report.sl050.receipt" = "Receipt";
+"report.sl050.invoice" = "Invoice";
+"report.sl050.cr_note" = "Cr. Note";
+"report.sl050.line7" = "Goods    Discount  Prompt Pay    Carriage         Net         Vat       Gross";
+"report.sl050.total" = "Total";
+"report.sl050.group1" = "Receipts";
+"report.sl050.group2" = "Invoices";
+"report.sl050.group3" = "Credit Notes";
+"report.sl050.missing" = "Warning Record/s Missing In Sales File";
+"report.sl050.line9" = "V.A.T. Reconciliation       Receipts       Invoices   Credit Notes";
+"report.sl050.vat_code" = "Vat Code";
+"report.sl050.analysis" = "Analysis";
+"report.sl050.value" = "Value";
 /* ---- sys.en.strings ---- */
 /* ACAS.cbl — システムメニュー (英語 = レガシー原文) */
 "sys.sy006" = "SY006 Program Arguments limited to two and you have specified ";

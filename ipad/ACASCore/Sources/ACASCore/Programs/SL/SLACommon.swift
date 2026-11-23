@@ -109,6 +109,13 @@ enum SLA {
         ("ih-deduct-amt", .comp(digits: 5, scale: 2, signed: false)), ("ih-deduct-vat", .comp(digits: 5, scale: 2, signed: false)),
         ("ih-days", .native(bytes: 1, signed: true)), ("ih-cr", bl), ("ih-day-book-flag", .x(1)), ("ih-update", .x(1)),
     ])
+    /// fdinv2.cob / wsinv.cob invoice-line (80 バイト)
+    static let ilLayout = Layout("invoice-line", [
+        ("il-invoice", .n9(digits: 8, scale: 0, signed: false)), ("il-letter", .x(1)), ("il-line", .native(bytes: 1, signed: true)),
+        ("il-product", .x(13)), ("il-pa", .x(2)), ("il-qty", bs), ("il-type", .x(1)), ("il-description", .x(32)),
+        ("il-net", fig), ("il-unit", fig), ("il-discount", .comp(digits: 4, scale: 2, signed: false)), ("il-vat", fig),
+        d("il-vat-code"), ("il-update", .x(1)), ("", .filler(1)),
+    ])
     static func invoiceFile(_ s: Session) -> IndexedFile {
         IndexedFile(s.store, path: s.ledgers + "invoice.dat", layout: ihLayout, keyLength: 10)
     }
