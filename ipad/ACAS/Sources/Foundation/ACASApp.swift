@@ -39,13 +39,14 @@ final class Workspace: ObservableObject {
             root = try FileManager.default.url(
                 for: .cachesDirectory, in: .userDomainMask, appropriateFor: nil, create: true
             )
-            if let evidence, evidence.equivalence != nil {
+            let reportRunID = ProcessInfo.processInfo.environment["ACAS_PL_RUN_ID"]
+            if let evidence, evidence.equivalence != nil || (reportRunID != nil && !evidence.reports.isEmpty) {
                 guard evidence.id.range(of: #"\APL-[0-9]{3}\z"#, options: .regularExpression) != nil else {
                     throw CocoaError(.fileReadCorruptFile)
                 }
                 let exports = root.resolvingSymlinksInPath().appendingPathComponent("pl-evidence")
                 var run = exports
-                if let token = ProcessInfo.processInfo.environment["ACAS_PL_RUN_ID"] {
+                if let token = reportRunID {
                     guard let id = UUID(uuidString: token) else { throw CocoaError(.fileReadCorruptFile) }
                     run = exports.appendingPathComponent(id.uuidString)
                 }

@@ -45,7 +45,16 @@ final class DebugEvidence: Decodable, ObservableObject {
     func evaluate(store: FileStore, calculation actual: DebugCalculation?) {
         let changesMatch = EvidenceComparison.diff(before: before, after: EvidenceComparison.snapshot(store)) == changes.sorted()
         let reportsMatch = EvidenceComparison.reportsAgree(reports, in: store)
+        for path in reports.keys {
+            if let bytes = store.readRaw(path) { try? exportReport(bytes, path: path) }
+        }
         result = changesMatch && reportsMatch && actual == calculation ? "match" : "mismatch"
+    }
+
+    private func exportReport(_ bytes: [UInt8], path: String) throws {
+        guard let exportDirectory else { return }
+        try FileManager.default.createDirectory(at: exportDirectory, withIntermediateDirectories: true)
+        try Data(bytes).write(to: exportDirectory.appendingPathComponent(URL(fileURLWithPath: path).lastPathComponent))
     }
 
     func snapshot(_ store: FileStore) -> EvidenceComparison.Snapshot {
@@ -74,10 +83,9 @@ final class DebugEvidence: Decodable, ObservableObject {
             let originalBytes = store.readRaw(path)
             let comparesBeforePrinting = equivalence.unprintedReports?.contains(path) == true
             let bytes = originalBytes ?? (comparesBeforePrinting ? [] : nil)
-            if let exportDirectory, let bytes {
+            if let bytes {
                 do {
-                    try FileManager.default.createDirectory(at: exportDirectory, withIntermediateDirectories: true)
-                    try Data(bytes).write(to: exportDirectory.appendingPathComponent(URL(fileURLWithPath: path).lastPathComponent))
+                    try exportReport(bytes, path: path)
                 } catch {
                     differences.append("\(path): 証跡の書き出し失敗")
                 }

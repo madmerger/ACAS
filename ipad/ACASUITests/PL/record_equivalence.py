@@ -2,13 +2,41 @@
 import argparse
 import json
 import os
-import re
+import plistlib
 import shutil
 import signal
 import subprocess
 import time
 import uuid
 from pathlib import Path
+
+from generate_fixtures import purchase_case_ids
+
+
+def expected_reports(xctestrun, cases):
+    run = plistlib.loads(xctestrun.read_bytes())
+    if "TestConfigurations" in run:
+        targets = [target for config in run["TestConfigurations"] for target in config["TestTargets"]]
+        target = next(target for target in targets if target["BlueprintName"] == "ACASUITests")
+    else:
+        target = run["ACASUITests"]
+    root = str(xctestrun.resolve().parent)
+    host = target["TestHostPath"].replace("__TESTROOT__", root)
+    bundle = target["TestBundlePath"].replace("__TESTHOST__", host).replace("__TESTROOT__", root)
+    expected = set()
+    for case in cases:
+        fixture = json.loads((Path(bundle) / "fixtures" / f"{case}.json").read_text())
+        equivalence = fixture.get("equivalence") or {}
+        if not equivalence.get("outOfScope"):
+            expected.update(Path(case) / Path(report).name
+                            for report in (equivalence.get("reportDigests") or fixture["reports"]))
+    return expected
+
+
+def collect_reports(source, output, expected):
+    if source.is_dir():
+        shutil.copytree(source, output)
+    return sorted(path for path in expected if not (output / path).is_file())
 
 
 def main():
@@ -18,11 +46,12 @@ def main():
     parser.add_argument("output", type=Path)
     parser.add_argument("cases", nargs="*", help="再実行する PL-ID（省略時は全件）")
     args = parser.parse_args()
-    source = Path(__file__).with_name("PurchaseFlows.swift").read_text(encoding="utf-8")
-    available = re.findall(r"^    func testPL(\d{3})\(", source, re.MULTILINE)
-    cases = [case.removeprefix("PL-") for case in args.cases] if args.cases else sorted(available)
-    if len(set(available)) != 74 or not set(cases) <= set(available):
+    available = purchase_case_ids()
+    selected = ["PL-" + case.removeprefix("PL-") for case in args.cases] if args.cases else sorted(available)
+    if len(available) != 74 or not set(selected) <= available:
         parser.error("ケース一覧が一致しません")
+    expected = expected_reports(args.xctestrun, selected)
+    cases = [case.removeprefix("PL-") for case in selected]
     args.output.mkdir()
     run_id = str(uuid.uuid4()).upper()
     video = args.output / "simulator.mp4"
@@ -58,8 +87,10 @@ def main():
     container = Path(subprocess.check_output(
         ["xcrun", "simctl", "get_app_container", args.udid, "jp.acas.ipad", "data"], text=True).strip())
     reports = container / "Library" / "Caches" / "pl-evidence" / run_id
-    if reports.is_dir():
-        shutil.copytree(reports, args.output / "reports")
+    missing = collect_reports(reports, args.output / "reports", expected)
+    if missing:
+        print("試行の帳票を回収できませんでした: " + ", ".join(map(str, missing)), flush=True)
+        status = status or 1
     raise SystemExit(status)
 
 
