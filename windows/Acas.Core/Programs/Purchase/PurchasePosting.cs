@@ -36,6 +36,7 @@ public sealed partial class PurchaseLedger
             if (pending.Length == 0) database.Create(OpenItemFile);
             foreach (var batch in pending.Chunk(99).DefaultIfEmpty([]))
             {
+                if (general && irs) nextBatch = NextUnusedIrsBatch(nextBatch);
                 if (general && (nextBatch < 1 || nextBatch >= 32767 || (!irs && nextPosting + batch.Length > 32767))) return false;
                 if (general && !WriteBatch(system, batch, nextBatch, nextPosting, irs)) return false;
                 foreach (var invoice in batch)
@@ -228,6 +229,18 @@ public sealed partial class PurchaseLedger
         record.Set("taxSide", "DR");
         SetIrsLeadingAmount(record, "taxAmount", posting.N("vat-amount"));
         return database.Write(IrsPostingFile, record.S("batch") + record.S("number"), record.B);
+    }
+
+    private int NextUnusedIrsBatch(int batch)
+    {
+        for (; batch is > 0 and < short.MaxValue; batch++)
+        {
+            string prefix = batch.ToString("00000", CultureInfo.InvariantCulture);
+            if (database.Read(BatchFile, "2" + prefix) is null &&
+                database.Scan(IrsPostingFile, prefix).FirstOrDefault().Key?.StartsWith(prefix, StringComparison.Ordinal) != true)
+                break;
+        }
+        return batch;
     }
 
     private static void SetIrsLeadingAmount(Rec record, string field, decimal value)

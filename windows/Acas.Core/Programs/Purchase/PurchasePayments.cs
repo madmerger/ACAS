@@ -233,6 +233,7 @@ public sealed partial class PurchaseLedger
         if (posted.Count == 0) return true;
         foreach (var group in posted.Chunk(99))
         {
+            if (irs) batch = NextUnusedIrsBatch(batch);
             if (batch >= short.MaxValue || (!irs && start + group.Length > short.MaxValue)) return false;
             decimal total = group.Sum(item => item.Applied);
             if (!AmountFits(total, 99999999.99m)) return false;

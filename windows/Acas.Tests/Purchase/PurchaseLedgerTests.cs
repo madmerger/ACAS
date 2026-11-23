@@ -261,6 +261,27 @@ public sealed class PurchaseLedgerTests
     }
 
     [Fact]
+    public void アイアールエスの仕入と支払は同じ採番でも別バッチになる()
+    {
+        using var db = Fixture("pl-invoice");
+        var ledger = new PurchaseLedger(db);
+        var system = ledger.System();
+        system.Set("Irs-Instead", "Y");
+        system.SetN("Next-Batch", 1);
+        system.SetN("BL-Next-Batch", 1);
+        Assert.True(ledger.SaveSystem(system));
+        Assert.Single(ledger.PostInvoices()!);
+        Assert.True(ledger.SavePayment("SUPP018", new DateTime(2026, 11, 23), 50m, false,
+            new Dictionary<int, decimal> { [1] = 50m }));
+        Assert.Single(ledger.ProvePayments()!);
+        Assert.Single(ledger.PostPayments()!);
+        Assert.Equal(new[] { "0000100001", "0000200001" },
+            db.Scan("ledgers/acas/postings2irs.dat").Select(row => row.Key));
+        Assert.NotNull(db.Read("ledgers/acas/batch.dat", "200001"));
+        Assert.NotNull(db.Read("ledgers/acas/batch.dat", "200002"));
+    }
+
+    [Fact]
     public void アイアールエス仕入転記は固定長仕訳とバッチだけを作る()
     {
         using var db = Fixture("pl-invoice");
