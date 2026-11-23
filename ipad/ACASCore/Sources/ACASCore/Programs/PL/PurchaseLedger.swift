@@ -139,10 +139,12 @@ public struct PurchaseLedger {
             ("phone", supplier.telephone), ("ext", supplier.extensionNumber), ("fax", supplier.fax), ("email", supplier.email),
         ] { record["purch-" + field] = value }
         let delimiter = system.str("pl-delim").first.flatMap { $0 == " " ? nil : $0 } ?? "\\"
-        let address = record.raw("purch-address").prefix(92)
+        let address = Array(record.raw("purch-address").prefix(92))
         let delimiterByte = SJIS.encode(String(delimiter), size: 1)[0]
-        let parts = address.split(separator: delimiterByte, omittingEmptySubsequences: false)
-        guard (2...5).contains(parts.count), parts[0].count <= 30 else { throw Error.invalidAddress }
+        let separators = addressSeparators(in: address, delimiter: delimiterByte)
+        guard (1...4).contains(separators.count), let first = separators.first, first <= 30 else {
+            throw Error.invalidAddress
+        }
         for (field, value, modulus) in [
             ("sortcode", supplier.sortCode, 1_000_000), ("accountno", supplier.accountNumber, 100_000_000),
             ("credit", supplier.paymentDays, 100), ("limit", supplier.creditLimit, 10_000_000),
@@ -164,6 +166,21 @@ public struct PurchaseLedger {
             store.delete(notesPath, key: notesKey)
         }
         return code
+    }
+
+    private func addressSeparators(in bytes: [UInt8], delimiter: UInt8) -> [Int] {
+        var offsets: [Int] = []
+        var offset = 0
+        while offset < bytes.count {
+            let byte = bytes[offset]
+            if (0x81...0x9f).contains(byte) || (0xe0...0xfc).contains(byte) {
+                offset += 2
+            } else {
+                if byte == delimiter { offsets.append(offset) }
+                offset += 1
+            }
+        }
+        return offsets
     }
 
     public func removeSupplier(code: String, deactivate: Bool) throws {

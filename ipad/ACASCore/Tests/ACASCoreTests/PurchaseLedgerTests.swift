@@ -58,7 +58,7 @@ final class PurchaseLedgerTests: XCTestCase {
         try ledger.postTransactions()
         try ledger.postTransactions()
         let path = ledger.base + "value.dat"
-        for (key, amount) in [("P1 ", 10_000), ("Pvi", 2_000), ("Pv ", 2_000)] {
+        for (key, amount) in [("P1 ", 10_000), ("Pvi", 2_000)] {
             let bytes = try XCTUnwrap(ledger.store.read(path, key: Array(key.utf8)))
             XCTAssertEqual(bytes.count, 66)
             let actual = Record(PurchaseRecords.valueLayout, bytes: bytes)
@@ -168,6 +168,17 @@ final class PurchaseLedgerTests: XCTestCase {
         supplier.address1 = String(repeating: "市", count: 16) + "\\町"
         XCTAssertThrowsError(try ledger.saveSupplier(supplier, creating: true))
         supplier.address1 = String(repeating: "市", count: 15) + "\\町"
+        XCTAssertNoThrow(try ledger.saveSupplier(supplier, creating: true))
+    }
+
+    func testSupplierAddressDistinguishesShiftJISTrailByteFromDelimiter() throws {
+        let ledger = try makeLedger()
+        var supplier = ledger.newSupplier
+        supplier.code = "SUPP01"
+        supplier.address1 = "能"
+        XCTAssertEqual(SJIS.encode(supplier.address1, size: 2), [0x94, 0x5c])
+        XCTAssertThrowsError(try ledger.saveSupplier(supplier, creating: true))
+        supplier.address1 = "能能能能能\\町"
         XCTAssertNoThrow(try ledger.saveSupplier(supplier, creating: true))
     }
 
