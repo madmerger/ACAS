@@ -197,7 +197,8 @@ public sealed partial class SalesLedger
         .N9("batch", 5).N9("number", 5).X("code", 2).X("date", 8).N9("debit", 5).N9("credit", 5)
         .N9("net", 7, 2).X("legend", 32).N9("vatAccount", 2).X("vatSide", 2).N9("vat", 7, 2);
 
-    private void WriteSalesPostingBatches(Rec system, IReadOnlyList<(int Date, string Legend, decimal Net, decimal Vat)> entries)
+    private void WriteSalesPostingBatches(Rec system, IReadOnlyList<(int Date, string Legend, decimal Net, decimal Vat)> entries,
+        bool payments = false)
     {
         const string batchFile = Prefix + "batch.dat";
         bool irs = system.St("Irs-Instead") == "Y";
@@ -214,7 +215,7 @@ public sealed partial class SalesLedger
             batch.SetN("batch-nos", batchNumber);
             batch.SetN("bcycle", system.I("Cyclea"));
             batch.SetN("entered", system.I("Run-Date"));
-            batch.Set("description", "Sales Ledger Invoices");
+            batch.Set("description", payments ? "Sales-Ledger Payments" : "Sales Ledger Invoices");
             batch.Set("convention", "CR");
             batch.Set("batch-def-code", "SL");
             batch.Set("batch-def-vat", "O");
@@ -233,8 +234,8 @@ public sealed partial class SalesLedger
                     record.SetN("number", i);
                     record.Set("code", "SL");
                     record.Set("date", date);
-                    record.SetN("debit", system.I("S-Debtors"));
-                    record.SetN("credit", system.I("SL-Sales-Ac"));
+                    record.SetN("debit", system.I(payments ? "SL-Pay-Ac" : "S-Debtors"));
+                    record.SetN("credit", system.I(payments ? "S-Debtors" : "SL-Sales-Ac"));
                     SetLeadingAmount(record, "net", entry.Net);
                     record.Set("legend", entry.Legend);
                     record.SetN("vatAccount", 32);
@@ -246,17 +247,17 @@ public sealed partial class SalesLedger
                     record.SetN("post-number", i);
                     record.Set("post-code", "SL");
                     record.Set("post-date", date);
-                    record.SetN("post-dr", system.I("S-Debtors"));
-                    record.SetN("post-cr", system.I("SL-Sales-Ac"));
+                    record.SetN("post-dr", system.I(payments ? "SL-Pay-Ac" : "S-Debtors"));
+                    record.SetN("post-cr", system.I(payments ? "S-Debtors" : "SL-Sales-Ac"));
                     record.SetN("post-amount", entry.Net);
                     record.Set("post-legend", entry.Legend);
-                    record.SetN("vat-ac", system.I("Vat-Ac"));
+                    record.SetN("vat-ac", payments ? 0 : system.I("Vat-Ac"));
                     record.Set("post-vat-side", "CR");
                     record.SetN("vat-amount", entry.Vat);
                 }
                 string key = (irs ? ++sequential : next).ToString("D8", CultureInfo.InvariantCulture);
                 if (!db.Write(postFile, key, record.B)) throw new SalesRuleException("会計転記の番号が重複しています。");
-                next++;
+                if (!irs) next++;
                 sumNet = Math.Abs(sumNet + entry.Net);
                 sumVat = Math.Abs(sumVat + entry.Vat);
             }
@@ -267,7 +268,7 @@ public sealed partial class SalesLedger
             batch.SetN("actual-vat", sumVat);
             if (!db.Write(batchFile, batch.S("ledger") + batch.S("batch-nos"), batch.B))
                 throw new SalesRuleException("売掛の会計バッチ番号が重複しています。");
-            system.SetN("Postings", next);
+            if (!irs) system.SetN("Postings", next);
             if (items < 99) break;
             next++;
         } while (posted <= entries.Count);

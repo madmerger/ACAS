@@ -9,6 +9,16 @@ public sealed partial class SalesScreens
         ? Missing("入金検証帳票", "入金明細")
         : new ReportScreen("入金検証帳票", sales.PaymentProof(), MainMenu);
 
+    private Screen PaymentPost()
+    {
+        const string title = "入金転記";
+        if (sales.SystemRecord().I("S-Flag-P") == 0) return Missing(title, "入金明細");
+        if (sales.SystemRecord().I("S-Flag-P") != 2)
+            return new InformationScreen(title, "入金検証帳票を先に作成してください。");
+        return Confirm(title, "確認済みの入金を転記しますか。", "転記する",
+            () => new ReportScreen(title, sales.PostPayments(), MainMenu), MainMenu);
+    }
+
     private Screen PaymentAmend()
     {
         if (!sales.HasOpenItems() || sales.SystemRecord().I("S-Flag-P") == 0)

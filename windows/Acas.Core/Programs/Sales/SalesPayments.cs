@@ -15,6 +15,65 @@ public sealed partial class SalesLedger
 {
     public const string PaymentSortFile = Prefix + "oisort.wrk";
 
+    public string PostPayments() => db.Atomic(() =>
+    {
+        var system = SystemRecord();
+        if (system.I("S-Flag-P") != 2) throw new SalesRuleException("入金検証帳票を先に作成してください。");
+        var report = new StringBuilder("入金転記帳票\n").AppendLine(GetText(system, "Usera"))
+            .AppendLine(ShowDate(system.I("Run-Date")))
+            .AppendLine("バッチ／明細　日付　得意先　区分　転記前残高　転記後残高　入金額　値引額　消込額");
+        var sums = new (decimal Paid, decimal Deducted, decimal Allocated)[2];
+        var entries = new List<(int Date, string Legend, decimal Net, decimal Vat)>();
+        int deductions = 0;
+        foreach (var (key, data) in db.Scan(OpenItemFile))
+        {
+            var item = DecodePostingItem(data);
+            int type = item.I("type"), batch = item.I("batchNumber"), sequence = item.I("batchItem");
+            if (type == 2 && batch != 0 && sequence != 0)
+            {
+                item.SetN("batchNumber", 0);
+                item.SetN("batchItem", 0);
+                item.SetN("creditFor", 0);
+                db.Rewrite(OpenItemFile, key, item.B);
+                continue;
+            }
+            if (type is not (5 or 6) || item.I("closed") == 1 || batch == 0 && sequence == 0) continue;
+            string code = item.S("customer");
+            var customer = CustomerRecord(code);
+            int date = item.I("date");
+            decimal paid = item.N("paid"), allocated = item.N("net"), deducted = item.N("deductAmount");
+            decimal oldBalance = customer.N("balance") - customer.N("unapplied");
+            customer.SetN("balance", customer.N("balance") - allocated - deducted);
+            customer.SetN("unapplied", customer.N("unapplied") + paid - allocated);
+            NormalizeCustomerBalance(customer);
+            customer.SetN("lastPayment", date);
+            db.Rewrite(CustomerFile, code, customer.B);
+            item.SetN("paid", allocated);
+            item.SetN("closed", 1);
+            db.Rewrite(OpenItemFile, key, item.B);
+            entries.Add((date, $"{batch:D5}/{sequence:D3}  :  {customer.S("name")}", allocated, 0));
+            sums[type - 5].Paid += paid;
+            sums[type - 5].Allocated += allocated;
+            sums[type - 5].Deducted += deducted;
+            if (deducted != 0) deductions++;
+            report.AppendLine($"{batch}/{sequence:D3}　{ShowDate(date)}　{code}　{GetText(customer, "name")}　{OpenItemType(type)}　" +
+                $"{Amount(oldBalance)}　{Amount(customer.N("balance") - customer.N("unapplied"))}　{Amount(paid)}　{Amount(deducted)}　{Amount(allocated)}");
+        }
+        for (int i = 0; i < sums.Length; i++)
+            report.AppendLine($"{OpenItemType(i + 5)}合計　{Amount(sums[i].Paid)}　{Amount(sums[i].Deducted)}　{Amount(sums[i].Allocated)}");
+        var totals = ReadSalesTotals();
+        totals.SetN("total8", totals.N("total8") + sums[0].Paid);
+        db.Put(SystemFile, SalesTotalsKey, totals.B);
+        UpdatePostingDeductions(deductions, sums[0].Deducted + sums[1].Deducted);
+        if (system.I("Level-1") == 1) WriteSalesPostingBatches(system, entries, payments: true);
+        system.SetN("S-Flag-P", 0);
+        system.Set("Oi-3-Flag", "Y");
+        SaveSystem(system);
+        string body = report.ToString();
+        db.AddSpool("prt-1", body);
+        return body;
+    });
+
     public string PaymentProof() => db.Atomic(() =>
     {
         var system = SystemRecord();
