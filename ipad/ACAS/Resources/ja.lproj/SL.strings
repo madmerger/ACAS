@@ -82,6 +82,9 @@
 "sales.invoice.deliveryPrint.print" = "印刷";
 "sales.invoice.deliveryPrint.reprint" = "再印刷";
 "sales.invoice.deliveryPrint.unavailable" = "請求書の印刷に必要な設定またはファイルがありません";
+"sales.exit.title" = "売掛元帳を終了";
+"sales.exit.destination" = "メインメニュー";
+"sales.exit.noBackup" = "バックアップスクリプト（acasbkup.sh）がないため、バックアップは行われませんでした";
 "sales.period.endQuarter" = "四半期末の締めとして実行する";
 "sales.period.password" = "パスワード";
 "sales.period.invalidPassword" = "パスワードが正しくありません";

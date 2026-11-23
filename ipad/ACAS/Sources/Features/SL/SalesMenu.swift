@@ -3,11 +3,18 @@ import SwiftUI
 
 struct SalesMenu: View {
     let workspace: Workspace
+    let onExit: () -> Void
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @State private var entered = false
+    @State private var exitCount = 0
 
     var body: some View {
         if entered {
             actions
+                .id(exitCount)
+                .safeAreaInset(edge: .top, spacing: 0) {
+                    if exitCount > 0 { SalesExitNotice() }
+                }
         } else {
             SalesDateView(workspace: workspace, onConfirm: { entered = true })
         }
@@ -104,7 +111,24 @@ struct SalesMenu: View {
                 }
                 .accessibilityIdentifier("sales.customer.turnover")
             }
+            Section {
+                Button(slText("sales.exit.title")) {
+                    if horizontalSizeClass == .compact {
+                        exitCount += 1
+                    }
+                    onExit()
+                }
+                .accessibilityIdentifier("sales.exit")
+            }
         }
+    }
+}
+
+struct SalesExitNotice: View {
+    var body: some View {
+        Label(slText("sales.exit.noBackup"), systemImage: "exclamationmark.triangle")
+            .padding()
+            .accessibilityIdentifier("sales.exit.noBackup")
     }
 }
 

@@ -22,7 +22,9 @@ enum SectionID: String, CaseIterable, Identifiable {
 
 struct MainMenu: View {
     @ObservedObject var workspace: Workspace
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @State private var section: SectionID? = .system
+    @State private var exitedSales = false
 
     var body: some View {
         NavigationSplitView {
@@ -37,26 +39,34 @@ struct MainMenu: View {
             NavigationStack {
                 if let section {
                     functions(in: section)
-                        .navigationTitle(section.title)
+                        .navigationTitle(exitedSales && section == .system
+                                         ? Text(slText("sales.exit.destination")) : Text(section.title))
                 } else {
                     ContentUnavailableView("menu.select", systemImage: "sidebar.left")
                 }
             }
             .id(section)
         }
-        #if DEBUG
-        .safeAreaInset(edge: .top, spacing: 0) {
-            if let evidence = workspace.evidence { CaseBanner(evidence: evidence) }
+        .onChange(of: section) { _, selection in
+            if selection != .system { exitedSales = false }
         }
-        #endif
     }
 
     @ViewBuilder private func functions(in section: SectionID) -> some View {
         switch section {
         case .system:
             SystemMenu(workspace: workspace)
+                .safeAreaInset(edge: .top) {
+                    if exitedSales { SalesExitNotice() }
+                }
         case .sales:
-            SalesMenu(workspace: workspace)
+            SalesMenu(workspace: workspace) {
+                if horizontalSizeClass != .compact {
+                    exitedSales = true
+                    self.section = .system
+                }
+                workspace.completed("sales-exit")
+            }
         default:
             ContentUnavailableView("menu.pending", systemImage: section.symbol)
         }
