@@ -35,8 +35,11 @@ final class SalesStatementsTests: XCTestCase {
 
         let date = try service.prepare()
         XCTAssertEqual(store.readRaw(SalesOpenItemSort.path), item.bytes)
+        let invoice = Array("直前の請求書".utf8)
+        try store.writeRaw(SalesInvoices.printPath, invoice)
         let entries = try service.generate(date: date, customer: "cust011", minimum: 900, message1: "Test", message2: "")
         XCTAssertEqual(entries.map(\.balance), [975])
+        XCTAssertEqual(store.readRaw(SalesInvoices.printPath), invoice)
         let report = try XCTUnwrap(store.readRaw(SalesStatements.exportPath))
         let text = String(decoding: report, as: UTF8.self)
         XCTAssertTrue(text.contains("Goods"))
