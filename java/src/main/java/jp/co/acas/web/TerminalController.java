@@ -1,5 +1,7 @@
 package jp.co.acas.web;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jp.co.acas.core.Ctx;
 import jp.co.acas.core.Messages;
 import jp.co.acas.core.Store;
@@ -8,14 +10,23 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 @RestController
 @RequestMapping("/api")
 public class TerminalController {
+    // 2000 件のキーをすべて JSON の Unicode エスケープで表しても収まる。
+    private static final int MAX_KEYS_BODY_BYTES = 3 * 1024 * 1024;
     private final SessionManager sessions; private final Store store;
-    public TerminalController(SessionManager sessions, Store store) { this.sessions = sessions; this.store = store; }
+    private final ObjectMapper json;
+    public TerminalController(SessionManager sessions, Store store, ObjectMapper json) {
+        this.sessions = sessions;
+        this.store = store;
+        this.json = json;
+    }
 
     public record Keys(List<String> keys) { }
     private static final Set<String> COMMANDS = Set.of("ENTER", "ESC", "TAB", "BACKTAB", "UP", "DOWN", "LEFT", "RIGHT",
@@ -35,9 +46,19 @@ public class TerminalController {
 
     /** キー入力。keys の各要素は 1 文字、または ENTER/ESC/TAB/BACKTAB/UP/DOWN/LEFT/RIGHT/HOME/END/PGUP/PGDN/BACKSPACE/DELETE/F1..F12。 */
     @PostMapping(value = "/sessions/{id}/keys", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public Map<String, Object> keys(@PathVariable String id, @RequestBody Keys body) {
+    public Map<String, Object> keys(@PathVariable String id, InputStream requestBody) throws IOException {
         Ctx c = ctx(id);
-        if (body.keys() == null || body.keys().isEmpty() || body.keys().size() > 2000
+        byte[] data = requestBody.readNBytes(MAX_KEYS_BODY_BYTES + 1);
+        if (data.length > MAX_KEYS_BODY_BYTES) {
+            throw new ResponseStatusException(HttpStatus.PAYLOAD_TOO_LARGE, "入力本文が大きすぎます");
+        }
+        Keys body;
+        try {
+            body = json.readValue(data, Keys.class);
+        } catch (JsonProcessingException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "入力形式が正しくありません");
+        }
+        if (body == null || body.keys() == null || body.keys().isEmpty() || body.keys().size() > 2000
                 || !body.keys().stream().allMatch(TerminalController::validKey)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "入力形式が正しくありません");
         }
