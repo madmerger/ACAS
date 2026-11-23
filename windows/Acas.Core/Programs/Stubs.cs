@@ -2,7 +2,6 @@ using Acas.Core.Engine;
 
 namespace Acas.Core.Programs;
 
-public static partial class Stock { public static Task<int> Menu(Ctx c) => Task.FromResult(0); }
 public static partial class Irs { public static Task<int> Menu(Ctx c) => Task.FromResult(0); }
 public static partial class Gl071 { public static Task<int> Run(Ctx c, string toDay) => Task.FromResult(0); }
 public static partial class Gl072 { public static Task<int> Run(Ctx c, string toDay) => Task.FromResult(0); }

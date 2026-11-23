@@ -695,3 +695,114 @@ PL903 No data to process. Hit return	PL903 処理対象なし  Enter
 Cheque Register	小切手登録簿
 Warning: Updating Open Item File. Do You Wish to Continue (YES/NO) [   ]	警告: 未決済明細を更新します。続行しますか?         (YES/NO)       [   ]
     Code    GL.No.      <-----Description------>   Print       -Type-	    ｺｰﾄﾞ    GL番号      <---------摘要--------->   印刷        -種別-
+(B)  Stock Item Maintenance	(B)  在庫品目保守
+(C)  Stock Movements	(C)  在庫移動
+(D)  Reports	(D)  帳票
+(E)  End of Cycle Processing	(E)  期末処理
+(Y)  Stock File Compression	(Y)  在庫ファイル圧縮
+Stock Control - Start Of Day	在庫管理 - 業務開始
+Stock Control System Menu	在庫管理システムメニュー
+(1)  Set-up Stock records	(1)  在庫品目登録
+(2)  Amend Stock records	(2)  在庫品目変更
+(3)  Delete Stock records	(3)  在庫品目削除
+(4)  Renumber Stock records	(4)  在庫品目付番変更
+(5)  Display Stock records	(5)  在庫品目表示
+(6)  Print Stock records	(6)  在庫品目印刷
+Stock File Set-Up & Maintenance	在庫ファイル登録・保守
+(1)  Stock Additions Entry	(1)  入庫入力
+(2)  Stock Deductons Entry	(2)  出庫入力
+(3)  Stock Additions from Barcode Readers	(3)  バーコード入庫
+(4)  Stock Order Entry	(4)  発注入力
+(5)  End of Month Audit Reports	(5)  月末監査帳票
+(9)  Return to System Menu	(9)  システムメニューへ戻る
+Stock Movements Menu	在庫移動メニュー
+(1)  Valuation Report	(1)  在庫評価表
+(2)  Activity Report	(2)  在庫動向表
+(3)  Re-Order Report	(3)  発注点表
+(4)  Stock History Report	(4)  在庫履歴表
+(5)  Stock Report	(5)  在庫表
+Stock Control - Reports Menu	在庫管理 - 帳票メニュー
+Can I clear End of Year Totals on Stock records [ ] (N/Y)	在庫品目の年次累計をクリアしますか?             [ ] (N/Y)
+Can I clear this   Month Totals? [N] (N/Y)	当月累計をクリアしますか?        [N] (N/Y)
+Stock Activity Reset	在庫動向リセット
+Is this a recovery from a previous run of this process - [N] (N/Y)	前回実行分からの復旧処理ですか?                  -       [N] (N/Y)
+Stock Compression Utility	在庫ファイル圧縮
+This process will clean up the Stock File of deleted records	削除済みレコードを在庫ファイルから除去します
+Back Ordered	受注残
+Date Due	納期
+Date Ordered - [          ]	発注日       - [          ]
+Desc [                                ] Stock Location [          ]	品名 [                                ] 保管場所       [          ]
+PL Fast key	PL短縮ｷｰ
+Purch Anal.Code[  ]	仕入分析ｺｰﾄﾞ   [  ]
+Qty Ordered	発注数量
+Re-Order Point	発注点
+Re-Order Qty	発注数量
+Sales Anal. Code - [  ]	売上分析ｺｰﾄﾞ     - [  ]
+Sales Orders O/S - [000000]	受注未出荷       - [000000]
+Services only Flag [ ] (Y/N)	サービス品区分     [ ] (Y/N)
+Stock Number	品目番号
+Stock Qty	在庫数量
+Stock Record Creation	在庫品目登録
+Supplier: 1 - [       ] : 2 - [       ]	仕入先: 1 -   [       ] : 2 - [       ]
+T-045 Error not in error.txt. Hit return to close	T-045 エラー定義なし。Enterで終了
+Stock Record Deletion	在庫品目削除
+Cost	原価
+Price - [0000000.0000]	単価  - [0000000.0000]
+Retail Price - [0000000.00]	販売単価     - [0000000.00]
+Stock Value	在庫金額
+Stock Record Display 	在庫品目表示
+Price	単価
+Quantity	数量
+Stk Qty	在庫数
+Stk Value	在庫金額
+Stock Additions Entry	入庫入力
+Stock Deductions Entry	出庫入力
+Stock Barcode Additions Entry	バーコード入庫入力
+Back Qty	受注残
+Qty Ord Date Ordered	発注数 発注日
+Stock End of Month Processing	在庫月末処理
+ Check that Reports are complete first, before responding	 回答前に帳票出力の完了を確認してください
+ Making sure that Sales Invoicing and Purchase Ledger are NOT running	 売上請求と買掛元帳が実行中でないことを確認
+Can I Delete the Audit File Now? [N]	監査ファイルを削除しますか?      [N]
+Printing	印刷中
+From Abrev Number - [_______]	開始 短縮番号   -   [_______]
+From Stock Number - [_____________]	開始 品目番号   -   [_____________]
+Leave fields blank to select All	空欄のままで全件選択
+OR	又は
+Select Stock no. or Abrev Stock no. but NOT both	品目番号か短縮番号のどちらか一方を指定
+Stock Valuation Report	在庫評価表
+To Abrev Number - [_______]	終了 短縮番号 -   [_______]
+To Stock Number - [_____________]	終了 品目番号 -   [_____________]
+(1)   All Stock Items	(1)   全品目
+(2)   Range of Items	(2)   品目範囲指定
+(3)   Items Active in current Month	(3)   当月動きのある品目
+(4)   Items Active in Year To Date	(4)   当年動きのある品目
+(5)   Range of active Items in Current Month	(5)   当月動きのある品目(範囲)
+(6)   Range of active Items in Year To Date	(6)   当年動きのある品目(範囲)
+(9)   Return to Main Menu	(9)   メインメニューへ戻る
+Select an Report Option Number : [ ]	帳票オプション番号を選択     :   [ ]
+Stock Activity Report	在庫動向表
+(2)   A Range of Items	(2)   品目範囲指定
+(3)   Items that are Understocked	(3)   在庫不足品目
+(4)   Range of Understocked Items	(4)   在庫不足品目(範囲)
+(5)   Items, Not in Stock	(5)   在庫切れ品目
+(6)   Range of Items, Not in Stock	(6)   在庫切れ品目(範囲)
+(7)   Items on Order	(7)   発注中品目
+(8)   Range of Items on Order	(8)   発注中品目(範囲)
+Stock Re-Order Report	在庫発注点表
+Stock History Report	在庫履歴表
+Stock Report	在庫表
+ST203 Abbreviated Stock number not present	ST203 短縮品目番号が存在しません
+Additions Stock Audit Report                                         	入庫監査表
+Batch 	ﾊﾞｯﾁ
+Deductions Stock Audit Report                                        	出庫監査表
+Proc. Date Stock Number  Description                         Qty    Price    Stock Value    Source/Inv.no.	処理日     品目番号      品名                               数量     単価       在庫金額    発生元/請求No
+Proc. Date Stock Number  Description                         Qty    Price    Stock Value    Source/PO.no.	処理日     品目番号      品名                               数量     単価       在庫金額    発生元/発注No
+Total Additions 	入庫合計
+Total Changes   	増減合計
+Total Deductions	出庫合計
+Stock File Report                                                  	在庫ファイル一覧表
+<------ Stock ------> Supplier  Location     Unit      Unit        Value    Number <- ReOrder -> <------- Date ------>  Quantity On	<------ 品目 ------>  仕入先    保管場所     販売      原価        在庫     在庫    <-- 発注 --> <------- 日付 ------>  数量
+Abrev   Number         Number               Price      Cost        in Stk   in Stk  Point    Qty   Ordered     Due      Order  B/Ord	短縮    番号           番号                 単価       単価        金額     数量    発注点 数量   発注日      納期     発注残 受注残
+     Description: 	     品名:
+ Total Stock Records 	 在庫品目件数

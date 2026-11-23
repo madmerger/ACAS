@@ -64,7 +64,8 @@ public static partial class Launcher
                     c.BackupNoise = false;
                     t.V("nohup: appending output to 'nohup.out", 0644);
                     t.V("'", 0701);
-                    t.V(" nohup: failed to run command 'acasbkup.sh': No such file or directory", 0801);
+                    if (!c.BackupNoiseShort) t.V(" nohup: failed to run command 'acasbkup.sh': No such file or directory", 0801);
+                    c.BackupNoiseShort = false;
                 }
             acceptLoop:
                 var reply = (await t.A(0644, 1, init: noise ? "n" : null, auto: true)).ToUpperInvariant();

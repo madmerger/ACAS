@@ -16,7 +16,7 @@ public sealed class Ctx
     public Func<int, Task> Sleep = _ => Task.CompletedTask;
     public const string L = "ledgers/acas/", I = "ledgers/irs/";
     public Rec Sys = Layouts.System.New();
-    public bool BackupNoise;
+    public bool BackupNoise, BackupNoiseShort;
     public readonly List<(string Name, List<string> Lines)> Reports = new(), EnglishReports = new();
 
     public Ctx(Db db) { Db = db; }
