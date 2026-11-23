@@ -28,6 +28,8 @@ struct SalesMenu: View {
                     .accessibilityIdentifier("sales.invoice.amendSale")
                 NavigationLink(slText("sales.invoice.menuTitle")) { SalesInvoiceMenu(workspace: workspace) }
                     .accessibilityIdentifier("sales.invoice.menu")
+                NavigationLink(slText("sales.post.title")) { SalesPostingView(workspace: workspace) }
+                    .accessibilityIdentifier("sales.post")
             }
             Section(slText("sales.payment.section")) {
                 NavigationLink(slText("sales.payment.entry")) { SalesPaymentsView(workspace: workspace) }
