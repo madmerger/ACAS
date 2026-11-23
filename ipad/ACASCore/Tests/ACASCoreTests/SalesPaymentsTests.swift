@@ -2,6 +2,24 @@ import XCTest
 @testable import ACASCore
 
 final class SalesPaymentsTests: XCTestCase {
+    func testUsingOnlyUnappliedBalancePreservesPaymentFlag() throws {
+        let (store, context, date) = try setup()
+        var draft = SalesPayments.Draft(date: date)
+        draft.customer = "CUST011"
+        draft.amount = 100
+        draft.useUnappliedBalance = true
+        let service = SalesPayments(context)
+        let ledger = SalesLedger(context)
+        XCTAssertEqual(try service.saveBatch([draft]), 3)
+        XCTAssertEqual(try ledger.systemRecord().int("s-flag-p"), 0)
+
+        var system = try ledger.systemRecord()
+        system.setInt("s-flag-p", 2)
+        try RelativeFile(store, path: "ledgers/acas/system.dat", recordSize: 1024).write(1, system.bytes)
+        XCTAssertEqual(try service.saveBatch([draft]), 4)
+        XCTAssertEqual(try ledger.systemRecord().int("s-flag-p"), 2)
+    }
+
     func testPaymentBatchUpdatesOpenItemAndUnappliedBalance() throws {
         let (store, context, date) = try setup()
         let service = SalesPayments(context)
