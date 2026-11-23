@@ -23,6 +23,7 @@ private struct CompanyForm: View {
     @State private var name = ""
     @State private var saved = false
     @State private var invalid = false
+    @State private var storageFailed = false
     @FocusState private var editingName: Bool
 
     var body: some View {
@@ -31,13 +32,16 @@ private struct CompanyForm: View {
                 .focused($editingName)
                 .accessibilityIdentifier("system.company.name")
             Button("action.save") {
+                saved = false
                 do {
                     try CompanySetup(workspace.context).save(name: name)
                     editingName = false
                     saved = true
                     workspace.completed("company")
-                } catch {
+                } catch CompanySetup.Error.invalidName {
                     invalid = true
+                } catch {
+                    storageFailed = true
                 }
             }
             .accessibilityIdentifier("action.save")
@@ -46,6 +50,9 @@ private struct CompanyForm: View {
         .navigationTitle("system.company")
         .onAppear { name = CompanySetup(workspace.context).name }
         .alert("system.company.invalid", isPresented: $invalid) {
+            Button("action.close", role: .cancel) {}
+        }
+        .alert("system.company.storageFailed", isPresented: $storageFailed) {
             Button("action.close", role: .cancel) {}
         }
     }

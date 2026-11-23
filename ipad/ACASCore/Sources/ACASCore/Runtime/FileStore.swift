@@ -3,6 +3,11 @@ import SQLite3
 
 /// 端末内 DB (SQLite)。レガシーの索引編成/相対編成/順編成ファイルを、同じファイル名・同じレコードバイト列で保持する。
 public final class FileStore: @unchecked Sendable {
+    public struct DatabaseError: Swift.Error {
+        public let code: Int32
+        public let message: String
+    }
+
     private var db: OpaquePointer?
     private let lock = NSRecursiveLock()
     private static let transient = unsafeBitCast(-1, to: sqlite3_destructor_type.self)
@@ -27,23 +32,33 @@ public final class FileStore: @unchecked Sendable {
     }
 
     private func run<T>(_ sql: String, _ binds: [Any?], _ body: (OpaquePointer) -> T) -> T {
+        do { return try withStatement(sql, binds, body) }
+        catch { fatalError("SQLite: \(error) [\(sql)]") }
+    }
+
+    private func databaseError(_ code: Int32) -> DatabaseError {
+        DatabaseError(code: code, message: String(cString: sqlite3_errmsg(db)))
+    }
+
+    private func withStatement<T>(_ sql: String, _ binds: [Any?], _ body: (OpaquePointer) throws -> T) throws -> T {
         lock.lock(); defer { lock.unlock() }
         var st: OpaquePointer?
-        guard sqlite3_prepare_v2(db, sql, -1, &st, nil) == SQLITE_OK, let stmt = st else {
-            fatalError("SQLite prepare: \(String(cString: sqlite3_errmsg(db))) [\(sql)]")
-        }
+        let prepared = sqlite3_prepare_v2(db, sql, -1, &st, nil)
+        guard prepared == SQLITE_OK, let stmt = st else { throw databaseError(prepared) }
         defer { sqlite3_finalize(stmt) }
         for (i, b) in binds.enumerated() {
             let n = Int32(i + 1)
+            let result: Int32
             switch b {
-            case let s as String: sqlite3_bind_text(stmt, n, s, -1, Self.transient)
+            case let s as String: result = sqlite3_bind_text(stmt, n, s, -1, Self.transient)
             case let d as [UInt8]:
-                if d.isEmpty { sqlite3_bind_zeroblob(stmt, n, 0) }
-                else { _ = d.withUnsafeBytes { sqlite3_bind_blob(stmt, n, $0.baseAddress, Int32(d.count), Self.transient) } }
-            default: sqlite3_bind_null(stmt, n)
+                if d.isEmpty { result = sqlite3_bind_zeroblob(stmt, n, 0) }
+                else { result = d.withUnsafeBytes { sqlite3_bind_blob(stmt, n, $0.baseAddress, Int32(d.count), Self.transient) } }
+            default: result = sqlite3_bind_null(stmt, n)
             }
+            guard result == SQLITE_OK else { throw databaseError(result) }
         }
-        return body(stmt)
+        return try body(stmt)
     }
 
     private func blob(_ stmt: OpaquePointer, _ col: Int32) -> [UInt8] {
@@ -90,12 +105,15 @@ public final class FileStore: @unchecked Sendable {
         }
     }
 
-    public func writeRaw(_ file: String, _ data: [UInt8]) {
-        _ = run("INSERT INTO files(name, kind, data) VALUES(?, 'raw', ?) ON CONFLICT(name) DO UPDATE SET kind='raw', data=excluded.data", [file, data]) { sqlite3_step($0) }
+    public func writeRaw(_ file: String, _ data: [UInt8]) throws {
+        try withStatement("INSERT INTO files(name, kind, data) VALUES(?, 'raw', ?) ON CONFLICT(name) DO UPDATE SET kind='raw', data=excluded.data", [file, data]) {
+            let result = sqlite3_step($0)
+            guard result == SQLITE_DONE else { throw databaseError(result) }
+        }
     }
 
-    public func appendRaw(_ file: String, _ data: [UInt8]) {
-        writeRaw(file, (readRaw(file) ?? []) + data)
+    public func appendRaw(_ file: String, _ data: [UInt8]) throws {
+        try writeRaw(file, (readRaw(file) ?? []) + data)
     }
 
     // MARK: 索引編成
@@ -177,7 +195,7 @@ public final class FileStore: @unchecked Sendable {
                     write(name, key: Self.bytes(hex: pair[0]), data: Self.bytes(hex: pair[1]))
                 }
             } else {
-                writeRaw(name, Self.bytes(hex: f["hex"] as? String ?? ""))
+                try writeRaw(name, Self.bytes(hex: f["hex"] as? String ?? ""))
             }
         }
         exec("COMMIT")
@@ -332,7 +350,7 @@ public final class RelativeFile {
     }
 
     /// WRITE / REWRITE (必要ならファイルを拡張)
-    public func write(_ rrn: Int, _ data: [UInt8]) {
+    public func write(_ rrn: Int, _ data: [UInt8]) throws {
         var d = store.readRaw(path) ?? []
         let off = (rrn - 1) * slot
         if d.count < off + slot { d += [UInt8](repeating: 0, count: off + slot - d.count) }
@@ -341,7 +359,7 @@ public final class RelativeFile {
         var rec = Array(data.prefix(recordSize))
         if rec.count < recordSize { rec += [UInt8](repeating: 0x20, count: recordSize - rec.count) }
         d.replaceSubrange(off..<(off + slot), with: len + rec)
-        store.writeRaw(path, d)
+        try store.writeRaw(path, d)
         status = "00"
     }
 

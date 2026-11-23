@@ -15,6 +15,7 @@
 "system.company.name" = "会社名";
 "system.company.saved" = "会社設定を保存しました";
 "system.company.invalid" = "会社名は記録できる文字で、全角１６文字または半角３２文字以内で入力してください";
+"system.company.storageFailed" = "会社設定を保存できませんでした";
 "sales.proof" = "未転記売上取引の確認帳票";
 "sales.proof.ready" = "帳票を作成してください";
 "sales.proof.failed" = "会社設定または請求書の情報を確認してください";

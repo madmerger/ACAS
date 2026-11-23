@@ -35,9 +35,9 @@ public struct CompanySetup {
             record["maps-ser-xx"] = "mp"
         }
         record["usera"] = name
-        file.write(1, record.bytes)
-        if file.read(2) == nil { file.write(2, SystemAuxRecords.initialDefault()) }
-        if file.read(3) == nil { file.write(3, SystemAuxRecords.initialFinal()) }
-        if file.read(4) == nil { file.write(4, SystemAuxRecords.initialRecord4()) }
+        try file.write(1, record.bytes)
+        if file.read(2) == nil { try file.write(2, SystemAuxRecords.initialDefault()) }
+        if file.read(3) == nil { try file.write(3, SystemAuxRecords.initialFinal()) }
+        if file.read(4) == nil { try file.write(4, SystemAuxRecords.initialRecord4()) }
     }
 }
