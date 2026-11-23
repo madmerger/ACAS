@@ -37,11 +37,15 @@ WORKFLOWS = {
     "GL-036": ("gl-business-date-invalid", "存在しない処理日を拒否する"),
     "GL-037": ("gl-cycle-close-cancel", "期間締めを中止して総勘定元帳に戻る"),
     "GL-038": ("gl-account-error-missingHeader", "部門・拠点未設定で初回の明細登録を拒否"),
+    "GL-040": ("gl-defaults-save", "既定勘定を更新"),
+    "GL-041": ("gl-defaults-missing-account", "存在しない既定勘定の保存結果を確認"),
+    "GL-042": ("gl-defaults-list", "既定勘定の一覧を確認"),
     "GL-200": ("gl-business-date", "総勘定元帳を開いて処理日入力へ進む"),
     "GL-201": ("gl-business-date", "総勘定元帳メニューから処理日入力を開く"),
     "GL-204": ("gl-account-edit-menu", "勘定科目の変更・削除画面を表示"),
     "GL-205": ("gl-chart-inquiry-menu", "勘定科目一覧の照会画面を表示"),
     "GL-206": ("gl-chart-print", "勘定科目一覧の帳票を確認"),
+    "GL-207": ("gl-defaults-menu", "既定勘定の管理メニューを表示"),
     "GL-219": ("gl-batch-status-menu", "バッチ状況メニューを表示"),
     "GL-220": ("gl-batch-status-display", "バッチ状況を照会"),
     "GL-221": ("gl-batch-status-print", "バッチ状況帳票を出力"),
@@ -137,7 +141,7 @@ def fixture(evidence, case):
     seeded = workflow == "sales-proof" or workflow.startswith(
         (
             "system-", "gl-account-", "gl-chart-", "gl-batch-status-", "gl-business-date",
-            "gl-close-ledger", "gl-cycle-close-", "gl-posting-", "gl-trial-balance-",
+            "gl-close-ledger", "gl-cycle-close-", "gl-defaults-", "gl-posting-", "gl-trial-balance-",
         )
     )
     seed = snapshot_seed(evidence, run) if seeded else None
@@ -155,6 +159,9 @@ def fixture(evidence, case):
                       name=fields[2] if len(fields) > 2 else None)
         if len(fields) > 4:
             values["placement"] = fields[4]
+    if workflow in ("gl-defaults-save", "gl-defaults-missing-account"):
+        number, account, *rest = text_inputs[3].rstrip("\r").split("\r")
+        values.update(entry=int(number), account=account.replace(".", ""), transactionCode=rest[0] if rest else None)
     changes = expected_changes(evidence, targets.get("keyed_record_diff"))
     if workflow == "company":
         changes += analysis_changes(evidence, run)

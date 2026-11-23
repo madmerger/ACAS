@@ -14,6 +14,7 @@ struct LedgerDefaultsMenu: View {
                 .accessibilityIdentifier("gl.defaults.list")
         }
         .navigationTitle(ledgerText("defaults"))
+        .onAppear { workspace.completed("gl-defaults-menu") }
     }
 }
 
@@ -33,7 +34,10 @@ private struct LedgerDefaultsList: View {
             }
         }
         .navigationTitle(ledgerText(edit ? "defaults-edit" : "defaults-list"))
-        .onAppear(perform: reload)
+        .onAppear {
+            reload()
+            if !edit { workspace.completed("gl-defaults-list") }
+        }
         .sheet(item: $selected, onDismiss: reload) { entry in
             NavigationStack { LedgerDefaultEditor(workspace: workspace, entry: entry) }
         }
@@ -91,6 +95,7 @@ private struct LedgerDefaultEditor: View {
         do {
             let exists = try GeneralLedgerSetup(workspace.context).saveDefault(number: entry.id, account: account,
                 transactionCode: transactionCode, tax: tax)
+            workspace.completed(exists ? "gl-defaults-save" : "gl-defaults-missing-account")
             if exists { dismiss() } else { error = ledgerText("default-account-missing") }
         } catch {
             self.error = ledgerText("default-invalid")
