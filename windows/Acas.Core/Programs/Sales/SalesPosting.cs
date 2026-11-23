@@ -44,7 +44,7 @@ public sealed partial class SalesLedger
             {
                 missingCustomer = true;
                 customer.Set("key", code);
-                customer.Set("name", "*** Customer Unknown ***");
+                customer.Set("name", UnknownCustomerName);
             }
             decimal vatForNominal = item.N("vat") + item.N("carriageVat") + item.N("extraVat");
             decimal vat = vatForNominal + item.N("deductVat");
@@ -82,7 +82,7 @@ public sealed partial class SalesLedger
             if (!db.Write(OpenItemFile, OpenItemKey(code, number), item.B))
                 throw new SalesRuleException("同じ得意先と番号の売掛明細が既にあります。");
             decimal newBalance = customer.N("balance") - customer.N("unapplied");
-            string name = customerData == null ? "得意先不明" : GetText(customer, "name");
+            string name = CustomerDisplayName(GetText(customer, "name"));
             report.AppendLine($"{number}　{ShowDate(date)}　{code}　{name}　{OpenItemType(type)}　{Amount(oldBalance)}　" +
                 $"{Amount(newBalance)}　{Amount(deductions)}　{Amount(net)}　{Amount(vat)}　{Amount(net + vat)}");
         }
@@ -431,9 +431,9 @@ public sealed partial class SalesLedger
         if (db.Read(AnalysisFile, code) is { } found) analysis = AnalysisLayout.From(found);
         else
         {
-            analysis = NewPostingAnalysis(code, "Emergency Name", "");
+            analysis = NewPostingAnalysis(code, EmergencyAnalysisDescription, "");
             if (code != parentCode && db.Read(AnalysisFile, parentCode) == null)
-                NewPostingAnalysis(parentCode, "Emergency Name", "");
+                NewPostingAnalysis(parentCode, EmergencyAnalysisDescription, "");
         }
         if (code != parentCode && db.Read(AnalysisFile, parentCode) is { } parent &&
             db.Read(ValueFile, parentCode) == null)

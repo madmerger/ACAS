@@ -218,7 +218,7 @@ public sealed partial class SalesLedger
             foreach (string field in new[] { "Address-1", "Address-2", "Address-3", "Address-4", "Post-Code", "Country" })
                 if (GetText(system, field) is { Length: > 0 } value) report.AppendLine(value);
             report.AppendLine($"請求番号　{invoice.Number}").AppendLine($"日付　{ShowDate(h.I("date"))}　{time}")
-                .AppendLine($"得意先　{customer.Code}　{customer.Details.Name}");
+                .AppendLine($"得意先　{customer.Code}　{customer.DisplayName}");
             AppendAddress(report, customer.Details.Address1, customer.Details.Address2, system.S("SL-Delim")[0]);
             if (customer.Details.DeliveryAddress1.Length > 0 || customer.Details.DeliveryAddress2.Length > 0)
             {
@@ -317,7 +317,7 @@ public sealed partial class SalesLedger
             decimal gross = net + vat;
             decimal[] amounts = [goods, discount, deduct, carriage, net, vat, gross];
             for (int column = 0; column < amounts.Length; column++) totals[type, column] += amounts[column];
-            report.AppendLine($"{invoice.Number}　{ShowDate(h.I("date"))}　{c.Code}　{c.Details.Name}　{InvoiceType(invoice.Input.Kind)}　{Amount(goods)}　{Amount(net)}　{Amount(vat)}　{Amount(gross)}");
+            report.AppendLine($"{invoice.Number}　{ShowDate(h.I("date"))}　{c.Code}　{c.DisplayName}　{InvoiceType(invoice.Input.Kind)}　{Amount(goods)}　{Amount(net)}　{Amount(vat)}　{Amount(gross)}");
             foreach (var line in InvoiceLines(invoice.Key))
             {
                 int vatCode = line.I("vatCode");
@@ -367,7 +367,7 @@ public sealed partial class SalesLedger
                 totals[type, i] += amounts[i];
                 totals[3, i] += amounts[i];
             }
-            report.AppendLine($"{invoice.Number}　{ShowDate(h.I("date"))}　{customer.Code}　{customer.Details.Name}　{InvoiceType(invoice.Input.Kind)}　{Amount(net)}　{Amount(vat)}　{Amount(gross)}");
+            report.AppendLine($"{invoice.Number}　{ShowDate(h.I("date"))}　{customer.Code}　{customer.DisplayName}　{InvoiceType(invoice.Input.Kind)}　{Amount(net)}　{Amount(vat)}　{Amount(gross)}");
         }
         report.AppendLine("区分　商品額　値引額　早期支払値引き　送料　税抜額　税額　税込額");
         string[] labels = ["現金売上合計", "掛売請求書合計", "貸方伝票合計", "総合計"];

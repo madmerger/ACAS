@@ -21,7 +21,7 @@ public sealed partial class SalesScreens
             var entry = sales.AnalysisCodes().FirstOrDefault(c => c.Code == code)
                 ?? throw new SalesRuleException("分析コードが見つかりません。");
             if (!update) return new TableScreen(title, "SalesAnalysisDetail", ["コード", "勘定番号", "分析名", "印刷分類"],
-                [new([entry.Code, entry.Account, entry.Description, entry.PrintCode])]);
+                [new([entry.Code, entry.Account, entry.DisplayDescription, entry.PrintCode])]);
             return new MenuScreen(title,
             [
                 Link("SalesAnalysisEditSelected", "変更", () => AnalysisEditor(entry)),
@@ -42,14 +42,16 @@ public sealed partial class SalesScreens
         fields.AddRange(
         [
             new TextField("SalesAnalysisAccount", "勘定番号", entry?.Account ?? "000000", 6),
-            new TextField("SalesAnalysisDescription", "分析名", entry?.Description ?? "", 24),
+            new TextField("SalesAnalysisDescription", "分析名", entry?.DisplayDescription ?? "", 24),
             new TextField("SalesAnalysisPrintCode", "印刷分類", entry?.PrintCode ?? "", 3)
         ]);
         return Form(title, fields, "保存内容を確認", v => Confirm(title, "分析コードを保存しますか。", "保存",
             () =>
             {
+                string description = v.Text("SalesAnalysisDescription");
+                if (entry != null && description == entry.DisplayDescription) description = entry.Description;
                 sales.SaveAnalysis(entry?.Code ?? v.Text("SalesAnalysisCode"), v.Text("SalesAnalysisAccount"),
-                    v.Text("SalesAnalysisDescription"), v.Text("SalesAnalysisPrintCode"), entry != null);
+                    description, v.Text("SalesAnalysisPrintCode"), entry != null);
                 return AnalysisMenu();
             }, () => AnalysisEditor(entry)));
     }

@@ -27,7 +27,7 @@ public sealed partial class SalesScreens(SalesLedger sales, Func<DateTime>? cloc
     private static IReadOnlyList<MenuItem> Tree(IEnumerable<MenuItem> items) => items.Select(i =>
         i with { Id = i.Id + "Navigation", Children = i.Children == null ? null : Tree(i.Children) }).ToArray();
 
-    public MenuItem Navigation() => Link("SalesNavigation", Title, () => StartOfDay("SalesStartDate"),
+    public MenuItem Navigation() => Link("SalesNavigation", $"Ｂ　{Title}", () => StartOfDay("SalesStartDate"),
         children: Tree(MainMenu().Items.Where(i => i.Id != "SalesExit")));
 
     public MenuScreen MainMenu() => new(Title,
@@ -100,7 +100,7 @@ public sealed partial class SalesScreens(SalesLedger sales, Func<DateTime>? cloc
         const string title = "売掛残高・明細照会";
         if (!sales.HasOpenItems()) return Missing(title, "売掛明細");
         return CustomerLookup(title, "SalesEnquiryCode", customer => new TableScreen(
-            $"{title}　{customer.Code}　{customer.Details.Name}　残高 {SalesLedger.Amount(customer.Balance)}　未消込額 {SalesLedger.Amount(customer.Unapplied)}",
+            $"{title}　{customer.Code}　{customer.DisplayName}　残高 {SalesLedger.Amount(customer.Balance)}　未消込額 {SalesLedger.Amount(customer.Unapplied)}",
             "SalesEnquiryEntries", ["番号", "日付", "種類", "摘要", "金額", "入金額", "残高", "状態"],
             sales.OpenItems(customer.Code).Select(item => new TableRow(
             [

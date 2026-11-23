@@ -8,7 +8,10 @@ public sealed record CustomerDetails(string Name, string Address1, string Addres
     int CreditDays, decimal Discount, int MinimumLateCharge, int MaximumLateCharge, int CreditLimit);
 
 public sealed record SalesCustomer(string Code, CustomerDetails Details, bool Active, decimal Balance, decimal Unapplied,
-    int Created, int LastInvoice, int LastPayment, int InvoiceActivity, int Average, decimal Turnover);
+    int Created, int LastInvoice, int LastPayment, int InvoiceActivity, int Average, decimal Turnover)
+{
+    internal string DisplayName => SalesLedger.CustomerDisplayName(Details.Name);
+}
 
 public sealed partial class SalesLedger
 {
@@ -26,6 +29,10 @@ public sealed partial class SalesLedger
         .X("key", 8).X("name", 30).X("address1", 48).X("address2", 48);
 
     private const string CodeAlphabet = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-";
+    private const string UnknownCustomerName = "*** Customer Unknown ***";
+
+    private const string UnknownCustomerDisplayName = "得意先不明";
+    internal static string CustomerDisplayName(string name) => name == UnknownCustomerName ? UnknownCustomerDisplayName : name;
 
     public static string MakeCustomerCode(string value)
     {

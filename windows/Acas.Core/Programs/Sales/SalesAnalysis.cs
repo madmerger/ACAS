@@ -3,13 +3,37 @@ using Acas.Core.Engine;
 
 namespace Acas.Core.Programs.Sales;
 
-public sealed record AnalysisCode(string Ledger, string Code, string Account, string Description, string PrintCode);
+public sealed record AnalysisCode(string Ledger, string Code, string Account, string Description, string PrintCode)
+{
+    internal string DisplayDescription => SalesLedger.AnalysisDescription(Ledger + Code, Description);
+}
 
 public sealed partial class SalesLedger
 {
     private static readonly Layout AnalysisLayout = new Layout()
         .X("ledger", 1).X("code", 2).N9("account", 6).X("description", 24).X("print", 3);
     private const string AnalysisDefinition = "レコード定義/売上分析";
+    private const string EmergencyAnalysisDescription = "Emergency Name";
+
+    internal static string AnalysisDescription(string code, string description) =>
+        (code.TrimEnd(), description) switch
+        {
+            (_, EmergencyAnalysisDescription) => "緊急用",
+            ("Sv" or "Pv", "VAT Control") => "付加価値税管理",
+            ("Pvi", "VAT Input Invoices/CN's") => "仕入付加価値税（請求書・貸方伝票）",
+            ("Pvj", "VAT Input Receipts") => "仕入付加価値税（領収書）",
+            ("Sz" or "Pz", "Computer Control") => "システム管理",
+            ("Pza", "Purchase Carriage Charges") => "仕入送料",
+            ("Pzb", "Purchase Late Charges") => "仕入延滞料",
+            ("Szc", "Sales Carriage Charges") => "売上送料",
+            ("Szd", "Sales Late Charges") => "売上延滞料",
+            ("Svo", "VAT Output Invoices/CN's") => "売上付加価値税（請求書・貸方伝票）",
+            ("Svp", "VAT Output Receipts") => "売上付加価値税（領収書）",
+            ("Pa" or "Sa", "Default Group") => "既定グループ",
+            ("Pa1", "Default Purchases") => "既定の仕入",
+            ("Sa1", "Default Sales") => "既定の売上",
+            _ => description
+        };
 
     public void ImportAnalysisRecordLength(int bytes)
     {
@@ -70,7 +94,7 @@ public sealed partial class SalesLedger
     {
         var report = new StringBuilder(EmptyAnalysisReport());
         foreach (var code in AnalysisCodes(all))
-            report.AppendLine($"{code.Code}　{code.Account}　{code.Description}　{code.PrintCode}　{(code.Code.Length == 1 ? "グループ" : "明細")}");
+            report.AppendLine($"{code.Code}　{code.Account}　{code.DisplayDescription}　{code.PrintCode}　{(code.Code.Length == 1 ? "グループ" : "明細")}");
         return report.ToString();
     }
 
@@ -93,7 +117,7 @@ public sealed partial class SalesLedger
             bool subtotal = code[2] == ' ';
             if (!subtotal && value.N("valueCurrent") == 0 && value.N("valueYear") == 0) continue;
             string kind = subtotal && value.I("account") == 0 ? "グループ" : "明細";
-            report.AppendLine($"{code[1..].TrimEnd()}　{GetText(value, "description")}　{kind}　" +
+            report.AppendLine($"{code[1..].TrimEnd()}　{AnalysisDescription(code, GetText(value, "description"))}　{kind}　" +
                 $"{value.I("countCurrent")}　{value.I("countLast")}　{value.I("countYear")}　" +
                 $"{Ratio(value.N("countCurrent"), value.N("countLast"))}　" +
                 $"{Amount(value.N("valueCurrent"))}　{Amount(value.N("valueLast"))}　{Amount(value.N("valueYear"))}　" +

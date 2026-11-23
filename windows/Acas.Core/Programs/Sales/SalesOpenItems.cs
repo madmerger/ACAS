@@ -79,11 +79,11 @@ public sealed partial class SalesLedger
                     int band = Array.FindIndex(ages, age => day < age);
                     bands[band < 0 ? 3 : band] += item.Outstanding;
                 }
-                report.AppendLine($"{c.Code}　{c.Details.Name}　{string.Join("　", bands.Select(Amount))}　{Amount(bands.Sum())}");
+                report.AppendLine($"{c.Code}　{c.DisplayName}　{string.Join("　", bands.Select(Amount))}　{Amount(bands.Sum())}");
             }
             else
             {
-                report.AppendLine($"{c.Code}　{c.Details.Name}");
+                report.AppendLine($"{c.Code}　{c.DisplayName}");
                 AppendAddress(report, c.Details.Address1, c.Details.Address2, sys.S("SL-Delim")[0]);
                 report.AppendLine("日付　番号　種類　摘要　金額　入金額　残高");
                 foreach (var item in items)
@@ -115,7 +115,7 @@ public sealed partial class SalesLedger
                 int overdue = oldest is int invoiceDate ? cutoff - invoiceDate : 0;
                 if (overdue < low) continue;
                 int level = overdue < medium ? 1 : overdue < high ? 2 : 3;
-                var letter = new StringBuilder($"督促区分　{level}\n得意先　{customer.Code}　{customer.Details.Name}\n");
+                var letter = new StringBuilder($"督促区分　{level}\n得意先　{customer.Code}　{customer.DisplayName}\n");
                 AppendAddress(letter, customer.Details.Address1, customer.Details.Address2, sys.S("SL-Delim")[0]);
                 letter.AppendLine($"請求日　{(oldest is int day ? ShowDate(day) : "")}　未入金額　{Amount(balance)}").AppendLine();
                 report.Append(letter);

@@ -13,6 +13,7 @@ public sealed class SalesTests
         db.LoadBaseline("sl-ready");
         var screens = new SalesScreens(new SalesLedger(db), () => new DateTime(2026, 11, 23));
         var route = screens.Navigation();
+        Assert.Equal("Ｂ　売掛元帳", route.Caption);
         var date = Assert.IsType<FormScreen>(route.Open!());
         Assert.Equal(new DateTime(2026, 11, 23), Assert.IsType<DateField>(Assert.Single(date.Fields)).Value);
         var root = Assert.IsType<MenuScreen>(date.Submit(new FormValues(new Dictionary<string, object?>

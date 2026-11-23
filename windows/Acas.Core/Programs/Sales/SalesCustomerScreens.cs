@@ -30,7 +30,7 @@ public sealed partial class SalesScreens
         if (customer == null) fields.Add(new TextField("SalesNewCustomerCode", "得意先番号（検査数字を除く）", MaxLength: 6));
         fields.AddRange(
         [
-            new TextField("SalesCustomerName", "得意先名", d.Name, 30),
+            new TextField("SalesCustomerName", "得意先名", customer?.DisplayName ?? d.Name, 30),
             new TextField("SalesCustomerAddress1", "住所1", d.Address1, 48),
             new TextField("SalesCustomerAddress2", "住所2", d.Address2, 48),
             new TextField("SalesDeliveryName", "配送先名", d.DeliveryName, 30),
@@ -55,8 +55,10 @@ public sealed partial class SalesScreens
         ]);
         return Form(title, fields, "保存内容を確認", v =>
         {
+            string name = v.Text("SalesCustomerName");
+            if (customer != null && name == customer.DisplayName) name = d.Name;
             var details = new CustomerDetails(
-                v.Text("SalesCustomerName"), v.Text("SalesCustomerAddress1"), v.Text("SalesCustomerAddress2"),
+                name, v.Text("SalesCustomerAddress1"), v.Text("SalesCustomerAddress2"),
                 v.Text("SalesCustomerPhone"), v.Text("SalesCustomerExtension"), v.Text("SalesCustomerEmail"), v.Text("SalesCustomerFax"),
                 v.Text("SalesDeliveryName"), v.Text("SalesDeliveryAddress1"), v.Text("SalesDeliveryAddress2"),
                 v.Text("SalesCustomerNote1"), v.Text("SalesCustomerNote2"),
@@ -81,7 +83,7 @@ public sealed partial class SalesScreens
         {
             bool delete = values.Choice("SalesCustomerRemovalAction") == "1";
             string action = delete ? "削除" : "休眠";
-            return Confirm("得意先削除", $"{customer.Code}　{customer.Details.Name}を{action}にしますか。", "確定",
+            return Confirm("得意先削除", $"{customer.Code}　{customer.DisplayName}を{action}にしますか。", "確定",
                 () => { sales.CloseCustomer(customer.Code, delete); return CustomerMenu(); },
                 () => CustomerRemoval(customer));
         });
@@ -91,7 +93,7 @@ public sealed partial class SalesScreens
         var d = customer.Details;
         return new("得意先表示", "SalesCustomerDetail", ["項目", "内容"],
         [
-            new(["得意先番号", customer.Code]), new(["得意先名", d.Name]), new(["状態", customer.Active ? "稼働中" : "休眠中"]),
+            new(["得意先番号", customer.Code]), new(["得意先名", customer.DisplayName]), new(["状態", customer.Active ? "稼働中" : "休眠中"]),
             new(["住所1", d.Address1]), new(["住所2", d.Address2]), new(["電話", d.Phone]), new(["内線", d.Extension]),
             new(["ファクス", d.Fax]), new(["メールアドレス", d.Email]), new(["配送先名", d.DeliveryName]),
             new(["配送先住所1", d.DeliveryAddress1]), new(["配送先住所2", d.DeliveryAddress2]),
@@ -102,7 +104,7 @@ public sealed partial class SalesScreens
     }
 
     private static TableRow CustomerRow(SalesCustomer c) => new(
-        [c.Code, c.Details.Name, SalesLedger.Amount(c.Balance), SalesLedger.Amount(c.Unapplied)], () => CustomerDisplay(c),
+        [c.Code, c.DisplayName, SalesLedger.Amount(c.Balance), SalesLedger.Amount(c.Unapplied)], () => CustomerDisplay(c),
         [c.Code, c.Details.Name, c.Balance, c.Unapplied]);
 
     private Screen CustomerReportOptions(string title, string prefix, bool alphabetical = false, bool turnover = false)
@@ -144,8 +146,8 @@ public sealed partial class SalesScreens
             var report = new StringBuilder().AppendLine(title).AppendLine(SalesLedger.ShowDate(processingDate))
                 .AppendLine(turnover ? "得意先番号　得意先名　売上高" : "得意先番号　得意先名　住所　残高");
             foreach (var c in rows) report.AppendLine(turnover
-                ? $"{c.Code}　{c.Details.Name}　{SalesLedger.Amount(c.Turnover)}"
-                : $"{c.Code}　{c.Details.Name}　{c.Details.Address1}　{c.Details.Address2}　{SalesLedger.Amount(c.Balance)}");
+                ? $"{c.Code}　{c.DisplayName}　{SalesLedger.Amount(c.Turnover)}"
+                : $"{c.Code}　{c.DisplayName}　{c.Details.Address1}　{c.Details.Address2}　{SalesLedger.Amount(c.Balance)}");
             return ShowReport(title, "prt-1", report.ToString());
         });
     }

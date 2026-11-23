@@ -37,8 +37,61 @@ public sealed class SalesPostingTests
         sales.PostSales();
         var menu = new SalesScreens(sales).MainMenu();
         var report = Assert.IsType<ReportScreen>(menu.Items.Single(i => i.Id == "SalesAnalysisReport").Open!());
-        Assert.Contains("a1　Emergency Name　明細　1　0　1　0.00％　100.00　0.00　100.00", report.Body);
+        Assert.Contains("a1　緊急用　明細　1　0　1　0.00％　100.00　0.00　100.00", report.Body);
+        Assert.DoesNotContain("Emergency Name", report.Body);
+        Assert.Equal(report.Body, db.Spool().Last().Body);
+        Assert.Equal("Sa1000000Emergency Name             ",
+            System.Text.Encoding.ASCII.GetString(db.Read(SalesLedger.AnalysisFile, "Sa1")!));
+        Assert.Equal(db.Read(SalesLedger.AnalysisFile, "Sa1")!,
+            db.Read(SalesLedger.Prefix + "value.dat", "Sa1")![..36]);
         Assert.Equal(0, sales.SystemRecord().I("S-Flag-A"));
+    }
+
+    [Fact]
+    public void AnalysisEditorDisplaysGeneratedNamesWithoutReplacingTheirStoredValues()
+    {
+        using var db = new Db();
+        db.LoadBaseline("sl-printed");
+        var sales = new SalesLedger(db);
+        sales.ExtractSalesForPosting();
+        sales.SaveAnalysis("v", "000000", "VAT Control", "", true);
+        sales.SaveAnalysis("U1", "420000", "Default Sales", "", false);
+        Assert.Contains("v　000000　付加価値税管理", sales.AnalysisReport(false));
+        Assert.Contains("U1　420000　Default Sales", sales.AnalysisReport(false));
+        var menu = new SalesScreens(sales).MainMenu();
+        var analysis = Assert.IsType<MenuScreen>(menu.Items.Single(i => i.Id == "SalesAnalysis").Open!());
+        var values = new FormValues(new Dictionary<string, object?> { ["SalesFindAnalysisCode"] = "a1" });
+        var lookup = Assert.IsType<FormScreen>(analysis.Items.Single(i => i.Id == "SalesAnalysisDisplay").Open!());
+        var result = Assert.IsType<TableScreen>(lookup.Submit(values));
+        Assert.Equal("緊急用", Assert.Single(result.Rows).Cells[2]);
+        var change = Assert.IsType<FormScreen>(analysis.Items.Single(i => i.Id == "SalesAnalysisChange").Open!());
+        var selected = Assert.IsType<MenuScreen>(change.Submit(values));
+        var editor = Assert.IsType<FormScreen>(selected.Items.Single(i => i.Id == "SalesAnalysisEditSelected").Open!());
+        var fields = editor.Fields.Cast<TextField>().ToDictionary(f => f.Id, f => (object?)f.Value);
+        Assert.Equal("緊急用", fields["SalesAnalysisDescription"]);
+        byte[] before = db.Read(SalesLedger.AnalysisFile, "Sa1")!;
+        Assert.IsType<ConfirmationScreen>(editor.Submit(new FormValues(fields))).Confirm();
+        Assert.Equal(before, db.Read(SalesLedger.AnalysisFile, "Sa1"));
+    }
+
+    [Fact]
+    public void MissingCustomerNameIsLocalizedInReportsWithoutChangingTheLegacyRecord()
+    {
+        using var db = new Db();
+        db.LoadBaseline("sl-printed");
+        var sales = new SalesLedger(db);
+        sales.ExtractSalesForPosting();
+        Assert.True(db.Delete(SalesLedger.CustomerFile, "CUST011"));
+        Assert.Contains("CUST011　得意先不明", sales.PostSales());
+        var menu = new SalesScreens(sales).MainMenu();
+        var customers = Assert.IsType<MenuScreen>(menu.Items.Single(i => i.Id == "SalesCustomers").Open!());
+        var lookup = Assert.IsType<FormScreen>(customers.Items.Single(i => i.Id == "SalesCustomerDisplay").Open!());
+        var result = Assert.IsType<TableScreen>(lookup.Submit(new FormValues(new Dictionary<string, object?>
+        {
+            ["SalesDisplayCustomerCode"] = "CUST011"
+        })));
+        Assert.Equal("得意先不明", result.Rows.Single(r => r.Cells[0] == "得意先名").Cells[1]);
+        Assert.Equal("*** Customer Unknown ***", sales.GetCustomer("CUST011").Details.Name);
     }
 
     [Fact]

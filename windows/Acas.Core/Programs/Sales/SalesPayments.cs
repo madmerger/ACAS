@@ -56,7 +56,7 @@ public sealed partial class SalesLedger
             sums[type - 5].Allocated += allocated;
             sums[type - 5].Deducted += deducted;
             if (deducted != 0) deductions++;
-            report.AppendLine($"{batch}/{sequence:D3}　{ShowDate(date)}　{code}　{GetText(customer, "name")}　{OpenItemType(type)}　" +
+            report.AppendLine($"{batch}/{sequence:D3}　{ShowDate(date)}　{code}　{CustomerDisplayName(GetText(customer, "name"))}　{OpenItemType(type)}　" +
                 $"{Amount(oldBalance)}　{Amount(customer.N("balance") - customer.N("unapplied"))}　{Amount(paid)}　{Amount(deducted)}　{Amount(allocated)}");
         }
         for (int i = 0; i < sums.Length; i++)
@@ -102,7 +102,7 @@ public sealed partial class SalesLedger
             if (type is not (5 or 6) || item.I("closed") != 0) continue;
             customer = item.S("customer");
             string name = db.Read(CustomerFile, customer) is { } data && data.Length == CustomerLayout.Size
-                ? GetText(CustomerLayout.From(data), "name") : "得意先不明";
+                ? CustomerDisplayName(GetText(CustomerLayout.From(data), "name")) : UnknownCustomerDisplayName;
             allocated = item.N("net");
             totals[type - 5].Paid += item.N("paid");
             totals[type - 5].Allocated += allocated;

@@ -80,7 +80,7 @@ public sealed partial class SalesScreens
                 fields.Add(Toggle("SalesPaymentWaive" + item.Number,
                     $"請求書 {item.Number} の早期支払値引き（{SalesLedger.Amount(item.LateCharge)}）を適用", true));
         }
-        return Form($"{PaymentTitle}　{customer.Code}　{customer.Details.Name}", fields, "バッチに追加", values =>
+        return Form($"{PaymentTitle}　{customer.Code}　{customer.DisplayName}", fields, "バッチに追加", values =>
         {
             var date = values.Date("SalesPaymentDate") ?? throw new SalesRuleException("入金日を入力してください。");
             decimal amount = Decimal(values, "SalesPaymentAmount", "入金額", maximum);
