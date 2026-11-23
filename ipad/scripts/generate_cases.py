@@ -23,6 +23,7 @@ WORKFLOWS = {
     "SYS-204": ("system-unavailable-retail", "店頭販売が利用できないことを確認"),
     "SYS-206": ("system-company-data", "会社・期間設定の表示を確認"),
     "GL-001": ("gl-business-date", "処理日入力を開く"),
+    "GL-008": ("gl-cycle-close-menu", "期間締めの確認画面を表示"),
     "GL-020": ("gl-account-add", "新規の見出し勘定を登録"),
     "GL-021": ("gl-account-edit", "既存の見出し勘定の名称を変更"),
     "GL-022": ("gl-account-delete", "残高ゼロの明細勘定を削除"),
@@ -30,6 +31,7 @@ WORKFLOWS = {
     "GL-033": ("gl-chart-print", "勘定科目一覧を出力"),
     "GL-034": ("gl-trial-balance-detail", "詳細試算表を出力"),
     "GL-036": ("gl-business-date-invalid", "存在しない処理日を拒否する"),
+    "GL-037": ("gl-cycle-close-cancel", "期間締めを中止して総勘定元帳に戻る"),
     "GL-200": ("gl-business-date", "総勘定元帳を開いて処理日入力へ進む"),
     "GL-201": ("gl-business-date", "総勘定元帳メニューから処理日入力を開く"),
     "GL-204": ("gl-account-edit-menu", "勘定科目の変更・削除画面を表示"),
@@ -39,6 +41,7 @@ WORKFLOWS = {
     "GL-220": ("gl-batch-status-display", "バッチ状況を照会"),
     "GL-221": ("gl-batch-status-print", "バッチ状況帳票を出力"),
     "GL-222": ("gl-posting-menu", "仕訳転記のバッチ確認に到達"),
+    "GL-223": ("gl-cycle-close-menu", "期間締めの事前確認を表示"),
     "GL-224": ("gl-trial-balance-menu", "試算表メニューを表示"),
     "GL-225": ("gl-trial-balance-detail", "詳細試算表の帳票を確認"),
     "GL-230": ("gl-close-ledger", "総勘定元帳を閉じて会計管理メニューに戻る"),
@@ -129,7 +132,7 @@ def fixture(evidence, case):
     seeded = workflow == "sales-proof" or workflow.startswith(
         (
             "system-", "gl-account-", "gl-chart-", "gl-batch-status-", "gl-business-date",
-            "gl-close-ledger", "gl-posting-", "gl-trial-balance-",
+            "gl-close-ledger", "gl-cycle-close-", "gl-posting-", "gl-trial-balance-",
         )
     )
     seed = snapshot_seed(evidence, run) if seeded else None
