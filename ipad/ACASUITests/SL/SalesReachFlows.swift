@@ -123,7 +123,7 @@ final class SalesReachFlows: XCTestCase {
 
     func testSL237() throws {
         try reach("SL-237", through: ["sales.invoice.menu", "sales.invoice.print"],
-                  title: "請求書一括印刷", verdict: "mismatch") { app in
+                  title: "請求書一括印刷") { app in
             let reprint = app.switches["印刷済みを再印刷"]
             XCTAssertTrue(reprint.exists)
             XCTAssertEqual(reprint.value as? String, "0")
