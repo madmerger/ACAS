@@ -53,6 +53,10 @@ struct SalesMenu: View {
                 NavigationLink(slText("sales.period.title")) { SalesPeriodCloseView(workspace: workspace) }
                     .accessibilityIdentifier("sales.period")
             }
+            Section(slText("sales.receivables.section")) {
+                NavigationLink(slText("sales.dunning.title")) { SalesDunningView(workspace: workspace) }
+                    .accessibilityIdentifier("sales.dunning")
+            }
             NavigationLink(String(localized: "sales.proof", table: "SL")) {
                 #if DEBUG
                 if workspace.evidence != nil, ProcessInfo.processInfo.environment["ACAS_COMPACT_REPORT"] == "1" {
