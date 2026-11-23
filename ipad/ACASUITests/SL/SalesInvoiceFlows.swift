@@ -96,6 +96,7 @@ final class SalesInvoiceFlows: XCTestCase {
         app.launch()
         XCTAssertTrue(app.staticTexts[id].waitForExistence(timeout: 10))
         tap("section.sales", in: app)
+        tap("sales.date.save", in: app)
         tap("sales.invoice.menu", in: app)
         return (app, input)
     }

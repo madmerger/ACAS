@@ -54,11 +54,11 @@ public struct SalesLedger {
         ("key", .x(8)), ("name", .x(30)), ("address1", .x(48)), ("address2", .x(48)),
     ])
 
-    private var deliveryFile: IndexedFile {
+    var deliveryFile: IndexedFile {
         IndexedFile(context.store, path: "ledgers/acas/delivery.dat", layout: Self.deliveryLayout, keyLength: 8)
     }
 
-    private func systemRecord() throws -> Record {
+    func systemRecord() throws -> Record {
         guard let bytes = systemFile.read(1) else { throw Error.missingCompany }
         return Record(SystemLayout.layout, bytes: bytes)
     }
@@ -163,7 +163,7 @@ public struct SalesLedger {
         return record
     }
 
-    private func customer(from record: Record) -> Customer {
+    func customer(from record: Record) -> Customer {
         var customer = Customer()
         func value(_ field: String) -> String { Cobol.rtrim(record.str(field)) }
         customer.code = value("sales-key")

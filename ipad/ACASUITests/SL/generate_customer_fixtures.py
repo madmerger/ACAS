@@ -12,6 +12,7 @@ BASE = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(BASE)
 
 CASES = {
+    "SL-206": ("report", "得意先一覧印刷の抽出条件"),
     "SL-400": ("edit", "得意先名称の変更"),
     "SL-401": ("remove", "残高がない得意先の削除"),
     "SL-402": ("view", "存在しない得意先の照会"),
@@ -58,13 +59,14 @@ def main():
         with BASE.evidence_path(evidence, run / "terminal.cast").open(encoding="utf-8") as recording:
             date = json.loads(recording.readline())["timestamp"]
         inputs = case["input_data"]["text_inputs"]
-        values = {"code": inputs[4].strip()}
+        values = {} if operation == "report" else {"code": inputs[4].strip()}
         if operation == "edit":
             values["name"] = inputs[5].strip()
         if operation == "register":
             values["name"], values["address"] = inputs[5].strip().split("\t", maxsplit=1)
         BASE.save(fixtures / (case_id + ".json"), {
-            "id": case_id, "title": title, "workflow": "sales-customer-" + operation,
+            "id": case_id, "title": title,
+            "workflow": "sales-customer-report-view" if operation == "report" else "sales-customer-" + operation,
             "dateSeconds": date, "seed": customer_seed(evidence, run),
             "changes": BASE.expected_changes(evidence, legacy["comparison_targets"]["keyed_record_diff"]),
             "reports": {}, "input": values,

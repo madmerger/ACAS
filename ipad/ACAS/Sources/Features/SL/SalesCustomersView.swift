@@ -3,11 +3,13 @@ import SwiftUI
 
 struct SalesDateView: View {
     let workspace: Workspace
+    let onConfirm: (() -> Void)?
     @State private var date: Date
     @State private var result: String?
 
-    init(workspace: Workspace) {
+    init(workspace: Workspace, onConfirm: (() -> Void)? = nil) {
         self.workspace = workspace
+        self.onConfirm = onConfirm
         _date = State(initialValue: SalesLedger(workspace.context).currentDate)
     }
 
@@ -20,15 +22,19 @@ struct SalesDateView: View {
                 do {
                     try SalesLedger(workspace.context).setProcessingDate(date)
                     result = slText("sales.date.confirmed")
+                    onConfirm?()
                 } catch {
                     result = SalesMessage.text(for: error)
                 }
-                workspace.completed("sales-date")
+                workspace.completed("sales-date-confirm")
             }
             .accessibilityIdentifier("sales.date.save")
             if let result { Text(result).accessibilityIdentifier("sales.date.result") }
         }
-        .navigationTitle(slText("sales.date.title"))
+        .navigationTitle(onConfirm == nil ? slText("sales.date.title") : slText("sales.date.startTitle"))
+        .onAppear {
+            workspace.completed(onConfirm == nil ? "sales-date-view" : "sales-start-date-view")
+        }
     }
 }
 
@@ -38,6 +44,10 @@ struct SalesCustomersMenu: View {
     var body: some View {
         List {
             ForEach(SalesCustomerView.Mode.allCases) { mode in
+                if mode == .view {
+                    NavigationLink(slText("sales.customer.report.title")) { SalesCustomerReportView(workspace: workspace) }
+                        .accessibilityIdentifier("sales.customer.report")
+                }
                 NavigationLink(mode.title) { SalesCustomerView(workspace: workspace, mode: mode) }
                     .accessibilityIdentifier("sales.customer." + mode.rawValue)
             }
