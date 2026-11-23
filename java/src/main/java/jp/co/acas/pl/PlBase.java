@@ -182,6 +182,12 @@ abstract class PlBase extends Program {
         void after(String line, int n) { sb.append("\n".repeat(n)).append(pad(line, width)); }
         void before(String line, int n) { sb.append(pad(line, width)).append("\n".repeat(n)); }
         void afterPage(String line) { sb.append("\f").append(pad(line, width)); }
+        /** OPEN OUTPUT 直後の状態（空ファイル）を作る。 */
+        void create() {
+            CobFile f = CobFile.lineSequential(ctx.store, ctx.path(name));
+            f.open(CobFile.Mode.OUTPUT);
+            f.close();
+        }
         void close() {
             CobFile f = CobFile.lineSequential(ctx.store, ctx.path(name));
             f.open(CobFile.Mode.OUTPUT);

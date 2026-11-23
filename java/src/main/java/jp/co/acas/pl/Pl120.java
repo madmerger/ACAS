@@ -201,9 +201,9 @@ public class Pl120 extends PlBase {
     private boolean readSales() {
         while (true) {
             if (sorted) {
-                Rec kr = Layout.of("purchase/wsoi.cob", "oi-header").newRec();
+                Rec kr = Layout.ofSource(" 01 sales-sort-record.\n 03 sales-sort-key pic x(7).\n", "sales-sort-record").newRec();
                 if (!salesSort.readNext(kr).equals("00")) return false;
-                String key = kr.str("oi-supplier");
+                String key = kr.str("sales-sort-key");
                 purch.set("purch-key", key);
                 if (invalid(purchaseFile.read(purch))) {
                     display(23, 1, "Not Found - ", 4);
