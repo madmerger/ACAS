@@ -69,18 +69,59 @@ class Pl020LinesTest {
     @Test
     void 削除済みの伝票番号は正常な再登録で消費する() throws Exception {
         PlSession s = new PlSession("pl020-reused", "sl-ready");
-        var deleted = CobFile.sequential(s.ctx.store, s.ctx.path("delfolio.dat"));
-        assertEquals("05", deleted.open(CobFile.Mode.EXTEND, true));
-        var folio = Layout.of("purchase/fdpdnos.cob", "del-inv-nos-record").newRec();
-        folio.setNum("del-inv-nos", 7);
-        assertEquals("00", deleted.write(folio));
-        deleted.close();
+        var deleted = addDeletedFolio(s, 7);
 
         s.keys("D").keys(HEADER).keys(newLines(1)).keys(TOTALS);
         s.assertMenu();
         assertSaved(s, 1);
         assertEquals(7, s.records("pinvoice.dat", PlBase::invHeaderRec).getFirst().longv("ih-invoice"));
         assertEquals(0, deleted.count());
+    }
+
+    private static CobFile addDeletedFolio(PlSession s, int number) {
+        var deleted = CobFile.sequential(s.ctx.store, s.ctx.path("delfolio.dat"));
+        assertEquals("05", deleted.open(CobFile.Mode.EXTEND, true));
+        var folio = Layout.of("purchase/fdpdnos.cob", "del-inv-nos-record").newRec();
+        folio.setNum("del-inv-nos", number);
+        assertEquals("00", deleted.write(folio));
+        deleted.close();
+        return deleted;
+    }
+
+    @Test
+    void 種別を再入力しても削除済み番号を引き継ぐ() throws Exception {
+        PlSession s = new PlSession("pl020-retry", "sl-ready");
+        var sys = SystemFile.shared(s.ctx);
+        sys.setNum("next-folio", 12);
+        sys.setNum("next-invoice", 0);
+        var deleted = addDeletedFolio(s, 7);
+
+        s.keys("D\rSUPP018\rPL-ORDER\rPL-REF\r\r")
+                .keys(HEADER).keys(newLines(1)).keys(TOTALS);
+        s.assertMenu();
+        assertSaved(s, 1);
+        assertEquals(7, s.records("pinvoice.dat", PlBase::invHeaderRec).getFirst().longv("ih-invoice"));
+        assertEquals(0, deleted.count());
+        assertEquals(12, sys.longv("next-folio"));
+    }
+
+    @Test
+    void 明細保存に失敗したときは今回の請求を取り消す() throws Exception {
+        PlSession s = new PlSession("pl020-rollback", "sl-ready");
+        var deleted = addDeletedFolio(s, 7);
+        var invoice = CobFile.indexed(s.ctx.store, s.ctx.path("pinvoice.dat"), 0, 9);
+        invoice.open(CobFile.Mode.IO, true);
+        var priorLine = PlBase.invLineRec();
+        priorLine.setNum("il-invoice", 7);
+        priorLine.setNum("il-line", 2);
+        assertEquals("00", invoice.write(priorLine));
+        invoice.close();
+        var before = s.ctx.store.snapshot().get(s.ctx.path("pinvoice.dat"));
+
+        s.keys("D").keys(HEADER).keys(newLines(2)).keys("\r\r\r\rY\rY\r\rN\r");
+        s.assertMenu();
+        assertEquals(before, s.ctx.store.snapshot().get(s.ctx.path("pinvoice.dat")));
+        assertEquals(1, deleted.count());
     }
 
     @Test
