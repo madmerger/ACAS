@@ -30,11 +30,16 @@ final class SalesAnalysisFlows: XCTestCase {
         let account = app.textFields["sales.analysis.account"]
         account.tap()
         account.typeText("400001")
+        let printCode = app.textFields["sales.analysis.printCode"]
+        XCTAssertEqual(printCode.value as? String, "A")
+        printCode.tap()
+        printCode.typeText(XCUIKeyboardKey.delete.rawValue)
         tap("sales.analysis.save", in: app)
         tap("sales.analysis.display", in: app)
         let row = app.descendants(matching: .any)["sales.analysis.code.SA"].firstMatch
         XCTAssertTrue(row.waitForExistence(timeout: 5))
         XCTAssertEqual(row.value as? String, "400001")
+        XCTAssertFalse(row.label.contains("印字コード"))
         let standard = app.descendants(matching: .any)["sales.analysis.code.Sa"].firstMatch
         XCTAssertTrue(standard.label.contains("標準グループ"))
         let screenshot = XCTAttachment(screenshot: app.screenshot())
