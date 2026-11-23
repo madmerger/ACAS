@@ -92,13 +92,18 @@ enum PLB160 {
     }
 
     /// report-selection section (pl160 / pl190 共通の検証)
-    static func select(_ s: Session, progName: String, sel: PLB.Selection, invalidDate: String) throws {
+    static func select(_ s: Session, progName: String, sel: PLB.Selection, invalidDate: String,
+                       replaceSpaces: Bool = true) throws {
         let c = s.console
+        sel.overdueOp = " "; sel.statusIn = " "; sel.creditOp = " "; sel.invoiceOp = " "; sel.averageOp = " "
+        sel.custIn = Cobol.x("", 6)
+        sel.creditIn = 0; sel.invoiceIn = 0; sel.averageIn = 0; sel.overdueIn = 0
         try screen(s, progName: progName, sel: sel, display: true)
         while true {
             try screen(s, progName: progName, sel: sel, display: false)
             sel.custIn = sel.custIn.uppercased()
-            sel.customerIn = Cobol.x(sel.custIn, 7).replacingOccurrences(of: " ", with: "Z")
+            sel.customerIn = Cobol.x(sel.custIn, 7)
+            if replaceSpaces { sel.customerIn = sel.customerIn.replacingOccurrences(of: " ", with: "Z") }
             sel.statusIn = sel.statusIn.uppercased()
             if !["L", "D", " "].contains(sel.statusIn) { continue }
             sel.creditOp = sel.creditOp.uppercased()
