@@ -17,7 +17,7 @@ public sealed partial class SalesScreens
         string title = update ? "売上分析コード変更・削除" : "売上分析コード表示";
         return Form(title, [new TextField("SalesFindAnalysisCode", "分析コード", MaxLength: 2)], "検索", values =>
         {
-            string code = values.Text("SalesFindAnalysisCode").Trim().ToUpperInvariant();
+            string code = values.Text("SalesFindAnalysisCode").TrimEnd();
             var entry = sales.AnalysisCodes().FirstOrDefault(c => c.Code == code)
                 ?? throw new SalesRuleException("分析コードが見つかりません。");
             if (!update) return new TableScreen(title, "SalesAnalysisDetail", ["コード", "勘定番号", "分析名", "印刷分類"],

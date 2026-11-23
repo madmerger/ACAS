@@ -7,6 +7,27 @@ namespace Acas.Tests.Sales;
 public sealed class SalesPostingTests
 {
     [Fact]
+    public void AnalysisRegistrationAndLookupKeepCobolCaseSensitiveKeys()
+    {
+        using var db = new Db();
+        db.LoadBaseline("sl-printed");
+        var sales = new SalesLedger(db);
+        sales.SaveAnalysis("a1", "410000", "小文字の分析", "", false);
+        sales.SaveAnalysis("A1", "420000", "大文字の分析", "", false);
+
+        var menu = new SalesScreens(sales).MainMenu();
+        var analysis = Assert.IsType<MenuScreen>(menu.Items.Single(i => i.Id == "SalesAnalysis").Open!());
+        var lookup = Assert.IsType<FormScreen>(analysis.Items.Single(i => i.Id == "SalesAnalysisDisplay").Open!());
+        var result = Assert.IsType<TableScreen>(lookup.Submit(new FormValues(new Dictionary<string, object?>
+        {
+            ["SalesFindAnalysisCode"] = "a1"
+        })));
+        Assert.Equal("小文字の分析", Assert.Single(result.Rows).Cells[2]);
+        Assert.NotNull(db.Read(SalesLedger.AnalysisFile, "Sa1"));
+        Assert.NotNull(db.Read(SalesLedger.AnalysisFile, "SA1"));
+    }
+
+    [Fact]
     public void AnalysisReportUsesPostedCountsAndAmountsAndClearsFlag()
     {
         using var db = new Db();

@@ -35,8 +35,8 @@ public sealed partial class SalesLedger
 
     public void SaveAnalysis(string code, string account, string description, string print, bool replace)
     {
-        code = code.TrimEnd().ToUpperInvariant();
-        if (code.Length is < 1 or > 2 || code.Any(c => !CodeAlphabet.Contains(c)) ||
+        code = code.TrimEnd();
+        if (code.Length is < 1 or > 2 || code.Any(c => !char.IsAsciiLetterOrDigit(c) && c != '-') ||
             account.Length != 6 || account.Any(c => !char.IsAsciiDigit(c)))
             throw new SalesRuleException("分析コードと6桁の勘定番号を確認してください。");
         CheckAnalysisLength(db.Scan(AnalysisFile));
