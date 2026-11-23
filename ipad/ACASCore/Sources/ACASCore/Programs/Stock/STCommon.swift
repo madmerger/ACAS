@@ -168,6 +168,16 @@ enum ST {
     static func analysisPath(_ s: Session) -> String { s.ledgers + "analysis.dat" }
     static func printPath(_ s: Session) -> String { s.ledgers + "prt-1" }
 
+    /// OPEN INPUT Analysis-File (fdanal.cob: 36 バイト)。
+    /// レガシー実測では、sl070 が作った分析ファイル (レコード長が FD と異なる) の OPEN は失敗する (ST112)。
+    /// ファイル無しは 35、保存済みレコード長が FD と異なる場合は 39 を返す。
+    static func openAnalysis(_ s: Session) -> String {
+        let path = analysisPath(s)
+        guard s.store.exists(path) else { return "35" }
+        if s.store.all(path).contains(where: { $0.data.count != 36 }) { return "39" }
+        return "00"
+    }
+
     // MARK: 日付
 
     /// zz050-Validate-Date: Date-Form 形式の入力をバイナリ日付へ (不正は 0)

@@ -15,6 +15,8 @@ enum ST010 {
         var orderDue = Cobol.x("", 10)    // ws-Stock-Order-Due
         var customerCode = Cobol.x("", 7)
         var wsStockKey = Cobol.x("", 13)
+        /// Analysis-File が OPEN できたか (失敗時の START は INVALID KEY にならず素通りする)
+        var analysisOpen = false
     }
 
     static func run(_ s: Session) throws {
@@ -279,7 +281,7 @@ enum ST010 {
             c.display(group(st, "stock-pa-code"), at: 1057, color: 3)
             if group(st, "stock-pa-code") != "  " {
                 setSystem(st, "stock-pa-code", "P")
-                if s.store.read(ST.analysisPath(s), key: st.rec.raw("stock-pa-code")) == nil {
+                if st.analysisOpen && s.store.read(ST.analysisPath(s), key: st.rec.raw("stock-pa-code")) == nil {
                     error(s, "st010.st111")
                     continue
                 }
@@ -288,7 +290,7 @@ enum ST010 {
             c.display(group(st, "stock-sa-code"), at: 1021, color: 3)
             if group(st, "stock-sa-code") != "  " {
                 setSystem(st, "stock-sa-code", "S")
-                if s.store.read(ST.analysisPath(s), key: st.rec.raw("stock-sa-code")) == nil {
+                if st.analysisOpen && s.store.read(ST.analysisPath(s), key: st.rec.raw("stock-sa-code")) == nil {
                     error(s, "st010.st110")
                     continue
                 }
@@ -396,6 +398,7 @@ enum ST010 {
                 return
             }
         }
+        st.analysisOpen = ST.openAnalysis(s) == "00"   // open input Analysis-File (結果は検査しない)
         defer { f.close() }
         while true {
             // ba010-Display-Stock-Headings
@@ -477,7 +480,8 @@ enum ST010 {
             f.close()
             return
         }
-        if !s.store.exists(ST.analysisPath(s)) {
+        st.analysisOpen = ST.openAnalysis(s) == "00"
+        if !st.analysisOpen {
             error(s, "st010.st112")
             f.close()
             try ST.maps99(s, 45)
