@@ -322,7 +322,12 @@ internal sealed partial class PurchaseScreens
         Item("S9", 9, "買掛メニューに戻る", MainMenu)
     ];
 
-    private Screen ScheduledPaymentProof() => ScheduledPaymentReport("支払予定の検証");
+    private Screen ScheduledPaymentProof()
+    {
+        const string title = "支払予定の検証";
+        return _ledger.PaymentScheduleFileAvailable
+            ? ScheduledPaymentReport(title) : Notice(title, "支払予定ファイルがありません。");
+    }
 
     private Screen ScheduledPaymentReport(string title)
     {
