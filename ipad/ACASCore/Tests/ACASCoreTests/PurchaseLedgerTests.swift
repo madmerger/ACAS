@@ -102,6 +102,11 @@ final class PurchaseLedgerTests: XCTestCase {
         old.setInt("oi-net", 4_000)
         let path = ledger.base + "openitm4.dat"
         try ledger.store.writeRaw(path, old.bytes)
+        var retained = try XCTUnwrap(ledger.systemFile.read(4))
+        var extractedTotals = Record(PurchaseRecords.sys4Layout, bytes: retained)
+        extractedTotals.setInt("pl-invoices-this-month", 4_000)
+        retained.replaceSubrange(0..<extractedTotals.bytes.count, with: extractedTotals.bytes)
+        try ledger.systemFile.write(4, retained)
         var new = PurchaseLedger.Transaction(date: ledger.processingDate)
         new.supplier = code
         new.lines[0].code = "a1"
@@ -111,6 +116,8 @@ final class PurchaseLedgerTests: XCTestCase {
         XCTAssertEqual(try ledger.supplier(code: code).currentBalance, 16_000)
         XCTAssertEqual(ledger.openItems(supplier: code).map(\.id), [1, 99])
         XCTAssertEqual(ledger.store.readRaw(path), [])
+        let totals = Record(PurchaseRecords.sys4Layout, bytes: try XCTUnwrap(ledger.systemFile.read(4)))
+        XCTAssertEqual(totals.int("pl-invoices-this-month"), 16_000)
     }
 
     func testPostingRejectsUnrelatedStagedItemWithSameFolio() throws {
