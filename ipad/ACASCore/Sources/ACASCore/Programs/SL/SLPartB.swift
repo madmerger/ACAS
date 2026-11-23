@@ -14,6 +14,7 @@ enum SLPartB {
         s.programs["sl200"] = SLB200.run
         s.programs["sl900"] = SLB900.run
         s.programs["sl910"] = SLB910.run
+        s.programs["sl920"] = SLB920.run
         s.programs["sl960"] = SLB960.run
         s.programs["sl930"] = SLB930.run
         s.programs["sl940"] = SLB940.run

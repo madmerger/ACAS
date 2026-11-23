@@ -386,3 +386,27 @@
 "sl960.esc_q" = "* <Q> = Quit      *";
 "sl960.addr_err" = "Addr Err";
 "sl960.error" = "Error";
+
+/* sl920 */
+"sl920.title" = "Invoicing Data Amend";
+"sl920.further" = "Amend Further Invoices? (Y/N)  [Y]";
+"sl920.sl192" = "SL192 Err on Invoice file rewrite : ";
+"sl920.sl193" = "SL193 Invoice To Credit Does Not Exist On Invoice File";
+"sl920.sl194" = "SL194 Invoice Not Found!!!!";
+"sl920.sl195" = "SL195 Invoice Details Already Passed To Sales Ledger!";
+"sl920.sl196" = "SL196 You Can Only Credit An Invoice With The Same Account Number";
+"sl920.net_box" = "Net <          >";
+"sl920.vat_box" = "Vat <          >";
+"sl920.invoice_box" = "Invoice <          >";
+"sl920.l2_heads_pa" = "Product    Code <---------Description-------->   Qty   Unit Price  Disc. Vat";
+"sl920.l2_heads_stock" = "Product     <----------Description--------->    Qty   Unit Price  Disc. Vat";
+"sl920.ok_to_store" = "Invoice Ok To Store?";
+"sl920.yn_y" = "(Y/N)  [Y]";
+"sl920.box_date" = "*Date   [  /  /    ]*                  *";
+"sl920.box_ac" = "*A/C Nos   [       ]*Ref   [          ]*";
+"sl920.box_invoice" = "*Invoice [         ]*Order [          ]*";
+"sl920.fkeys" = "F8 = Only Show delivery details on 'A/C nos' entry";
+"sl920.inv_to_credit" = "Invoice To Credit - [         ]";
+"sl920.use_inv_no" = "Do You Wish To Use This Invoice No.? {N}";
+"sl920.use_inv_no2" = "..If So, You must ensure that it Belongs to the same Customer and that it is a ";
+"sl920.use_inv_no3" = "Invoice ie, not a Receipt";
