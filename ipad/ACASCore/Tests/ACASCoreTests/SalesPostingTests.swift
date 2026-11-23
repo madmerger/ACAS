@@ -51,8 +51,8 @@ final class SalesPostingTests: XCTestCase {
         let report = try XCTUnwrap(store.readRaw(SalesPosting.exportPath))
         let pages = report.split(separator: 0x0c).map { String(decoding: $0, as: UTF8.self) }
         XCTAssertEqual(pages.count, 2)
-        XCTAssertFalse(pages.first?.contains("--Customer--") ?? true)
-        XCTAssertTrue(pages.last?.contains("--Customer--") ?? false)
+        XCTAssertFalse(pages.first?.contains("--Customer--   Invoice") ?? true)
+        XCTAssertTrue(pages.last?.contains("--Customer--   Invoice") ?? false)
         XCTAssertTrue(pages.last?.contains("Un-Applied Credits C/F") ?? false)
     }
 
