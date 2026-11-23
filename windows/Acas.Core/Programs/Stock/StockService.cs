@@ -48,6 +48,7 @@ public sealed class StockService
     public void SaveSystem()
     {
         if (_db.Read(SystemFile, SystemKey) != null) _db.Rewrite(SystemFile, SystemKey, System.B);
+        else _db.Write(SystemFile, SystemKey, System.B);
     }
 
     public bool StockFileExists => _db.Exists(StockFile);
