@@ -1,7 +1,34 @@
 import ACASCore
+import SQLite3
 import XCTest
 
 final class MasterSetupTests: XCTestCase {
+    func testContactCanBeRetriedAfterCompanyStatusWriteFails() throws {
+        let location = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: location) }
+        try FileManager.default.createDirectory(at: location, withIntermediateDirectories: false)
+        let path = location.appendingPathComponent("acas.sqlite").path
+        let store = try FileStore(path: path)
+        let context = BusinessContext(store: store)
+        try CompanySetup(context).save(name: "TEST BUSINESS")
+        var database: OpaquePointer?
+        defer { sqlite3_close(database) }
+        XCTAssertEqual(sqlite3_open(path, &database), SQLITE_OK)
+        XCTAssertEqual(sqlite3_exec(database, """
+            CREATE TRIGGER fail_system_write BEFORE INSERT ON files
+            WHEN NEW.name LIKE '%/system.dat' BEGIN SELECT RAISE(ABORT, 'test'); END
+            """, nil, nil, nil), SQLITE_OK)
+        var contact = MasterContact()
+        contact.code = "CUST01"
+        let service = MasterSetup(context)
+        XCTAssertThrowsError(try service.add(contact, as: .customer))
+        XCTAssertFalse(store.exists("ledgers/acas/salesled.dat"))
+        XCTAssertFalse(store.exists("ledgers/acas/delivery.dat"))
+        XCTAssertEqual(sqlite3_exec(database, "DROP TRIGGER fail_system_write", nil, nil, nil), SQLITE_OK)
+        try service.add(contact, as: .customer)
+        XCTAssertEqual(store.count("ledgers/acas/salesled.dat"), 1)
+    }
+
     func testContactKeysDefaultsAndRecords() throws {
         let store = try FileStore()
         let context = BusinessContext(store: store, timeZone: .gmt, now: { Date(timeIntervalSince1970: 1_795_407_600) })
