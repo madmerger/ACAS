@@ -58,6 +58,8 @@ enum ST060 {
         }
         if ST.fileStatus(s, 15) != 1 {
             s.processFunc = 1; s.subFunction = 1
+            s.shared["file-defs-layout"] = "stock"
+            defer { s.shared["file-defs-layout"] = nil }
             try s.call("sl070")
         }
         // open input Import-File (固定長 512 バイトの順編成)

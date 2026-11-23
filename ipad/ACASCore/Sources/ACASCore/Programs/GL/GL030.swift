@@ -471,7 +471,7 @@ enum GL030 {
                 // accept-pc
                 while true {
                     ws.lin2 = ws.lin
-                    if !(ws.profitCentres || ws.branches) { ws.pcCode = "0 "; break }
+                    if !(ws.profitCentres || ws.branches) { ws.pcCode = "00"; break }
                     ws.cole = 17
                     ws.pcCode = try c.accept(at: ws.curs, size: 2, initial: ws.pcCode, options: [.update], color: 3)
                     pcCodeCheck(ws)

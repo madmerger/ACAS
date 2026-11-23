@@ -209,8 +209,10 @@ enum ST010 {
         let p = Cobol.pow10(dec)
         let pounds = Cobol.z(value / p, int), pence = Cobol.z(value % p, dec)
         c.display(pounds + "." + pence, at: line, col, color: 3)
-        let a = Array(Cobol.x(try c.accept(at: line, col, size: int + dec, initial: pounds + pence, options: [.update], color: 3), int + dec))
-        return ST.digits(String(a[0..<int])) * p + ST.digits(String(a[int...]))
+        // 受け付けるのは小数点を含む集団項目 (9(n) + filler + v9(m))
+        let size = int + 1 + dec
+        let a = Array(Cobol.x(try c.accept(at: line, col, size: size, initial: pounds + "." + pence, options: [.update], color: 3), size))
+        return ST.digits(String(a[0..<int])) * p + ST.digits(String(a[(int + 1)...]))
     }
 
     /// zz040-Check-for-Supplier。戻り値は Error-Code
@@ -249,6 +251,9 @@ enum ST010 {
         let c = s.console
         while true {
             let fields = fields01(st)
+            // ACCEPT 画面名 は画面全体 (固定文言を含む) を再表示してから入力を受け付ける
+            for (l, col, key) in display01Literals { c.display(s.t(key), at: l, col, color: 2) }
+            for (l, key) in escapeBox { c.display(s.t(key), at: l, 61, color: 2, eraseEOL: true) }
             try c.acceptScreen(fields)
             store01(st, fields)
             if c.crtStatus == esc { return false }
@@ -390,6 +395,8 @@ enum ST010 {
         }
         if ST.fileStatus(s, 15) != 1 {
             s.processFunc = 1; s.subFunction = 1
+            s.shared["file-defs-layout"] = "stock"
+            defer { s.shared["file-defs-layout"] = nil }
             try s.call("sl070")
             if ST.fileStatus(s, 15) != 1 {
                 error(s, "st010.st112")

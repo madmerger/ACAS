@@ -25,6 +25,8 @@ enum Stock {
             // file-status (15) = zero: 分析ファイル未作成なら sl070 で既定値を作る
             if Array(s.sys.raw("file-statuses"))[14] == 0x30 {
                 s.processFunc = 1
+                s.shared["file-defs-layout"] = "stock"
+                defer { s.shared["file-defs-layout"] = nil }
                 try s.call("sl070")
             }
             s.toDay = Maps04.toDate(Int(s.sys.int("run-date")))

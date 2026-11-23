@@ -63,8 +63,8 @@ enum SLA070 {
             switch w.menuReply {
             case 1: try create(s, w)
             case 2: try amend(s, w)
-            case 3: w.ledLit = ""; report(s, w)
-            case 4: w.ledLit = "Lgr"; w.printAll = true; report(s, w)
+            case 3: w.ledLit = ""; try report(s, w)
+            case 4: w.ledLit = "Lgr"; w.printAll = true; try report(s, w)
             default: try show(s, w)
             }
         }
@@ -158,7 +158,19 @@ enum SLA070 {
 
     // MARK: report1 section
 
-    static func report(_ s: Session, _ w: WS) {
+    /// analysis.dat に分析レコード長と異なるレコード (在庫経由の初期作成で書かれた集計レコード形式) が入っていると、
+    /// レガシーでは OPEN が失敗し、READ NEXT が AT END にならず読み込みループから抜けない。
+    static func analysisUnreadable(_ s: Session) -> Bool {
+        s.store.all(s.ledgers + "analysis.dat").contains { $0.data.count != analysisLayout.size }
+    }
+
+    /// 回復不能なレガシーのループの再現。画面は変えず、以後のキー入力を読み捨て続ける。
+    static func hang(_ s: Session) throws -> Never {
+        while true { _ = try s.console.waitKey() }
+    }
+
+    static func report(_ s: Session, _ w: WS) throws {
+        if analysisUnreadable(s) { try hang(s) }
         let f = analysisFile(s)
         _ = f.open()
         let p = SLA.Printer(s)
@@ -216,6 +228,7 @@ enum SLA070 {
         outline(s, w)
         w.lin = 6
         c.display(s.t("sl070.show_prompt"), at: 23, 31, color: 2)
+        if analysisUnreadable(s) { try hang(s) }
         while true {
             // show-read
             if w.lin > 21 { break }
@@ -311,7 +324,13 @@ enum SLA070 {
     // MARK: p-a-setup section (分析ファイル・集計ファイルの初期作成)
 
     static func setup(_ s: Session) {
-        let v = valueFile(s)
+        // 在庫 (stock / st010 / st060) から呼ばれた場合、呼び出し側の file-defs は在庫用の並びのため、
+        // sl070 の file-13 (集計ファイル) は analysis.dat を指し、file-15 (分析ファイル) は file-defs の範囲外になる。
+        // レガシー実測どおり、集計レコード形式を analysis.dat に書き、value.dat は作らない。
+        let fromStock = (s.shared["file-defs-layout"] as? String) == "stock"
+        let v = fromStock
+            ? IndexedFile(s.store, path: s.ledgers + "analysis.dat", layout: valueLayout, keyLength: 3)
+            : valueFile(s)
         if v.open() != "00" {
             SLA.setFileStatus(s, 13, 1)
             v.openOutput()
@@ -319,7 +338,7 @@ enum SLA070 {
         v.close()
         _ = v.open()
         let a = analysisFile(s)
-        a.openOutput()
+        if !fromStock { a.openOutput() }
         var rec = Record(analysisLayout)
         func put(_ sys: String, _ group: String, _ descKey: String, _ print: String) {
             let g = Array(group)
@@ -333,7 +352,7 @@ enum SLA070 {
                 for n in ["va-v-this", "va-v-last", "va-v-year", "va-t-this", "va-t-last", "va-t-year"] { vr.setInt(n, 0) }
                 _ = v.write(vr)
             }
-            _ = a.write(rec)
+            if !fromStock { _ = a.write(rec) }
         }
         put("S", "v ", "sl070.pa.vat_control", "")
         put("P", "v ", "sl070.pa.vat_control", "")
@@ -351,7 +370,8 @@ enum SLA070 {
         put("P", "a1", "sl070.pa.default_purch", "")
         put("S", "a ", "sl070.pa.default_group", "")
         put("S", "a1", "sl070.pa.default_sales", "")
-        a.close(); v.close()
+        if !fromStock { a.close() }
+        v.close()
         SLA.setFileStatus(s, 15, 1)
         if s.processFunc != 1 { s.console.display(" ", at: 23, 1, eraseEOL: true) }
     }
