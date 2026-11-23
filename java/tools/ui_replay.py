@@ -140,11 +140,7 @@ def run_calc(b, case):
     return r
 
 
-def main_calc(argv):
-    import argparse
-    ap = argparse.ArgumentParser(); ap.add_argument("evidence", type=Path); ap.add_argument("cases", nargs="+")
-    ap.add_argument("--url", default="http://localhost:18080"); ap.add_argument("--out", type=Path)
-    a = ap.parse_args(argv)
+def main_calc(a):
     cases = [c for c in json.loads((a.evidence / "scenarios/catalog.json").read_text())["cases"]
              if c["subsystem"] == "CALC" and any(c["id"] == x or (x.endswith("-") and c["id"].startswith(x)) for x in a.cases)]
     b = Browser(a.url); b.page.goto(b.url + "/calc.html"); results = []
@@ -162,6 +158,19 @@ def main_calc(argv):
     print(dict(Counter(r["verdict"] for r in results)))
 
 
+def main(argv=None):
+    parser = replay.argument_parser()
+    args = parser.parse_args(argv)
+    calc = [case.startswith("CALC-") for case in args.cases]
+    if any(calc) and not all(calc):
+        parser.error("CALC と業務ケースは別々に指定してください")
+    if all(calc):
+        if args.v or args.residue:
+            parser.error("CALC では -v と --residue を使用できません")
+        main_calc(args)
+    else:
+        replay.main(UiApi, args)
+
+
 if __name__ == "__main__":
-    if any(x.startswith("CALC-") for x in sys.argv[1:]): main_calc(sys.argv[1:])
-    else: replay.main(UiApi)
+    main()
