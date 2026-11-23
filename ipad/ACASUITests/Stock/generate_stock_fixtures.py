@@ -165,6 +165,14 @@ def movement_fixture(evidence, case):
     path = "ledgers/acas/prt-1"
     seed = json.loads(base64.b64decode(snapshot_seed(evidence, run)))
     seed["files"][path] = {"type": "raw", "hex": evidence_path(evidence, run / "before-files" / path).read_bytes().hex()}
+    reports = {path: evidence_path(evidence, run / "files" / path).read_bytes().hex()}
+    audit = "ledgers/acas/staudit.dat"
+    before_audit = evidence_path(evidence, run / "before-files" / audit)
+    after_audit = evidence_path(evidence, run / "files" / audit)
+    if before_audit.is_file():
+        seed["files"][audit] = {"type": "raw", "hex": before_audit.read_bytes().hex()}
+    if after_audit.is_file():
+        reports[audit] = after_audit.read_bytes().hex()
     inputs = case["input_data"]["text_inputs"]
     return {
         "id": case["id"],
@@ -174,7 +182,7 @@ def movement_fixture(evidence, case):
         "dateSeconds": timestamp,
         "seed": base64.b64encode(json.dumps(seed, separators=(",", ":")).encode()).decode(),
         "changes": expected_changes(evidence, legacy["comparison_targets"]["keyed_record_diff"]),
-        "reports": {path: evidence_path(evidence, run / "files" / path).read_bytes().hex()},
+        "reports": reports,
         "input": {"code": inputs[4].strip(), "quantity": str(int(inputs[5].strip())) if len(inputs) > 5 else "1",
                   "price": None if ship else inputs[6].strip() if len(inputs) > 6 else "0"},
     }
