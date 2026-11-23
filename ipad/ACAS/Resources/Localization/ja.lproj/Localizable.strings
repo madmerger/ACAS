@@ -333,6 +333,41 @@
 "pl050.lit_receipts" = "現金仕入";
 "pl050.lit_invoices" = "掛仕入";
 "pl050.lit_credit_notes" = "赤伝";
+/* pl055.cbl — Invoice Post Extract */
+"pl055.title" = "仕入転記データ抽出";
+"pl055.emergency_name" = "仮登録名称";
+"pl055.pl006" = "PL006 内容を確認してReturnで続行";
+"pl055.pl201" = "PL201 名称「Emergency Name」の分析コードを作成しました";
+"pl055.pl202" = "PL202 後で内容を更新して下さい";
+/* pl060.cbl — Invoice Posting Report */
+"pl060.title" = "仕入転記リスト";
+"pl060.ok_to_post" = "仕入取引を転記しますか (YES/NO) ?            [   ]";
+"pl060.posting_wait" = "転記中......お待ち下さい";
+"pl060.phase_1" = "段階  1";
+"pl060.supplier_unknown" = "仕入先不明";
+"pl060.type_invoice" = "掛仕入";
+"pl060.type_cr_note" = "赤伝";
+"pl060.type_receipt" = "現金";
+"pl060.lit_receipts" = "現金仕入";
+"pl060.lit_invoices" = "掛仕入";
+"pl060.lit_credit_notes" = "赤伝";
+"pl060.total_posted" = "転記合計";
+"pl060.unapplied_cf" = "未充当赤伝 繰越";
+"pl060.fs_reply" = "fs-reply = ";
+"pl060.batch_description" = "買掛元帳 請求書";
+"pl060.rep_title" = "仕入転記リスト";
+"pl060.rep_page" = "頁   ";
+"pl060.rep_unapplied_credits" = "未充当赤伝";
+"pl060.rep_line4_1" = " 番号       日付    <-------------仕入先------------->    種別  ";
+"pl060.rep_line4_2" = "  転記前残高   転記後残高           税抜      消費税        税込";
+"pl060.rep_line4a" = "---仕入先---   請求書       繰越残高       充当額       赤伝              種別    ";
+"pl060.pl002" = "PL002 エラーを確認してReturn";
+"pl060.pl003" = "PL003 Returnで続行";
+"pl060.pl130" = "PL130 Open-IT5 = ";
+"pl060.pl131" = "PL131 PE - CR SWOP: Returnで続行";
+"pl060.pl132" = "PL132 バッチ書込エラー        : ";
+"pl060.pl133" = "PL133 PE 060-01";
+"pl060.pl134" = "PL134 警告: 仕入先マスタに無いレコードあり";
 /* ---- sys.ja.strings ---- */
 /* ACAS.cbl — システムメニュー (日本語) */
 "sys.sy006" = "SY006 プログラム引数は2個までです。指定された数: ";

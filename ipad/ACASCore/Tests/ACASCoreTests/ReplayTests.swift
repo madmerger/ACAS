@@ -32,6 +32,18 @@ final class ReplayTests: XCTestCase {
             }
             return out
         }
+        // 相対編成 (posting.dat 等): 8 バイトのレコード長 + レコード の並びを RRN ごとに分解
+        if key.isEmpty, hex.count >= 16, let len = Int(String(hex.prefix(2)), radix: 16), len > 0,
+           hex.dropFirst(2).prefix(14) == "00000000000000", hex.count % ((len + 8) * 2) == 0 {
+            var out: [String: String] = [:]
+            let chars = Array(hex), slot = (len + 8) * 2
+            var i = 0, n = 1
+            while i + slot <= chars.count {
+                if String(chars[i..<(i + 16)]) != "0000000000000000" { out[String(format: "%08d", n)] = String(chars[(i + 16)..<(i + slot)]) }
+                i += slot; n += 1
+            }
+            return out
+        }
         if key.isEmpty {
             var h = hex
             while h.hasSuffix("0a") { h.removeLast(2) }
@@ -106,6 +118,9 @@ final class ReplayTests: XCTestCase {
                 }
                 // 帳票・一時ファイルは別途比較
                 got = got.filter { $0.contains(".dat|") }
+                // レガシー側でレコード分解できなかったファイル (unsupported_files) は比較対象外
+                let unsupported = Set(o["unsupported_files"] as? [String] ?? [])
+                got = got.filter { g in !unsupported.contains(String(g.prefix(while: { $0 != "|" }))) }
                 if want != got {
                     diffs.append("レコード差分 相違: legacyのみ \(want.subtracting(got).sorted().map { String($0.prefix(160)) }) / ipadのみ \(got.subtracting(want).sorted().map { String($0.prefix(160)) })")
                 }

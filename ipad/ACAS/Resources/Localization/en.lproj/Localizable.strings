@@ -333,6 +333,41 @@
 "pl050.lit_receipts" = "Receipts";
 "pl050.lit_invoices" = "Invoices";
 "pl050.lit_credit_notes" = "Credit Notes";
+/* pl055.cbl — Invoice Post Extract */
+"pl055.title" = "Invoice Post Extract";
+"pl055.emergency_name" = "Emergency Name";
+"pl055.pl006" = "PL006 Note Details & Hit Return to continue";
+"pl055.pl201" = "PL201 Analyst records with desc, 'Emergency Name' created";
+"pl055.pl202" = "PL202 You will need to update these";
+/* pl060.cbl — Invoice Posting Report */
+"pl060.title" = "Invoice Posting Report";
+"pl060.ok_to_post" = "OK to post Purchase Transactions (YES/NO) ?  [   ]";
+"pl060.posting_wait" = "Posting......Please Wait";
+"pl060.phase_1" = "Phase 1";
+"pl060.supplier_unknown" = "Supplier Unknown";
+"pl060.type_invoice" = "Invoice";
+"pl060.type_cr_note" = "Cr. Note";
+"pl060.type_receipt" = "Receipt";
+"pl060.lit_receipts" = "Receipts";
+"pl060.lit_invoices" = "Invoices";
+"pl060.lit_credit_notes" = "Credit Notes";
+"pl060.total_posted" = "Total  Posted";
+"pl060.unapplied_cf" = "Un-Applied Credits C/F ";
+"pl060.fs_reply" = "fs-reply = ";
+"pl060.batch_description" = "Purchase Ledger Invoices";
+"pl060.rep_title" = "Invoice Posting Report";
+"pl060.rep_page" = "Page ";
+"pl060.rep_unapplied_credits" = "Un-Applied Credits";
+"pl060.rep_line4_1" = " Number     Date    <------------Supplier------------>    Type  ";
+"pl060.rep_line4_2" = " Old Balance  New Balance            Net         Vat       Gross";
+"pl060.rep_line4a" = "--Supplier--   Invoice      Bal C/F        Applied      Cr. Note          Type    ";
+"pl060.pl002" = "PL002 Note error and hit return";
+"pl060.pl003" = "PL003 Hit Return To Continue";
+"pl060.pl130" = "PL130 Open-IT5 = ";
+"pl060.pl131" = "PL131 PE - CR SWOP: Return to continue";
+"pl060.pl132" = "PL132 Err on Batch file write : ";
+"pl060.pl133" = "PL133 PE 060-01";
+"pl060.pl134" = "PL134 Warning Record/s missing in Purchase File";
 /* ---- sys.en.strings ---- */
 /* ACAS.cbl — システムメニュー (英語 = レガシー原文) */
 "sys.sy006" = "SY006 Program Arguments limited to two and you have specified ";

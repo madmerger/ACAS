@@ -233,3 +233,87 @@ extension PLA {
     /// fdpdnos.cob del-inv-nos-record (19 バイト)
     static let delInvLayout = Layout("del-inv-nos-record", [("del-inv-nos", d(8)), ("del-inv-dat", bl), ("del-inv-cus", .x(7))])
 }
+
+extension PLA {
+    /// fdval.cob value-record (66 バイト)
+    static let valueLayout: Layout = {
+        let t = FieldType.comp(digits: 5, scale: 0, signed: false)
+        let l = Layout("value-record", [
+            ("va-system", .x(1)), ("va-first", .x(1)), ("va-second", .x(1)), ("va-gl", d(6)), ("va-desc", .x(24)), ("va-print", .x(3)),
+            ("va-t-this", t), ("va-t-last", t), ("va-t-year", t),
+            ("va-v-this", money(10)), ("va-v-last", money(10)), ("va-v-year", money(10)),
+        ])
+        l.redefine("va-code", .x(3), at: 0)
+        l.redefine("va-group", .x(2), at: 1)
+        return l
+    }()
+    static func valueFile(_ s: Session) -> IndexedFile { IndexedFile(s.store, path: s.ledgers + "value.dat", layout: valueLayout, keyLength: 3) }
+
+    /// wssys4.cob System-Record-4 の買掛部分 (先頭 120 バイト)
+    static let sys4Layout: Layout = {
+        var f: [(String, FieldType)] = []
+        for n in ["sl-os-bal-last-month", "sl-os-bal-this-month", "sl-invoices-this-month", "sl-credit-notes-this-month", "sl-variance",
+                  "sl-credit-deductions", "sl-cn-unappl-this-month", "sl-payments", "sl4-spare1", "sl4-spare2",
+                  "pl-os-bal-last-month", "pl-os-bal-this-month", "pl-invoices-this-month", "pl-credit-notes-this-month", "pl-variance",
+                  "pl-credit-deductions", "pl-cn-unappl-this-month", "pl-payments", "sl4-spare3", "sl4-spare4"] {
+            f.append((n, money(10)))
+        }
+        return Layout("system-record-4", f)
+    }()
+    static func sys4(_ s: Session, _ name: String) -> Int64 {
+        Record(sys4Layout, bytes: Array(s.sysRecord4[0..<120])).int(name)
+    }
+    static func setSys4(_ s: Session, _ name: String, _ v: Int64) {
+        var r = Record(sys4Layout, bytes: Array(s.sysRecord4[0..<120]))
+        r.setInt(name, Cobol.truncate(v, digits: 10))
+        s.sysRecord4.replaceSubrange(0..<120, with: r.bytes)
+    }
+}
+
+extension PLA {
+    /// fdbatch.cob batch-record (96 バイト)
+    static let batchLayout: Layout = {
+        let amt = FieldType.comp3(digits: 11, scale: 2, signed: false)
+        let l = Layout("batch-record", [
+            ("ledger", d(1)), ("batch-nos", d(5)), ("items", d(2)), ("batch-status", d(1)), ("cleared-status", d(1)), ("bcycle", d(2)),
+            ("entered", bl), ("proofed", bl), ("posted", bl), ("stored", bl),
+            ("input-gross", amt), ("input-vat", amt), ("actual-gross", amt), ("actual-vat", amt),
+            ("description", .x(24)), ("bdefault", d(2)), ("convention", .x(2)), ("batch-def-ac", d(6)), ("batch-def-pc", d(2)),
+            ("batch-def-code", .x(2)), ("batch-def-vat", .x(1)), ("batch-start", d(5)),
+        ])
+        l.redefine("batch-key", .x(6), at: 0)
+        return l
+    }()
+    static func batchFile(_ s: Session) -> IndexedFile { IndexedFile(s.store, path: s.ledgers + "batch.dat", layout: batchLayout, keyLength: 6) }
+
+    /// fdpost.cob posting-record (98 バイト)
+    static let postLayout = Layout("posting-record", [
+        ("batch", d(5)), ("post-number", d(5)), ("post-code", .x(2)), ("post-date", .x(8)), ("post-dr", d(6)), ("dr-pc", d(2)),
+        ("post-cr", d(6)), ("cr-pc", d(2)), ("post-amount", .n9(digits: 10, scale: 2, signed: true)), ("post-legend", .x(32)),
+        ("vat-ac", d(6)), ("vat-pc", d(2)), ("post-vat-side", .x(2)), ("vat-amount", .n9(digits: 10, scale: 2, signed: true)),
+    ])
+    static func postingFile(_ s: Session) -> RelativeFile { RelativeFile(s.store, path: s.ledgers + "posting.dat", recordSize: 98) }
+
+    /// pic s9(7)v99 sign leading (符号は先頭桁へのオーバーパンチ)
+    static func signLeading(_ v: Int64, digits: Int) -> [UInt8] {
+        var a = Array(Cobol.z(abs(v) % Cobol.pow10(digits), digits).utf8)
+        if v < 0 { a[0] = a[0] + 0x40 }
+        return a
+    }
+    /// fdpost-irs.cob irs-posting-record (84 バイト) を file-8 (postings2irs.dat) へ追記
+    static func irsPostPath(_ s: Session) -> String { s.ledgers + "postings2irs.dat" }
+
+    /// 買掛転記 (pl060/pl100) が使う G-L / IRS 判定
+    static func gl(_ s: Session) -> Bool { s.sys.int("level-1") == 1 }
+    static func irsUsed(_ s: Session) -> Bool { s.sys.str("irs-instead") == "Y" }
+
+    /// z(n)9.99cr 形式の編集 (上位桁切り捨て)
+    static func cr(_ pic: String, _ v: Int64, int: Int) -> String {
+        Pic.edit(pic, value: (v < 0 ? -1 : 1) * (abs(v) % Cobol.pow10(int + 2)), scale: 2)
+    }
+    /// BLANK WHEN ZERO
+    static func bwz(_ pic: String, _ v: Int64, int: Int, scale: Int) -> String {
+        let t = abs(v) % Cobol.pow10(int + scale)
+        return t == 0 ? Cobol.x("", Pic.size(pic)) : Pic.edit(pic, value: t, scale: scale)
+    }
+}
