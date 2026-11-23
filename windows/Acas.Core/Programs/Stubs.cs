@@ -23,6 +23,5 @@ public static partial class Gl030
 {
     private static Task SetupPc(Ctx c, string toDay) => Task.CompletedTask;
     private static Task Alpha(Ctx c, string toDay) => Task.CompletedTask;
-    private static Task Chart(Ctx c, string toDay, int menu) => Task.CompletedTask;
     private static Task PcReport(Ctx c, string toDay) => Task.CompletedTask;
 }

@@ -41,7 +41,7 @@ public static class Records
         for (int i = 0; i < legacy.Count; i++)
         {
             var name = Path.GetFileName(legacy[i]);
-            var mine = ctx.EnglishReports.FirstOrDefault(r => r.Name == name);
+            var mine = ctx.EnglishReports.FirstOrDefault(r => Path.GetFileName(r.Name) == name);
             if (mine.Lines == null) { diffs.Add($"帳票 {name}: 新側に無し"); ok = false; continue; }
             var exp = File.ReadAllText(legacy[i]).Replace("\r", "").Split('\n').Select(CaseRunner.Norm).ToList();
             var act = string.Join("\n", mine.Lines).Split('\n').Select(CaseRunner.Norm).ToList();

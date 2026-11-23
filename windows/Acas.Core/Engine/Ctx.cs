@@ -52,6 +52,14 @@ public sealed class Report
         }
         English.Add(en.ToString().TrimEnd()); Lines.Add(ja.ToString().TrimEnd());
     }
+    private bool _first = true;
+    /// <summary>WRITE ... AFTER n: n 回改行してから 1 行出力する。</summary>
+    public void After(int n, params object[] parts)
+    {
+        for (int i = _first ? 0 : 1; i < n; i++) { English.Add(""); Lines.Add(""); }
+        _first = false;
+        Write(parts);
+    }
     public void Page() { English.Add("\f"); Lines.Add("\f"); }
     public void Close()
     {

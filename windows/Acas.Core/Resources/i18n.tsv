@@ -74,3 +74,34 @@ Enter <+> only to Delete	削除は <+> のみ入力
 Invalid Placement!	配置が不正です!
 GL104 Rewrite ERR 030-01. hit return to finish	GL104 更新エラー 030-01。Enterで終了
 Deletion Request Denied! Current Balance Not Zero	削除不可! 現在残高がゼロではありません
+GL106 Ledger File Does Not Exist	GL106 元帳ファイルがありません
+Chart Of Accounts Display	勘定科目表の照会
+Print Out	印刷
+Enter the start Account - [      ]	開始勘定を入力          - [      ]
+/  ]	/  ]
+Press <Esc> key to exit	<Esc> キーで終了
+No match found !	該当なし!
+<N> Next; <I> Next ignore same code; <C> Cont; <Q> Quit :- [I]	<N>次 <I>同一コード省略 <C>連続 <Q>終了                 :- [I]
+Press Return for next screen	Enterで次画面へ
+Ledger	科目
+Sub	補助
+<---------Name--------->    Type    Level --Placement--	<---------名称--------->    種別    階層  ----配置-----
+Header	ヘッダ
+Detail	明細
+Sales	売上
+Purch.	仕入
+Special	特殊
+ERROR?	エラー?
+Direct Income	直接収益
+Direct Costs	直接原価
+Sundry Income	雑収入
+Indirect Cost	間接費
+Fixed Assets	固定資産
+Current Asset	流動資産
+Current Liab.	流動負債
+Capital A/Cs	資本勘定
+Chart of Accounts	勘定科目表
+Page -	頁 -
+---Level---   Header       Detail	---階層---    ヘッダ       明細
+--Placement--      ----------Name----------	----配置-----      ----------名称----------
+Profit Centre	利益センター
