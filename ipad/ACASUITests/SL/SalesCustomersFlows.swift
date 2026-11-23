@@ -37,7 +37,9 @@ final class SalesCustomersFlows: XCTestCase {
         let (app, input) = try launch("SL-401", operation: "remove")
         enter(input["code"], in: app.textFields["sales.customer.code"])
         tap("sales.customer.search", in: app)
-        XCTAssertTrue(app.staticTexts["BETA CUSTOMER"].waitForExistence(timeout: 5))
+        let name = app.descendants(matching: .any).matching(identifier: "sales.customer.summary.name").firstMatch
+        XCTAssertTrue(name.waitForExistence(timeout: 5))
+        XCTAssertEqual(name.value as? String, "BETA CUSTOMER")
         tap("sales.customer.delete", in: app)
         tap("sales.customer.confirmDelete", in: app)
         finish(app, "SL-401", result: "得意先を削除しました")

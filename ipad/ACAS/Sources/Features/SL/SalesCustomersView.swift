@@ -174,7 +174,10 @@ private struct SalesCustomerView: View {
     @ViewBuilder private func summary(_ customer: SalesLedger.Customer) -> some View {
         Section(slText("sales.customer.summary")) {
             LabeledContent(slText("sales.customer.name"), value: customer.name)
-                .accessibilityLabel(customer.name)
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel(slText("sales.customer.name"))
+                .accessibilityValue(customer.name)
+                .accessibilityIdentifier("sales.customer.summary.name")
             LabeledContent(slText("sales.customer.status"), value: customer.active ? slText("sales.customer.active") : slText("sales.customer.inactive"))
             LabeledContent(slText("sales.customer.address1"), value: customer.address1)
             LabeledContent(slText("sales.customer.address2"), value: customer.address2)
