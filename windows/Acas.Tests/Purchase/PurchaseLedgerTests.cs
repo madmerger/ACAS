@@ -114,6 +114,28 @@ public sealed class PurchaseLedgerTests
     }
 
     [Fact]
+    public void 仕入転記のフラグは買掛終了までシステムファイルに書き込まない()
+    {
+        using var db = Fixture("pl-invoice");
+        var ledger = new PurchaseLedger(db);
+        const string key = "00000001";
+        var before = db.Read(PurchaseLedger.SystemFile, key);
+        Assert.Single(ledger.PostInvoices()!);
+        Assert.Equal(before, db.Read(PurchaseLedger.SystemFile, key));
+        Assert.False(ledger.InvoicesPending);
+        Assert.Equal(1, ledger.System().I("File-Status-29"));
+        var next = ledger.System();
+        next.Set("Usera", "UPDATED BUSINESS");
+        Assert.True(ledger.SaveSystem(next));
+        var onDisk = new PurchaseLedger(db).System();
+        Assert.Equal("UPDATED BUSINESS", onDisk.St("Usera"));
+        Assert.Equal(1, onDisk.I("P-Flag-I"));
+        Assert.True(ledger.FlushPostingFlags());
+        Assert.Equal(next.B, db.Read(PurchaseLedger.SystemFile, key));
+        Assert.Equal(2, new PurchaseLedger(db).System().I("P-Flag-I"));
+    }
+
+    [Fact]
     public void 分析ファイルの旧形式を誤って上書きしない()
     {
         using var db = Fixture("biz");
@@ -177,6 +199,76 @@ public sealed class PurchaseLedgerTests
         Assert.Equal(10m, account.N("unapplied"));
         Assert.False(ledger.PaymentPending);
         Assert.Empty(ledger.Payments()!);
+    }
+
+    [Fact]
+    public void アイアールエスには専用の固定長支払仕訳を出力する()
+    {
+        using var db = Fixture("pl-invoice");
+        var ledger = new PurchaseLedger(db);
+        Assert.Single(ledger.PostInvoices()!);
+        var system = ledger.System();
+        system.Set("Irs-Instead", "Y");
+        system.SetN("P-Creditors", 12345);
+        system.SetN("BL-Pay-Ac", 23456);
+        Assert.True(ledger.SaveSystem(system));
+        int postings = ledger.System().I("Postings");
+        int prior = db.Count("ledgers/acas/posting.dat");
+        Assert.True(ledger.SavePayment("SUPP018", new DateTime(2026, 11, 23), 50m, false,
+            new Dictionary<int, decimal> { [1] = 50m }));
+        Assert.Single(ledger.ProvePayments()!);
+        var payment = Assert.Single(ledger.PostPayments()!);
+        var (key, bytes) = Assert.Single(db.Scan("ledgers/acas/postings2irs.dat"));
+        string expected = $"{payment.Batch + 1:00000}00001PL23/11/261234523456000005000" +
+            $"{payment.Folio} : ALPHA SUPPLIER".PadRight(32) + "31DR000000000";
+        Assert.Equal(expected[..10], key);
+        Assert.Equal(System.Text.Encoding.ASCII.GetBytes(expected), bytes);
+        Assert.Equal(postings, ledger.System().I("Postings"));
+        Assert.Equal(prior, db.Count("ledgers/acas/posting.dat"));
+    }
+
+    [Fact]
+    public void 小切手の生成と台帳更新後も送金案内を取得できる()
+    {
+        using var db = Fixture("pl-invoice");
+        var ledger = new PurchaseLedger(db);
+        Assert.Single(ledger.PostInvoices()!);
+        Assert.True(ledger.CreatePaymentSchedule(0));
+        var payment = Assert.Single(ledger.ScheduledPayments()!);
+        Assert.Equal(120m, payment.Gross);
+        Assert.True(ledger.AmendPaymentSchedule(payment.Supplier, payment.Number, new Dictionary<int, decimal> { [1] = 100m }));
+        Assert.True(ledger.GenerateChequeData(4321, new DateTime(2026, 11, 24)));
+        var export = Assert.Single(db.Scan("ledgers/acas/cheque.dat")).Data;
+        Assert.Equal(645, export.Length);
+        Assert.Equal("     4321,24/11/2026", System.Text.Encoding.ASCII.GetString(export.AsSpan(345, 20)));
+        var register = Assert.Single(ledger.ApplyChequeRegister()!);
+        Assert.Equal((4321, 100m), (register.Cheque, register.Gross));
+        Assert.Empty(ledger.ScheduledPayments()!);
+        var remittance = Assert.Single(ledger.Remittances()!);
+        Assert.Equal(("4321", 100m), (remittance.Method, remittance.Amount));
+        Assert.Equal(1, Assert.Single(remittance.Lines).Folio);
+        Assert.Equal("000010000C", Convert.ToHexString(db.Read("ledgers/acas/openitm5.dat", "SUPP018/00000001")!.AsSpan(84, 5)));
+    }
+
+    [Fact]
+    public void 買掛締めは未決済伝票を残し仕入先残高を翌期に繰り越す()
+    {
+        using var db = Fixture("pl-invoice");
+        var ledger = new PurchaseLedger(db);
+        Assert.Single(ledger.PostInvoices()!);
+        var system = ledger.System();
+        system.SetN("File-Status-15", 1);
+        system.SetN("Level-2", 1);
+        Assert.True(ledger.SaveSystem(system));
+        var date = new DateTime(2026, 11, 30);
+        Assert.False(ledger.ClosePeriod(date, purchase: true, sales: false, quarter: false, allowUnposted: false));
+        Assert.True(ledger.FinishPurchaseAnalysis());
+        Assert.True(ledger.ClosePeriod(date, purchase: true, sales: false, quarter: false, allowUnposted: false));
+        Assert.Equal(120m, ledger.GetSupplier("SUPP018")!.N("last"));
+        Assert.Equal(PurchaseLedger.EncodeDate(date), ledger.System().I("BL-End-Cycle-Date"));
+        var invoice = Assert.Single(ledger.AgedPurchaseItems(date)!);
+        Assert.Equal(120m, invoice.Balance);
+        Assert.Empty(ledger.Invoice("00000001")!.Lines);
     }
 
     [Fact]

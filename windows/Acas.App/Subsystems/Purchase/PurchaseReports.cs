@@ -211,18 +211,102 @@ internal sealed partial class PurchaseScreens
         }, AnalysisMenu);
     }
 
-    private Screen AnalysisReport() => !_ledger.AnalysisValuesAvailable
-        ? Notice("仕入分析帳票", "集計データがありません。") : Unsupported("仕入分析帳票");
+    private Screen AnalysisReport()
+    {
+        const string title = "仕入分析帳票";
+        if (!_ledger.FinishPurchaseAnalysis()) return Notice(title, "分析状態を保存できませんでした。");
+        if (!_ledger.AnalysisValuesAvailable) return Notice(title, "集計データがありません。");
+        if (_ledger.PurchaseAnalysisTotals() is not { } rows) return Notice(title, "集計ファイルの形式を確認してください。");
+        return PagedReport(title, ["分析コード　区分　摘要", "件数・金額　当期　前期　年累計　前期比"],
+            rows.Select(row => new[]
+            {
+                $"{row.Code}　{(row.Group ? "グループ" : "明細")}　{row.Description}",
+                $"件数　{row.CurrentCount}　{row.PreviousCount}　{row.YearCount}　{Ratio(row.CurrentCount, row.PreviousCount)}",
+                $"金額　{Money(row.Current)}　{Money(row.Previous)}　{Money(row.Year)}　{Ratio(row.Current, row.Previous)}"
+            }));
 
-    private Screen AgedCreditors() => !OpenItemsAvailable()
-        ? Notice("買掛金年齢表", "未決済明細ファイルがありません。") : Unsupported("買掛金年齢表");
+        static string Ratio(decimal current, decimal previous) => previous == 0 ? "―" : Money(current / previous * 100) + "％";
+    }
+
+    private Screen AgedCreditors()
+    {
+        const string title = "買掛金年齢表";
+        if (!OpenItemsAvailable()) return Notice(title, "未決済明細ファイルがありません。");
+        return new FormScreen(title, [
+            new DateField("PurchaseAgedDate", "帳票日", _ledger.ProcessingDate),
+            Text("AgedSupplier", "仕入先コードの先頭", "", 7),
+            Text("AgedMinimum", "最小残高", "0.00", 11),
+            new ChoiceField("PurchaseAgedOrder", "並び順", [new("key", "仕入先コード順"), new("name", "仕入先名順")], "key")
+        ], "帳票を作成", values =>
+        {
+            if (values.Date("PurchaseAgedDate") is not { } date || !Amount(values, "AgedMinimum", out decimal minimum))
+                return Notice(title, "日付と最小残高を確認してください。");
+            if (_ledger.AgedPurchaseItems(date) is not { } items) return Notice(title, "未決済明細の形式を確認してください。");
+            string prefix = values.Text("PurchaseAgedSupplier").Trim().ToUpperInvariant();
+            var suppliers = _ledger.Suppliers().Where(s => s.St("key").StartsWith(prefix, StringComparison.Ordinal) && s.N("current") >= minimum);
+            if (values.Choice("PurchaseAgedOrder") == "name") suppliers = suppliers.OrderBy(s => s.St("name"), StringComparer.OrdinalIgnoreCase);
+            var groups = items.ToLookup(item => item.Supplier);
+            var reportRows = new List<string[]>();
+            decimal[] totals = new decimal[4];
+            decimal paid = 0, open = 0, expired = 0, unapplied = 0;
+            foreach (var supplier in suppliers)
+            {
+                string code = supplier.St("key");
+                var rows = groups[code].ToArray();
+                if (rows.Length == 0 && supplier.N("current") == 0 && supplier.N("unapplied") == 0) continue;
+                reportRows.Add([ $"{code}　{supplier.St("name")}",
+                    $"前残高 {Money(supplier.N("last"))}　残高 {Money(supplier.N("current"))}　未消込 {Money(supplier.N("unapplied"))}" ]);
+                decimal[] balance = new decimal[4];
+                foreach (var item in rows)
+                {
+                    if (item.Type == 2) balance[item.Bucket] += item.Balance;
+                    expired += item.ExpiredDiscount;
+                    paid += item.Paid;
+                    if (item.Type == 3) unapplied += item.Balance;
+                    string kind = item.Type switch { 2 => "掛仕入", 3 => "貸方票", 5 => "支払", _ => "未消込残高の使用" };
+                    reportRows.Add([$"{item.Folio}　{DateText(item.Date)}　{kind}　{(item.Held ? "保留" : "")}　{Money(item.Balance)}　{Money(item.Paid)}"]);
+                }
+                for (int i = 0; i < 4; i++) totals[i] += balance[i];
+                open += supplier.N("current") - supplier.N("unapplied");
+                reportRows.Add([Amounts(balance)]);
+            }
+            reportRows.Add(["全仕入先の合計", Amounts(totals), $"残高 {Money(open)}　支払 {Money(paid)}",
+                $"未消込貸方票 {Money(unapplied)}　期限切れ割引 {Money(expired)}"]);
+            return PagedReport(title, [$"帳票日　{DateText(date)}", "伝票番号　取引日　区分　保留　残高　支払額"], reportRows);
+
+            static string Amounts(decimal[] amounts) =>
+                $"当期 {Money(amounts[0])}　30日以上 {Money(amounts[1])}　60日以上 {Money(amounts[2])}　90日以上 {Money(amounts[3])}";
+        });
+    }
+
+    private Screen PagedReport(string title, string[] heading, IEnumerable<string[]> rows)
+    {
+        var body = new StringBuilder();
+        int page = 0, used = 0, limit = Math.Max(heading.Length + 8, _ledger.System().I("Page-Lines"));
+        Heading();
+        foreach (var row in rows)
+        {
+            if (used + row.Length > limit) Heading();
+            foreach (string line in row) body.AppendLine(line);
+            used += row.Length;
+        }
+        return _ledger.Report(title, body.ToString());
+
+        void Heading()
+        {
+            if (page != 0) body.Append('\f');
+            body.Append(ReportHeading(title)).AppendLine($"ページ {++page}");
+            foreach (string line in heading) body.AppendLine(line);
+            used = 5 + heading.Length;
+        }
+    }
 
     private Screen ClosePeriod() => new FormScreen("買掛・売掛の期間締め",
         [new DateField("PurchaseClosingDate", "締め日", _ledger.ProcessingDate)], "確認", values =>
         {
-            if (values.Date("PurchaseClosingDate") is null) return Notice("買掛・売掛の期間締め", "締め日を入力してください。");
+            if (values.Date("PurchaseClosingDate") is not { } date) return Notice("買掛・売掛の期間締め", "締め日を入力してください。");
             return new ConfirmationScreen("買掛・売掛の期間締め", "締め日は期間末日ですか。すべてのデータをバックアップしましたか。", "続行",
-                () => Unsupported("買掛・売掛の期間締め"), MainMenu);
+                () => ClosingLedgers(date), MainMenu);
         });
 
     private MenuScreen ChequeMenu() => new("小切手・送金", ChequeItems());
@@ -232,26 +316,16 @@ internal sealed partial class PurchaseScreens
         Item("S1", 1, "支払予定生成", ChequeDue),
         Item("S2", 2, "支払予定修正", ChequeAmend),
         Item("S3", 3, "支払予定の検証", ScheduledPaymentProof),
-        Item("S4", 4, "小切手データ生成", () => !_ledger.PaymentDataAvailable
-            ? Notice("小切手データ生成", "処理するデータがありません。") : Unsupported("小切手データ生成")),
-        Item("S5", 5, "小切手・銀行振込台帳印刷", () => new FormScreen("小切手・銀行振込台帳印刷", [], "確認", _ =>
-            new ConfirmationScreen("小切手・銀行振込台帳印刷", "未決済明細を更新します。続行しますか。", "続行",
-                () => Unsupported("小切手・銀行振込台帳印刷"), ChequeMenu))),
-        Item("S6", 6, "送金案内印刷", () => !_ledger.PaymentDataAvailable ? ChequeMenu() : Unsupported("送金案内印刷")),
+        Item("S4", 4, "小切手データ生成", ChequeGenerate),
+        Item("S5", 5, "小切手・銀行振込台帳印刷", ChequeRegister),
+        Item("S6", 6, "送金案内印刷", RemittanceReport),
         Item("S9", 9, "買掛メニューに戻る", MainMenu)
     ];
 
-    private Screen ChequeDue() => new FormScreen("支払予定生成",
-        [new TextField("PurchaseChequeAge", "支払対象の経過日数", _ledger.System().I("Age-To-Pay").ToString("00"), 2)],
-        "確認", _ => Notice("支払予定生成", !OpenItemsAvailable() ? "未決済明細ファイルがありません。" : "この処理は移植されていません。"));
+    private Screen ScheduledPaymentProof() => ScheduledPaymentReport("支払予定の検証");
 
-    private static Screen ChequeAmend() => new FormScreen("支払予定修正",
-        [new TextField("PurchaseChequeSupplier", "仕入先コード", MaxLength: 7),
-            new TextField("PurchaseChequeNumber", "支払予定番号", MaxLength: 2)], "照会", _ => Unsupported("支払予定修正"));
-
-    private Screen ScheduledPaymentProof()
+    private Screen ScheduledPaymentReport(string title)
     {
-        const string title = "支払予定の検証";
         if (_ledger.ScheduledPayments() is not { } payments)
             return Notice(title, "支払予定ファイルのレコード長が定義と一致しません。");
         int pageSize = Math.Max(6, _ledger.System().I("Page-Lines"));
@@ -300,5 +374,36 @@ internal sealed partial class PurchaseScreens
             .AppendLine("伝票番号　支払方法　支払日　請求書番号").AppendLine("当期　30日以上　60日以上　90日以上　支払額");
     }
 
-    private static Screen Unsupported(string title) => Notice(title, "この処理は移植されていません。");
+    private Screen ClosingLedgers(DateTime date)
+    {
+        const string title = "買掛・売掛の期間締め";
+        var system = _ledger.System();
+        if (system.I("File-Status-15") != 1) return Notice(title, "分析コードの設定を確認してください。");
+        if (system.I("S-Flag-P") != 0 || system.I("P-Flag-P") != 0)
+            return Notice(title, "先に未転記の支払を転記してください。");
+        if (system.I("S-Flag-A") == 1) return Notice(title, "先に売上分析帳票を作成してください。");
+        if (system.I("P-Flag-A") == 1) return Notice(title, "先に仕入分析帳票を作成してください。");
+        if (system.I("P-Flag-I") == 1 || system.I("S-Flag-I") == 1)
+            return new ConfirmationScreen(title, "未転記の伝票があります。締めを続行しますか。", "続行", () => SelectLedgers(true), MainMenu);
+        return SelectLedgers(false);
+
+        Screen SelectLedgers(bool allowUnposted)
+        {
+            Choice[] yesNo = [new("yes", "はい"), new("no", "いいえ")];
+            List<Field> fields = [new PasswordField("PurchaseClosingPassword", "締め処理の暗証文字", 4)];
+            bool buy = system.I("Level-2") == 1, sell = system.I("Level-3") == 1;
+            if (buy) fields.Add(new ChoiceField("PurchaseClosingPurchases", "買掛を締める", yesNo, "yes"));
+            if (sell) fields.Add(new ChoiceField("PurchaseClosingSales", "売掛を締める", yesNo, "no"));
+            bool customQuarter = system.I("Period") is not (3 or 13);
+            if (customQuarter) fields.Add(new ChoiceField("PurchaseClosingQuarter", "四半期末", yesNo, "no"));
+            return new FormScreen(title, fields, "締めを実行", values =>
+            {
+                if (!_ledger.MatchesCyclePassword(values.Text("PurchaseClosingPassword")))
+                    return Notice(title, "締め処理の暗証文字が一致しません。");
+                return Notice(title, _ledger.ClosePeriod(date, buy && values.Choice("PurchaseClosingPurchases") == "yes",
+                    sell && values.Choice("PurchaseClosingSales") == "yes", customQuarter && values.Choice("PurchaseClosingQuarter") == "yes", allowUnposted)
+                    ? "期間締めが完了しました。" : "締め対象と未決済明細の状態を確認してください。");
+            });
+        }
+    }
 }

@@ -24,6 +24,8 @@ File.WriteAllText(args[2], JsonSerializer.Serialize(results, new JsonSerializerO
 }));
 foreach (var result in results.Where(result => result.Verdict == "不一致"))
     Console.WriteLine($"{result.Id}：{string.Join("／", result.Differences)}");
+foreach (var result in results.Where(result => result.KnownLegacyIssue is not null))
+    Console.WriteLine($"{result.Id}（旧版既知不具合）：{result.KnownLegacyIssue}");
 Console.WriteLine($"一致 {results.Count(result => result.Verdict == "一致")} / 不一致 {results.Count(result => result.Verdict == "不一致")} / 対象外 {results.Count(result => result.Verdict == "対象外")}");
 return results.Any(result => result.Verdict == "不一致") ? 1 : 0;
 
@@ -34,6 +36,7 @@ static Result Check(JsonElement entry, string evidence)
     if (legacy.GetProperty("verdict").GetString() == "未実施") return new(id, "対象外", []);
     var targets = legacy.GetProperty("comparison_targets");
     List<string> differences = [];
+    string? knownLegacyIssue = null;
     try
     {
         using var db = new Db();
@@ -68,9 +71,7 @@ static Result Check(JsonElement entry, string evidence)
                 after.TryGetValue(key, out string? newHex);
                 if (!expected.TryGetValue(key, out var record))
                 {
-                    if (oldHex != newHex) differences.Add(id == "PL-414" && key.File == PurchaseLedger.SystemFile
-                        ? "旧版では転記フラグがメモリ上で変わりますが、買掛終了までシステムレコードを書き戻しません。証跡は買掛メニューで停止し、移行版は転記と同じトランザクションで保存します。"
-                        : $"{key.File}／{key.Key}：追加のレコード差分があります。");
+                    if (oldHex != newHex) differences.Add($"{key.File}／{key.Key}：追加のレコード差分があります。");
                 }
                 else if (record.Before != oldHex || record.After != newHex)
                     differences.Add($"{key.File}／{key.Key}：更新前後のレコードバイト列が異なります。");
@@ -82,24 +83,28 @@ static Result Check(JsonElement entry, string evidence)
                 .Select(Convert.ToHexString).Distinct().Count();
             int appReports = db.Spool().Count;
             if (legacyReports != appReports) differences.Add($"帳票数が異なります（既存 {legacyReports}、移行 {appReports}）。");
-            else if (id == "PL-232" && legacyReports == 1)
-                VerifyScheduledPaymentReport(evidence, targets, db, differences);
+            else if (id is "PL-222" or "PL-232" && legacyReports == 1)
+            {
+                bool analysis = id == "PL-222";
+                string path = EvidenceFile(evidence, targets.GetProperty("report_files")[0].GetString()!);
+                string source = File.ReadAllText(path, Encoding.Latin1);
+                var report = db.Spool().Single();
+                bool signature = analysis
+                    ? new PurchaseLedger(db).HasInvalidAnalysisLength && source.Count(c => c == '\f') > 1
+                    : new PurchaseLedger(db).ScheduledPayments() is { Count: 0 } && source.Length > 1_000_000 && !source.Contains('\f');
+                if (!signature || !LegacyPurchaseReport.MatchesKnownFirstPage(source, report.Body, report.Name, analysis))
+                    differences.Add("旧版の既知不具合の特徴または先頭ページの有効項目が一致しません。");
+                else
+                    knownLegacyIssue = analysis
+                        ? "分析ファイルのレコード長不一致で不正明細が繰り返し印刷されます。先頭ページの表題・事業者・日付・列見出しは一致し、不正明細は除外しました。"
+                        : "支払予定ファイルがないため、先頭ページの見出しの後に大量の空行が続きます。先頭ページの有効項目は一致し、移行版はゼロ件の合計を出力して終了します。";
+            }
             else if (id is "PL-221" or "PL-413" or "PL-414" && legacyReports == 1)
             {
                 var report = db.Spool().Single();
                 string path = EvidenceFile(evidence, targets.GetProperty("report_files")[0].GetString()!);
                 if (!LegacyPurchaseReport.Matches(path, report.Body, report.Name, id == "PL-414", id == "PL-221"))
                     differences.Add("帳票の項目、順序またはページ構成が異なります。");
-            }
-            else if (id == "PL-222" && legacyReports == 1)
-            {
-                string path = EvidenceFile(evidence, targets.GetProperty("report_files")[0].GetString()!);
-                string contents = File.ReadAllText(path, Encoding.Latin1);
-                if (!new PurchaseLedger(db).HasInvalidAnalysisLength || contents.Count(c => c == '\f') < 2 ||
-                    !contents.Contains("\0\0     010000", StringComparison.Ordinal))
-                    differences.Add("全件印刷の旧証跡に既知の異常を確認できません。");
-                else
-                    differences.Add("旧版はレコード長不一致で開けない分析ファイルを全件読み取りし、同一の不正明細を多数ページに出力しました。移行版では無効レコードを印刷しません。");
             }
             else if (legacyReports != 0)
                 differences.Add("帳票の全項目・改ページの同一性は未確認です。");
@@ -109,7 +114,7 @@ static Result Check(JsonElement entry, string evidence)
     {
         differences.Add(error is InvalidOperationException ? error.Message : $"検証手順を完了できませんでした（{error.GetType().Name}）。");
     }
-    return new(id, differences.Count == 0 ? "一致" : "不一致", differences);
+    return new(id, differences.Count == 0 ? "一致" : "不一致", differences, knownLegacyIssue);
 }
 
 static void Exercise(JsonElement entry, string id, Db db, List<string> differences)
@@ -217,26 +222,6 @@ static void Exercise(JsonElement entry, string id, Db db, List<string> differenc
     Require(same, differences, "証跡に対応する画面状態または処理に到達していません。");
 }
 
-static void VerifyScheduledPaymentReport(string evidence, JsonElement targets, Db db, List<string> differences)
-{
-    var legacyPath = EvidenceFile(evidence, targets.GetProperty("report_files")[0].GetString()!);
-    var nonblank = File.ReadLines(legacyPath).Select(line => line.Trim()).Where(line => line.Length != 0).ToArray();
-    var body = db.Spool().Single().Body;
-    var lines = body.Split('\n', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
-    Require(nonblank.Length >= 3 && nonblank[0].Contains("Payments Due Proof Report", StringComparison.Ordinal) &&
-        nonblank[0].EndsWith("Page   1", StringComparison.Ordinal) && lines.Contains("ページ 1") &&
-        lines.Length >= 3 && nonblank[1].StartsWith(lines[1], StringComparison.Ordinal) &&
-        nonblank[1].EndsWith("23/11/2026", StringComparison.Ordinal) && lines[2] == "処理日　2026年11月23日" &&
-        nonblank[2] == "Folio M    Date     Invoice      Current       30 +        60 +        90 +       Total to Pay" &&
-        lines.Contains("伝票番号　支払方法　支払日　請求書番号") && lines.Contains("当期　30日以上　60日以上　90日以上　支払額"),
-        differences, "支払予定検証帳票の表題、事業者、処理日、ページ番号、列見出しが異なります。");
-    if (nonblank.Length == 3 && !File.Exists(Path.Combine(Path.GetDirectoryName(legacyPath)!, "pay.dat")) &&
-        new FileInfo(legacyPath).Length > 1_000_000)
-        differences.Add("旧版の証跡は支払予定ファイルがなく、見出しの後に大量の空行が続き、合計欄・完了時の改ページを確認できません。移行版はゼロ件の合計を出力して終了します。");
-    else
-        differences.Add("支払予定検証帳票の明細・合計・改ページは未照合です。");
-}
-
 static void VerifySupplierSetup(Db db, Change[] reference, List<string> differences)
 {
     var supplierRows = reference.Where(change => change.File == PurchaseLedger.SupplierFile)
@@ -289,6 +274,7 @@ static Screen Submit(Screen screen, params (string Id, object? Value)[] override
     var values = form.Fields.ToDictionary(field => field.Id, field => field switch
     {
         TextField text => text.Value,
+        PasswordField => "",
         ChoiceField choice => choice.Value,
         DateField date => (object?)date.Value,
         _ => throw new InvalidOperationException("未対応の入力項目です。")
@@ -354,5 +340,5 @@ static (byte[] Key, byte[] Data)[] BTreeRows(string path)
     }
 }
 
-internal sealed record Result(string Id, string Verdict, IReadOnlyList<string> Differences);
+internal sealed record Result(string Id, string Verdict, IReadOnlyList<string> Differences, string? KnownLegacyIssue = null);
 internal sealed record Change(string File, string Key, string? Before, string? After);

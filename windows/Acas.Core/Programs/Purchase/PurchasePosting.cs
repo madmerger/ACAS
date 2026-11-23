@@ -18,6 +18,7 @@ public sealed partial class PurchaseLedger
     public IReadOnlyList<PurchaseInvoice>? PostInvoices()
     {
         List<PurchaseInvoice> posted = [];
+        Rec? deferredFlags = null;
         bool succeeded = database.ExecuteAtomically(() =>
         {
             if (!InvoicesPending) return false;
@@ -69,9 +70,10 @@ public sealed partial class PurchaseLedger
             system.SetN("File-Status-28", 0);
             system.SetN("File-Status-29", 1);
             system.Set("Oi-5-Flag", "Y");
-            SaveSystem(system);
+            deferredFlags = system;
             return true;
         });
+        if (succeeded) _deferredPostingFlags = deferredFlags;
         return succeeded ? posted : null;
     }
 

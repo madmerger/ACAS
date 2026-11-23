@@ -12,6 +12,10 @@ public sealed record PurchasePayment(string Supplier, int Folio, int Batch, int 
 public sealed partial class PurchaseLedger
 {
     private const string PaymentSortFile = "ledgers/acas/poisort.wrk";
+    private const string IrsPostingFile = "ledgers/acas/postings2irs.dat";
+    private static readonly Layout IrsPosting = new Layout().N9("batch", 5).N9("number", 5)
+        .X("code", 2).X("date", 8).N9("debit", 5).N9("credit", 5).N9("amount", 7, 2)
+        .X("legend", 32).N9("taxAccount", 2).X("taxSide", 2).N9("taxAmount", 7, 2);
     private static readonly Layout PurchaseTotals = new Layout().Fill(102).C3("payments", 8, 2).Fill(916);
     private static string OpenItemKey(string supplier, int folio) => FormattableString.Invariant($"{supplier}/{folio:00000000}");
 
@@ -93,7 +97,7 @@ public sealed partial class PurchaseLedger
         system.SetN("BL-Next-Batch", batch + 1);
         if (!unappliedCredit || system.I("P-Flag-P") == 2) system.SetN("P-Flag-P", 1);
         system.Set("Oi-5-Flag", "Y");
-        return database.Rewrite(SystemFile, SystemKey, system.B);
+        return SaveSystem(system);
     });
 
     public bool CancelPayment(string supplier, int folio, IReadOnlyDictionary<int, decimal> restoredDiscounts) =>
@@ -132,7 +136,7 @@ public sealed partial class PurchaseLedger
             }
             if (!database.Delete(OpenItemFile, OpenItemKey(supplier, folio))) return false;
             system.SetN("P-Flag-P", 1);
-            return database.Rewrite(SystemFile, SystemKey, system.B);
+            return SaveSystem(system);
         });
 
     public IReadOnlyList<PurchasePayment>? Payments()
@@ -160,7 +164,7 @@ public sealed partial class PurchaseLedger
             result = sorted.Where(PendingPayment).Select(item => ToPayment(item, rows)).ToArray();
             system.SetN("P-Flag-P", 2);
             system.Set("Oi-5-Flag", "Y");
-            return database.Rewrite(SystemFile, SystemKey, system.B);
+            return SaveSystem(system);
         });
         return ok ? result : null;
     }
@@ -173,8 +177,7 @@ public sealed partial class PurchaseLedger
         bool ok = database.ExecuteAtomically(() =>
         {
             var system = System();
-            if (system.I("P-Flag-P") != 2 || PaymentItems() is not { } rows ||
-                (GeneralLedgerEnabled && system.S("Irs-Instead") == "Y")) return false;
+            if (system.I("P-Flag-P") != 2 || PaymentItems() is not { } rows) return false;
             foreach (var (key, item) in rows)
             {
                 if (item.I("type") == 2 && item.I("batchNumber") != 0 && item.I("batchItem") != 0)
@@ -217,7 +220,7 @@ public sealed partial class PurchaseLedger
             }
             system.SetN("P-Flag-P", 0);
             system.Set("Oi-5-Flag", "Y");
-            return database.Rewrite(SystemFile, SystemKey, system.B);
+            return SaveSystem(system);
         });
         return ok ? posted : null;
     }
@@ -226,15 +229,22 @@ public sealed partial class PurchaseLedger
     {
         int batch = Math.Max(1, system.I("BL-Next-Batch"));
         int start = system.I("Postings") + 1;
+        bool irs = system.S("Irs-Instead") == "Y";
+        if (posted.Count == 0) return true;
         foreach (var group in posted.Chunk(99))
         {
-            if (batch >= short.MaxValue || start + group.Length > short.MaxValue) return false;
+            if (batch >= short.MaxValue || (!irs && start + group.Length > short.MaxValue)) return false;
             decimal total = group.Sum(item => item.Applied);
             if (!AmountFits(total, 99999999.99m)) return false;
             for (int i = 0; i < group.Length; i++)
             {
                 var item = group[i];
                 if (GetSupplier(item.Supplier) is not { } supplier) return false;
+                if (irs)
+                {
+                    if (!WriteIrsPayment(system, item, supplier, batch, i + 1)) return false;
+                    continue;
+                }
                 var record = Layouts.Posting.New();
                 record.SetN("batch", batch);
                 record.SetN("post-number", i + 1);
@@ -262,12 +272,28 @@ public sealed partial class PurchaseLedger
             header.Set("batch-def-vat", "I");
             header.SetN("batch-start", start);
             if (!database.Write(BatchFile, "2" + batch.ToString("00000", CultureInfo.InvariantCulture), header.B)) return false;
-            start += group.Length;
+            if (!irs) start += group.Length;
             batch++;
         }
-        system.SetN("Postings", start);
+        if (!irs) system.SetN("Postings", start);
         system.SetN("BL-Next-Batch", batch);
         return true;
+    }
+
+    private bool WriteIrsPayment(Rec system, PurchasePayment payment, Rec supplier, int batch, int number)
+    {
+        var record = IrsPosting.New();
+        record.SetN("batch", batch);
+        record.SetN("number", number);
+        record.Set("code", "PL");
+        record.Set("date", payment.Date?.ToString("dd/MM/yy", CultureInfo.InvariantCulture) ?? "");
+        record.SetN("debit", system.N("P-Creditors"));
+        record.SetN("credit", system.N("BL-Pay-Ac"));
+        record.SetN("amount", payment.Applied);
+        record.Set("legend", $"{payment.Folio} : {supplier.St("name")}");
+        record.SetN("taxAccount", 31);
+        record.Set("taxSide", "DR");
+        return database.Write(IrsPostingFile, FormattableString.Invariant($"{batch:00000}{number:00000}"), record.B);
     }
 
     private List<(string Key, Rec Record)>? PaymentItems(string? supplier = null)

@@ -9,6 +9,9 @@ public sealed partial class PurchaseLedger(Db database)
     private const string DeliveryFile = "ledgers/acas/delivery.dat";
     private const string SystemKey = "00000001";
     private static readonly DateTime Epoch = new(1600, 12, 31);
+    private static readonly Fld[] PostingFlags = new[] { "P-Flag-I", "P-Flag-A", "File-Status-28", "File-Status-29", "Oi-5-Flag", "Next-Batch", "Postings" }
+        .Select(name => Layouts.System.F[name]).ToArray();
+    private Rec? _deferredPostingFlags;
 
     private static readonly Layout SupplierLayout = new Layout().X("key", 7).N9("status", 1).N9("notes", 1)
         .X("name", 30).X("address1", 48).X("address2", 48).X("phone", 13).X("extension", 4).X("fax", 13)
@@ -20,8 +23,37 @@ public sealed partial class PurchaseLedger(Db database)
     private static readonly Layout NoteLayout = new Layout().X("key", 8).X("name", 30).X("note1", 48).X("note2", 48);
 
     public bool IsConfigured => database.Read(SystemFile, SystemKey) != null;
-    public Rec System() => Layouts.System.From(database.Read(SystemFile, SystemKey) ?? throw new InvalidOperationException("初期設定が必要です。"));
-    public void SaveSystem(Rec record) => database.Rewrite(SystemFile, SystemKey, record.B);
+    private Rec ReadSystem() => Layouts.System.From(database.Read(SystemFile, SystemKey) ?? throw new InvalidOperationException("初期設定が必要です。"));
+
+    public Rec System()
+    {
+        var record = ReadSystem();
+        if (_deferredPostingFlags is { } flags) CopyPostingFlags(flags, record);
+        return record;
+    }
+
+    public bool SaveSystem(Rec record)
+    {
+        if (_deferredPostingFlags is null) return database.Rewrite(SystemFile, SystemKey, record.B);
+        var persisted = record.Clone();
+        CopyPostingFlags(ReadSystem(), persisted);
+        if (!database.Rewrite(SystemFile, SystemKey, persisted.B)) return false;
+        CopyPostingFlags(record, _deferredPostingFlags);
+        return true;
+    }
+
+    public bool FlushPostingFlags()
+    {
+        if (_deferredPostingFlags is null) return true;
+        if (!database.Rewrite(SystemFile, SystemKey, System().B)) return false;
+        _deferredPostingFlags = null;
+        return true;
+    }
+
+    private static void CopyPostingFlags(Rec source, Rec target)
+    {
+        foreach (var field in PostingFlags) source.B.AsSpan(field.Off, field.Len).CopyTo(target.B.AsSpan(field.Off, field.Len));
+    }
     public DateTime? ProcessingDate => IsConfigured ? DecodeDate(System().I("Run-Date")) : null;
     public static int EncodeDate(DateTime date) => (date.Date - Epoch).Days;
     public static DateTime? DecodeDate(int date) => date > 0 && date <= EncodeDate(DateTime.MaxValue) ? Epoch.AddDays(date) : null;
