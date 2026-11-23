@@ -166,6 +166,7 @@ struct CompanyForm: View {
                 }
             }
         }
+        .accessibilityIdentifier("system.settings.form." + group.rawValue)
         .navigationTitle(systemSetting(group.rawValue))
         .onAppear {
             if group == .company { workspace.completed("system-company-data") }
