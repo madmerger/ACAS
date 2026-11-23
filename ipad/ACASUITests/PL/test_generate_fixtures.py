@@ -3,10 +3,20 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from generate_fixtures import fixture, seed_files, validate_case_id
+from generate_fixtures import check_required_cases, fixture, purchase_case_ids, seed_files, validate_case_id
 
 
 class EvidencePathTests(unittest.TestCase):
+    def test_incomplete_catalog_removes_stale_purchase_outputs(self):
+        fixtures = self.root / "fixtures"
+        fixtures.mkdir()
+        for name in ("PL-413.json", "PL-001.json", "SL-001.json"):
+            (fixtures / name).touch()
+        cases = dict.fromkeys(purchase_case_ids() - {"PL-413"})
+        with self.assertRaisesRegex(ValueError, "PL-413"):
+            check_required_cases(cases, fixtures)
+        self.assertEqual([path.name for path in fixtures.iterdir()], ["SL-001.json"])
+
     def test_case_id_requires_three_ascii_digits(self):
         self.assertEqual(validate_case_id("PL-001"), "PL-001")
         for case_id in ("PL-01", "PL-００１", "PL-001/extra"):

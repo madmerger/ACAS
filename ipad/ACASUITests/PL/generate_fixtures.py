@@ -38,6 +38,20 @@ def validate_case_id(case_id):
     return case_id
 
 
+def purchase_case_ids():
+    source = Path(__file__).with_name("PurchaseFlows.swift").read_text(encoding="utf-8")
+    return {f"PL-{number}" for number in re.findall(r"^    func testPL([0-9]{3})\(", source, re.M)}
+
+
+def check_required_cases(cases, output):
+    missing = purchase_case_ids() - cases.keys()
+    for path in output.glob("PL-*.json"):
+        if re.fullmatch(r"PL-[0-9]{3}", path.stem) and (missing or path.stem not in cases):
+            path.unlink()
+    if missing:
+        raise ValueError("必須の買掛ケースが台帳にありません: " + ", ".join(sorted(missing)))
+
+
 def seed_files(root, run):
     files = {}
     for path, file in read_json(evidence_path(root, run / "before-records/records.json"))["files"].items():
@@ -135,6 +149,7 @@ def main():
     pl_cases = [case for case in cases.values() if case["id"].startswith("PL-")]
     for case in pl_cases:
         validate_case_id(case["id"])
+    check_required_cases(cases, args.output)
     args.output.mkdir(parents=True, exist_ok=True)
     output = args.output.resolve()
     for case in pl_cases:
