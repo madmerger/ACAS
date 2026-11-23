@@ -8,6 +8,8 @@ import jp.co.acas.core.Rec;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.ArrayList;
+import java.util.List;
 
 /** pl020.cbl: 仕入請求書データ入力。 */
 public class Pl020 extends PlBase {
@@ -18,7 +20,6 @@ public class Pl020 extends PlBase {
     protected Rec ih, lines, purch, anal, del;
     protected CobFile purchaseFile, analysisFile, invoiceFile;
     protected int z, i, j, lin, newScreen, vatCode;
-    private byte[] deletedFolioCursor;
     private byte[] selectedDeletedFolio;
     private boolean delExists;
     protected String escapeCode = " ", wsNamed = " ", wsDate = "";
@@ -77,9 +78,9 @@ public class Pl020 extends PlBase {
         return b;
     }
 
-    protected void writeError(CobFile f, byte[] rec, int l1, int l2) {
+    protected void writeError(String status, byte[] rec, int l1, int l2) {
         display(l1, 1, "PL180 Err on Invoice file write : ", 4); eraseEol(l1, 35);
-        show(l1, 36, f.status);
+        show(l1, 36, status);
         show(l1, 64, new String(rec, 0, 8, java.nio.charset.StandardCharsets.ISO_8859_1));
         display(l2, 1, "PL006 Note Details & Hit Return to continue", 3);
         accept(l2, 30, 1);
@@ -227,33 +228,42 @@ public class Pl020 extends PlBase {
         eraseEos(11, 1);
     }
 
-    /** ヘッダーを新規作成できた請求だけ明細を書き込む。 */
+    /** 保存に失敗した場合は今回書き込んだレコードだけ取り消す。 */
     protected boolean storeInvoice() {
         ih.set("ih-status", "P");
         i--;
         ih.setNum("ih-lines", i);
-        byte[] rec = fdBytes(ih.bytes(), HEADER_SIZE);
-        String headerStatus;
-        synchronized (ctx.store) {
-            headerStatus = invoiceFile.write(rec);
-        }
-        if (!headerStatus.equals("00")) {
-            writeError(invoiceFile, rec, 23, 24);
-            return false;
-        }
-        j = 0;
-        for (int n = 0; n < i; n++) {
-            j++;
+        List<byte[]> records = new ArrayList<>(i + 1);
+        records.add(fdBytes(ih.bytes(), HEADER_SIZE));
+        for (int j = 1; j <= i; j++) {
             lines.setNum("il-invoice", ih.longv("ih-invoice"), j);
             lines.setNum("il-line", j, j);
             lines.set("il-type", ih.str("ih-type"), j);
-            rec = fdBytes(lineBytes(j), LINE_SIZE);
-            if (!invoiceFile.write(rec).equals("00")) writeError(invoiceFile, rec, 20, 21);
+            records.add(fdBytes(lineBytes(j), LINE_SIZE));
         }
-        if (selectedDeletedFolio != null) {
-            ctx.store.remove(ctx.path(DELETED_FOLIOS), selectedDeletedFolio);
+        int written = 0;
+        String status = "00";
+        synchronized (ctx.store) {
+            for (byte[] record : records) {
+                status = invoiceFile.write(record);
+                if (!status.equals("00")) break;
+                written++;
+            }
+            if (written == records.size()) {
+                if (selectedDeletedFolio != null) {
+                    ctx.store.remove(ctx.path(DELETED_FOLIOS), selectedDeletedFolio);
+                } else {
+                    delExists = false;
+                }
+                return true;
+            }
+            for (int n = written - 1; n >= 0; n--) {
+                invoiceFile.delete(records.get(n));
+            }
         }
-        return true;
+        if (written == 0) writeError(status, records.getFirst(), 23, 24);
+        else writeError(status, records.get(written), 20, 21);
+        return false;
     }
 
     protected void totalScreen() {
@@ -369,6 +379,7 @@ public class Pl020 extends PlBase {
             show(9, 11, pad("", 23));
             eraseEol(23, 1);
             selectedDeletedFolio = null;
+            ih.setNum("ih-invoice", 0);
             if (delExists) getADeletedInvoice();
             if (ih.longv("ih-invoice") == 0) {
                 if (sys.longv("next-folio") == 0) sys.setNum("next-folio", 1);
@@ -403,17 +414,18 @@ public class Pl020 extends PlBase {
 
     protected void getADeletedInvoice() {
         var key = invHeaderRec();
+        byte[] cursor = null;
         while (true) {
-            var entry = ctx.store.next(ctx.path(DELETED_FOLIOS), deletedFolioCursor, false);
+            var entry = ctx.store.next(ctx.path(DELETED_FOLIOS), cursor, false);
             if (entry == null) break;
-            deletedFolioCursor = entry.getKey();
+            cursor = entry.getKey();
             del.load(entry.getValue());
             long number = del.longv("del-inv-nos");
             if (number == 0) continue;
             key.setNum("ih-invoice", number);
             key.setNum("ih-test", 0);
             if (invoiceFile.read(key).equals("00")) continue;
-            selectedDeletedFolio = deletedFolioCursor;
+            selectedDeletedFolio = cursor;
             ih.setNum("ih-invoice", number);
             display(3, 45, "Using Deleted Folio Numbers");
             return;
@@ -425,7 +437,6 @@ public class Pl020 extends PlBase {
         if (nextInvoice > 0 && !invoiceFile.read(key).equals("00")) {
             ih.setNum("ih-invoice", nextInvoice);
         }
-        delExists = false;
     }
 
     protected void crNote() {
@@ -485,7 +496,6 @@ public class Pl020 extends PlBase {
                 sys.setNum("file-status", 1, 26);
             }
         }
-        deletedFolioCursor = null;
         delExists = ctx.store.exists(ctx.path(DELETED_FOLIOS));
     }
 }

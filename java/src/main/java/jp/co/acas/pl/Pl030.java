@@ -229,7 +229,7 @@ public class Pl030 extends Pl020 {
             lines.set("il-type", ih.str("ih-type"), j);
             rec = fdBytes(lineBytes(j), LINE_SIZE);
             if (invoiceFile.rewrite(rec).startsWith("2")) invoiceFile.write(rec);
-            if (!invoiceFile.status.equals("00")) writeError(invoiceFile, rec, 20, 21);
+            if (!invoiceFile.status.equals("00")) writeError(invoiceFile.status, rec, 20, 21);
         }
         sys.setNum("p-flag-i", 1);
         eraseEos(11, 1);
