@@ -71,6 +71,8 @@ enum SalesProofRecords {
             output += [UInt8](repeating: 0x0a, count: n) + line
         }
         func afterPage(_ line: String) { output += [0x0c] + SJIS.encode(line, size: 132) }
-        func close() throws { try store.writeRaw(path, output + [0x0a]) }
+        func close(terminateLine: Bool = true) throws {
+            try store.writeRaw(path, terminateLine ? output + [0x0a] : output)
+        }
     }
 }
