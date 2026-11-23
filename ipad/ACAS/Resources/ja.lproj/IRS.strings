@@ -86,6 +86,7 @@
 "bookkeeping.settings.period" = "会計期間と税率";
 "bookkeeping.settings.postcode" = "郵便番号";
 "bookkeeping.settings.printDestination" = "帳票の出力先";
+"bookkeeping.settings.processingDate" = "処理日";
 "bookkeeping.settings.start" = "開始日";
 "bookkeeping.settings.street" = "番地";
 "bookkeeping.settings.taxRate" = "付加価値税率";

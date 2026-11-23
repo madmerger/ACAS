@@ -20,17 +20,24 @@ struct BookkeepingConfigurationForm: View {
                 Section(irsText("settings.company")) {
                     TextField(irsText("settings.operator"), text: $value.operatorName).accessibilityIdentifier("irs.operatorName")
                     TextField(irsText("settings.client"), text: $value.client).accessibilityIdentifier("irs.client")
-                    TextField(irsText("settings.street"), text: $value.street)
-                    TextField(irsText("settings.city"), text: $value.city)
-                    TextField(irsText("settings.country"), text: $value.country)
-                    TextField(irsText("settings.postcode"), text: $value.postcode)
+                    TextField(irsText("settings.street"), text: $value.street).accessibilityIdentifier("irs.street")
+                    TextField(irsText("settings.city"), text: $value.city).accessibilityIdentifier("irs.city")
+                    TextField(irsText("settings.country"), text: $value.country).accessibilityIdentifier("irs.country")
+                    TextField(irsText("settings.postcode"), text: $value.postcode).accessibilityIdentifier("irs.postcode")
                 }
                 Section(irsText("settings.period")) {
                     DatePicker(irsText("settings.start"), selection: $value.start, displayedComponents: .date)
+                        .datePickerStyle(.wheel)
+                        .environment(\.timeZone, workspace.context.timeZone)
+                        .accessibilityIdentifier("irs.startDate")
                     DatePicker(irsText("settings.end"), selection: $value.end, displayedComponents: .date)
+                        .datePickerStyle(.wheel)
+                        .environment(\.timeZone, workspace.context.timeZone)
+                        .accessibilityIdentifier("irs.endDate")
                     TextField(irsText("settings.taxRate"), value: $value.taxRate, format: .percent.scale(0.01))
                         .keyboardType(.decimalPad)
                     TextField(irsText("settings.printDestination"), text: $value.printDestination)
+                        .accessibilityIdentifier("irs.printDestination")
                 }
                 SecureField(irsText("field.newPassword"), text: $newPassword)
                     .accessibilityIdentifier("irs.newPassword")
@@ -47,6 +54,11 @@ struct BookkeepingConfigurationForm: View {
                 }
                 .accessibilityIdentifier("irs.saveSettings")
             } else {
+                LabeledContent(irsText("settings.processingDate")) {
+                    Text(workspace.context.now(), format: .dateTime.year().month().day())
+                        .environment(\.timeZone, workspace.context.timeZone)
+                        .accessibilityIdentifier("irs.processingDate")
+                }
                 SecureField(irsText("field.password"), text: $password)
                     .accessibilityIdentifier("irs.settingsPassword")
                 Button(irsText("action.authenticateSettings")) {
@@ -105,6 +117,7 @@ struct BookkeepingAccountForm: View {
             Picker(irsText("field.category"), selection: $category) {
                 ForEach(BookkeepingService.Category.allCases, id: \.self) { Text($0.title).tag($0) }
             }
+            .accessibilityIdentifier("irs.category")
             Button(irsText("action.save")) {
                 guard let id = Int(code), let sub = child.isEmpty ? 0 : Int(child) else {
                     message = irsText("error.accountCode")
@@ -144,9 +157,13 @@ struct BookkeepingDefaultForm: View {
                 Text(irsText("defaults.inputTax")).tag(31)
                 Text(irsText("defaults.outputTax")).tag(32)
             }
+            .pickerStyle(.navigationLink)
+            .accessibilityIdentifier("irs.defaultSlot")
             TextField(irsText("field.accountCode"), text: $account).keyboardType(.numberPad)
+                .accessibilityIdentifier("irs.defaultAccount")
             if slot < 30 {
                 TextField(irsText("field.abbreviation"), text: $label)
+                    .accessibilityIdentifier("irs.defaultLabel")
                 Toggle(irsText("field.usesTax"), isOn: $tax)
             }
             Button(irsText("action.save")) {
@@ -157,6 +174,7 @@ struct BookkeepingDefaultForm: View {
                 } catch { message = bookkeepingError(error) }
                 workspace.completed("irs.defaults")
             }
+            .accessibilityIdentifier("irs.saveDefault")
             if !message.isEmpty { Text(message).accessibilityIdentifier("irs.result") }
         }
         .navigationTitle(editing ? irsText("defaults.edit") : irsText("defaults.create"))
