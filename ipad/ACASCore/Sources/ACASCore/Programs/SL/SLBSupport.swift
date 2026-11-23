@@ -256,4 +256,124 @@ enum SLB {
         if b.count < n { b += [UInt8](repeating: 0x20, count: n - b.count) }
         return Record(invoiceLayout, bytes: b)
     }
+
+    /// copybooks/fddel.cob Delivery-Record
+    static let deliveryLayout = Layout("delivery-record", [
+        ("deliv-key", .x(8)), ("deliv-name", .x(30)), ("deliv-address", .x(96)),
+    ])
+    static func deliveryFile(_ s: Session) -> IndexedFile {
+        IndexedFile(s.store, path: s.ledgers + "delivery.dat", layout: deliveryLayout, keyOffset: 0, keyLength: 8)
+    }
+
+    /// STRING ... INTO target WITH POINTER y (桁あふれ分は転送しない)
+    static func stringInto(_ target: inout [Character], _ y: inout Int, _ text: String) {
+        if y < 1 || y > target.count + 1 { return }
+        for ch in text {
+            if y > target.count { return }
+            target[y - 1] = ch
+            y += 1
+        }
+    }
+
+    /// sl160 / sl170 / sl180 共通の「Report Attributes」選択画面 (screen section display-03)
+    final class CustSelection {
+        var custIn = Cobol.x("", 6), statusIn = " "
+        var creditIn: Int64 = 0, creditOp = " "
+        var invoiceIn: Int64 = 0, invoiceOp = " "
+        var averageIn: Int64 = 0, averageOp = " "
+        var overdueIn: Int64 = 0, overdueOp = " "
+        var enterDateIn = Cobol.x("", 10), enterDateOp = " "
+        let withDate: Bool
+        private var fields: [ScreenField] = []
+
+        init(withDate: Bool) { self.withDate = withDate }
+
+        /// display display-03
+        func display(_ s: Session, progName: String, wsDate: String, title: String = "slb.sel.title") {
+            let c = s.console
+            c.eraseScreen()
+            func lit(_ key: String, _ line: Int, _ col: Int) { c.display(s.t(key), at: line, col, color: 2) }
+            c.display(progName, at: 1, 1, color: 2)
+            lit(title, 1, 34)
+            c.display(wsDate, at: 1, 71, color: 2)
+            lit("slb.sel.attributes", 3, 32)
+            lit("slb.sel.cust", 8, 9); c.display("]", at: 8, 34, color: 2); lit("slb.sel.cust_help", 8, 39)
+            lit("slb.sel.status", 10, 9); c.display("]", at: 10, 29, color: 2); lit("slb.sel.status_help", 10, 39)
+            lit("slb.sel.credit", 12, 9); c.display("]  [", at: 12, 30, color: 2); c.display("]", at: 12, 35, color: 2)
+            lit("slb.sel.credit_help", 12, 39)
+            lit("slb.sel.credit_l", 13, 43); lit("slb.sel.credit_g", 14, 43); lit("slb.sel.credit_e", 15, 43)
+            lit("slb.sel.invoice", 17, 9); c.display("] [", at: 17, 33, color: 2); c.display("]", at: 17, 37, color: 2)
+            lit("slb.sel.invoice_help", 17, 39)
+            lit("slb.sel.average", 19, 9); c.display("] [", at: 19, 33, color: 2); c.display("]", at: 19, 37, color: 2)
+            lit("slb.sel.average_help", 19, 39)
+            lit("slb.sel.overdue", 21, 9); c.display("] [", at: 21, 33, color: 2); c.display("]", at: 21, 37, color: 2)
+            lit("slb.sel.overdue_help", 21, 39)
+            if withDate {
+                lit("slb.sel.date", 23, 9); c.display("] [", at: 23, 33, color: 2); c.display("]", at: 23, 37, color: 2)
+                lit("slb.sel.date_help", 23, 39)
+            }
+            func f(_ l: Int, _ col: Int, _ n: Int, _ v: String, _ k: FieldKind = .alpha) -> ScreenField {
+                ScreenField(line: l, col: col, size: n, kind: k, value: v, color: 2)
+            }
+            fields = [f(8, 28, 6, custIn), f(10, 28, 1, statusIn),
+                      f(12, 28, 2, Cobol.z(creditIn, 2), .numeric), f(12, 34, 1, creditOp),
+                      f(17, 28, 5, Cobol.z(invoiceIn, 5), .numeric), f(17, 36, 1, invoiceOp),
+                      f(19, 28, 5, Cobol.z(averageIn, 5), .numeric), f(19, 36, 1, averageOp),
+                      f(21, 28, 5, Cobol.z(overdueIn, 5), .numeric), f(21, 36, 1, overdueOp)]
+            if withDate { fields += [f(23, 23, 10, enterDateIn), f(23, 36, 1, enterDateOp)] }
+            c.displayFields(fields)
+        }
+
+        /// accept display-03 (値は大文字化前のまま各項目へ戻す)
+        func accept(_ s: Session) throws {
+            try s.console.acceptScreen(fields)
+            custIn = Cobol.x(fields[0].value, 6); statusIn = Cobol.x(fields[1].value, 1)
+            creditIn = Cobol.moveNumeric(fields[2].value, digits: 2, scale: 0); creditOp = Cobol.x(fields[3].value, 1)
+            invoiceIn = Cobol.moveNumeric(fields[4].value, digits: 5, scale: 0); invoiceOp = Cobol.x(fields[5].value, 1)
+            averageIn = Cobol.moveNumeric(fields[6].value, digits: 5, scale: 0); averageOp = Cobol.x(fields[7].value, 1)
+            overdueIn = Cobol.moveNumeric(fields[8].value, digits: 5, scale: 0); overdueOp = Cobol.x(fields[9].value, 1)
+            if withDate { enterDateIn = Cobol.x(fields[10].value, 10); enterDateOp = Cobol.x(fields[11].value, 1) }
+        }
+
+        static func validOp(_ op: String) -> Bool { op == "L" || op == "G" || op == "E" || op == " " }
+
+        /// test-num
+        static func testNum(_ op: String, _ test1: Int64, _ test2: Int64) -> Bool {
+            let o = op.uppercased()
+            var truth = o == " "
+            if o == "L" && test2 < test1 { truth = true }
+            if o == "G" && test2 > test1 { truth = true }
+            if o == "E" && test2 == test1 { truth = true }
+            return truth
+        }
+
+        /// report-heading-setup の共通部 (l3-report への STRING)。all は「全件」判定。
+        func heading(_ s: Session, size: Int, all: Bool, y startY: Int = 1) -> (buf: [Character], y: Int) {
+            var buf = [Character](repeating: " ", count: size)
+            var y = startY
+            SLB.stringInto(&buf, &y, s.t(all ? "report.slb.sel.all" : "report.slb.sel.matched"))
+            y += 1
+            if statusIn == "L" { SLB.stringInto(&buf, &y, s.t("report.slb.sel.live")) }
+            if statusIn == "D" { SLB.stringInto(&buf, &y, s.t("report.slb.sel.dormant")) }
+            y += 1
+            func operand(_ op: String) -> String { op == "L" ? "< " : (op == "G" ? "> " : (op == "E" ? "= " : "  ")) }
+            if creditOp != " " {
+                SLB.stringInto(&buf, &y, operand(creditOp) + SLB.zz(creditIn, 2) + Cobol.x(s.t("report.slb.sel.days_credit"), 12))
+            }
+            y += 1
+            if invoiceOp != " " {
+                SLB.stringInto(&buf, &y, operand(invoiceOp) + SLB.zz(invoiceIn, 5) + Cobol.x(s.t("report.slb.sel.invoices"), 9))
+            }
+            y += 1
+            if averageOp != " " {
+                SLB.stringInto(&buf, &y, operand(averageOp) + SLB.zz(averageIn, 5) + Cobol.x(s.t("report.slb.sel.av_value"), 10))
+            }
+            y += 1
+            if overdueOp != " " {
+                SLB.stringInto(&buf, &y, operand(overdueOp) + SLB.zz(overdueIn, 5) + Cobol.x(s.t("report.slb.sel.days_overdue"), 13))
+            }
+            y += 1
+            return (buf, y)
+        }
+    }
 }
