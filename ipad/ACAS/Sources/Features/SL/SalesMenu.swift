@@ -26,10 +26,23 @@ struct SalesMenu: View {
                     .accessibilityIdentifier("sales.invoice.sale")
                 NavigationLink(slText("sales.invoice.amendSaleTitle")) { SalesInvoiceList(workspace: workspace, action: .edit) }
                     .accessibilityIdentifier("sales.invoice.amendSale")
-                NavigationLink(slText("sales.invoice.menuTitle")) { SalesInvoiceMenu(workspace: workspace) }
-                    .accessibilityIdentifier("sales.invoice.menu")
+                NavigationLink(slText("sales.proof")) {
+                    #if DEBUG
+                    if workspace.evidence != nil, ProcessInfo.processInfo.environment["ACAS_COMPACT_REPORT"] == "1" {
+                        SalesProofView(workspace: workspace)
+                            .environment(\.horizontalSizeClass, .compact)
+                    } else {
+                        SalesProofView(workspace: workspace)
+                    }
+                    #else
+                    SalesProofView(workspace: workspace)
+                    #endif
+                }
+                .accessibilityIdentifier("sales.proof")
                 NavigationLink(slText("sales.post.title")) { SalesPostingView(workspace: workspace) }
                     .accessibilityIdentifier("sales.post")
+                NavigationLink(slText("sales.invoice.menuTitle")) { SalesInvoiceMenu(workspace: workspace) }
+                    .accessibilityIdentifier("sales.invoice.menu")
             }
             Section(slText("sales.payment.section")) {
                 NavigationLink(slText("sales.payment.entry")) { SalesPaymentsView(workspace: workspace) }
@@ -67,19 +80,6 @@ struct SalesMenu: View {
                 }
                 .accessibilityIdentifier("sales.customer.turnover")
             }
-            NavigationLink(String(localized: "sales.proof", table: "SL")) {
-                #if DEBUG
-                if workspace.evidence != nil, ProcessInfo.processInfo.environment["ACAS_COMPACT_REPORT"] == "1" {
-                    SalesProofView(workspace: workspace)
-                        .environment(\.horizontalSizeClass, .compact)
-                } else {
-                    SalesProofView(workspace: workspace)
-                }
-                #else
-                SalesProofView(workspace: workspace)
-                #endif
-            }
-            .accessibilityIdentifier("sales.proof")
         }
     }
 }
