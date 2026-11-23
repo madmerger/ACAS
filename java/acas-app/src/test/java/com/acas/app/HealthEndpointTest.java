@@ -1,40 +1,34 @@
 package com.acas.app;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureRestTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
-import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.test.web.servlet.client.RestTestClient;
 
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
+@AutoConfigureRestTestClient
 class HealthEndpointTest {
 
     @Autowired
-    private TestRestTemplate rest;
+    private RestTestClient rest;
 
     @Test
     void healthIsUp() {
-        ResponseEntity<String> response = rest.getForEntity("/actuator/health", String.class);
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).contains("\"status\":\"UP\"");
+        rest.get().uri("/actuator/health").exchange()
+                .expectStatus().isOk()
+                .expectBody().jsonPath("$.status").isEqualTo("UP");
     }
 
     @Test
     void livenessAndReadinessAreUp() {
-        assertThat(rest.getForEntity("/actuator/health/liveness", String.class).getStatusCode())
-                .isEqualTo(HttpStatus.OK);
-        assertThat(rest.getForEntity("/actuator/health/readiness", String.class).getStatusCode())
-                .isEqualTo(HttpStatus.OK);
+        rest.get().uri("/actuator/health/liveness").exchange().expectStatus().isOk();
+        rest.get().uri("/actuator/health/readiness").exchange().expectStatus().isOk();
     }
 
     @Test
     void infoIsNotExposed() {
-        assertThat(rest.getForEntity("/actuator/info", String.class).getStatusCode())
-                .isEqualTo(HttpStatus.NOT_FOUND);
+        rest.get().uri("/actuator/info").exchange().expectStatus().isNotFound();
     }
 }
