@@ -9,7 +9,7 @@
 "system.master.customer.missingCompany" = "先に会社を登録してください";
 "system.master.customer.duplicate" = "得意先コードは登録済みです";
 "system.master.customer.invalid" = "得意先コードまたは入力内容が正しくありません";
-"system.master.customer.invalidAddress" = "売掛元帳で設定した区切り文字を使って住所を入力してください";
+"system.master.customer.invalidAddress" = "住所1・住所2を合わせて、売掛元帳で設定した区切り文字を1〜4個使ってください。最初の区切り文字の前は、Shift_JISで30バイト以内にしてください。";
 "system.master.customer.failed" = "得意先を登録できませんでした";
 "system.company" = "会社設定";
 "system.company.name" = "会社名";

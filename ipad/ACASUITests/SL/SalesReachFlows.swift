@@ -87,6 +87,34 @@ final class SalesReachFlows: XCTestCase {
     func testSL021() throws { try periodConfirmation("SL-021") }
     func testSL022() throws { try customerReport("SL-022") }
 
+    func testInitialCustomerAddressGuideExplainsDelimiterLimits() throws {
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        app.launchEnvironment["ACAS_FIXTURE"] = try Data(contentsOf: fixtureURL("SL-090")).base64EncodedString()
+        app.launchArguments += ["-AppleLanguages", "(ja)", "-AppleLocale", "ja_JP"]
+        XCUIDevice.shared.orientation = .landscapeLeft
+        app.launch()
+        let entry = app.buttons["system.master.customer"]
+        XCTAssertTrue(entry.waitForExistence(timeout: 5))
+        entry.tap()
+        for (name, value) in [("code", "CUST01"), ("name", "ADDRESS TEST"), ("address", "NO DELIMITER")] {
+            let field = app.textFields["system.master.field." + name]
+            XCTAssertTrue(field.waitForExistence(timeout: 5))
+            field.tap()
+            field.typeText(value + "\n")
+        }
+        let save = app.buttons["system.master.save"]
+        for _ in 0..<3 where !save.isHittable { app.swipeUp() }
+        XCTAssertTrue(save.isHittable)
+        save.tap()
+        let status = app.staticTexts["system.master.status"]
+        for _ in 0..<3 where !status.isHittable { app.swipeUp() }
+        XCTAssertTrue(status.waitForExistence(timeout: 5))
+        XCTAssertTrue(status.label.contains("区切り文字を1〜4個"))
+        XCTAssertTrue(status.label.contains("最初の区切り文字の前は、Shift_JISで30バイト以内"))
+        attach(app, name: "初期得意先登録-住所入力案内")
+    }
+
     func testSL091() throws {
         try reach("SL-091", through: ["sales.analysis.codes", "sales.analysis.add"],
                   title: "売上分析コード登録") { app in
