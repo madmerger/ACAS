@@ -22,6 +22,8 @@ struct GeneralLedgerMenu: View {
                     .accessibilityIdentifier("gl.batches")
                 NavigationLink(ledgerText("batch-status")) { LedgerBatchStatusMenu(workspace: workspace) }
                     .accessibilityIdentifier("gl.batch-status")
+                NavigationLink(ledgerText("trial-balance")) { TrialBalanceMenu(workspace: workspace) }
+                    .accessibilityIdentifier("gl.trial-balance")
                 NavigationLink("section.system") { SystemMenu(workspace: workspace) }
                     .accessibilityIdentifier("gl.company-settings")
                 Button(ledgerText("close-ledger")) { opened = false }

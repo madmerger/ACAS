@@ -1,3 +1,7 @@
+"gl.trial-balance" = "試算表";
+"gl.trial-balance.detail" = "詳細試算表を出力";
+"gl.trial-balance.ready" = "詳細試算表を出力しました";
+"gl.trial-balance.missing" = "勘定科目台帳がありません";
 "gl.business-date" = "処理日入力";
 "gl.batches" = "仕訳・バッチ入力";
 "gl.batch-new" = "新規バッチ登録";
