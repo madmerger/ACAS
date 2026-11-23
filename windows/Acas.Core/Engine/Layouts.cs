@@ -23,6 +23,20 @@ public static partial class Layouts
         return l;
     }
 
+    /// <summary>copybooks/fdbatch.cob (96 バイト)。キー = ledger + batch-nos。</summary>
+    public static readonly Layout Batch = new Layout()
+        .N9("ledger", 1).N9("batch-nos", 5).N9("items", 2).N9("batch-status", 1).N9("cleared-status", 1).N9("bcycle", 2)
+        .BLong("entered").BLong("proofed").BLong("posted").BLong("stored")
+        .C3("input-gross", 9, 2, false).C3("input-vat", 9, 2, false).C3("actual-gross", 9, 2, false).C3("actual-vat", 9, 2, false)
+        .X("description", 24).N9("bdefault", 2).X("convention", 2).N9("batch-def-ac", 6).N9("batch-def-pc", 2)
+        .X("batch-def-code", 2).X("batch-def-vat", 1).N9("batch-start", 5);
+
+    /// <summary>copybooks/fdpost.cob (96 バイト, 相対編成)。</summary>
+    public static readonly Layout Posting = new Layout()
+        .N9("batch", 5).N9("post-number", 5).X("post-code", 2).X("post-date", 8).N9("post-dr", 6).N9("dr-pc", 2)
+        .N9("post-cr", 6).N9("cr-pc", 2).N9("post-amount", 8, 2, true).X("post-legend", 32).N9("vat-ac", 6).N9("vat-pc", 2)
+        .X("post-vat-side", 2).N9("vat-amount", 8, 2, true);
+
     private static Layout BuildSystem()
     {
         var l = new Layout();

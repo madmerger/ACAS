@@ -126,3 +126,70 @@ default accounts display	既定勘定の照会
 End of listing. Hit return for Menu.	一覧終了。Enterでメニューへ
 A/C Nos	勘定番号
 Code Vat	区分 税
+Transaction Entry Functions	仕訳入力機能
+Select one of the following by number :- [1]	次の中から番号で選択してください   :- [1]
+(1)  Set up New Batch	(1)  新規バッチの登録
+(9)  Exit to system menu	(9)  システムメニューへ戻る
+Help Data	ヘルプ
+Batch Data	バッチ情報
+GL107 Set Up P/C Branches First	GL107 先にP/C・支店を設定
+General Ledger - Posting Set-Up	総勘定元帳 - 仕訳入力設定
+select default number          :- [  ]	既定番号を選択                 :- [  ]
+select posting convention      :- [CR]	貸借区分を選択                 :- [CR]
+Select Default Profit Centre   :- [  ]	既定の利益センターを選択       :- [  ]
+Select Default Branch          :- [  ]	既定の支店を選択               :- [  ]
+Enter Transaction Posting Date :- [        ]	取引計上日を入力               :- [        ]
+0 - Return to System Menu	0 - システムメニューへ戻る
+33 - Set-up Temporary Default	33 - 一時既定値を設定
+99 - Display current Defaults	99 - 現在の既定値を表示
+Default Accounts Display	既定勘定の照会
+Default Set-Up	既定値設定
+A/C  - [       ]	勘定 - [       ]
+VAT  - [ ]	税   - [ ]
+Code - [  ]	区分 - [  ]
+<I> - Input  VAT	<I> - 仮払税
+<O> - Output VAT	<O> - 仮受税
+<N> - No     VAT	<N> - 税なし
+Enter <DR> or <CR>	<DR> か <CR> を入力
+DR - Debits the A/c posted to	DR - 入力勘定を借方、
+& Credits the default A/c	既定勘定を貸方に計上
+<Esc> - to back-up one field	<Esc> - 1項目戻る
+Unrecognised Account/P.C.	勘定/P.C.が未登録です
+Input VAT	仮払税
+Output VAT	仮受税
+No VAT	税なし
+Assigned Batch :- {     }	割当バッチ番号 :- {     }
+Enter Cycle    :- [  ]	サイクル入力   :- [  ]
+Number of Items:- [  ]	明細件数       :- [  ]
+Gross Amount   :- [            ]	総額           :- [            ]
+Vat   Amount   :- [            ]	税額           :- [            ]
+Batch Desc.    :- [	バッチ摘要     :- [
+GL108 Invalid. Too early	GL108 不正。過去すぎます
+GL109 Invalid. Too forward	GL109 不正。先すぎます
+GL110 No check on items.	GL110 件数チェックなし
+General Ledger - Posting Input	総勘定元帳 - 仕訳入力
+Option :- [ ]	選択   :- [ ]
+B - Back-up one field	B - 1項目戻る
+E - End	E - 終了
+F - Force Write	F - 強制書込
+Q - Quit Batch	Q - バッチ破棄
+n - Back-up n records	n - n件戻る
+VAT Rate :- [ ]	税率     :- [ ]
+% OK (Y/N) :- [Y]	% 可 (Y/N) :- [Y]
+Batch      -	バッチ     -
+Default    -	既定       -
+Contra A/C -	相手勘定   -
+VAT A/C    -	税勘定     -
+No VAT on this Batch.	このバッチは税なし
+Convention -	貸借区分   -
+Date           [          ]	日付           [          ]
+Account        [       ]	勘定           [       ]
+Profit Centre  [  ]	利益センター   [  ]
+Branch         [  ]	支店           [  ]
+Amount         [           ]	金額           [           ]
+VAT Code       [ ]  {p or m or space}	税区分         [ ]  {p か m か空白}
+VAT Amount     [           ]	税額           [           ]
+Narrative      [	摘要           [
+Invalid Date	日付不正
+Invalid A/C number	勘定番号が不正
+Invalid code	区分不正

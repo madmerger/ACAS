@@ -27,31 +27,7 @@ public static partial class Gl020
             var s = await t.A(Curs(3), 7, cur);
             d.SetN("acs" + w, Cob.ToInt(s.Substring(0, 4)) + Cob.ToInt(s.Substring(5, 2)) / 100m);
         }
-        void Headings()
-        {
-            t.D("A/C Nos", 0504); t.D("Code Vat", 0533); t.D("A/C Nos", 0544); t.D("Code Vat", 0573);
-            lin = 7; cole = 1;
-            for (w = 1; w <= 32; w++)
-            {
-                if (w == 17) { lin = 7; cole = 41; }
-                t.V(Cob.P9(w, 2), Curs(), fg: 2);
-                t.D("[       ]", Curs(2));
-                t.D("[  ] [ ]", Curs(32));
-                lin++;
-            }
-            lin = 7; cole = 1;
-            for (w = 1; w <= 32; w++)
-            {
-                if (w == 17) { lin = 7; cole = 41; }
-                t.V(Cob.Edit(d.N("acs" + w), "9(4).99"), Curs(3));
-                var l = d.N("acs" + w) == 0 ? null : Desc();
-                if (l != null) { t.V(l.S("name"), Curs(12)); t.D("[  ] ", Curs(32)); }
-                t.V(d.S("code" + w), Curs(33));
-                t.V(d.S("vat" + w), Curs(38));
-                lin++;
-            }
-            w = 1; cole = 1; lin = 7;
-        }
+        void Headings() { Gl020.Headings(c, d); w = 1; cole = 1; lin = 7; }
         void Save() => c.Db.Put(Ctx.SysFile, "00000002", d.B);
 
         async Task Amend()
@@ -190,4 +166,36 @@ public static partial class Gl020
             if (menu == 9) return 0;
         }
     }
+    public static void Headings(Ctx c, Rec d)
+    {
+        var t = c.Crt; int w = 1, lin = 7, cole = 1;
+        int Curs(int add = 0) => lin * 100 + cole + add;
+        Rec? Desc()
+        {
+            var b = c.Db.Read(Gl030.File, Gl030.Key(Cob.Trunc(d.N("acs" + w) * 100, 0), 0));
+            return b == null ? null : Layouts.Ledger.From(b);
+        }
+            t.D("A/C Nos", 0504); t.D("Code Vat", 0533); t.D("A/C Nos", 0544); t.D("Code Vat", 0573);
+            lin = 7; cole = 1;
+            for (w = 1; w <= 32; w++)
+            {
+                if (w == 17) { lin = 7; cole = 41; }
+                t.V(Cob.P9(w, 2), Curs(), fg: 2);
+                t.D("[       ]", Curs(2));
+                t.D("[  ] [ ]", Curs(32));
+                lin++;
+            }
+            lin = 7; cole = 1;
+            for (w = 1; w <= 32; w++)
+            {
+                if (w == 17) { lin = 7; cole = 41; }
+                t.V(Cob.Edit(d.N("acs" + w), "9(4).99"), Curs(3));
+                var l = d.N("acs" + w) == 0 ? null : Desc();
+                if (l != null) { t.V(l.S("name"), Curs(12)); t.D("[  ] ", Curs(32)); }
+                t.V(d.S("code" + w), Curs(33));
+                t.V(d.S("vat" + w), Curs(38));
+                lin++;
+            }
+            w = 1; cole = 1; lin = 7;
+        }
 }
