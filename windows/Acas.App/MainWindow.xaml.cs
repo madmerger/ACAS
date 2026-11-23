@@ -66,6 +66,7 @@ public partial class MainWindow : Window
                 if (node.IsSelected && node.Tag is NavigationItem { Open: not null })
                 {
                     e.Handled = true;
+                    node.Focus();
                     OpenNavigationItem(node);
                 }
                 return;
