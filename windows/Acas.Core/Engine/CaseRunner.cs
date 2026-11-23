@@ -28,7 +28,16 @@ public static class CaseRunner
     public static Key[] StepKeys(JsonElement step)
     {
         var keys = new List<Key>();
-        if (step.TryGetProperty("text", out var t)) foreach (var ch in t.GetString()!) keys.Add(Key.Of(ch));
+        if (step.TryGetProperty("text", out var t))
+        {
+            var s = t.GetString()!;
+            for (int i = 0; i < s.Length; i++)
+            {
+                // 端末エスケープシーケンス ESC O H / ESC [ H は Home キー
+                if (s[i] == '' && i + 2 < s.Length + 0 && (s[i + 1] == 'O' || s[i + 1] == '[') && s[i + 2] == 'H') { keys.Add(new Key(K.Home)); i += 2; }
+                else keys.Add(Key.Of(s[i]));
+            }
+        }
         if (step.TryGetProperty("key", out var k))
             keys.Add(new Key(k.GetString() switch
             {
