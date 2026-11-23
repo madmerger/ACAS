@@ -65,6 +65,23 @@ abstract class GlProgram extends Program {
      * レガシーの暴走（未 OPEN ファイルへの READ NEXT が AT END にならず無限ループ）に相当。
      * 画面はそのまま応答しなくなるため、キー入力を読み捨て続ける。
      */
+    /**
+     * general/wsnames.cob（general/ のコンパイルで copybooks/ より優先される旧版）では file-defs-os-delimiter が
+     * file-defs とは別の 01 で、CALL ... USING に含まれない LINKAGE 項目のためアドレスが NULL になる。
+     * レガシーではこの項目を参照する STRING 文（gl080 / gl100 / gl105 の disk-change）でデータ内容に関係なく
+     * SIGSEGV となる。null のままなら同じ異常終了を再現し、値を与えれば原文どおりの処理が続く。
+     */
+    protected String fileDefsOsDelimiter;
+
+    /** file-defs-os-delimiter の参照。curLine: 直前の DISPLAY があった行（ランタイムは次行に終了文言を出す）。 */
+    protected String osDelimiter(int curLine) {
+        if (fileDefsOsDelimiter != null) return fileDefsOsDelimiter;
+        display(curLine + 1, 1, "end of program, please press a key to exit", 7);
+        accept(curLine + 1, 79, 1);
+        throw new jp.co.acas.core.StopRun(getClass().getSimpleName().toLowerCase()
+                + ": LINKAGE 項目 file-defs-os-delimiter が NULL のため異常終了（レガシー SIGSEGV 相当）");
+    }
+
     protected void runaway() {
         while (true) accept(24, 80, 1);
     }

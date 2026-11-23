@@ -136,7 +136,7 @@ public class Gl105 extends GlProgram {
     }
 
     private void diskChange() {
-        arcOutName = "archives/" + arcOutName.trim();
+        arcOutName = "archives" + osDelimiter(3) + arcOutName.trim();
         display(12, 1, "GL115 Ensure Archive USB Memory Stick is in path"); eraseEol(12, 49);
         display(13, 1, "GL114 Enter <0> to signify change made or <9> to abort this run :- [ ]"); eraseEol(13, 71);
         while (true) {
