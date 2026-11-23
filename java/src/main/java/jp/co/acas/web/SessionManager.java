@@ -37,7 +37,8 @@ public class SessionManager {
                 log.error("プログラム異常終了", t);
                 msg = "異常終了: " + t;
             } finally {
-                if (msg == null || msg.isEmpty()) {
+                // irs 単体起動のレガシー実測では終了時表示が出ず、最終画面がそのまま残る
+                if ((msg == null || msg.isEmpty()) && !program.equals("irs")) {
                     // GnuCOBOL ランタイムの画面終了時表示（キー入力で終了）
                     try {
                         ctx.term.clear();

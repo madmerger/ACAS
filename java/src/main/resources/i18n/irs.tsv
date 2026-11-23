@@ -1,0 +1,334 @@
+# IRS（簡易会計）文言対応表: 英語<TAB>日本語
+A/C Nos     ------Description------    Code VAT	勘定番号    ---------摘要----------    区分 VAT
+Balance Sheet	貸借対照表
+End Date -	終了日 -
+Period To -	期末日 -
+A/C Type	勘定種別
+Sales Ratios	売上比率
+Start Date -	開始日 -
+Total	合計
+--Debit--   --Credit-	--借方---   --貸方---
+Net        VAT        Net        VAT	税抜       VAT        税抜       VAT
+Net Amount    VAT Amount    Type	税抜金額      VAT 金額      種別
+Type	種別
+Balance	残高
+Main       Sub             Description              Type	主勘定     補助            摘要                     種別
+Main A/C       Sub-Account     ------Description------	主勘定         補助勘定        ---------摘要----------
+No Typ      Name	番号 種別   名称
+Account     ----------Name----------	勘定        ----------名称----------
+Day Book      Quarter  To	日計表        四半期末
+Make sure that you have backed up your data	データのバックアップを取得済か確認すること
+returns	戻り値
+('DR' or 'CR') DR if entered a/c, is debited (TO)	('DR'/'CR') 入力勘定が借方なら DR
+(1)  Set-Up Chart of Accounts	(1)  勘定科目表の設定
+(1)  Set-Up Default Accounts	(1)  既定勘定の設定
+(1)  System Set-Up & Maintenance	(1)  システム設定・保守
+(1) - Code order sequence	(1) - コード順
+(1=Dos, 2=Windows, 3=Mac OS/10, 4=OS/2, 5=Unix, 6=Linux)	(1=Dos, 2=Windows, 3=Mac OS/10, 4=OS/2, 5=Unix, 6=Linux)
+(2)  Accounts Set-Up & Maintenance	(2)  勘定設定・保守
+(2)  Amend  Chart of Accounts	(2)  勘定科目表の修正
+(2)  Amend  Default Accounts	(2)  既定勘定の修正
+(2) - Date order sequence	(2) - 日付順
+(2) Answering no (N)	(2) いいえ (N) 回答
+(3)  Default A/Cs Set-Up & Maintenance	(3)  既定勘定の設定・保守
+(3)  Display the Chart	(3)  科目表の表示
+(3)  Display the Defaults	(3)  既定勘定の表示
+(3) - Transaction number sequence	(3) - 取引番号順
+(31-Input/32-Output)	(31-仮払/32-仮受)
+(4)  Posting	(4)  転記
+(4)  Print   the Chart	(4)  科目表の印刷
+(4)  Print   the Defaults	(4)  既定勘定の印刷
+(5)  Export  the Chart	(5)  科目表の出力
+(5)  Set-Up Final Accounts	(5)  決算書の設定
+(5)  Trial Balance	(5)  試算表
+(6)  Audit Trail	(6)  監査証跡
+(6)  Import  the Chart	(6)  科目表の取込
+(7)  Accounts Production	(7)  決算書作成
+(8)  Posting Amendments	(8)  転記訂正
+(9)  Analysis Report	(9)  分析表
+(9)  Return to System Menu	(9)  システムメニューへ
+(<66>    Add PL or SL Postings from file)	(<66>    仕入/売上転記をファイル取込)
+(<77>    Clear Existing Postings)	(<77>    既存転記の消去)
+(<88>    Add to Existing Postings)	(<88>    既存転記へ追加)
+(<99>    Display Existing Defaults)	(<99>    既定勘定の表示)
+(<Return> to exit to System Menu)	(<Return> でシステムメニューへ)
+(A)  Nominal File Fix up	(A)  元帳ファイル修復
+(A) - Audit Report	(A) - 監査報告
+(D) - VAT Day Book	(D) - VAT 日計表
+(Default 31 A/C) does not exist..ABORTING	(既定勘定 31) がありません..中断
+(Input VAT - Purchases)	(仮払 VAT - 仕入)
+(L) - Ledgers	(L) - 元帳
+(No VAT)	(VAT 無)
+(Output VAT - Sales)	(仮受 VAT - 売上)
+(Return to quit)	(Return で終了)
+(X)  Exit	(X)  終了
+** here will delete transaction	** 入力で取引を削除します
+-----------    ----    ----   Debit  Credit	-----------    ----    ----   借方   貸方
+--------Heading---------  Sign          --------Heading---------  Sign	----------見出し--------  符号          ----------見出し--------  符号
+-----Input Tax-----   ----Output Tax------	------仮払税-------   -------仮受税-------
+----Narrative----     Net       VAT	-------摘要------     税抜      VAT
+--Date--  Account	--日付--  勘定
+090-01 Reply -	090-01 応答 -
+<----------Account--------->	<------------勘定---------->
+A/C Nos	勘定No.
+ACCOUNT  -	勘定     -
+Account                 -[     ]	勘定                    -[     ]
+Account -	勘定 -
+Account not found. Try again!	勘定がありません。再入力!
+Accounts Directory	勘定一覧
+Accounts File Utilities	勘定ファイル処理
+Add to Existing Chart (Y/N) ? -	既存科目表へ追加 (Y/N) ? -
+Add to Existing Defaults (Y/N) ? -	既存既定勘定へ追加 (Y/N) ? -
+Addr -	住所 -
+Amount    - [           ]	金額      - [           ]
+Amount not numeric. Re-Enter	金額が数値でない。再入力
+Batch Total	バッチ合計
+Before responding (Y)es ensure you have a back copy of the original file	(Y) と答える前に元ファイルのバックアップがあることを確認
+Can I clear down all amounts from these, so that you can start with a clean	これらの金額を全て消去し、白紙の状態から開始してよいですか
+Can I clear the Ledgers Posting file? [Y]	元帳転記ファイルを消去しますか? [Y]
+Capital Accounts	資本勘定
+Chart of Accounts Amendments	勘定科目表の修正
+Chart of Accounts Setup	勘定科目表の設定
+Checking Accounts Please Wait	勘定を検査中 お待ちください
+Cleared Nominal Ledger of totals	元帳の合計を消去しました
+Clearing Nominal Ledger of totals	元帳の合計を消去中
+Client	顧客
+Client        Name -	顧客          名 -
+Client -	顧客 -
+Code     :  [  ]	コード   :  [  ]
+Code VAT	区分 VAT
+Code VAT   A/C Nos	区分 VAT   勘定No.
+Code/Nos  --Date--  ------------Legend------------- Contra --Debit--  -Credit--	区分/番号 --日付--  -------------摘要-------------- 相手   --借方---  --貸方---
+Comparative field to use -	使用する比較欄 -
+Continue Y/N [ ]	続行 Y/N [ ]
+Correct Account (Y/N)....[ ]	勘定は正しい (Y/N)..[ ]
+Correct the transaction	取引を訂正してください
+Credit   :  [     ]	貸方     :  [     ]
+Cups Spool Name -	Cups 印刷先 -
+Current Assets	流動資産
+Current Liabilities	流動負債
+Date      - [        ]	日付      - [        ]
+Date     :  [        ]	日付     :  [        ]
+Date -	日付 -
+Date error	日付誤り
+Debit    :  [     ]	借方     :  [     ]
+Default -	既定 -
+Default A/C 30 or 31 Not setup	既定勘定 30/31 が未設定
+Default Accounts Display	既定勘定の表示
+Default File Utilities	既定ファイル処理
+Description	摘要
+Direct Cost Accounts	直接原価勘定
+Display or Print  <D> or <P>......[ ]	表示/印刷  <D> / <P>.............[ ]
+Do you require end of period processing (Y/N)	期末処理を実行しますか (Y/N)
+Does not exist. Hit return, then Check & re-enter	存在しません。Return 後、確認し再入力
+Does not exist..Aborting	存在しません..中断
+End Date	終了日
+End date -	終了日 -
+End of display. Hit return for Menu.	表示終了。Return でメニューへ
+End of listing. Hit return for Menu.	一覧終了。Return でメニューへ
+End of period processing outputs the current year figures to a comparative.	期末処理は当期の数値を比較欄へ出力します。
+Enter <N> for Next screen or <X> to Quit.......[ ]	<N> で次画面、<X> で終了.....................[ ]
+Enter <N> for next screen <X> to exit....[ ]	<N> で次画面 <X> で終了.................[ ]
+Enter Default Number -    [  ]	既定番号を入力 -          [  ]
+Enter P/L Appropriation or Capital A/C	損益処分または資本勘定を入力
+Enter Pass-word - [    ]	パスワード入力  - [    ]
+Enter Pass-word - [****]	パスワード入力  - [****]
+Enter Profit & Loss Report Title	損益計算書の表題を入力
+Enter Run Characteristic [  ]	実行特性を入力           [  ]
+Enter Run Option     -    [  ]	実行オプション入力 -      [  ]
+Enter account code required (zero for all)............  [     ]	対象の勘定コードを入力 (ゼロは全件)...................  [     ]
+Enter code of <**> to delete	コードに <**> 入力で削除
+Enter comparative to use (0 to 4)	使用する比較欄 (0 から 4)
+Enter number of zero to exit	番号にゼロ入力で終了
+Enter pass word - [****]	パスワード入力  - [****]
+Enter pass-word - [    ]	パスワード入力  - [    ]
+Error	誤り
+Error opening postings =	転記オープンエラー =
+Error writing to Posting File	転記ファイル書込エラー
+Error: Can only import a Text file (.txt) as exported by this program	エラー: 本プログラムが出力したテキスト (.txt) のみ取込可
+Escape to quit;    Return to Accept data	Escape で終了;     Return で確定
+Escape to quit;  Tab for next field  Ret. to Accept data	Escape で終了;  Tab で次項目  Return で確定
+Escape to quit	Escape で終了
+Escape to quit;	Escape で終了;
+Return to Accept data	Return で確定
+Return to Accept data;	Return で確定;
+F1 to F10 = options 1 to A;	F1-F10 = 選択 1 から A;
+F1 to F4 = options 1 to 4;	F1-F4 = 選択 1 から 4;
+F1 to F5 = options 1 to 5;	F1-F5 = 選択 1 から 5;
+Failure to Open Default File	既定ファイルを開けません
+Failure to Open Nominal-Ledger	元帳を開けません
+Failure to on Final File -	決算ファイル失敗 -
+Failure to open Nominal Ledger!!!	元帳を開けません!!!
+Failure to open O/P Final File	出力決算ファイルを開けません
+Failure to open posting-file	転記ファイルを開けません
+Failure to read Final File rec. !	決算ファイル読込失敗 !
+failure to open Work File!!!!	作業ファイルを開けません!!!!
+File name to be Imported [12345678901234567890123456789012]	取込ファイル名           [12345678901234567890123456789012]
+File name to be created [12345678901234567890123456789012]	作成ファイル名          [12345678901234567890123456789012]
+File name to be Imported	取込ファイル名
+File name to be created	作成ファイル名
+Final Accounts Production	決算書作成
+Finished Accounts Setup	決算書の設定
+Fixed     Assets	固定資産
+Fixup Accounts File	勘定ファイル修復
+For the Year Ended	年度末
+For the Period From	対象期間
+Format: T(xt) or (C)omma delimited?  [T]	形式: T(テキスト)/(C)カンマ区切り?  [T]
+Give Default to amend - [  ]  (Use 00 to quit)	修正する既定番号 -      [  ]  (00 で終了)
+Got Default record	既定レコード取得
+Gross Profit % to Sales	売上総利益率 %
+Hit return	Return入力
+Hit return for menu	Return でメニュー
+Hit return for return to Main Menu	Return でメインメニューへ
+Hit return to continue	Return で続行
+Hit return to go back to menu	Return でメニューへ戻る
+Income Accounts	収益勘定
+Incomplete Records System	簡易会計システム
+Inconsistent	不整合
+Indirect Cost Accounts	間接原価勘定
+Input Code to Print (blank for all) ....[  ]	印刷するコード (空白は全件) ........[  ]
+Input Report required by letter...[ ]	帳票を英字で選択..................[ ]
+Invalid option	無効な選択
+Is This Correct ? (Y/N) -	正しいですか ? (Y/N) -
+Ledgers Incorrectly Coded! Aborting.	元帳の種別が不正! 中断
+Link/record exists on owning write	主勘定書込時にレコード有
+Link/record exists on rewrite	再書込時にレコード有
+Main A/C      Sub-Nominal       Sub-Account       Description          A/C Type	主勘定        補助元帳          補助勘定          摘要                 勘定種別
+Monthly Analysis Report	月次分析表
+N.B. (1) If first time setup for this client answer no (N)	注 (1) この顧客の初回設定時は いいえ (N)
+NOTE ERROR & Hit Return	エラー控え Return 押下
+Narative :  [	摘要     :  [
+Narrative -	摘要      -
+Net      :  [          ]	税抜     :  [          ]
+Net Profit % to Sales	純利益率 %
+New	新
+No Ledger posting file found. Process Aborted	元帳転記ファイル無し。処理中断
+No Posting data present	転記データ無し
+No Postings Available	転記がありません
+Note count & hit return to continue	件数を控え Return で続行
+Note counts and any messages	件数とメッセージを控える
+Note counts. messages and Hit return for menu	件数・メッセージを控え Return で戻る
+Note error & Hit return to continue	エラーを控え Return で続行
+Note error and Hit return to continue	エラーを控え Return で続行
+Note that above values are subject to rounding	上記の値は端数処理されています
+Number   :  [     ]	番号     :  [     ]
+OTherwise, If you have not made a back up of it you should quit this process.	バックアップが未取得の場合は本処理を中止してください。
+Operating System	OS 種別
+Otherwise respond (N)o and then exit the main menu to do so.	未取得なら (N) と答えメインメニューを終了して取得
+P & L Appropriation Account	損益処分勘定
+PE VAT01: Problems with CoA file	PE VAT01: 科目表に問題
+Page	頁
+Page -	頁 -
+Pass Word -	パスワード-
+Period	期間
+Period End Date  .........[dd/mm/yy]	期間終了日 ...............[dd/mm/yy]
+Period Report (P) or Year Report (Y) [ ]	期間報告 (P) / 年次報告 (Y)          [ ]
+Period Start Date  .......[dd/mm/yy]	期間開始日 ...............[dd/mm/yy]
+Posting  Reports	転記帳票
+Posting & Default a/c must not be the same	転記勘定と既定勘定は同一不可
+Posting Correction	転記訂正
+Posting Defaults	転記既定値
+Posting does not exist!	転記がありません!
+Press <RETURN> to exit	<RETURN> で終了
+Press <Return> to exit	<Return> で終了
+Press Return for menu	Return でメニュー
+Press return for menu	Return でメニュー
+Press return to continue or Esc to quit	Return で続行、Esc で終了
+Printing Account Ledgers. Please Wait	勘定元帳を印刷中 お待ちください
+Problem opening Accounts for output, hit return to quit action	勘定の出力オープン失敗、Return で中止
+Problem opening Export File, hit return to quit action	出力ファイルを開けません、Return で中止
+Problem opening Import File, hit return to quit action	取込ファイルを開けません、Return で中止
+Processing Complete on 12345 records	処理完了             12345 件
+Profit and Loss Report	損益計算書
+Quiting to menu	メニューへ戻る
+Record already exists re-enter!	レコード登録済 再入力!
+Record already exists re-enter!   Key is -	レコード登録済 再入力!     キー -
+Renumber the postings (Y/N) - [ ]	転記番号を振直す (Y/N)      - [ ]
+Return for next screen or <X> to exit....[ ]	Return で次画面、<X> で終了..............[ ]
+Revenue accounts are zeroed but Capital Accounts retain their value.	損益勘定はゼロになり、資本勘定は残高を保持します。
+Reversing posting. please wait	転記を取消中 お待ちください
+Run is -	実行 -
+SYSTEM FILE SET-UP	システム設定
+S Y S T E M   M E N U	システムメニュー
+Select required sort by number....[ ]	整列順を番号で選択................[ ]
+Select the required function	機能を選択してください
+Select the required function by number	機能を番号で選択してください
+So hit return to get back to main menu	Return でメインメニューへ戻ります
+Sorting please wait.	整列中 お待ち下さい
+Start date -	開始日 -
+Sub-Nominal Balance A/C -	補助元帳残高 勘定 -
+Summary or Detail <S> or <D>......[ ]	要約/明細  <S> / <D>..............[ ]
+Sundry Income Accounts	雑収入勘定
+System File Open OU Failure	システムファイル出力失敗
+System File Write Failure	システムファイル書込失敗
+That Account now deleted!!!  Re-enter!	その勘定は削除済!!!  再入力!
+That account does not exist. Re-enter	その勘定はありません。再入力
+This appears to be the first time you are running IRS and there is a	IRS の初回実行と思われますが、既に
+This must only be done for a new set of accounts for a new client.	新規顧客の新しい勘定一式に対してのみ実行のこと。
+This process will export a copy of the current CoA (Chart of Accounts)	現在の勘定科目表 (CoA) の写しを出力します
+This process will import a CoA (Chart of Accounts) in TEXT format	テキスト形式の勘定科目表 (CoA) を取込みます
+To quit, just enter an invalid password	中止は誤ったパスワードを入力
+Total record count written out =	出力レコード総件数 =
+Total records created =	作成レコード総数 =
+Trading and Profit & Loss Account                 Balance Sheet	売上総損益・損益計算書                            貸借対照表
+Trading and Profit & Loss Account	売上総損益・損益計算書
+Transaction    Date     Code	取引           日付     区分
+Transaction    Date    Code   ---Account---	取引           日付    区分   -----勘定----
+Transaction Posting	取引転記
+Transaction Type   -	取引種別           -
+Trial Balance	試算表
+Updating Nominal Ledger	元帳を更新中
+User -	担当 -
+VAT      :  [          ]	VAT      :  [          ]
+VAT Account not present, Fix it!,returning to main menu. Now hit return	VAT 勘定無し。修正要! メインメニューへ戻る。Return 押下
+VAT Account/s not present, Fix it. Now hit return	VAT 勘定無し。修正要。Return 押下
+VAT Code (P/M or space) - [ ]	VAT 区分 (P/M/空白)     - [ ]
+VAT Rate  -	VAT 税率 -
+VAT Side :  [  ]	VAT 貸借:  [  ]
+VAT Type :  [  ]	VAT 種別:  [  ]
+Wait while I clear the Chart of Accounts down	勘定科目表を消去中 お待ちください
+Warning: This is NON RECOVERABLE, so think about it	警告: 復元不可のため慎重に判断すること
+Which Month does your Tax Year start (01-12)  [  ]	課税年度の開始月 (01-12)                      [  ]
+Year	年度
+You have selected end of period processing overwriting comparative field -	期末処理を選択しました。上書きする比較欄 -
+You have, made a backup of all the data files? If not do it NOW!!	全データのバックアップは取得済ですか? 未取得なら今すぐ!!
+You must Setup Chart of Accounts first (Selection no. 2)	先に勘定科目表を設定のこと (選択 2)
+You will need 132 column wide paper	132 桁幅の用紙が必要です
+You will need to fix the VAT account problems before posting	転記前に VAT 勘定の問題を修正のこと
+Zero balances to Print (Y/N)......[ ]	ゼロ残高も印刷 (Y/N)..............[ ]
+destroys	破棄する
+error code =	エラー番号 =
+is a Sub-nominal account, you must give me a main-account only..ABORTING!!	は補助勘定です。主勘定のみ指定可..中断!!
+link/record exists on sub write	補助書込時にレコード有
+overwriting any copy of the file if it exists.	同名ファイルがあれば上書きします。
+overwriting any existing IRS Chart of Accounts.	既存の IRS 勘定科目表を上書きします。
+set of accounts	勘定一式
+set of accounts (Nominal Ledger) present	勘定一式 (元帳) が存在します
+the existing chart	既存の科目表
+the existing defaults	既存の既定値
+to Linux	Linux へ
+with P/L or Capital A/C -	損益/資本勘定 -
+Posting number	転記番号
+Back Up Script Not Found	バックアップ手順無し
+Exit	終了
+Total Income	収益合計
+Less Total Direct Costs	直接原価合計 (控除)
+Gross Profit	売上総利益
+Plus Sundry Income	雑収入 (加算)
+Less Total Indirect Costs	間接原価合計 (控除)
+Net Profit	純利益
+Net Profits	純利益
+Fixed Asset Total	固定資産合計
+Plus Total Current Assets	流動資産合計 (加算)
+Total Assets	資産合計
+Less Current Liabilities	流動負債 (控除)
+Net Current Assets	正味流動資産
+Capital Account Total	資本勘定合計
+Balance Forward	繰越残高
+Addr	住所
+Narrative	摘要
+Pass Word	暗証番号
+User	担当
+VAT Rate	VAT 税率
+Default Accounts Amendments	既定勘定の修正
+Default Accounts Setup	既定勘定の設定
