@@ -107,7 +107,7 @@ private struct LedgerBatchEditor: View {
             }
         }
         .onAppear {
-            date = workspace.context.now()
+            date = GeneralLedgerSetup(workspace.context).processingDate
             cycle = String(CompanySetup(workspace.context).settings.number("scycle"))
             workspace.completed("gl-batch-new-menu")
         }
