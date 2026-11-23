@@ -24,7 +24,9 @@ public struct CompanySettings {
             maxValue = Cobol.pow10(digits) - 1
         default: throw CompanySetup.Error.invalidField
         }
-        guard value <= maxValue else { throw CompanySetup.Error.invalidField }
+        guard value <= maxValue, key != "sl-credit" || value <= 99 else {
+            throw CompanySetup.Error.invalidField
+        }
         switch key {
         case "page-lines": record.setInt(key, value <= 28 ? 48 : value)
         case "period": record.setInt(key, value == 13 || value == 6 ? value : 3)
