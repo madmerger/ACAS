@@ -424,6 +424,45 @@
 "gl080.fs_57" = "I/O Linage               ";
 "gl080.fs_61" = "File Sharing Failure     ";
 "gl080.fs_91" = "File Not Available       ";
+
+/* gl090.cbl */
+"gl090.title" = "Trial Balance";
+"gl090.select" = "Select Option By Number :- [ ]";
+"gl090.opt1" = "(1)  Detailed Trial Balance";
+"gl090.opt2_pc" = "(2)  Profit Centre Trial Balance";
+"gl090.opt2_branch" = "(2)  Branch Trial Balance";
+"gl090.opt9" = "(9)  Exit to system menu";
+
+/* gl090a.cbl */
+"gl090a.title" = "Structured Trial Balance";
+"gl090a.p_title" = "Profit Centre Trial Balance";
+"gl090a.p_page" = "Page ";
+"gl090a.p_report" = "Condensed Report";
+"gl090a.p_h1a" = "Account      <----Detail   Level----><-------Level";
+"gl090a.p_h1b" = "  4-------><-------Level  3-------><-------Level  2---";
+"gl090a.p_h1c" = "----><-------Level  1------>";
+"gl090a.p_h2a" = "               Debit        Credit      Debit       C";
+"gl090a.p_h2b" = "Redit      Debit       Credit      Debit       Credit   ";
+"gl090a.p_h2c" = "   Debit       Credit  ";
+"gl090a.p_rule" = " ==========  ==========";
+"gl090a.p_total" = "t o t a l";
+
+/* gl090b.cbl */
+"gl090b.gl012" = "GL012 Hit Return to Quit";
+"gl090b.gl106" = "GL106 Ledger File Does Not Exist";
+"gl090b.title" = "Detailed Trial Balance";
+"gl090b.working" = "Working.......Please wait";
+"gl090b.p_title" = "Detail Trial Balance";
+"gl090b.p_page" = "Page ";
+"gl090b.p_account" = "Account   ";
+"gl090b.p_h1" = "<---------Name--------->      <---Current Balance--->    <--Last Year Balance->     <-Quarter ";
+"gl090b.p_h1q" = "->  <-Quarter ";
+"gl090b.p_h1e" = "->";
+"gl090b.p_h2" = "Debit      Credit          Debit     Credit";
+"gl090b.p_rule" = "=========== ===========    =========== ===========";
+"gl090b.p_pc" = "  P/C ";
+"gl090b.p_branch" = "Branch";
+"gl090b.p_total" = "T o t a l";
 /* ---- sys.en.strings ---- */
 /* ACAS.cbl — システムメニュー (英語 = レガシー原文) */
 "sys.sy006" = "SY006 Program Arguments limited to two and you have specified ";
