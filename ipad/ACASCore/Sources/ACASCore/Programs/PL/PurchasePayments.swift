@@ -187,10 +187,13 @@ extension PurchaseLedger {
                 modified[invoice.int("oi-invoice")] = invoice
             }
         } else {
-            while index <= 999, items.contains(where: {
-                $0.int("oi-b-nos") == batch && $0.int("oi-b-item") == index
-            }) { index += 1 }
-            if index > 999 { batch += 1; index = 1 }
+            let usedNumbers = Set(items.filter { $0.str("oi-supplier") == supplierCode }.map { $0.int("oi-invoice") })
+            let usedBatchItems = Set(items.filter { $0.int("oi-b-nos") != 0 }.map { $0.int("oi-b-nos") * 1000 + $0.int("oi-b-item") })
+            while usedNumbers.contains(batch * 1000 + index) || usedBatchItems.contains(batch * 1000 + index) {
+                index += 1
+                if index > 999 { batch = batch == 99_999 ? 1 : batch + 1; index = 1 }
+                guard batch != currentBatch || index != 1 else { throw Error.duplicateTransaction }
+            }
         }
         let number = batch * 1000 + index
         let key = openItemKey(supplier: supplierCode, number: number)

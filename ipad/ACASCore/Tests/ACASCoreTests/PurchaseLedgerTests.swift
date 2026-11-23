@@ -553,6 +553,23 @@ final class PurchaseLedgerTests: XCTestCase {
         }
     }
 
+    func testPaymentSkipsOccupiedInvoiceNumber() throws {
+        let ledger = try makeLedger()
+        let code = try addSupplier(ledger)
+        var item = Record(PurchaseRecords.oiLayout)
+        let number = max(1, ledger.system.int("bl-next-batch")) * 1000 + 1
+        item["oi-supplier"] = code
+        item.setInt("oi-invoice", number)
+        item.setInt("oi-type", 2)
+        let key = ledger.openItemKey(supplier: code, number: number)
+        XCTAssertTrue(ledger.store.write(ledger.openItemsPath, key: key, data: item.bytes))
+        var payment = PurchaseLedger.Payment(date: ledger.processingDate)
+        payment.supplier = code
+        payment.amount = 500
+        XCTAssertEqual(try ledger.savePayment(payment), number + 1)
+        XCTAssertEqual(ledger.store.read(ledger.openItemsPath, key: key), item.bytes)
+    }
+
     func testPaymentAllocatesEditsAndPosts() throws {
         let ledger = try makeLedger()
         let code = try addSupplier(ledger)
