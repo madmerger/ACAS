@@ -153,7 +153,7 @@ extension PurchaseLedger {
     @discardableResult
     public func saveTransaction(_ value: Transaction) throws -> Int64 {
         guard let number = try store.withTransaction({ try persistTransaction(value) }) else {
-            throw Error.duplicateTransaction
+            throw Error.duplicateFolioAdvanced
         }
         return number
     }

@@ -17,7 +17,7 @@ final class PurchaseLedgerTests: XCTestCase {
         let original = ledger.store.all(ledger.invoicePath).map(\.data)
 
         XCTAssertThrowsError(try ledger.saveTransaction(transaction)) { error in
-            XCTAssertEqual(error as? PurchaseLedger.Error, .duplicateTransaction)
+            XCTAssertEqual(error as? PurchaseLedger.Error, .duplicateFolioAdvanced)
         }
         XCTAssertEqual(ledger.store.all(ledger.invoicePath).map(\.data), original)
         XCTAssertEqual(ledger.invoiceSettings().nextFolio, folio + 1)
@@ -40,7 +40,7 @@ final class PurchaseLedgerTests: XCTestCase {
 
         try ledger.saveInvoiceSettings(settings)
         XCTAssertThrowsError(try ledger.saveTransaction(transaction)) { error in
-            XCTAssertEqual(error as? PurchaseLedger.Error, .duplicateTransaction)
+            XCTAssertEqual(error as? PurchaseLedger.Error, .duplicateFolioAdvanced)
         }
         XCTAssertEqual(ledger.invoiceSettings().nextFolio, 0)
         XCTAssertEqual(try ledger.saveTransaction(transaction), 1)

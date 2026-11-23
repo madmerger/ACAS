@@ -49,6 +49,7 @@
 "purchase.error.generic" = "処理を完了できませんでした。";
 "purchase.error.invoice" = "取引明細や金額を確認してください。";
 "purchase.error.invoice.duplicate" = "この伝票番号は使用済みです。";
+"purchase.error.invoice.duplicate.advanced" = "伝票番号が使用済みのため、次の番号に進めました。固定設定で空き番号を設定できます。";
 "purchase.error.invoice.missing" = "該当する仕入取引がありません。";
 "purchase.error.invoice.posted" = "転記済みの取引は変更できません。";
 "purchase.error.supplier.balance" = "残高または未消込額があるため変更できません。";

@@ -109,6 +109,7 @@ struct PurchaseNotice: Identifiable {
         case .transactionNotFound: message = plString("purchase.error.invoice.missing")
         case .alreadyPosted: message = plString("purchase.error.invoice.posted")
         case .duplicateTransaction: message = plString("purchase.error.invoice.duplicate")
+        case .duplicateFolioAdvanced: message = plString("purchase.error.invoice.duplicate.advanced")
         case .analysisCodeNotFound: message = plString("purchase.error.analysis.missing")
         case .analysisFileIncompatible: message = plString("purchase.error.analysis.format")
         case .invalidInvoiceSettings: message = plString("purchase.error.invoice.settings")

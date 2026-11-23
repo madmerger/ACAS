@@ -145,6 +145,25 @@ final class PurchaseFlows: XCTestCase {
         XCTAssertEqual(app.textFields[vat].value as? String, "500001")
     }
 
+    func testDuplicateInvoiceShowsNextFolioGuidance() throws {
+        let app = try launch("PL-413", smokeID: "重複した仕入伝票番号の案内")
+        tap(app, "pl.invoice.settings.menu", scrolling: true)
+        tap(app, "pl.invoice.settings.open")
+        enter(app, "pl.invoice.settings.nextFolio", "1", replacing: true)
+        dismissKeyboard(app)
+        tap(app, "pl.invoice.settings.save")
+        tap(app, "pl.invoice.settings.add")
+        enter(app, "pl.invoice.supplier", "SUPP018")
+        dismissKeyboard(app)
+        enter(app, "pl.invoice.line.0.code", "a1", scrolling: true)
+        dismissKeyboard(app)
+        enter(app, "pl.invoice.line.0.net", "100", replacing: true, scrolling: true)
+        dismissKeyboard(app)
+        tap(app, "pl.invoice.save", scrolling: true)
+        XCTAssertTrue(app.alerts.staticTexts["伝票番号が使用済みのため、次の番号に進めました。固定設定で空き番号を設定できます。"]
+            .waitForExistence(timeout: 5))
+    }
+
     func testEmptyPaymentProofCannotGenerateReport() throws {
         let app = try launch("PL-413", smokeID: "空の支払検証")
         tap(app, "pl.payment.proof", scrolling: true)
