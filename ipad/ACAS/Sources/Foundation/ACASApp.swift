@@ -9,12 +9,28 @@ struct ACASApp: App {
         WindowGroup {
             switch workspace {
             case .success(let workspace):
-                MainMenu(workspace: workspace)
+                mainMenu(workspace: workspace)
                     .environment(\.locale, Locale(identifier: "ja_JP"))
             case .failure:
                 ContentUnavailableView("database.failed", systemImage: "externaldrive.badge.exclamationmark")
             }
         }
+    }
+
+    @ViewBuilder
+    private func mainMenu(workspace: Workspace) -> some View {
+        #if DEBUG
+        if let evidence = workspace.evidence {
+            VStack(spacing: 0) {
+                CaseBanner(evidence: evidence)
+                MainMenu(workspace: workspace)
+            }
+        } else {
+            MainMenu(workspace: workspace)
+        }
+        #else
+        MainMenu(workspace: workspace)
+        #endif
     }
 }
 
