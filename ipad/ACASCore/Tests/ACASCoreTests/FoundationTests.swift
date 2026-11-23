@@ -64,6 +64,27 @@ final class FoundationTests: XCTestCase {
         }
     }
 
+    func testSeedRollsBackWhenIndexedRecordIsNotInserted() throws {
+        let store = try FileStore()
+        try store.writeRaw("existing.dat", [0x10])
+        XCTAssertTrue(store.write("existing-index.dat", key: [0x01], data: [0x20]))
+        let before = store.snapshot()
+        let duplicate = Data("""
+            {"files":{"seed.dat":{"type":"indexed","records":[["01","20"],["01","30"]]}}}
+            """.utf8)
+
+        XCTAssertThrowsError(try store.load(seed: duplicate)) { error in
+            XCTAssertEqual(error as? FileStore.SeedError, .indexedRecordNotInserted(file: "seed.dat", key: "01"))
+        }
+        XCTAssertEqual(store.snapshot(), before)
+
+        let valid = Data("""
+            {"files":{"seed.dat":{"type":"indexed","records":[["01","40"]]}}}
+            """.utf8)
+        try store.load(seed: valid)
+        XCTAssertEqual(store.snapshot(), ["seed.dat": ["01": "40"]])
+    }
+
     func testCheckDigitUsesLegacyAlphabet() {
         XCTAssertEqual(Maps09.checkDigit("K9P34Y"), 2)
         XCTAssertTrue(Maps09.verify("K9P34Y2"))

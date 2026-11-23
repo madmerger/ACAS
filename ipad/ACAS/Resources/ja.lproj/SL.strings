@@ -6,7 +6,7 @@
 "sales.proof.net" = "税抜額";
 "sales.proof.tax" = "税額";
 "sales.proof.gross" = "税込額";
-"action.generate" = "帳票を作成";
+"sales.action.generate" = "帳票を作成";
 "sales.customer.section" = "処理と得意先";
 "sales.date.title" = "処理日入力";
 "sales.customer.menu" = "得意先マスター管理";

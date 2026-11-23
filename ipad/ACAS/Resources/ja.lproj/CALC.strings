@@ -2,4 +2,4 @@
 "calculation.code" = "６桁のコード";
 "calculation.valid" = "有効なコードです";
 "calculation.invalid" = "入力したコードは無効です";
-"action.calculate" = "計算";
+"calculation.action.calculate" = "計算";

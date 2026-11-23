@@ -39,7 +39,7 @@ private struct SalesProofView: View {
         VStack(spacing: 0) {
             HStack {
                 Spacer()
-                Button(String(localized: "action.generate", table: "SL"), systemImage: "doc.badge.plus", action: generate)
+                Button(String(localized: "sales.action.generate", table: "SL"), systemImage: "doc.badge.plus", action: generate)
                     .buttonStyle(.borderedProminent)
                     .accessibilityIdentifier("action.generate")
             }
