@@ -31,7 +31,7 @@ REACH_CASES = {
     "ST-212": ("barcode", "バーコード入庫"),
     "ST-215": ("reports", "在庫帳票メニュー"),
     "ST-221": ("closePeriod", "在庫期間締めの準備"),
-    "ST-222": ("import", "在庫品目一括取込"),
+    "ST-222": ("menu", "在庫標準メニュー"),
     "ST-224": ("rebuild", "在庫ファイル圧縮の準備"),
     "ST-226": ("date.initial", "在庫開始時の処理日入力"),
 }
@@ -126,7 +126,7 @@ def reach_fixture(evidence, case):
     changes = expected_changes(evidence, targets["keyed_record_diff"])
     if legacy["verdict"] != "合格" or changes or not targets["screen_text"]:
         raise ValueError(f'{case["id"]}: 台帳を更新しない画面到達のレガシー実測ではありません')
-    if destination == "import":
+    if case["id"] == "ST-222":
         result = read_json(evidence_path(evidence, run / "result.json"))
         if result["error"] or result["changed"] or result["deleted"]:
             raise ValueError("ST-222: 取込を実行せず台帳を更新しなかった証跡が必要です")

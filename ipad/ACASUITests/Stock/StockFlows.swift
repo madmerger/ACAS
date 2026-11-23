@@ -128,9 +128,12 @@ final class StockFlows: XCTestCase {
 
     @MainActor
     func testReachST222() throws {
-        let app = try launchStockOperation("ST-222", "stock.import")
-        XCTAssertTrue(app.textViews["stock.importContents"].waitForExistence(timeout: 5))
-        XCTAssertFalse(app.buttons["stock.runImport"].isEnabled)
+        let app = try launchReach("ST-222")
+        tap(app, "stock.confirmDate")
+        XCTAssertTrue(app.buttons["stock.master"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["stock.closeStock"].exists)
+        XCTAssertFalse(app.descendants(matching: .any)["stock.import"].firstMatch.exists)
+        XCTAssertFalse(app.textViews["stock.importContents"].exists)
         verifyVerdict(app, "ST-222")
     }
 
