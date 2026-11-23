@@ -47,7 +47,7 @@ final class SalesInvoiceFlows: XCTestCase {
     private func create(_ id: String, credit: Bool) throws {
         let (app, input) = try launch(id)
         tap("sales.invoice.pending", in: app)
-        func fill(_ name: String, field: String, replacing: Bool = false, submit: Bool = false) throws {
+        func fill(_ name: String, field: String, replacing: Bool = false, submit: Bool = true) throws {
             let text = try XCTUnwrap(input[name])
             let element = app.textFields["sales.invoice." + field]
             reveal(element, in: app)
@@ -55,21 +55,21 @@ final class SalesInvoiceFlows: XCTestCase {
             if replacing, let old = element.value as? String {
                 element.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: old.count))
             }
-            element.typeText(text)
-            if submit { element.typeText("\n") }
+            element.typeText(submit ? text + "\n" : text)
+            if submit { XCTAssertTrue(app.keyboards.firstMatch.waitForNonExistence(timeout: 5), field) }
         }
         if credit {
             tap("貸方票", in: app)
         }
         try fill("customer", field: "customer")
         try fill("reference", field: "reference")
-        try fill("order", field: "order", submit: true)
+        try fill("order", field: "order")
         tap("sales.invoice.line.0", in: app)
         tap("税率 1", in: app)
         try fill("product", field: "product.0")
         try fill("analysis", field: "analysis.0")
         try fill("description", field: "description.0")
-        try fill("unit", field: "unit.0", replacing: true)
+        try fill("unit", field: "unit.0", replacing: true, submit: false)
         let editProof = XCTAttachment(screenshot: app.screenshot())
         editProof.name = id + "-明細入力"
         editProof.lifetime = .keepAlways
