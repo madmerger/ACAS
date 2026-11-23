@@ -164,7 +164,7 @@ extension PurchaseLedger {
         let reusable = deleted.flatMap { bytes -> (offset: Int, number: Int64)? in
             for offset in stride(from: 0, to: max(0, bytes.count - 18), by: 19) {
                 if let number = Int64(String(decoding: bytes[offset..<(offset + 8)], as: UTF8.self)),
-                   number > 0, header(number) == nil {
+                   number > 0, self.header(number) == nil {
                     return (offset, number)
                 }
             }
