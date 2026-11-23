@@ -2,6 +2,20 @@ import XCTest
 @testable import ACASCore
 
 final class SalesPaymentsTests: XCTestCase {
+    func testEntryPrioritizesPendingSalesOverMissingOpenItems() throws {
+        let (store, context, _) = try setup()
+        let file = RelativeFile(store, path: "ledgers/acas/system.dat", recordSize: 1024)
+        var settings = try SalesLedger(context).systemRecord()
+        settings["file-statuses"] = String(repeating: "0", count: 32)
+        try file.write(1, settings.bytes)
+        let payments = SalesPayments(context)
+        XCTAssertEqual(try payments.blocker(for: .entry), .missingOpenItems)
+
+        settings.setInt("s-flag-i", 1)
+        try file.write(1, settings.bytes)
+        XCTAssertEqual(try payments.blocker(for: .entry), .pendingSales)
+    }
+
     func testPaymentProofAlignsShiftJISNamesWithoutShiftingDateOrAmounts() throws {
         let (store, context, date) = try setup()
         var settings = try SalesLedger(context).systemRecord()
