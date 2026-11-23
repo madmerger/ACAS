@@ -105,6 +105,7 @@ private struct SalesProofView: View {
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @State private var entries: [SalesProofReport.Entry]?
     @State private var failed = false
+    @State private var failure: String.LocalizationValue = "sales.proof.failed"
 
     var body: some View {
         VStack(spacing: 0) {
@@ -142,8 +143,8 @@ private struct SalesProofView: View {
             }
         }
         .navigationTitle(String(localized: "sales.proof", table: "SL"))
-        .alert(String(localized: "sales.proof.failed", table: "SL"), isPresented: $failed) {
-            Button("action.close", role: .cancel) {}
+        .alert(slText(failure), isPresented: $failed) {
+            Button(slText("sales.action.dismiss"), role: .cancel) {}
         }
     }
 
@@ -151,7 +152,12 @@ private struct SalesProofView: View {
         do {
             entries = try SalesProofReport.generate(in: workspace.context)
             workspace.completed("sales-proof")
+        } catch SalesProofReport.Error.noTransactions {
+            failure = "sales.proof.noTransactions"
+            failed = true
+            workspace.completed("sales-proof")
         } catch {
+            failure = "sales.proof.failed"
             failed = true
         }
     }

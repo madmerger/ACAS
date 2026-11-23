@@ -5,11 +5,16 @@ final class SalesReachFlows: XCTestCase {
     func testSL002() throws { try customerMenu("SL-002") }
     func testSL004() throws { try salesEntry("SL-004") }
     func testSL005() throws { try salesAmendment("SL-005") }
+    func testSL006() throws { try noTransactionsToProof("SL-006") }
     func testSL008() throws { try paymentEntry("SL-008") }
     func testSL009() throws { try paymentAmend("SL-009") }
     func testSL010() throws { try paymentProof("SL-010") }
     func testSL011() throws { try paymentPost("SL-011") }
     func testSL012() throws { try analysisMenu("SL-012") }
+    func testSL015() throws { try missingOpenItems("SL-015", screen: "statement", title: "得意先明細書") }
+    func testSL016() throws { try missingOpenItems("SL-016", screen: "dunning", title: "督促状出力") }
+    func testSL021() throws { try periodConfirmation("SL-021") }
+    func testSL022() throws { try customerReport("SL-022") }
     func testSL202() throws { try customerMenu("SL-202") }
     func testSL203() throws { try customer("SL-203", mode: "register", title: "得意先登録") }
     func testSL204() throws { try customer("SL-204", mode: "edit", title: "得意先変更") }
@@ -17,6 +22,7 @@ final class SalesReachFlows: XCTestCase {
     func testSL207() throws { try customer("SL-207", mode: "view", title: "得意先表示") }
     func testSL209() throws { try salesEntry("SL-209") }
     func testSL210() throws { try salesAmendment("SL-210") }
+    func testSL211() throws { try noTransactionsToProof("SL-211") }
     func testSL213() throws { try paymentEntry("SL-213") }
     func testSL214() throws { try paymentAmend("SL-214") }
     func testSL215() throws { try paymentProof("SL-215") }
@@ -34,6 +40,9 @@ final class SalesReachFlows: XCTestCase {
             XCTAssertTrue(app.buttons["sales.analysis.save"].exists)
         }
     }
+
+    func testSL225() throws { try missingOpenItems("SL-225", screen: "statement", title: "得意先明細書") }
+    func testSL226() throws { try missingOpenItems("SL-226", screen: "dunning", title: "督促状出力") }
 
     func testSL231() throws {
         try reach("SL-231", through: ["sales.invoice.menu"], title: "請求書サブシステム") { app in
@@ -58,11 +67,51 @@ final class SalesReachFlows: XCTestCase {
         }
     }
 
+    func testSL239() throws { try periodConfirmation("SL-239") }
+    func testSL240() throws { try customerReport("SL-240") }
+
     private func customerMenu(_ id: String) throws {
         try reach(id, through: ["sales.customers"], title: "得意先マスター管理") { app in
             for operation in ["register", "edit", "remove", "report", "view"] {
                 XCTAssertTrue(app.buttons["sales.customer." + operation].exists)
             }
+        }
+    }
+
+    private func noTransactionsToProof(_ id: String) throws {
+        try reach(id, through: ["sales.proof"], title: "未転記売上取引の確認帳票") { app in
+            let generate = app.buttons["action.generate"]
+            XCTAssertTrue(generate.isHittable)
+            generate.tap()
+            XCTAssertTrue(app.alerts.staticTexts["確認する売上取引がありません"].waitForExistence(timeout: 5))
+            XCTAssertFalse(app.tables["sales.proof.preview"].exists)
+        }
+    }
+
+    private func missingOpenItems(_ id: String, screen: String, title: String) throws {
+        try reach(id, through: ["sales." + screen], title: title,
+                  verdict: screen == "dunning" ? "mismatch" : "match") { app in
+            let failure = app.staticTexts["sales." + screen + ".error"]
+            XCTAssertTrue(failure.waitForExistence(timeout: 5))
+            XCTAssertEqual(failure.label, "売掛明細のファイルがありません")
+            XCTAssertFalse(app.buttons["sales.statement.generate"].exists)
+            XCTAssertFalse(app.buttons["sales.dunning.next"].exists)
+        }
+    }
+
+    private func periodConfirmation(_ id: String) throws {
+        try reach(id, through: ["sales.period"], title: "売掛元帳の期間締め") { app in
+            XCTAssertTrue(app.staticTexts["sales.period.notice"].exists)
+            XCTAssertEqual(app.switches["sales.period.backedUp"].value as? String, "0")
+            XCTAssertFalse(app.buttons["sales.period.execute"].exists)
+        }
+    }
+
+    private func customerReport(_ id: String) throws {
+        try reach(id, through: ["sales.customers", "sales.customer.report"], title: "得意先一覧印刷") { app in
+            XCTAssertTrue(app.staticTexts["抽出条件"].exists)
+            XCTAssertEqual(app.textFields["得意先コードの先頭"].value as? String, "得意先コードの先頭")
+            XCTAssertTrue(app.buttons["sales.customer.report.generate"].exists)
         }
     }
 
@@ -144,7 +193,7 @@ final class SalesReachFlows: XCTestCase {
         XCTAssertEqual(app.buttons["sales.invoice.save"].label, save)
     }
 
-    private func reach(_ id: String, through route: [String], title: String,
+    private func reach(_ id: String, through route: [String], title: String, verdict: String = "match",
                        check: (XCUIApplication) -> Void) throws {
         continueAfterFailure = false
         let bundle = Bundle(for: Self.self)
@@ -160,7 +209,7 @@ final class SalesReachFlows: XCTestCase {
         XCTAssertTrue(app.staticTexts["case.verdict.running"].exists)
         for identifier in ["section.sales", "sales.date.save"] + route {
             let button = app.descendants(matching: .any).matching(identifier: identifier).firstMatch
-            if identifier == "sales.analysis.codes", !button.isHittable {
+            for _ in 0..<3 where !button.isHittable {
                 let start = app.coordinate(withNormalizedOffset: CGVector(dx: 0.80, dy: 0.80))
                 let end = app.coordinate(withNormalizedOffset: CGVector(dx: 0.80, dy: 0.34))
                 start.press(forDuration: 0.05, thenDragTo: end)
@@ -171,7 +220,7 @@ final class SalesReachFlows: XCTestCase {
         }
         XCTAssertTrue(app.navigationBars[title].waitForExistence(timeout: 5), title)
         check(app)
-        XCTAssertTrue(app.staticTexts["case.verdict.match"].waitForExistence(timeout: 5), id)
+        XCTAssertTrue(app.staticTexts["case.verdict." + verdict].waitForExistence(timeout: 5), id)
         let attachment = XCTAttachment(screenshot: app.screenshot())
         attachment.name = id
         attachment.lifetime = .keepAlways
