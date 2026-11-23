@@ -661,24 +661,24 @@ final class PurchaseLedgerTests: XCTestCase {
         let ledger = try makeLedger()
         let removed = try addSupplier(ledger)
         var another = ledger.newSupplier
-        another.code = "SUP2"
+        another.code = "SUPP02"
         another.name = "Supplier 2"
         another.address1 = "住所\\市"
-        try ledger.saveSupplier(another, creating: true)
+        let otherCode = try ledger.saveSupplier(another, creating: true)
 
         var payment = PurchaseLedger.Payment(date: ledger.processingDate)
         payment.amount = 500
         payment.supplier = removed
         try ledger.savePayment(payment)
         try ledger.removeSupplier(code: removed, deactivate: false)
-        payment.supplier = another.code
+        payment.supplier = otherCode
         try ledger.savePayment(payment)
         try ledger.proofPayments()
 
-        XCTAssertEqual(Set(try ledger.postPayments().map(\.supplier)), [removed, another.code])
+        XCTAssertEqual(Set(try ledger.postPayments().map(\.supplier)), [removed, otherCode])
         XCTAssertTrue(ledger.pendingPayments().isEmpty)
         XCTAssertNil(ledger.supplierRecord(removed))
-        XCTAssertEqual(ledger.supplierRecord(another.code)?.int("purch-unapplied"), 500)
+        XCTAssertEqual(ledger.supplierRecord(otherCode)?.int("purch-unapplied"), 500)
     }
 
     func testPaymentPostingUsesFreeGLBatchAfterInvoicePosting() throws {
