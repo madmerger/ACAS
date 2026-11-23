@@ -1,12 +1,108 @@
-﻿<Window x:Class="Acas.App.MainWindow"
+<Window x:Class="Acas.App.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Acas.App"
-        mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
-
-    </Grid>
+        Title="ACAS 会計システム (日本語版)" Width="1366" Height="768" MinWidth="1280" MinHeight="720"
+        WindowStartupLocation="CenterScreen" Background="#1b2330" FontFamily="Yu Gothic UI, Meiryo UI" FontSize="13">
+    <DockPanel>
+        <Border DockPanel.Dock="Top" Background="#243044" Padding="10,6">
+            <DockPanel>
+                <TextBlock x:Name="Verdict" DockPanel.Dock="Right" FontSize="20" FontWeight="Bold" Foreground="White" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                <TextBlock x:Name="Caption" Text="ACAS 会計システム" FontSize="20" FontWeight="Bold" Foreground="#ffd866" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
+            </DockPanel>
+        </Border>
+        <StatusBar DockPanel.Dock="Bottom" Background="#243044" Foreground="Gainsboro">
+            <StatusBarItem><TextBlock x:Name="Status" Text="準備完了"/></StatusBarItem>
+        </StatusBar>
+        <TabControl x:Name="Tabs" DockPanel.Dock="Left" Width="440" Margin="6">
+            <TabItem Header="業務">
+                <StackPanel Margin="10">
+                    <TextBlock Text="業務メニュー" FontWeight="Bold" Margin="0,0,0,6"/>
+                    <Button x:Name="BtnAcas" Content="ACAS を起動 (GL / SL / PL / 在庫)" Height="34" Margin="0,3" Click="StartAcas"/>
+                    <Button x:Name="BtnIrs" Content="IRS (簡易会計) を起動" Height="34" Margin="0,3" Click="StartIrs"/>
+                    <Button x:Name="BtnStop" Content="実行中の業務を中断" Height="30" Margin="0,3" Click="StopProgram"/>
+                    <TextBlock Text="ローカルデータベース" FontWeight="Bold" Margin="0,16,0,6"/>
+                    <TextBlock x:Name="DbPath" TextWrapping="Wrap" Foreground="Gray"/>
+                    <DockPanel Margin="0,6">
+                        <Button DockPanel.Dock="Right" Content="初期データ読込" Width="110" Margin="6,0,0,0" Click="LoadBaseline"/>
+                        <ComboBox x:Name="Baselines"/>
+                    </DockPanel>
+                    <TextBlock TextWrapping="Wrap" Foreground="Gray" Margin="0,10,0,0"
+                               Text="操作はレガシー端末と同じキーで行います (英字キーでメニュー選択、Enter で確定、Esc で戻る、Tab/↑↓ で項目移動)。画面をクリックするとキー入力を受け付けます。"/>
+                </StackPanel>
+            </TabItem>
+            <TabItem Header="同一性テスト">
+                <DockPanel Margin="8">
+                    <StackPanel DockPanel.Dock="Top">
+                        <DockPanel>
+                            <Button DockPanel.Dock="Right" Content="参照..." Width="60" Margin="6,0,0,0" Click="BrowseEvidence"/>
+                            <TextBox x:Name="EvidenceDir" IsReadOnly="True" ToolTip="証跡フォルダ (入力/シナリオ台帳.json と runs/ を含む)"/>
+                        </DockPanel>
+                        <DockPanel Margin="0,6">
+                            <TextBlock Text="絞込:" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                            <TextBox x:Name="Filter" TextChanged="FilterChanged" ToolTip="ケースID の接頭辞 (例: GL-, SYS-00)"/>
+                        </DockPanel>
+                    </StackPanel>
+                    <StackPanel DockPanel.Dock="Bottom">
+                        <DockPanel Margin="0,6,0,0">
+                            <TextBlock Text="キー間隔(ms):" VerticalAlignment="Center"/>
+                            <TextBox x:Name="Delay" Text="120" Width="50" Margin="6,0"/>
+                            <Button Content="選択を再生" Width="90" Margin="0,0,6,0" Click="PlaySelected"/>
+                            <Button Content="表示中を全件再生" Width="120" Margin="0,0,6,0" Click="PlayAll"/>
+                            <Button Content="中止" Width="50" Click="CancelPlay"/>
+                        </DockPanel>
+                        <DockPanel Margin="0,6,0,0">
+                            <Button DockPanel.Dock="Right" Content="結果を JSON 保存" Width="120" Click="SaveResults"/>
+                            <TextBlock x:Name="Summary" VerticalAlignment="Center" Text="一致 0 / 不一致 0 / 対象外 0"/>
+                        </DockPanel>
+                    </StackPanel>
+                    <ListView x:Name="Cases" Margin="0,6,0,0" MouseDoubleClick="PlaySelected">
+                        <ListView.View>
+                            <GridView>
+                                <GridViewColumn Header="ケース" Width="80" DisplayMemberBinding="{Binding Id}"/>
+                                <GridViewColumn Header="判定" Width="60" DisplayMemberBinding="{Binding Verdict}"/>
+                                <GridViewColumn Header="名称" Width="250" DisplayMemberBinding="{Binding Title}"/>
+                            </GridView>
+                        </ListView.View>
+                    </ListView>
+                </DockPanel>
+            </TabItem>
+            <TabItem Header="計算">
+                <StackPanel Margin="10">
+                    <TextBlock Text="計算ロジック" FontWeight="Bold" Margin="0,0,0,6"/>
+                    <ComboBox x:Name="CalcKind" SelectedIndex="0">
+                        <ComboBoxItem Content="チェックディジット (コード6桁)"/>
+                        <ComboBoxItem Content="日付検証 (dd/mm/yyyy)"/>
+                        <ComboBoxItem Content="VAT 額 (正味,税率)"/>
+                        <ComboBoxItem Content="売掛年齢区分 (経過日数)"/>
+                        <ComboBoxItem Content="在庫平均原価 (金額,数量)"/>
+                    </ComboBox>
+                    <TextBox x:Name="CalcIn" Margin="0,6" ToolTip="入力値 (複数はカンマ区切り)"/>
+                    <Button Content="計算" Height="30" Click="DoCalc"/>
+                    <TextBlock x:Name="CalcOut" FontSize="16" Margin="0,10" TextWrapping="Wrap"/>
+                </StackPanel>
+            </TabItem>
+            <TabItem Header="帳票">
+                <DockPanel Margin="8">
+                    <DockPanel DockPanel.Dock="Top">
+                        <Button DockPanel.Dock="Right" Content="更新" Width="60" Margin="6,0,0,0" Click="RefreshReports"/>
+                        <ComboBox x:Name="ReportList" SelectionChanged="ReportSelected"/>
+                    </DockPanel>
+                    <TextBox x:Name="ReportBody" Margin="0,6,0,0" IsReadOnly="True" FontFamily="MS Gothic" FontSize="12"
+                             HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" TextWrapping="NoWrap"/>
+                </DockPanel>
+            </TabItem>
+            <TabItem Header="対応表">
+                <DataGrid x:Name="Terms" AutoGenerateColumns="False" IsReadOnly="True" Margin="6" FontFamily="MS Gothic">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="レガシー (英語)" Binding="{Binding Key}" Width="200"/>
+                        <DataGridTextColumn Header="日本語" Binding="{Binding Value}" Width="200"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </TabItem>
+        </TabControl>
+        <Border Background="#101820" Margin="0,6,6,6" MouseDown="FocusTerminal">
+            <local:TerminalView x:Name="Term" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        </Border>
+    </DockPanel>
 </Window>

@@ -1,13 +1,13 @@
-﻿using System.Configuration;
-using System.Data;
 using System.Windows;
 
 namespace Acas.App;
 
-/// <summary>
-/// Interaction logic for App.xaml
-/// </summary>
 public partial class App : Application
 {
+    public static string[] Args = Array.Empty<string>();
+    protected override void OnStartup(StartupEventArgs e)
+    {
+        Args = e.Args;
+        base.OnStartup(e);
+    }
 }
-
