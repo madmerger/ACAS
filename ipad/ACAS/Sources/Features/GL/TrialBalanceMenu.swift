@@ -8,8 +8,10 @@ struct TrialBalanceMenu: View {
 
     var body: some View {
         List {
-            Button(ledgerText("trial-balance.detail"), action: printDetail)
+            Button(ledgerText("trial-balance.detail")) { printReport(structured: false) }
                 .accessibilityIdentifier("gl.trial-balance.detail")
+            Button(ledgerText("trial-balance.structured")) { printReport(structured: true) }
+                .accessibilityIdentifier("gl.trial-balance.structured")
             if let status {
                 Text(status).accessibilityIdentifier("gl.trial-balance.result")
             }
@@ -19,13 +21,17 @@ struct TrialBalanceMenu: View {
         .onAppear { workspace.completed("gl-trial-balance-menu") }
     }
 
-    private func printDetail() {
+    private func printReport(structured: Bool) {
         reportBytes = nil
         do {
-            try DetailedTrialBalance(workspace.context).generateReport()
+            if structured {
+                try StructuredTrialBalance(workspace.context).generateReport()
+            } else {
+                try DetailedTrialBalance(workspace.context).generateReport()
+            }
             reportBytes = workspace.context.store.readRaw(CompanySetup.reportPath)
-            status = ledgerText("trial-balance.ready")
-            workspace.completed("gl-trial-balance-detail")
+            status = ledgerText(structured ? "trial-balance.structured-ready" : "trial-balance.ready")
+            workspace.completed(structured ? "gl-trial-balance-structured" : "gl-trial-balance-detail")
         } catch DetailedTrialBalance.Error.missingLedger {
             status = ledgerText("trial-balance.missing")
         } catch {
