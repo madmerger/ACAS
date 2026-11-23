@@ -25,7 +25,7 @@ public class Stock extends StProgram {
             }
             sys = SystemFile.shared(ctx);
             if (sys.intv("scycle") == 0) { callSystemSetup(); continue; }
-            if (sys.intv("file-status", 14) == 0) {
+            if (sys.intv("file-status", 15) == 0) {
                 ctx.shared.put("ws-process-func", 1);
                 call("sl070", (Object) St.FILE_DEFS);
             }
