@@ -100,6 +100,7 @@ public static class SlRep
             (19, p + "Average Value   - [00000] [_] Enter invoice value & operator"),
             (21, p + "Overdue A/Cs    - [00000] [_] Enter number of days & operator"));
         if (dateRow) t.Paint(23, p + "Date Entered-[__________] [_] Enter date & operator");
+        if (prog.StartsWith("SL180")) c.OpenReport(Ctx.L + "prt-1").Close();
         await t.A(800 + col + 19, 6, init: "______");
         // TODO: 条件入力以降 (抽出・帳票出力) は未移植。入力後はメニューへ戻る。
         return 0;

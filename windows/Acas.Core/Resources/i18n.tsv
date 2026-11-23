@@ -615,3 +615,8 @@ Enter <X> to exit or <Return> to continue...[ ]	<X>で終了 / <Enter>で続行.
 Invoicing Data Deletion	請求データ削除
 Type [ ]  <1> = Receipt; <2> = Account; <3> = CrediT Note; <4> = Pro-Forma	種別 [ ]  <1>=領収; <2>=掛売; <3>=赤伝; <4>=見積請求
 Delivery / Picking Note Print	納品書・ピッキングリスト印刷
+Invoice Deletion Report         	請求削除帳票
+   Invoice No       Date         Cust No	   請求番号         日付         得意先
+       None to report	       該当なし
+Product Analysis Codes                 	商品分析コード
+    Code    Gl.Nos.      <-----Description------>   Print      -Type-	    ｺｰﾄﾞ    GL番号       <---------摘要--------->   印刷       -種別-

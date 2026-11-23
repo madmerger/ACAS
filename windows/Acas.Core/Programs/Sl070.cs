@@ -26,18 +26,27 @@ public static class Sl070
                 case 9: return 0;
                 case 1: await Grid(c, toDay, "Set-Up P/A Records", 32, true); break;
                 case 2: await Grid(c, toDay, "Amend/Delete P/A Records", 29, true); break;
-                case 3: await Head(c, toDay, "Print P/A Records", 32); break;
-                case 4: await Head(c, toDay, "Print All P/A Records", 32); break;
+                case 3: await Head(c, toDay, "Print P/A Records", 32, true); break;
+                case 4: await Head(c, toDay, "Print All P/A Records", 32, false); break;   // レガシー実測 (SL-221) は不定データ約 11MB を出力する。再現しない (未解消)
                 case 5: await Grid(c, toDay, "Display P/A Records", 31, false); break;
             }
         }
     }
 
-    private static async Task Head(Ctx c, string toDay, string title, int col)
+    private static async Task Head(Ctx c, string toDay, string title, int col, bool print)
     {
         var t = c.Crt;
         t.V(Prog, 0101, eos: true, fg: 2);
         t.D(title, 100 + col); t.V(Common.ToForm(c, toDay), 0171);
+        if (print)
+        {
+            // TODO: 分析コード明細行は未移植 (見出しのみ)
+            var rp = c.OpenReport(Ctx.L + "prt-1");
+            rp.Write(Prog.PadRight(33), new Lit("Product Analysis Codes".PadRight(39)), new Lit("Page "), "  1");
+            rp.Write(""); rp.Write(c.Sys.S("Usera").PadRight(70), Common.ToForm(c, toDay));
+            rp.Write(""); rp.Write(new Lit("    Code    Gl.Nos.      <-----Description------>   Print      -Type-"));
+            rp.Close();
+        }
         await t.A(2480, 1);
     }
 

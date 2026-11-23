@@ -38,11 +38,21 @@ public static class SlInv
                 case 2: case 3: await Sl910(c, toDay); break;
                 case 4: await Sl920(c, toDay); break;
                 case 5: await Sl940(c, toDay); break;
-                case 6: break;                       // sl200: レガシー実測では即時にメニューへ戻る
-                case 7: await Print(c, toDay, "SL930 (3.01.12)", "Invoice Printing", 34); break;
-                case 8: await Print(c, toDay, "SL950 (3.01.05)", "Delivery / Picking Note Print", 26); break;
+                case 6: Sl200(c, toDay); break;
+                case 7: await Print(c, toDay, "SL930 (3.01.12)", "Invoice Printing", 34, "prt-2"); break;
+                case 8: await Print(c, toDay, "SL950 (3.01.05)", "Delivery / Picking Note Print", 26, "prt-3"); break;
             }
         }
+    }
+
+    /// <summary>sl200: 請求削除帳票。TODO: 削除済み請求がある場合の明細行は未移植。</summary>
+    private static void Sl200(Ctx c, string toDay)
+    {
+        var rp = c.OpenReport(Ctx.L + "prt-1");
+        rp.Write(""); rp.Write("SL200 (3.01.04)".PadRight(29), new Lit("Invoice Deletion Report".PadRight(32)), Common.ToForm(c, toDay), "  ", new Lit("Page "), " 1");
+        rp.Write(""); rp.Write(new Lit("   Invoice No       Date         Cust No"));
+        rp.Write(""); rp.Write(""); rp.Write(new Lit("       None to report"));
+        rp.Close();
     }
 
     private static async Task FixedData(Ctx c, string toDay)
@@ -108,10 +118,11 @@ public static class SlInv
         return 0;
     }
 
-    private static async Task Print(Ctx c, string toDay, string prog, string title, int col)
+    private static async Task Print(Ctx c, string toDay, string prog, string title, int col, string prt)
     {
         var t = c.Crt;
         Head(c, toDay, prog, title, col);
+        c.OpenReport(Ctx.L + prt).Close();
         t.D("Print Or Re-Print.............  (P/R) ? - [P]", 0701);
         await t.A(0744, 1, init: "P");
     }

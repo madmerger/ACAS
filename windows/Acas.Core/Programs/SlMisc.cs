@@ -22,14 +22,6 @@ public static class SlPost
         var t = c.Crt;
         t.V("SL055 (3.01.06)", 0101, eos: true, fg: 2);
         t.V(Common.ToForm(c, toDay), 0171);
-        while (true)
-        {
-            t.D("OK to post Sales transactions (YES/NO) ?  [   ]", 0812);
-            var r = (await t.A(0855, 3, init: "   ")).ToUpperInvariant().Trim();
-            if (r == "NO") return 0;
-            if (r == "YES") break;
-        }
-        t.D(" ", 0801, eol: true);
         t.D("Working...........Please Wait", 1201);
         // レガシー実測 (SL-007): Open Item 2 ファイルが無く書込エラーで停止する
         t.D("SL121 Error writing to Open Item 2 File", 2301); t.V("35 File Not Found", 2341);

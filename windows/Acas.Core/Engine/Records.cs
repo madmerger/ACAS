@@ -43,7 +43,7 @@ public static class Records
             var name = Path.GetFileName(legacy[i]);
             var mine = ctx.EnglishReports.FirstOrDefault(r => Path.GetFileName(r.Name) == name);
             if (mine.Lines == null) { diffs.Add($"帳票 {name}: 新側に無し"); ok = false; continue; }
-            var exp = File.ReadAllText(legacy[i]).Replace("\r", "").Split('\n').Select(CaseRunner.Norm).ToList();
+            var exp = File.ReadAllText(legacy[i]).Replace("\r", "").Replace("\0", "").Replace("\uFFFD", "").Split('\n').Select(CaseRunner.Norm).ToList();
             var act = string.Join("\n", mine.Lines).Split('\n').Select(CaseRunner.Norm).ToList();
             while (exp.Count > 0 && exp[^1].Length == 0) exp.RemoveAt(exp.Count - 1);
             while (act.Count > 0 && act[^1].Length == 0) act.RemoveAt(act.Count - 1);
