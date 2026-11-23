@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ACAS 会計システム</title>
+  <link rel="stylesheet" href="app.css">
+  <script src="app.js" type="module"></script>
+</head>
+<body>
+<header class="topbar">
+  <a href="/" class="brand">ACAS <span>会計システム</span></a>
+  <nav aria-label="関連機能">
+    <a href="reports.html">帳票</a>
+    <a href="calc.html">計算ツール</a>
+  </nav>
+</header>
+<div class="workspace">
+  <aside class="sidebar">
+    <nav aria-label="業務システム">
+      <button type="button" id="btn-acas">会計・在庫管理</button>
+      <button type="button" id="btn-irs">簡易会計</button>
+    </nav>
+  </aside>
+  <main id="screen" tabindex="-1" aria-labelledby="view-title">
+    <p id="case-banner" class="case-banner" hidden></p>
+    <div class="view-header">
+      <h1 id="view-title">業務システムを選択</h1>
+      <p id="status" role="status"></p>
+    </div>
+    <section id="choices" class="choices" aria-label="業務メニュー" hidden></section>
+    <form id="operation" class="panel" autocomplete="off" hidden>
+      <div id="fields" class="fields"></div>
+      <div id="actions" class="actions"></div>
+    </form>
+    <section id="details" aria-label="画面の情報" hidden></section>
+  </main>
+</div>
+</body>
+</html>
