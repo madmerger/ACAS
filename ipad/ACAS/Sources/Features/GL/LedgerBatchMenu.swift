@@ -5,11 +5,14 @@ struct LedgerBatchMenu: View {
     let workspace: Workspace
     @State private var batches: [LedgerBatch] = []
     @State private var editing = false
+    @State private var preparationFailed = false
 
     var body: some View {
         List {
             Button(ledgerText("batch-new")) { editing = true }
                 .accessibilityIdentifier("gl.batch.new")
+                .disabled(preparationFailed)
+            if preparationFailed { Text(ledgerText("batch-error.storage")) }
             Section(ledgerText("batch-list")) {
                 ForEach(batches) { batch in
                     LabeledContent("\(batch.id)　\(batch.description)", value: ledgerText(batch.posted ? "batch-posted" : batch.closed ? "batch-closed" : "batch-open"))
@@ -18,7 +21,16 @@ struct LedgerBatchMenu: View {
             }
         }
         .navigationTitle(ledgerText("batches"))
-        .onAppear(perform: reload)
+        .onAppear {
+            do {
+                try LedgerBatches(workspace.context).prepare()
+                preparationFailed = false
+                reload()
+                workspace.completed("gl-batch-menu")
+            } catch {
+                preparationFailed = true
+            }
+        }
         .sheet(isPresented: $editing, onDismiss: reload) {
             NavigationStack { LedgerBatchEditor(workspace: workspace) }
         }
@@ -97,6 +109,7 @@ private struct LedgerBatchEditor: View {
         .onAppear {
             date = workspace.context.now()
             cycle = String(CompanySetup(workspace.context).settings.number("scycle"))
+            workspace.completed("gl-batch-new-menu")
         }
     }
 

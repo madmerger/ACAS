@@ -100,6 +100,17 @@ public struct LedgerBatches {
         batches.allRecords().filter { $0.int("ledger") == 1 }.map(LedgerBatch.init)
     }
 
+    public func prepare() throws {
+        if !context.store.exists(Self.batchPath) {
+            var end = Record(Self.batchLayout)
+            end.setInt("ledger", 9)
+            end.setInt("number", 99999)
+            end.setInt("cycle", 99)
+            guard batches.write(end) == "00" else { throw Error.storage }
+        }
+        if !postings.exists { try postings.write(1, Record(Self.postingLayout).bytes) }
+    }
+
     public func add(_ draft: LedgerBatchDraft, lines: [JournalLine]) throws -> Int {
         guard let bytes = system.read(1) else { throw Error.missingCompany }
         var settings = Record(SystemLayout.layout, bytes: bytes)
@@ -151,14 +162,7 @@ public struct LedgerBatches {
             return posting
         }
         guard batches.read(key: batches.key(of: batch)) == nil else { throw Error.storage }
-        if !context.store.exists(Self.batchPath) {
-            var end = Record(Self.batchLayout)
-            end.setInt("ledger", 9)
-            end.setInt("number", 99999)
-            end.setInt("cycle", 99)
-            guard batches.write(end) == "00" else { throw Error.storage }
-        }
-        if !postings.exists { try postings.write(1, Record(Self.postingLayout).bytes) }
+        try prepare()
         for (index, record) in records.enumerated() { try postings.write(start + index + 1, record.bytes) }
         guard batches.write(batch) == "00" else { throw Error.storage }
         settings.setInt("next-batch", Int64(number + 1))

@@ -2,6 +2,20 @@ import ACASCore
 import XCTest
 
 final class LedgerBatchesTests: XCTestCase {
+    func testPrepareCreatesOnlySentinelAndIsIdempotent() throws {
+        let store = try FileStore()
+        let batches = LedgerBatches(BusinessContext(store: store))
+
+        try batches.prepare()
+        try batches.prepare()
+
+        let sentinel = try XCTUnwrap(store.read("ledgers/acas/batch.dat", key: Array("999999".utf8)))
+        XCTAssertEqual(sentinel.count, 96)
+        XCTAssertEqual(Array(sentinel.prefix(12)), Array("999999000099".utf8))
+        XCTAssertTrue(batches.all.isEmpty)
+        XCTAssertTrue(store.exists("ledgers/acas/posting.dat"))
+    }
+
     func testBatchAndPostingBytesAndValidation() throws {
         let store = try FileStore()
         let context = BusinessContext(store: store)
