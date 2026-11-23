@@ -18,7 +18,14 @@ public struct ReplayCase: Codable, Sendable, Identifiable {
     public var menuPath: [String]?
 
     public static func load(_ data: Data) throws -> [ReplayCase] {
-        try JSONDecoder().decode([ReplayCase].self, from: data)
+        var cases = try JSONDecoder().decode([ReplayCase].self, from: data)
+        // レガシーで他ケースの実行内に含まれるケース (例: SL-090 は SYS-001 内) は、その実行と同じ手順・初期データで再現する
+        for i in cases.indices where cases[i].steps.isEmpty {
+            guard let ref = cases[i].menuPath?.first, let src = cases.first(where: { $0.id == ref }) else { continue }
+            cases[i].steps = src.steps; cases[i].baseline = src.baseline; cases[i].app = src.app
+            cases[i].irsPath = src.irsPath; cases[i].expectExit = src.expectExit
+        }
+        return cases
     }
 }
 
