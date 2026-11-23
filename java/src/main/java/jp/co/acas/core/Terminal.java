@@ -29,7 +29,8 @@ public final class Terminal {
     public int crtStatus;
     /** COB_SCREEN_ESC / COB_SCREEN_EXCEPTIONS 相当。false の間は Esc / ファンクションキーを無視する。 */
     public boolean escEnabled = false, exceptionsEnabled = false;
-    private final List<String> history = new ArrayList<>();
+    private static final int MAX_HISTORY = 1024;
+    private final java.util.ArrayDeque<String> history = new java.util.ArrayDeque<>();
 
     public Terminal() { clear(); }
 
@@ -264,7 +265,10 @@ public final class Terminal {
                 if (left <= 0) break;
                 try { changed.awaitNanos(left); } catch (InterruptedException e) { Thread.currentThread().interrupt(); break; }
             }
-            history.add(text(false));
+            if (!ks.isEmpty()) {
+                if (history.size() == MAX_HISTORY) history.removeFirst();
+                history.addLast(text(false));
+            }
         } finally { lock.unlock(); }
     }
     public void awaitIdle(long timeoutMs) { feed(List.of(), timeoutMs); }
