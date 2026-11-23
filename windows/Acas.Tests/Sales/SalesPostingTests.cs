@@ -67,12 +67,48 @@ public sealed class SalesPostingTests
         var change = Assert.IsType<FormScreen>(analysis.Items.Single(i => i.Id == "SalesAnalysisChange").Open!());
         var selected = Assert.IsType<MenuScreen>(change.Submit(values));
         var editor = Assert.IsType<FormScreen>(selected.Items.Single(i => i.Id == "SalesAnalysisEditSelected").Open!());
-        var fields = editor.Fields.Cast<TextField>().ToDictionary(f => f.Id, f => (object?)f.Value);
-        Assert.Equal("緊急用", fields["SalesAnalysisDescription"]);
+        var action = Assert.IsType<ChoiceField>(editor.Fields.Single(f => f.Id == "SalesAnalysisDescriptionAction"));
+        Assert.Equal("現在の分析名：緊急用", action.Label);
+        Assert.Equal("", Assert.IsType<TextField>(editor.Fields.Single(f => f.Id == "SalesAnalysisDescription")).Value);
+        var fields = EditorFields(editor);
         byte[] before = db.Read(SalesLedger.AnalysisFile, "Sa1")!;
+        before[32] = 0; // Preserve even the original padding byte.
+        db.Put(SalesLedger.AnalysisFile, "Sa1", before);
         Assert.IsType<ConfirmationScreen>(editor.Submit(new FormValues(fields))).Confirm();
         Assert.Equal(before, db.Read(SalesLedger.AnalysisFile, "Sa1"));
     }
+
+    [Fact]
+    public void AnalysisEditorAcceptsOnlyNewNamesThatFitTheFixedByteField()
+    {
+        using var db = new Db();
+        db.LoadBaseline("sl-printed");
+        var sales = new SalesLedger(db);
+        sales.SaveAnalysis("vo", "000000", "VAT Output Invoices/CN's", "", false);
+        var menu = new SalesScreens(sales).MainMenu();
+        var analysis = Assert.IsType<MenuScreen>(menu.Items.Single(i => i.Id == "SalesAnalysis").Open!());
+        var change = Assert.IsType<FormScreen>(analysis.Items.Single(i => i.Id == "SalesAnalysisChange").Open!());
+        var selected = Assert.IsType<MenuScreen>(change.Submit(new FormValues(new Dictionary<string, object?>
+        {
+            ["SalesFindAnalysisCode"] = "vo"
+        })));
+        var editor = Assert.IsType<FormScreen>(selected.Items.Single(i => i.Id == "SalesAnalysisEditSelected").Open!());
+        var action = Assert.IsType<ChoiceField>(editor.Fields.Single(f => f.Id == "SalesAnalysisDescriptionAction"));
+        Assert.Equal("現在の分析名：売上付加価値税（請求書・貸方伝票）", action.Label);
+        var fields = EditorFields(editor);
+        fields["SalesAnalysisDescriptionAction"] = "1";
+        fields["SalesAnalysisDescription"] = new string('税', 13);
+        byte[] before = db.Read(SalesLedger.AnalysisFile, "Svo")!;
+        var rejected = Assert.IsType<InformationScreen>(Assert.IsType<ConfirmationScreen>(editor.Submit(new FormValues(fields))).Confirm());
+        Assert.Contains("固定長レコード", rejected.Message);
+        Assert.Equal(before, db.Read(SalesLedger.AnalysisFile, "Svo"));
+        fields["SalesAnalysisDescription"] = new string('税', 12);
+        Assert.IsType<MenuScreen>(Assert.IsType<ConfirmationScreen>(editor.Submit(new FormValues(fields))).Confirm());
+        Assert.Equal(fields["SalesAnalysisDescription"], sales.AnalysisCodes().Single(c => c.Code == "vo").Description);
+    }
+
+    private static Dictionary<string, object?> EditorFields(FormScreen editor) => editor.Fields.ToDictionary(
+        f => f.Id, f => f is TextField text ? (object?)text.Value : ((ChoiceField)f).Value);
 
     [Fact]
     public void MissingCustomerNameIsLocalizedInReportsWithoutChangingTheLegacyRecord()

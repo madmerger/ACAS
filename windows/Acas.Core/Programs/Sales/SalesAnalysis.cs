@@ -57,7 +57,7 @@ public sealed partial class SalesLedger
                 GetText(row, "description"), GetText(row, "print"))).ToArray();
     }
 
-    public void SaveAnalysis(string code, string account, string description, string print, bool replace)
+    public void SaveAnalysis(string code, string account, string? description, string print, bool replace)
     {
         code = code.TrimEnd();
         if (code.Length is < 1 or > 2 || code.Any(c => !char.IsAsciiLetterOrDigit(c) && c != '-') ||
@@ -69,7 +69,13 @@ public sealed partial class SalesLedger
         row.Set("ledger", "S");
         row.Set("code", code);
         row.Set("account", account);
-        SetText(row, "description", description, "分析名");
+        if (replace && description == null)
+        {
+            var existing = db.Read(AnalysisFile, key) ?? throw new SalesRuleException("分析コードが見つかりません。");
+            var field = AnalysisLayout.F["description"];
+            existing.AsSpan(field.Off, field.Len).CopyTo(row.B.AsSpan(field.Off, field.Len));
+        }
+        else SetText(row, "description", description ?? "", "分析名");
         SetText(row, "print", print, "印刷分類");
         bool saved = replace ? db.Rewrite(AnalysisFile, key, row.B) : db.Write(AnalysisFile, key, row.B);
         if (!saved) throw new SalesRuleException(replace ? "分析コードが見つかりません。" : "分析コードは登録済みです。");

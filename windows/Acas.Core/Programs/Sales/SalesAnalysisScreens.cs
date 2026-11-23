@@ -37,19 +37,25 @@ public sealed partial class SalesScreens
     private Screen AnalysisEditor(AnalysisCode? entry)
     {
         string title = entry == null ? "売上分析コード登録" : "売上分析コード変更";
+        bool translated = entry != null && entry.DisplayDescription != entry.Description;
         List<Field> fields = [];
         if (entry == null) fields.Add(new TextField("SalesAnalysisCode", "分析コード", MaxLength: 2));
+        fields.Add(new TextField("SalesAnalysisAccount", "勘定番号", entry?.Account ?? "000000", 6));
+        if (translated)
+            fields.Add(new ChoiceField("SalesAnalysisDescriptionAction", $"現在の分析名：{entry!.DisplayDescription}",
+                [new("0", "保持する"), new("1", "入力した分析名に変更する")], "0"));
         fields.AddRange(
         [
-            new TextField("SalesAnalysisAccount", "勘定番号", entry?.Account ?? "000000", 6),
-            new TextField("SalesAnalysisDescription", "分析名", entry?.DisplayDescription ?? "", 24),
+            new TextField("SalesAnalysisDescription", translated ? "新しい分析名（24バイト以内）" : "分析名",
+                translated ? "" : entry?.Description ?? "", 24),
             new TextField("SalesAnalysisPrintCode", "印刷分類", entry?.PrintCode ?? "", 3)
         ]);
         return Form(title, fields, "保存内容を確認", v => Confirm(title, "分析コードを保存しますか。", "保存",
             () =>
             {
-                string description = v.Text("SalesAnalysisDescription");
-                if (entry != null && description == entry.DisplayDescription) description = entry.Description;
+                string? description = v.Text("SalesAnalysisDescription");
+                if (translated ? v.Choice("SalesAnalysisDescriptionAction") != "1" : entry?.Description == description)
+                    description = null;
                 sales.SaveAnalysis(entry?.Code ?? v.Text("SalesAnalysisCode"), v.Text("SalesAnalysisAccount"),
                     description, v.Text("SalesAnalysisPrintCode"), entry != null);
                 return AnalysisMenu();
