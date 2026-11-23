@@ -218,3 +218,77 @@ Vat Account	消費税勘定
 Proforma Retention In Days 	見積請求書の保存日数
 - [   ]	- [   ]
 Details Ok To File (Y/N) ...........[Y]	この内容で登録しますか (Y/N) .......[Y]
+SL003 Hit Return To Continue	SL003 Enter で続行
+SL006 Note Details & Hit Return to continue	SL006 内容を確認し Enter で続行
+SL180 Err on Invoice file write : 	SL180 請求書ファイル書込エラー :
+SL181 Invoice To Credit Does Not Exist On Open Item File	SL181 対象請求書が未決済明細にありません
+SL182 Invoice To Credit Is Paid	SL182 対象請求書は入金済みです
+SL183 Invoice To Credit Has Query Flag Set	SL183 対象請求書は照会フラグ設定中です
+SL184 You Can Only Credit Invoices. Not Receipts, Credit Notes Or Proformas	SL184 赤伝対象は請求書のみです（領収・赤伝・見積は不可）
+SL185 Credit of Prompt Pay/Late Charge will be Automatic	SL185 早期支払値引・延滞料の取消は自動で行います
+SL186 P.A. Code Does Not Exist	SL186 分析コードが存在しません
+SL190 Error on Writing to Audit File	SL190 監査ファイル書込エラー
+SL191 Error on Stock file Rewrite	SL191 在庫ファイル更新エラー
+Receipt <<<	領収 <<<
+Account <<<	掛売 <<<
+Credit Note <<<	赤伝 <<<
+Pro-Forma <<<	見積 <<<
+Enter Further Invoices? (Y/N) [Y] 	続けて入力しますか (Y/N) [Y]
+Level 1	レベル 1
+Level 2	レベル 2
+Stock Linked	在庫連携
+Line - 	行 -
+[          ]	[          ]
+Code	コード
+<---Net---->  Vat   Vat Amount  Gross Amount	<--税抜額-->  税   税額        税込額
+Net <          >	税抜<          >
+Vat <          >	税額<          >
+Invoice <          >	請求額  <          >
+Product    Code <---------Description-------->   Qty   Unit Price  Disc. Vat	商品       分析 <------------摘要------------>   数量  単価        値引  税
+Product     <----------Description--------->    Qty   Unit Price  Disc. Vat	商品        <-------------摘要------------->    数量  単価        値引  税
+SizEr	桁溢れ
+*********************	*********************
+Invoice Ok to	この請求書を
+Store	保存
+Print	印刷
+(Y/N) ? [Y]	(Y/N) ? [Y]
+Level 	レベル
+<---Net---->   <---Vat--->	<--税抜額-->   <--税額--->
+<---Gross-->     Days	<--税込額-->     日数
+Sub-Totals	小計
+{          }   {         }	{          }   {         }
+{          }     [  ]	{          }     [  ]
+[          ]   [         ]	[          ]   [         ]
+{          }	{          }
+Shipping & Handling	送料・手数料
+Late Charge	延滞料
+[          ]              	[          ]
+------------   -----------	------------   -----------
+------------	------------
+Itemised Totals	合計
+Invoicing Data Entry	請求情報入力
+*Date  [  /  /    ]*                   *	*日付  [  /  /    ]*                   *
+*A/C Nos  [       ]*Ref    [          ]*	*顧客番号 [       ]*参照   [          ]*
+*Invoice [        ]*Order  [          ]*	*請求書  [        ]*注文   [          ]*
+F1 = Setup new Customer; F8 = Only Show delivery details	F1 = 顧客新規登録; F8 = 納品先のみ表示
+Type [ ]  <1> = Receipt; <2> = Account; <3> = Credit Note; <4> = Pro-Forma	区分 [ ]  <1> = 領収; <2> = 掛売; <3> = 赤伝; <4> = 見積
+Creating Invoice File                    	請求書ファイルを作成中
+No such Customer	該当顧客なし
+Confirm Duplicate - [ ]	重複を確認 -        [ ]
+>>> 	>>>
+Overdue Balance <<<	支払期限超過 <<<
+Balance Exceeds Credit Limit <<<	残高が与信限度超過 <<<
+No Longer an Account Customer <<<	掛売対象外の顧客 <<<
+>>> Warning! 	>>> 警告!
+**********************	**********************
+None Zero To Abort	0 以外で中止
+Return To Continue	Enter で続行
+Using Deleted Invoice Numbers	削除済み請求書番号を再利用
+Invoice To Credit - [	赤伝対象請求書    - [
+] 	]
+Do you wish to use this Invoice No.? {N}	この請求書番号を使いますか          ? {N}
+..If so, you must ensure that it belonged to the same customer and that it is a 	..使う場合、同一顧客の請求書（領収ではない）であることを確認してください
+Invoice ie, not a receipt	（請求書のみ可）
+Amount O/S on Invoice is 	請求書の未収額は
+of which	うち
+is Late Charges	が延滞料
