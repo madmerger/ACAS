@@ -122,7 +122,7 @@ def calc_display(name, shown):
         label, key = ("税額", "vat") if name == "vat" else ("平均原価", "cost")
         match = re.fullmatch(label + r"：(-?[0-9]+(?:\.[0-9]+)?)", shown)
         return {key: match[1]} if match else None
-    match = re.fullmatch(r"通算日：([0-9]+)　日付：([0-9]{2}/[0-9]{2}/[0-9]{4})", shown)
+    match = re.fullmatch(r"通算日：([0-9]+)　日付：([0-9]{2}/[0-9]{2}/(?:[0-9]{2}|[0-9]{4}))", shown)
     if match:
         return {"valid": True, "integer": int(match[1]), "normalized": match[2]}
     match = re.fullmatch(r"日付が無効です（通算日：([0-9]+)）。日／月／年の順に確認してください。", shown)
