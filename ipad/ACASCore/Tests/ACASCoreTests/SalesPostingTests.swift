@@ -68,6 +68,44 @@ final class SalesPostingTests: XCTestCase {
         XCTAssertTrue(pages.last?.contains("Un-Applied Credits C/F") ?? false)
     }
 
+    func testUnappliedCreditDetailAndTotalPageBreakBoundaries() throws {
+        for (count, nextPageBeforeLastDetail, nextPageBeforeTotal) in [
+            (17, false, false), (18, false, true), (23, false, true), (24, false, true), (25, true, true),
+        ] {
+            let (store, context, invoices) = try newCompany()
+            var system = try invoices.settings()
+            system.setInt("page-lines", 29)
+            var flags = system.raw("file-statuses")
+            flags[18] = 0x31
+            system.setRaw("file-statuses", flags)
+            try invoices.systemFile.write(1, system.bytes)
+            _ = try invoices.save(draft(in: invoices))
+            _ = try invoices.printInvoices()
+            let items = SalesOpenItems.file(store)
+            for number in 101..<(101 + count) {
+                var credit = Record(SalesOpenItems.layout)
+                credit["customer"] = "CUST011"
+                credit.setInt("invoice", Int64(number))
+                credit.setInt("type", 3)
+                credit.setInt("net", -100)
+                XCTAssertEqual(items.write(credit), "00")
+            }
+
+            _ = try SalesPosting(context).post()
+            let report = try XCTUnwrap(store.readRaw(SalesPosting.exportPath))
+            let pages = report.split(separator: 0x0c).map { String(decoding: $0, as: UTF8.self) }
+            XCTAssertEqual(pages.count, nextPageBeforeTotal ? 2 : 1, "\(count)件")
+            let detail = "CUST011          \(100 + count)"
+            XCTAssertEqual(pages[0].contains(detail), !nextPageBeforeLastDetail, "\(count)件")
+            XCTAssertTrue(pages.last?.contains("Un-Applied Credits C/F") ?? false, "\(count)件")
+            if nextPageBeforeTotal {
+                XCTAssertTrue(pages.last?.contains("--Customer--   Invoice") ?? false, "\(count)件")
+                XCTAssertTrue(pages[0].contains("CUST011          124") || count < 24, "\(count)件")
+                XCTAssertEqual(pages.last?.contains(detail), nextPageBeforeLastDetail, "\(count)件")
+            }
+        }
+    }
+
     private func newCompany() throws -> (FileStore, BusinessContext, SalesInvoices) {
         let store = try FileStore()
         let context = BusinessContext(store: store, timeZone: .gmt, now: { Date(timeIntervalSince1970: 1_700_000_000) })
