@@ -12,6 +12,8 @@ if (args.Length is < 1 or > 2)
 }
 
 using var zip = ZipFile.OpenRead(args[0]);
+const int MaxExpandedBytes = 128 * 1024 * 1024;
+int expandedBytes = 0;
 using var ledger = ReadJson("入力/シナリオ台帳.json");
 var results = new List<CaseResult>();
 foreach (var item in ledger.RootElement.GetProperty("cases").EnumerateArray())
@@ -94,15 +96,17 @@ string Read(string name)
 {
     const int MaxEntryBytes = 16 * 1024 * 1024;
     var entry = zip.GetEntry(name) ?? throw new InvalidDataException("証跡が見つかりません: " + name);
-    if (entry.Length > MaxEntryBytes) throw new InvalidDataException("証跡の展開サイズが上限を超えています: " + name);
+    if (entry.Length > MaxEntryBytes || entry.Length > MaxExpandedBytes - expandedBytes)
+        throw new InvalidDataException("証跡の展開サイズが上限を超えています: " + name);
     using var stream = entry.Open();
     using var payload = new MemoryStream((int)entry.Length);
     Span<byte> buffer = stackalloc byte[8192];
     int read;
     while ((read = stream.Read(buffer)) != 0)
     {
-        if (payload.Length + read > MaxEntryBytes)
+        if (payload.Length + read > MaxEntryBytes || read > MaxExpandedBytes - expandedBytes)
             throw new InvalidDataException("証跡の展開サイズが上限を超えています: " + name);
+        expandedBytes += read;
         payload.Write(buffer[..read]);
     }
     payload.Position = 0;
