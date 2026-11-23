@@ -144,8 +144,15 @@ public struct PurchaseLedger {
             let second = Cobol.rtrim(supplier.address2)
             let previous = addressLines(record)
             if creating || first != previous.first || second != previous.second {
+                guard !first.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ||
+                      !second.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+                    throw Error.invalidAddress
+                }
                 let address = second.isEmpty && first.contains(delimiter) ? first : first + String(delimiter) + second
-                record["purch-address"] = address
+                let width = record.raw("purch-address").count
+                let bytes = SJIS.encode(address, size: max(width, address.utf8.count))
+                guard bytes.dropFirst(width).allSatisfy({ $0 == 0x20 }) else { throw Error.invalidAddress }
+                record.setRaw("purch-address", Array(bytes.prefix(width)))
             }
         } else {
             record["purch-addr1"] = supplier.address1

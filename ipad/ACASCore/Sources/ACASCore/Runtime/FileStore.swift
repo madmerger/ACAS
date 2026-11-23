@@ -39,6 +39,19 @@ public final class FileStore: @unchecked Sendable {
         guard result == SQLITE_OK else { throw databaseError(result) }
     }
 
+    func withTransaction<T>(_ operation: () throws -> T) throws -> T {
+        lock.lock(); defer { lock.unlock() }
+        try exec("BEGIN")
+        do {
+            let result = try operation()
+            try exec("COMMIT")
+            return result
+        } catch {
+            try? exec("ROLLBACK")
+            throw error
+        }
+    }
+
     private func run<T>(_ sql: String, _ binds: [Any?], _ body: (OpaquePointer) -> T) -> T {
         do { return try withStatement(sql, binds, body) }
         catch { fatalError("SQLite: \(error) [\(sql)]") }
