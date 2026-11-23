@@ -160,9 +160,12 @@ def initial_accounts_fixture(evidence, case):
     for slot in range(32):
         code = default_data[slot * 5:slot * 5 + 5].decode("ascii")
         if code != "00000":
+            tax = chr(default_data[224 + slot])
+            if tax not in "INO":
+                raise ValueError(f'IRS-091: 登録番号 {slot + 1} の付加価値税区分が不正です')
             input_defaults.append({"slot": slot + 1, "code": code,
                                    "label": default_data[160 + slot * 2:162 + slot * 2].decode("shift_jis"),
-                                   "usesTax": default_data[224 + slot] == ord("Y")})
+                                   "tax": tax})
     return {
         "id": case["id"], "title": "科目表と既定勘定を登録する", "workflow": "irs.defaults",
         "dateSeconds": timestamp, "seed": snapshot_seed(evidence, run),

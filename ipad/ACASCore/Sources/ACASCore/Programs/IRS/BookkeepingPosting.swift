@@ -27,7 +27,7 @@ extension BookkeepingService {
         else { throw Failure.invalidInput }
         let selected = defaults[defaultSlot - 1]
         guard selected.account != 0 else { throw Failure.missingDefault }
-        guard !selected.usesTax else { throw Failure.invalidInput }
+        guard selected.tax == .none else { throw Failure.invalidInput }
         let targetRecord = try postingAccount(account)
         let defaultRecord = try postingAccount(selected.account)
         let receiving = (side == .debit) == (amount > 0)

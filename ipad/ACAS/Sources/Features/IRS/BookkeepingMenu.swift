@@ -76,7 +76,7 @@ struct BookkeepingMenu: View {
             TableColumn(irsText("field.registration")) { Text(verbatim: String($0.id)) }
             TableColumn(irsText("field.account")) { Text(verbatim: String($0.account)) }
             TableColumn(irsText("field.abbreviation"), value: \.label)
-            TableColumn(irsText("field.tax")) { Text($0.usesTax ? irsText("field.applicable") : irsText("field.notApplicable")) }
+            TableColumn(irsText("field.tax")) { Text($0.tax.title) }
         }
         .navigationTitle(title)
     }
@@ -230,6 +230,16 @@ extension BookkeepingService.Category {
         case .income: irsText("category.income")
         case .expense: irsText("category.expense")
         case .other: irsText("category.other")
+        }
+    }
+}
+
+extension BookkeepingService.DefaultTax {
+    var title: String {
+        switch self {
+        case .none: irsText("tax.none")
+        case .input: irsText("tax.input")
+        case .output: irsText("tax.output")
         }
     }
 }

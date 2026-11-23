@@ -172,7 +172,7 @@ final class BookkeepingFlows: XCTestCase {
         struct Fixture: Decodable {
             struct Input: Decodable {
                 struct Account: Decodable { let code: String; let name: String; let category: String }
-                struct Default: Decodable { let slot: Int; let code: String; let label: String; let usesTax: Bool }
+                struct Default: Decodable { let slot: Int; let code: String; let label: String; let tax: String }
                 let accounts: [Account]
                 let defaults: [Default]
             }
@@ -182,6 +182,7 @@ final class BookkeepingFlows: XCTestCase {
         let url = try XCTUnwrap(Bundle(for: Self.self).url(forResource: id, withExtension: "json", subdirectory: "fixtures"))
         let input = try JSONDecoder().decode(Fixture.self, from: Data(contentsOf: url)).input
         let categories = ["R": "資産", "U": "負債", "A": "収益", "E": "費用", "C": "その他"]
+        let taxOptions = ["N": "対象外", "I": "仕入付加価値税", "O": "売上付加価値税"]
         let reserved = [30: "期首残高", 31: "仕入付加価値税", 32: "売上付加価値税"]
         try verifyReach(id, path: ["accounts", "accountCreate"]) { app in
             for account in input.accounts {
@@ -207,7 +208,11 @@ final class BookkeepingFlows: XCTestCase {
                 enter(app, "irs.defaultAccount", row.code)
                 if row.slot < 30 {
                     enter(app, "irs.defaultLabel", row.label)
-                    if row.usesTax { app.switches.firstMatch.tap() }
+                    guard let taxTitle = taxOptions[row.tax] else {
+                        return XCTFail("IRS-091: 付加価値税区分 \(row.tax)")
+                    }
+                    tap(app, "irs.defaultTax")
+                    tap(app, taxTitle)
                 }
                 tap(app, "irs.saveDefault")
                 XCTAssertEqual(app.staticTexts["irs.result"].label, "既定勘定を保存しました。")

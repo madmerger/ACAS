@@ -40,7 +40,6 @@
 "bookkeeping.field.accountCode" = "科目番号";
 "bookkeeping.field.accountName" = "科目名";
 "bookkeeping.field.amount" = "金額";
-"bookkeeping.field.applicable" = "対象";
 "bookkeeping.field.category" = "分類";
 "bookkeeping.field.childAccount" = "補助科目番号（任意）";
 "bookkeeping.field.choose" = "選択してください";
@@ -55,11 +54,12 @@
 "bookkeeping.field.defaultType" = "既定勘定の区分";
 "bookkeeping.field.journalNumber" = "仕訳番号";
 "bookkeeping.field.narrative" = "摘要";
-"bookkeeping.field.notApplicable" = "対象外";
 "bookkeeping.field.otherAccount" = "相手科目番号";
 "bookkeeping.field.registration" = "登録番号";
 "bookkeeping.field.tax" = "付加価値税";
-"bookkeeping.field.usesTax" = "付加価値税の対象";
+"bookkeeping.tax.none" = "対象外";
+"bookkeeping.tax.input" = "仕入付加価値税";
+"bookkeeping.tax.output" = "売上付加価値税";
 "bookkeeping.journal.empty" = "転記データがありません";
 "bookkeeping.menu.accounts" = "勘定科目管理";
 "bookkeeping.menu.amendment" = "転記修正";

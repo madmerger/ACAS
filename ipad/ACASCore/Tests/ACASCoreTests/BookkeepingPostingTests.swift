@@ -41,7 +41,7 @@ final class BookkeepingPostingTests: XCTestCase {
         let service = BookkeepingService(BusinessContext(store: store))
         try service.saveAccount(code: 10001, name: "既定", category: .assets, editing: false)
         try service.saveAccount(code: 20001, name: "相手", category: .expense, editing: false)
-        try service.saveDefault(slot: 1, account: 10001, label: "BK", usesTax: false)
+        try service.saveDefault(slot: 1, account: 10001, label: "BK", tax: .none)
         try service.writeLine(service.systemPath, service.system.bytes)
         var db: OpaquePointer?
         defer { sqlite3_close(db) }
@@ -61,7 +61,7 @@ final class BookkeepingPostingTests: XCTestCase {
         try service.saveAccount(code: 10001, name: "既定", category: .assets, editing: false)
         try service.saveAccount(code: 20001, name: "親", category: .expense, editing: false)
         try service.saveAccount(code: 20001, child: 20002, name: "補助", category: .expense, editing: false)
-        try service.saveDefault(slot: 1, account: 10001, label: "BK", usesTax: false)
+        try service.saveDefault(slot: 1, account: 10001, label: "BK", tax: .none)
         for amount: Int64 in [100, 200] {
             try service.post(defaultSlot: 1, side: .debit, account: 20002, date: service.today,
                              amount: amount, description: "転記")
@@ -71,5 +71,21 @@ final class BookkeepingPostingTests: XCTestCase {
         try service.recalculate(password: "")
         XCTAssertEqual(try service.accountRecord(20001, 20002).int("cr"), 300)
         XCTAssertEqual(try service.accountRecord(20002).int("cr"), 0)
+    }
+
+    func testDefaultTaxCodesRoundTripInTheFixedLengthRecord() throws {
+        let store = try FileStore()
+        let service = BookkeepingService(BusinessContext(store: store))
+        try service.saveAccount(code: 10001, name: "既定", category: .assets, editing: false)
+        try service.saveDefault(slot: 1, account: 10001, label: "BK", tax: .input)
+        try service.saveDefault(slot: 2, account: 10001, label: "BK", tax: .none)
+        try service.saveDefault(slot: 3, account: 10001, label: "BK", tax: .output)
+        try service.saveDefault(slot: 31, account: 10001, label: "", tax: .output)
+        let saved = try XCTUnwrap(store.readRaw(service.defaultsPath))
+        XCTAssertEqual(Array(saved[224..<227]), Array("INO".utf8))
+        XCTAssertEqual(saved[254], UInt8(ascii: "N"))
+        let reopened = BookkeepingService(BusinessContext(store: store))
+        XCTAssertEqual(reopened.defaults.prefix(3).map(\.tax), [.input, .none, .output])
+        XCTAssertEqual(reopened.defaults[30].tax, .none)
     }
 }

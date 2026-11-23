@@ -145,7 +145,7 @@ struct BookkeepingDefaultForm: View {
     @State private var loadedSlot: Int?
     @State private var account = ""
     @State private var label = ""
-    @State private var tax = false
+    @State private var tax = BookkeepingService.DefaultTax.none
     @State private var message = ""
 
     private var service: BookkeepingService { BookkeepingService(workspace.context) }
@@ -165,12 +165,17 @@ struct BookkeepingDefaultForm: View {
             if slot < 30 {
                 TextField(irsText("field.abbreviation"), text: $label)
                     .accessibilityIdentifier("irs.defaultLabel")
-                Toggle(irsText("field.usesTax"), isOn: $tax)
+                Picker(irsText("field.tax"), selection: $tax) {
+                    ForEach(BookkeepingService.DefaultTax.allCases, id: \.self) {
+                        Text($0.title).tag($0)
+                    }
+                }
+                .accessibilityIdentifier("irs.defaultTax")
             }
             Button(irsText("action.save")) {
                 guard let code = Int(account) else { message = irsText("error.accountCode"); return }
                 do {
-                    try service.saveDefault(slot: slot, account: code, label: label, usesTax: tax)
+                    try service.saveDefault(slot: slot, account: code, label: label, tax: tax)
                     message = irsText("result.defaultSaved")
                 } catch { message = bookkeepingError(error) }
                 workspace.completed("irs.defaults")
@@ -189,7 +194,7 @@ struct BookkeepingDefaultForm: View {
         let row = service.defaults[slot - 1]
         account = row.account == 0 ? "" : String(row.account)
         label = row.label
-        tax = row.usesTax
+        tax = row.tax
         message = ""
     }
 }
