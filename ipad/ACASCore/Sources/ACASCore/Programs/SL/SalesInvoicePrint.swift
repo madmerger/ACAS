@@ -5,7 +5,7 @@ extension SalesInvoices {
 
     public func printInvoices(_ selection: [Number]? = nil) throws -> [Invoice] {
         let system = try settings()
-        let numbers = selection ?? invoices().filter { $0.pending || !$0.printed }.map(\.id)
+        let numbers = selection ?? invoices().filter { !$0.printed }.map(\.id)
         guard !numbers.isEmpty else { throw Error.empty }
         let reports = try numbers.map { id -> (Number, Record, [Record]) in
             guard let record = header(id) else { throw Error.missingInvoice }

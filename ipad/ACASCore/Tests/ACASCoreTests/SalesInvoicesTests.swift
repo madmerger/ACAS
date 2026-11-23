@@ -11,6 +11,7 @@ final class SalesInvoicesTests: XCTestCase {
         ))
         _ = try service.printInvoices()
         XCTAssertEqual(service.header(invoice.id)?.str("ih-status"), "I")
+        XCTAssertEqual(service.invoices().filter(\.printed).map(\.id), [invoice.id])
 
         var draft = try service.draft(for: invoice.id)
         draft.reference = "AMENDED"
@@ -18,6 +19,7 @@ final class SalesInvoicesTests: XCTestCase {
         XCTAssertEqual(service.header(invoice.id)?.str("ih-status"), "P")
         XCTAssertEqual(service.header(invoice.id)?.str("ih-status-p"), " ")
         XCTAssertEqual(service.header(invoice.id)?.str("ih-status-l"), "L")
+        XCTAssertTrue(service.invoices().filter(\.printed).isEmpty)
         XCTAssertEqual(try service.printInvoices().map(\.id), [invoice.id])
         XCTAssertEqual(service.header(invoice.id)?.str("ih-status"), "I")
         XCTAssertEqual(service.header(invoice.id)?.str("ih-ref"), "AMENDED   ")

@@ -46,7 +46,6 @@ public struct SalesInvoices {
         public let net: Int64
         public let tax: Int64
         public let printed: Bool
-        let pending: Bool
         public var total: Int64 { net + tax }
     }
 
@@ -96,8 +95,7 @@ public struct SalesInvoices {
                 kind: Kind(rawValue: header.int("ih-type")) ?? .invoice,
                 net: ["ih-net", "ih-extra", "ih-carriage", "ih-deduct-amt"].reduce(0) { $0 + header.int($1) },
                 tax: ["ih-vat", "ih-e-vat", "ih-c-vat", "ih-deduct-vat"].reduce(0) { $0 + header.int($1) },
-                printed: header.str("ih-status-l") == "L",
-                pending: header.str("ih-status") == "P")
+                printed: header.str("ih-status") != "P" && header.str("ih-status-l") == "L")
     }
 
     public func invoices() -> [Invoice] {
