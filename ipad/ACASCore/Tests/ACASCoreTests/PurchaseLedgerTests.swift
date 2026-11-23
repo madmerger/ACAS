@@ -4,6 +4,98 @@ import XCTest
 @testable import ACASCore
 
 final class PurchaseLedgerTests: XCTestCase {
+    func testDuplicateConfiguredFolioAdvancesWithoutOverwritingInvoice() throws {
+        let ledger = try makeLedger()
+        var transaction = PurchaseLedger.Transaction(date: ledger.processingDate)
+        transaction.supplier = try addSupplier(ledger)
+        transaction.lines[0].code = "a1"
+        transaction.lines[0].net = 10_000
+        let folio = try ledger.saveTransaction(transaction)
+        var settings = ledger.invoiceSettings()
+        settings.nextFolio = folio
+        try ledger.saveInvoiceSettings(settings)
+        let original = ledger.store.all(ledger.invoicePath).map(\.data)
+
+        XCTAssertThrowsError(try ledger.saveTransaction(transaction)) { error in
+            XCTAssertEqual(error as? PurchaseLedger.Error, .duplicateFolioAdvanced)
+        }
+        XCTAssertEqual(ledger.store.all(ledger.invoicePath).map(\.data), original)
+        XCTAssertEqual(ledger.invoiceSettings().nextFolio, folio + 1)
+        XCTAssertEqual(try ledger.saveTransaction(transaction), folio + 1)
+    }
+
+    func testHighestFolioKeepsBinaryCounterAndTruncatesInvoiceKey() throws {
+        let ledger = try makeLedger()
+        var transaction = PurchaseLedger.Transaction(date: ledger.processingDate)
+        transaction.supplier = try addSupplier(ledger)
+        transaction.lines[0].code = "a1"
+        transaction.lines[0].net = 10_000
+        let highest: Int64 = 99_999_999
+        var settings = ledger.invoiceSettings()
+        settings.nextFolio = highest
+        try ledger.saveInvoiceSettings(settings)
+
+        XCTAssertEqual(try ledger.saveTransaction(transaction), highest)
+        XCTAssertEqual(ledger.invoiceSettings().nextFolio, highest + 1)
+        XCTAssertEqual(ledger.nextTransactionFolio, 0)
+        XCTAssertEqual(try ledger.saveTransaction(transaction), 0)
+        XCTAssertEqual(ledger.invoiceSettings().nextFolio, highest + 2)
+        XCTAssertNotNil(ledger.header(0))
+
+        try ledger.saveInvoiceSettings(settings)
+        XCTAssertThrowsError(try ledger.saveTransaction(transaction)) { error in
+            XCTAssertEqual(error as? PurchaseLedger.Error, .duplicateFolioAdvanced)
+        }
+        XCTAssertEqual(ledger.invoiceSettings().nextFolio, highest + 1)
+        let original = ledger.header(0)?.bytes
+        XCTAssertThrowsError(try ledger.saveTransaction(transaction)) { error in
+            XCTAssertEqual(error as? PurchaseLedger.Error, .duplicateFolioAdvanced)
+        }
+        XCTAssertEqual(ledger.header(0)?.bytes, original)
+        XCTAssertEqual(ledger.invoiceSettings().nextFolio, highest + 2)
+        XCTAssertEqual(try ledger.saveTransaction(transaction), 1)
+    }
+
+    func testInvoiceSettingsWriteOnlyConfiguredFieldsAndSetNextTransactionFolio() throws {
+        let ledger = try makeLedger()
+        var configuration = ledger.system
+        configuration.setInt("vat-ac", 123456)
+        try ledger.systemFile.write(1, configuration.bytes)
+        var settings = ledger.invoiceSettings()
+        XCTAssertNil(settings.vatAccount)
+        settings.nextFolio = 240
+        settings.vatAccount = 654321
+        try ledger.saveInvoiceSettings(settings)
+        configuration.setInt("next-folio", 240)
+        XCTAssertEqual(ledger.systemFile.read(1), configuration.bytes)
+
+        var transaction = PurchaseLedger.Transaction(date: ledger.processingDate)
+        transaction.supplier = try addSupplier(ledger)
+        transaction.lines[0].code = "a1"
+        transaction.lines[0].net = 10_000
+        XCTAssertEqual(try ledger.saveTransaction(transaction), 240)
+        XCTAssertEqual(ledger.invoiceSettings().nextFolio, 241)
+
+        configuration = ledger.system
+        configuration.setInt("level-1", 1)
+        try ledger.systemFile.write(1, configuration.bytes)
+        settings = ledger.invoiceSettings()
+        XCTAssertEqual(settings.vatAccount, 123456)
+        settings.nextFolio = 0
+        XCTAssertThrowsError(try ledger.saveInvoiceSettings(settings))
+        XCTAssertEqual(ledger.systemFile.read(1), configuration.bytes)
+        settings.nextFolio = 500
+        settings.vatAccount = 1_000_000
+        XCTAssertThrowsError(try ledger.saveInvoiceSettings(settings))
+        XCTAssertEqual(ledger.systemFile.read(1), configuration.bytes)
+
+        settings.vatAccount = 654321
+        try ledger.saveInvoiceSettings(settings)
+        configuration.setInt("next-folio", 500)
+        configuration.setInt("vat-ac", 654321)
+        XCTAssertEqual(ledger.systemFile.read(1), configuration.bytes)
+    }
+
     func testPostingRollsBackGLPostingIfBatchWriteFails() throws {
         try withDiskLedger { ledger, db in
             var system = ledger.system

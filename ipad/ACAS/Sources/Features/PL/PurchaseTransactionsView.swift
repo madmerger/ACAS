@@ -166,6 +166,10 @@ struct PurchaseTransactionForm: View {
     var body: some View {
         Form {
             Section(plString("purchase.invoice.detail")) {
+                if transaction.number == nil && ledger.invoiceSettings().nextFolio > 99_999_999 {
+                    LabeledContent(plString("purchase.invoice.number"), value: Cobol.z(ledger.nextTransactionFolio, 8))
+                        .accessibilityIdentifier("pl.invoice.nextFolio")
+                }
                 DatePicker(plString("purchase.invoice.date"), selection: $transaction.date, displayedComponents: .date)
                 TextField(plString("purchase.supplier.code.full"), text: $transaction.supplier)
                     .textInputAutocapitalization(.characters)

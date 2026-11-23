@@ -113,6 +113,57 @@ final class PurchaseFlows: XCTestCase {
         add(proof)
     }
 
+    func testInvoiceSettingsRejectBlankNumericFields() throws {
+        let app = try launch("PL-413", smokeID: "仕入伝票の固定設定")
+        tap(app, "pl.invoice.settings.menu", scrolling: true)
+        tap(app, "pl.invoice.settings.open")
+        XCTAssertTrue(app.staticTexts["再利用できる削除済みの伝票番号がある場合は、そちらを先に使います。"].exists)
+        let folio = "pl.invoice.settings.nextFolio"
+        let vat = "pl.invoice.settings.vatAccount"
+        let save = "pl.invoice.settings.save"
+        let error = app.alerts.staticTexts["次の伝票番号は1から8桁の正の整数、消費税勘定科目コードは6桁以内の整数で入力してください。"]
+
+        enter(app, folio, "", replacing: true)
+        dismissKeyboard(app)
+        tap(app, save)
+        XCTAssertTrue(error.waitForExistence(timeout: 5), "次の伝票番号の空欄を拒否してください")
+        app.alerts.buttons["閉じる"].tap()
+
+        enter(app, folio, "240", replacing: true)
+        enter(app, vat, "", replacing: true)
+        dismissKeyboard(app)
+        tap(app, save)
+        XCTAssertTrue(error.waitForExistence(timeout: 5), "消費税勘定科目コードの空欄を拒否してください")
+        app.alerts.buttons["閉じる"].tap()
+
+        enter(app, vat, "500001", replacing: true)
+        dismissKeyboard(app)
+        tap(app, save)
+        XCTAssertTrue(app.textFields[folio].waitForNonExistence(timeout: 5), "固定設定を保存するとフォームが閉じます")
+        tap(app, "pl.invoice.settings.open")
+        XCTAssertEqual(app.textFields[folio].value as? String, "240")
+        XCTAssertEqual(app.textFields[vat].value as? String, "500001")
+    }
+
+    func testDuplicateInvoiceShowsNextFolioGuidance() throws {
+        let app = try launch("PL-413", smokeID: "重複した仕入伝票番号の案内")
+        tap(app, "pl.invoice.settings.menu", scrolling: true)
+        tap(app, "pl.invoice.settings.open")
+        enter(app, "pl.invoice.settings.nextFolio", "1", replacing: true)
+        dismissKeyboard(app)
+        tap(app, "pl.invoice.settings.save")
+        tap(app, "pl.invoice.settings.add")
+        enter(app, "pl.invoice.supplier", "SUPP018")
+        dismissKeyboard(app)
+        enter(app, "pl.invoice.line.0.code", "a1", scrolling: true)
+        dismissKeyboard(app)
+        enter(app, "pl.invoice.line.0.net", "100", replacing: true, scrolling: true)
+        dismissKeyboard(app)
+        tap(app, "pl.invoice.save", scrolling: true)
+        XCTAssertTrue(app.alerts.staticTexts["伝票番号が使用済みのため、次の番号に進めました。固定設定で空き番号を設定できます。"]
+            .waitForExistence(timeout: 5))
+    }
+
     func testEmptyPaymentProofCannotGenerateReport() throws {
         let app = try launch("PL-413", smokeID: "空の支払検証")
         tap(app, "pl.payment.proof", scrolling: true)
@@ -163,7 +214,7 @@ final class PurchaseFlows: XCTestCase {
         if replacing, let current = field.value as? String {
             field.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: current.count))
         }
-        field.typeText(value)
+        if !value.isEmpty { field.typeText(value) }
     }
 
     private func reveal(_ element: XCUIElement, in app: XCUIApplication, scrolling: Bool) {

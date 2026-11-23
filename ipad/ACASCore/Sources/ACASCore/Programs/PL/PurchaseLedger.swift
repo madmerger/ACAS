@@ -6,6 +6,8 @@ public struct PurchaseLedger {
         case missingAddress, addressTooLong
         case supplierHasBalance, invalidTransaction, transactionNotFound, alreadyPosted, duplicateTransaction
         case analysisCodeNotFound, analysisFileIncompatible
+        case invalidInvoiceSettings
+        case duplicateFolioAdvanced
     }
 
     let context: BusinessContext
