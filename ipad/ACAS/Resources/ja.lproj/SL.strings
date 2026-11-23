@@ -12,6 +12,7 @@
 "sales.action.generate" = "帳票を作成";
 "sales.customer.section" = "処理と得意先";
 "sales.date.title" = "処理日入力";
+"sales.date.startTitle" = "売掛元帳の開始";
 "sales.customer.menu" = "得意先マスター管理";
 "sales.date.field" = "処理日";
 "sales.date.confirm" = "処理日を確定";

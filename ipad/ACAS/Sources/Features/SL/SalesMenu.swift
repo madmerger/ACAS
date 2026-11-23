@@ -3,8 +3,17 @@ import SwiftUI
 
 struct SalesMenu: View {
     let workspace: Workspace
+    @State private var entered = false
 
     var body: some View {
+        if entered {
+            actions
+        } else {
+            SalesDateView(workspace: workspace, onConfirm: { entered = true })
+        }
+    }
+
+    private var actions: some View {
         List {
             Section(slText("sales.customer.section")) {
                 NavigationLink(slText("sales.date.title")) { SalesDateView(workspace: workspace) }

@@ -19,6 +19,7 @@ final class FoundationFlows: XCTestCase {
     func testSL104() throws {
         let (app, _) = try launch("SL-104")
         tap(app, "section.sales")
+        tap(app, "sales.date.save")
         tap(app, "sales.proof")
         XCTAssertEqual(app.buttons["action.generate"].label, "帳票を作成")
         tap(app, "action.generate")
@@ -32,6 +33,7 @@ final class FoundationFlows: XCTestCase {
     func testSL104CompactShowsAllAmounts() throws {
         let (app, _) = try launch("SL-104", compactReport: true)
         tap(app, "section.sales")
+        tap(app, "sales.date.save")
         tap(app, "sales.proof")
         tap(app, "action.generate")
         XCTAssertTrue(app.staticTexts["CUST011"].waitForExistence(timeout: 5))

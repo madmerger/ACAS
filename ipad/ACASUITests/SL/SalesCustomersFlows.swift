@@ -90,6 +90,7 @@ final class SalesCustomersFlows: XCTestCase {
         app.launch()
         XCTAssertTrue(app.staticTexts[id].waitForExistence(timeout: 10))
         tap("section.sales", in: app)
+        tap("sales.date.save", in: app)
         tap("sales.customers", in: app)
         tap("sales.customer." + operation, in: app)
         return (app, input)
