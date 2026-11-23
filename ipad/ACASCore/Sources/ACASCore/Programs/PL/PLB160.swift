@@ -29,12 +29,13 @@ enum PLB160 {
     }
 
     /// display-03 の表示と入力
-    static func screen(_ s: Session, progName: String, sel: PLB.Selection, display: Bool) throws {
+    static func screen(_ s: Session, progName: String, sel: PLB.Selection, display: Bool,
+                       titleKey: String = "plb.sel.supplier_file", withDate: Bool = true) throws {
         let c = s.console
         if display {
             c.display(" ", at: 101, eraseEOS: true)
             c.display(progName, at: 101, color: 2)
-            c.display(s.t("plb.sel.supplier_file"), at: 134, color: 2)
+            c.display(s.t(titleKey), at: 134, color: 2)
             c.display(s.toDay, at: 171, color: 2)
             c.display(s.t("plb.sel.report_attributes"), at: 332, color: 2)
             c.display(s.t("plb.sel.supplier_number"), at: 809, color: 2)
@@ -62,12 +63,14 @@ enum PLB160 {
             c.display("] [", at: 2133, color: 2)
             c.display("]", at: 2137, color: 2)
             c.display(s.t("plb.sel.days_help"), at: 2139, color: 2)
-            c.display(s.t("plb.sel.date_entered"), at: 2309, color: 2)
-            c.display("] [", at: 2333, color: 2)
-            c.display("]", at: 2337, color: 2)
-            c.display(s.t("plb.sel.date_help"), at: 2339, color: 2)
+            if withDate {
+                c.display(s.t("plb.sel.date_entered"), at: 2309, color: 2)
+                c.display("] [", at: 2333, color: 2)
+                c.display("]", at: 2337, color: 2)
+                c.display(s.t("plb.sel.date_help"), at: 2339, color: 2)
+            }
         }
-        let f = [
+        var f = [
             ScreenField(line: 8, col: 28, size: 6, value: sel.custIn, color: 2),
             ScreenField(line: 10, col: 28, size: 1, value: sel.statusIn, color: 2),
             ScreenField(line: 12, col: 28, size: 2, kind: .numeric, pic: "99", value: Cobol.z(sel.creditIn, 2), color: 2),
@@ -81,6 +84,7 @@ enum PLB160 {
             ScreenField(line: 23, col: 23, size: 10, value: sel.enterDateIn, color: 2),
             ScreenField(line: 23, col: 36, size: 1, value: sel.enterDateOp, color: 2)
         ]
+        if !withDate { f.removeLast(2) }
         if display { c.displayFields(f); return }
         try c.acceptScreen(f)
         sel.custIn = Cobol.x(f[0].value, 6); sel.statusIn = Cobol.x(f[1].value, 1)
@@ -88,7 +92,7 @@ enum PLB160 {
         sel.invoiceIn = Cobol.moveNumeric(f[4].value, digits: 5, scale: 0); sel.invoiceOp = Cobol.x(f[5].value, 1)
         sel.averageIn = Cobol.moveNumeric(f[6].value, digits: 5, scale: 0); sel.averageOp = Cobol.x(f[7].value, 1)
         sel.overdueIn = Cobol.moveNumeric(f[8].value, digits: 5, scale: 0); sel.overdueOp = Cobol.x(f[9].value, 1)
-        sel.enterDateIn = Cobol.x(f[10].value, 10); sel.enterDateOp = Cobol.x(f[11].value, 1)
+        if withDate { sel.enterDateIn = Cobol.x(f[10].value, 10); sel.enterDateOp = Cobol.x(f[11].value, 1) }
     }
 
     /// report-selection section (pl160 / pl190 共通の検証)
@@ -133,7 +137,7 @@ enum PLB160 {
     }
 
     /// report-heading-setup section: l3-report (70 桁) を組み立てる
-    static func headingSetup(_ s: Session, _ sel: PLB.Selection) -> PLB.Buf {
+    static func headingSetup(_ s: Session, _ sel: PLB.Selection, overdueKey: String = "days_overdue") -> PLB.Buf {
         var r = PLB.Buf(70)
         var y = 1
         func t(_ k: String) -> String { s.l10n.raw("report.plb.sel." + k) }
@@ -163,7 +167,7 @@ enum PLB160 {
         }
         y += 1
         if sel.overdueOp != " " {
-            PLB.string(&r, &y, operand(sel.overdueOp) + Pic.edit("zzzz9", value: sel.overdueIn, scale: 0) + Cobol.x(t("days_overdue"), 13))
+            PLB.string(&r, &y, operand(sel.overdueOp) + Pic.edit("zzzz9", value: sel.overdueIn, scale: 0) + Cobol.x(t(overdueKey), 13))
         }
         y += 1
         if sel.enterDateOp != " " {
