@@ -160,7 +160,7 @@ public enum SalesProofReport {
         }
         for i in 1...3 { line8(i) }
         if s.sys.int("vat-rate-4") != 0 || s.sys.int("vat-rate-5") != 0 { for i in 4...5 { line8(i) } }
-        w.p.close()
+        try w.p.close()
         return entries
     }
 

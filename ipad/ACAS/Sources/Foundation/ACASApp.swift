@@ -42,7 +42,7 @@ final class Workspace: ObservableObject {
             try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
         }
         #endif
-        let store = FileStore(path: root.appendingPathComponent("ACAS.sqlite").path)
+        let store = try FileStore(path: root.appendingPathComponent("ACAS.sqlite").path)
         #if DEBUG
         if let evidence {
             if let seed = evidence.seed { try store.load(seed: seed) }

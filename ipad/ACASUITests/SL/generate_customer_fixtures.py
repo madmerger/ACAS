@@ -20,12 +20,12 @@ CASES = {
 DELIVERY_PATH = "ledgers/acas/delivery.dat"
 
 
-def customer_seed(run):
-    base_seed = BASE.snapshot_seed(run)
-    snapshot = BASE.read_json(run / "before-records/records.json")["files"]
+def customer_seed(evidence, run):
+    base_seed = BASE.snapshot_seed(evidence, run)
+    snapshot = BASE.read_json(BASE.evidence_path(evidence, run / "before-records/records.json"))["files"]
     if DELIVERY_PATH in snapshot:
         records = [[value["hex"][:16], value["hex"]] for value in snapshot[DELIVERY_PATH]["records"].values()]
-    elif (file := run / "before-files" / DELIVERY_PATH).is_file():
+    elif (file := BASE.evidence_path(evidence, run / "before-files" / DELIVERY_PATH)).is_file():
         dump = subprocess.run(["db_dump", str(file)], capture_output=True, text=True, check=True)
         _, data = dump.stdout.split("HEADER=END\n", 1)
         rows = data.splitlines()
@@ -47,14 +47,15 @@ def main():
     parser.add_argument("evidence", type=Path)
     parser.add_argument("--simulator", help="指定した iPad Simulator で得意先の実 UI テストも実行する（端末 ID）")
     args = parser.parse_args()
-    cases = {c["id"]: c for c in BASE.read_json(args.evidence / "scenarios/catalog.json")["cases"]}
+    evidence = args.evidence.resolve()
+    cases = {c["id"]: c for c in BASE.read_json(BASE.evidence_path(evidence, "scenarios/catalog.json"))["cases"]}
     fixtures = IPAD / ".generated/fixtures"
     fixtures.mkdir(parents=True, exist_ok=True)
     for case_id, (operation, title) in CASES.items():
         case = cases[case_id]
         legacy = case["legacy_result"]
-        run = args.evidence / legacy["evidence"][0]
-        with (run / "terminal.cast").open(encoding="utf-8") as recording:
+        run = BASE.evidence_path(evidence, legacy["evidence"][0])
+        with BASE.evidence_path(evidence, run / "terminal.cast").open(encoding="utf-8") as recording:
             date = json.loads(recording.readline())["timestamp"]
         inputs = case["input_data"]["text_inputs"]
         values = {"code": inputs[4].strip()}
@@ -64,8 +65,8 @@ def main():
             values["name"], values["address"] = inputs[5].strip().split("\t", maxsplit=1)
         BASE.save(fixtures / (case_id + ".json"), {
             "id": case_id, "title": title, "workflow": "sales-customer-" + operation,
-            "dateSeconds": date, "seed": customer_seed(run),
-            "changes": BASE.expected_changes(args.evidence, legacy["comparison_targets"]["keyed_record_diff"]),
+            "dateSeconds": date, "seed": customer_seed(evidence, run),
+            "changes": BASE.expected_changes(evidence, legacy["comparison_targets"]["keyed_record_diff"]),
             "reports": {}, "input": values,
         })
     print(f"得意先の実 UI 用データ {len(CASES)} 件")

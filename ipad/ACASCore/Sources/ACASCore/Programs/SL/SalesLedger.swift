@@ -73,7 +73,7 @@ public struct SalesLedger {
         }
         system.setInt("run-date", Int64(Maps04.integerOfDate(year: y, month: m, day: d)))
         if system.int("date-form") == 0 { system.setInt("date-form", 1) }
-        systemFile.write(1, system.bytes)
+        try systemFile.write(1, system.bytes)
     }
 
     public func newCustomer() throws -> Customer {
@@ -118,7 +118,7 @@ public struct SalesLedger {
             flags[13] = 0x31
             system.setRaw("file-statuses", flags)
             system["sales-ledger"] = "Y"
-            systemFile.write(1, system.bytes)
+            try systemFile.write(1, system.bytes)
         }
         context.store.createIndexed(deliveryFile.path)
         guard file.write(record) == "00" else { throw Error.duplicateCustomer }

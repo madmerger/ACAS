@@ -3,47 +3,66 @@ import SQLite3
 
 /// 端末内 DB (SQLite)。レガシーの索引編成/相対編成/順編成ファイルを、同じファイル名・同じレコードバイト列で保持する。
 public final class FileStore: @unchecked Sendable {
+    public struct DatabaseError: Swift.Error {
+        public let code: Int32
+        public let message: String
+    }
+
     private var db: OpaquePointer?
     private let lock = NSRecursiveLock()
     private static let transient = unsafeBitCast(-1, to: sqlite3_destructor_type.self)
 
-    public init(path: String = ":memory:") {
-        if sqlite3_open(path, &db) != SQLITE_OK { fatalError("SQLite を開けません: \(path)") }
-        exec("PRAGMA journal_mode=WAL")
-        exec("CREATE TABLE IF NOT EXISTS files(name TEXT PRIMARY KEY, kind TEXT NOT NULL, data BLOB)")
-        exec("CREATE TABLE IF NOT EXISTS records(file TEXT NOT NULL, key BLOB NOT NULL, data BLOB NOT NULL, PRIMARY KEY(file, key)) WITHOUT ROWID")
+    public init(path: String = ":memory:") throws {
+        do {
+            let result = sqlite3_open(path, &db)
+            guard result == SQLITE_OK else { throw databaseError(result) }
+            try exec("PRAGMA journal_mode=WAL")
+            try exec("CREATE TABLE IF NOT EXISTS files(name TEXT PRIMARY KEY, kind TEXT NOT NULL, data BLOB)")
+            try exec("CREATE TABLE IF NOT EXISTS records(file TEXT NOT NULL, key BLOB NOT NULL, data BLOB NOT NULL, PRIMARY KEY(file, key)) WITHOUT ROWID")
+        } catch {
+            sqlite3_close(db)
+            db = nil
+            throw error
+        }
     }
 
     deinit { sqlite3_close(db) }
 
-    private func exec(_ sql: String) {
+    private func exec(_ sql: String) throws {
         lock.lock(); defer { lock.unlock() }
-        var err: UnsafeMutablePointer<CChar>?
-        if sqlite3_exec(db, sql, nil, nil, &err) != SQLITE_OK {
-            let msg = err.map { String(cString: $0) } ?? ""
-            sqlite3_free(err)
-            fatalError("SQLite: \(msg) [\(sql)]")
-        }
+        let result = sqlite3_exec(db, sql, nil, nil, nil)
+        guard result == SQLITE_OK else { throw databaseError(result) }
     }
 
     private func run<T>(_ sql: String, _ binds: [Any?], _ body: (OpaquePointer) -> T) -> T {
+        do { return try withStatement(sql, binds, body) }
+        catch { fatalError("SQLite: \(error) [\(sql)]") }
+    }
+
+    private func databaseError(_ code: Int32) -> DatabaseError {
+        let message = db.flatMap { sqlite3_errmsg($0) } ?? sqlite3_errstr(code)
+        return DatabaseError(code: code, message: message.map { String(cString: $0) } ?? "")
+    }
+
+    private func withStatement<T>(_ sql: String, _ binds: [Any?], _ body: (OpaquePointer) throws -> T) throws -> T {
         lock.lock(); defer { lock.unlock() }
         var st: OpaquePointer?
-        guard sqlite3_prepare_v2(db, sql, -1, &st, nil) == SQLITE_OK, let stmt = st else {
-            fatalError("SQLite prepare: \(String(cString: sqlite3_errmsg(db))) [\(sql)]")
-        }
+        let prepared = sqlite3_prepare_v2(db, sql, -1, &st, nil)
+        guard prepared == SQLITE_OK, let stmt = st else { throw databaseError(prepared) }
         defer { sqlite3_finalize(stmt) }
         for (i, b) in binds.enumerated() {
             let n = Int32(i + 1)
+            let result: Int32
             switch b {
-            case let s as String: sqlite3_bind_text(stmt, n, s, -1, Self.transient)
+            case let s as String: result = sqlite3_bind_text(stmt, n, s, -1, Self.transient)
             case let d as [UInt8]:
-                if d.isEmpty { sqlite3_bind_zeroblob(stmt, n, 0) }
-                else { _ = d.withUnsafeBytes { sqlite3_bind_blob(stmt, n, $0.baseAddress, Int32(d.count), Self.transient) } }
-            default: sqlite3_bind_null(stmt, n)
+                if d.isEmpty { result = sqlite3_bind_zeroblob(stmt, n, 0) }
+                else { result = d.withUnsafeBytes { sqlite3_bind_blob(stmt, n, $0.baseAddress, Int32(d.count), Self.transient) } }
+            default: result = sqlite3_bind_null(stmt, n)
             }
+            guard result == SQLITE_OK else { throw databaseError(result) }
         }
-        return body(stmt)
+        return try body(stmt)
     }
 
     private func blob(_ stmt: OpaquePointer, _ col: Int32) -> [UInt8] {
@@ -90,12 +109,15 @@ public final class FileStore: @unchecked Sendable {
         }
     }
 
-    public func writeRaw(_ file: String, _ data: [UInt8]) {
-        _ = run("INSERT INTO files(name, kind, data) VALUES(?, 'raw', ?) ON CONFLICT(name) DO UPDATE SET kind='raw', data=excluded.data", [file, data]) { sqlite3_step($0) }
+    public func writeRaw(_ file: String, _ data: [UInt8]) throws {
+        try withStatement("INSERT INTO files(name, kind, data) VALUES(?, 'raw', ?) ON CONFLICT(name) DO UPDATE SET kind='raw', data=excluded.data", [file, data]) {
+            let result = sqlite3_step($0)
+            guard result == SQLITE_DONE else { throw databaseError(result) }
+        }
     }
 
-    public func appendRaw(_ file: String, _ data: [UInt8]) {
-        writeRaw(file, (readRaw(file) ?? []) + data)
+    public func appendRaw(_ file: String, _ data: [UInt8]) throws {
+        try writeRaw(file, (readRaw(file) ?? []) + data)
     }
 
     // MARK: 索引編成
@@ -155,8 +177,8 @@ public final class FileStore: @unchecked Sendable {
 
     // MARK: ベースライン
 
-    public func clearAll() {
-        exec("DELETE FROM files"); exec("DELETE FROM records")
+    public func clearAll() throws {
+        try exec("DELETE FROM files"); try exec("DELETE FROM records")
     }
 
     /// シード JSON (ベースライン) を読み込み、DB を置き換える
@@ -166,21 +188,26 @@ public final class FileStore: @unchecked Sendable {
             throw NSError(domain: "ACAS", code: 1, userInfo: [NSLocalizedDescriptionKey: "seed"])
         }
         lock.lock(); defer { lock.unlock() }
-        clearAll()
-        exec("BEGIN")
-        for (name, f) in files {
-            if f["type"] as? String == "indexed" {
-                // GnuCOBOL の副キー索引 (.1 .2) は主ファイルから導出するため保持しない
-                if name.hasSuffix(".1") || name.hasSuffix(".2") { continue }
-                createIndexed(name)
-                for pair in (f["records"] as? [[String]] ?? []) where pair.count == 2 {
-                    write(name, key: Self.bytes(hex: pair[0]), data: Self.bytes(hex: pair[1]))
+        try exec("BEGIN")
+        do {
+            try clearAll()
+            for (name, f) in files {
+                if f["type"] as? String == "indexed" {
+                    // GnuCOBOL の副キー索引 (.1 .2) は主ファイルから導出するため保持しない
+                    if name.hasSuffix(".1") || name.hasSuffix(".2") { continue }
+                    createIndexed(name)
+                    for pair in (f["records"] as? [[String]] ?? []) where pair.count == 2 {
+                        write(name, key: Self.bytes(hex: pair[0]), data: Self.bytes(hex: pair[1]))
+                    }
+                } else {
+                    try writeRaw(name, Self.bytes(hex: f["hex"] as? String ?? ""))
                 }
-            } else {
-                writeRaw(name, Self.bytes(hex: f["hex"] as? String ?? ""))
             }
+            try exec("COMMIT")
+        } catch {
+            try? exec("ROLLBACK")
+            throw error
         }
-        exec("COMMIT")
     }
 
     public static func bytes(hex: String) -> [UInt8] {
@@ -332,7 +359,7 @@ public final class RelativeFile {
     }
 
     /// WRITE / REWRITE (必要ならファイルを拡張)
-    public func write(_ rrn: Int, _ data: [UInt8]) {
+    public func write(_ rrn: Int, _ data: [UInt8]) throws {
         var d = store.readRaw(path) ?? []
         let off = (rrn - 1) * slot
         if d.count < off + slot { d += [UInt8](repeating: 0, count: off + slot - d.count) }
@@ -341,7 +368,7 @@ public final class RelativeFile {
         var rec = Array(data.prefix(recordSize))
         if rec.count < recordSize { rec += [UInt8](repeating: 0x20, count: recordSize - rec.count) }
         d.replaceSubrange(off..<(off + slot), with: len + rec)
-        store.writeRaw(path, d)
+        try store.writeRaw(path, d)
         status = "00"
     }
 

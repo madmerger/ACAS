@@ -1,0 +1,6 @@
+"system.company" = "会社設定";
+"system.company.name" = "会社名";
+"system.company.saved" = "会社設定を保存しました";
+"system.company.invalid" = "会社名は記録できる文字で、全角１６文字または半角３２文字以内で入力してください";
+"system.company.storageFailed" = "会社設定を保存できませんでした";
+"action.save" = "保存";
