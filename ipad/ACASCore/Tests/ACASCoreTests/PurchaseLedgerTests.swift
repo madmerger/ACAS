@@ -24,7 +24,7 @@ final class PurchaseLedgerTests: XCTestCase {
         XCTAssertEqual(try ledger.saveTransaction(transaction), folio + 1)
     }
 
-    func testHighestFolioWrapsOnSuccessfulEntryAndDuplicate() throws {
+    func testHighestFolioKeepsBinaryCounterAndTruncatesInvoiceKey() throws {
         let ledger = try makeLedger()
         var transaction = PurchaseLedger.Transaction(date: ledger.processingDate)
         transaction.supplier = try addSupplier(ledger)
@@ -36,13 +36,23 @@ final class PurchaseLedgerTests: XCTestCase {
         try ledger.saveInvoiceSettings(settings)
 
         XCTAssertEqual(try ledger.saveTransaction(transaction), highest)
-        XCTAssertEqual(ledger.invoiceSettings().nextFolio, 0)
+        XCTAssertEqual(ledger.invoiceSettings().nextFolio, highest + 1)
+        XCTAssertEqual(ledger.nextTransactionFolio, 0)
+        XCTAssertEqual(try ledger.saveTransaction(transaction), 0)
+        XCTAssertEqual(ledger.invoiceSettings().nextFolio, highest + 2)
+        XCTAssertNotNil(ledger.header(0))
 
         try ledger.saveInvoiceSettings(settings)
         XCTAssertThrowsError(try ledger.saveTransaction(transaction)) { error in
             XCTAssertEqual(error as? PurchaseLedger.Error, .duplicateFolioAdvanced)
         }
-        XCTAssertEqual(ledger.invoiceSettings().nextFolio, 0)
+        XCTAssertEqual(ledger.invoiceSettings().nextFolio, highest + 1)
+        let original = ledger.header(0)?.bytes
+        XCTAssertThrowsError(try ledger.saveTransaction(transaction)) { error in
+            XCTAssertEqual(error as? PurchaseLedger.Error, .duplicateFolioAdvanced)
+        }
+        XCTAssertEqual(ledger.header(0)?.bytes, original)
+        XCTAssertEqual(ledger.invoiceSettings().nextFolio, highest + 2)
         XCTAssertEqual(try ledger.saveTransaction(transaction), 1)
     }
 

@@ -55,7 +55,7 @@ extension PurchaseLedger {
     }
 
     func header(_ number: Int64) -> Record? {
-        guard (1...99_999_999).contains(number), let bytes = store.read(invoicePath, key: invoiceKey(number)),
+        guard (0...99_999_999).contains(number), let bytes = store.read(invoicePath, key: invoiceKey(number)),
               bytes.count == PurchaseRecords.invHeaderLayout.size else { return nil }
         return Record(PurchaseRecords.invHeaderLayout, bytes: bytes)
     }
@@ -158,6 +158,23 @@ extension PurchaseLedger {
         return number
     }
 
+    private func reusableFolio(in bytes: [UInt8]) -> (offset: Int, number: Int64)? {
+        for offset in stride(from: 0, to: max(0, bytes.count - 18), by: 19) {
+            if let number = Int64(String(decoding: bytes[offset..<(offset + 8)], as: UTF8.self)),
+               number > 0, header(number) == nil {
+                return (offset, number)
+            }
+        }
+        return nil
+    }
+
+    public var nextTransactionFolio: Int64 {
+        if let bytes = store.readRaw(base + "delfolio.dat"), let reusable = reusableFolio(in: bytes) {
+            return reusable.number
+        }
+        return Cobol.truncate(max(1, system.int("next-folio")), digits: 8)
+    }
+
     private func persistTransaction(_ value: Transaction) throws -> Int64? {
         guard let supplier = supplierRecord(value.supplier) else { throw Error.supplierNotFound }
         guard (1...40).contains(value.lines.count), (0..<1_000_000_000).contains(value.carriage),
@@ -168,22 +185,14 @@ extension PurchaseLedger {
         var configuration = system
         let deletedPath = base + "delfolio.dat"
         let deleted = store.readRaw(deletedPath)
-        let reusable = deleted.flatMap { bytes -> (offset: Int, number: Int64)? in
-            for offset in stride(from: 0, to: max(0, bytes.count - 18), by: 19) {
-                if let number = Int64(String(decoding: bytes[offset..<(offset + 8)], as: UTF8.self)),
-                   number > 0, self.header(number) == nil {
-                    return (offset, number)
-                }
-            }
-            return nil
-        }
-        let nextFolio = Cobol.truncate(configuration.int("next-folio"), digits: 8)
-        let number = value.number ?? reusable?.number ?? max(1, nextFolio)
-        guard (1...99_999_999).contains(number) else { throw Error.invalidTransaction }
+        let reusable = deleted.flatMap { reusableFolio(in: $0) }
+        let nextFolio = max(1, configuration.int("next-folio"))
+        let number = value.number ?? reusable?.number ?? Cobol.truncate(nextFolio, digits: 8)
+        guard (0...99_999_999).contains(number) else { throw Error.invalidTransaction }
         let previous = header(number)
         if value.number != nil && previous == nil { throw Error.transactionNotFound }
         if value.number == nil && previous != nil {
-            configuration.setInt("next-folio", Cobol.truncate(number + 1, digits: 8))
+            configuration.setInt("next-folio", nextFolio + 1)
             try systemFile.write(1, configuration.bytes)
             return nil
         }
@@ -247,7 +256,7 @@ extension PurchaseLedger {
                 try store.writeRaw(deletedPath, deleted)
             } else {
                 if deleted != nil { try store.writeRaw(deletedPath, []) }
-                configuration.setInt("next-folio", Cobol.truncate(number + 1, digits: 8))
+                configuration.setInt("next-folio", nextFolio + 1)
             }
             setFileFlag(26, in: &configuration)
         }

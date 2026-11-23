@@ -54,7 +54,7 @@ private struct PurchaseInvoiceSettingsForm: View {
         .purchaseAlert($error)
         .onAppear {
             let settings = PurchaseLedger(workspace.context).invoiceSettings()
-            nextFolio = String(settings.nextFolio)
+            nextFolio = settings.nextFolio > 99_999_999 ? Cobol.z(settings.nextFolio % 100_000_000, 8) : String(settings.nextFolio)
             vatAccount = settings.vatAccount.map { String($0) }
             workspace.completed("pl.invoice.settings.screen")
         }
