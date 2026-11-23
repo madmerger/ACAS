@@ -23,16 +23,33 @@ STEP_PAUSE = float(os.environ.get("ACAS_STEP_PAUSE", "0.25"))
 CASE_PAUSE = float(os.environ.get("ACAS_CASE_PAUSE", "1.2"))
 
 
+def authenticated_route(route, origin, token):
+    request = route.request
+    if replay.http_origin(request.url) != origin:
+        route.continue_()
+        return
+    headers = {k: v for k, v in request.headers.items() if k.lower() != replay.TOKEN_HEADER.lower()}
+    headers[replay.TOKEN_HEADER] = token
+    response = route.fetch(headers=headers, max_redirects=0)
+    if 300 <= response.status < 400 and "location" in response.headers:
+        route.abort()
+    else:
+        route.fulfill(response=response)
+
+
 class Browser:
     def __init__(self, url):
+        origin = replay.test_server_origin(url)
+        token = os.environ["ACAS_TEST_API_TOKEN"]
         self.url = url.rstrip("/")
         self.video = os.environ.get("ACAS_VIDEO")
         self.tmp = tempfile.mkdtemp(prefix="acas-video-")
         self.pw = sync_playwright().start()
         self.browser = self.pw.chromium.launch(executable_path=os.environ.get("ACAS_CHROMIUM") or None)
-        opts = {"viewport": {"width": 1280, "height": 720}, "locale": "ja-JP"}
+        opts = {"viewport": {"width": 1280, "height": 720}, "locale": "ja-JP", "service_workers": "block"}
         if self.video: opts.update(record_video_dir=self.tmp, record_video_size={"width": 1280, "height": 720})
         self.ctx = self.browser.new_context(**opts)
+        self.ctx.route("**/*", lambda route: authenticated_route(route, origin, token))
         self.page = self.ctx.new_page()
         self.started = time.monotonic()
         self.page_errors = []

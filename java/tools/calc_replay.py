@@ -4,12 +4,12 @@
 使い方: python3 tools/calc_replay.py <証跡展開dir> [--url http://localhost:8080] [--out 結果.json]
 レガシー未実施のケース（比較対象なし）は「対象外」とする。
 """
-import argparse, json, urllib.parse, urllib.request
+import argparse, json, urllib.parse
 from collections import Counter
 from decimal import Decimal
 from pathlib import Path
 
-from replay import load_catalog
+from replay import Api, load_catalog
 
 API = {"drv09": "check-digit", "drv04": "date", "drvvat": "vat", "drvage": "age", "drvavg": "average-cost"}
 DRIVER_BY_KEY = {"code": "drv09", "date": "drv04", "net": "drvvat", "days": "drvage", "value": "drvavg"}
@@ -31,6 +31,7 @@ def main():
     ap.add_argument("--out", type=Path)
     a = ap.parse_args()
     cases = [c for c in load_catalog(a.evidence) if c["subsystem"] == "CALC"]
+    api = Api(a.url)
     results = []
     for c in cases:
         lr, inp = c["legacy_result"], c["input_data"]
@@ -39,9 +40,9 @@ def main():
         if lr["verdict"] == "未実施" or lr.get("actual") is None or driver is None:
             r.update(verdict="対象外", reason="レガシー未実施のため比較対象なし: " + str(lr.get("reason") or ""))
         else:
-            url = f"{a.url.rstrip('/')}/api/calc/{API[driver]}?" + urllib.parse.urlencode(inp)
+            path = f"/api/calc/{API[driver]}?" + urllib.parse.urlencode(inp)
             try:
-                got = json.loads(urllib.request.urlopen(url, timeout=30).read())
+                got = api.call("GET", path)
                 ok = same(lr["actual"], got)
                 r.update(java_actual=got, legacy_actual=lr["actual"], verdict="一致" if ok else "不一致",
                          reason=("REST API の計算結果がレガシー実測と一致: " if ok else "計算結果相違: legacy=%s java=" % json.dumps(lr["actual"], ensure_ascii=False))
