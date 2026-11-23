@@ -140,8 +140,21 @@ private struct SalesCustomerView: View {
                 .textInputAutocapitalization(.never).autocorrectionDisabled()
             TextField("ファクス番号", text: customer.fax).keyboardType(.phonePad)
         }
-        Section("通知") {
+        Section("取引条件") {
+            TextField("支払期限（日）", value: customer.creditDays, format: .number.grouping(.never))
+                .keyboardType(.numberPad)
+                .accessibilityIdentifier("sales.customer.creditDays")
+            TextField("与信限度額", value: customer.creditLimit, format: .number.grouping(.never))
+                .keyboardType(.numberPad)
+            TextField("割引率（パーセント）", value: discount(customer.discount), format: .number.grouping(.never))
+                .keyboardType(.decimalPad)
             Toggle("延滞料", isOn: customer.lateCharges)
+            TextField("延滞料が発生する最低残高", value: customer.lateChargeMinimumBalance, format: .number.grouping(.never))
+                .keyboardType(.numberPad)
+            TextField("延滞料の上限額", value: customer.lateChargeMaximum, format: .number.grouping(.never))
+                .keyboardType(.numberPad)
+        }
+        Section("通知") {
             Toggle("督促状", isOn: customer.dunning)
             Toggle("請求書をメール送付", isOn: customer.emailInvoice)
             Toggle("明細書をメール送付", isOn: customer.emailStatement)
@@ -166,6 +179,11 @@ private struct SalesCustomerView: View {
             LabeledContent("内線", value: customer.extensionNumber)
             LabeledContent("メールアドレス", value: customer.email)
             LabeledContent("ファクス番号", value: customer.fax)
+            LabeledContent("支払期限（日）", value: customer.creditDays.formatted())
+            LabeledContent("与信限度額", value: customer.creditLimit.formatted())
+            LabeledContent("割引率（パーセント）", value: amount(customer.discount))
+            LabeledContent("延滞料が発生する最低残高", value: customer.lateChargeMinimumBalance.formatted())
+            LabeledContent("延滞料の上限額", value: customer.lateChargeMaximum.formatted())
             LabeledContent("売掛残高", value: amount(customer.balance))
             LabeledContent("未消込残高", value: amount(customer.unapplied))
         }
@@ -178,6 +196,13 @@ private struct SalesCustomerView: View {
 
     private func amount(_ value: Int64) -> String {
         (Decimal(value) / 100).formatted(.number.precision(.fractionLength(2)))
+    }
+
+    private func discount(_ hundredths: Binding<Int64>) -> Binding<Decimal> {
+        Binding(get: { Decimal(hundredths.wrappedValue) / 100 }, set: {
+            let scaled = $0 * 100
+            hundredths.wrappedValue = (scaled >= 0 && scaled <= 9_999) ? NSDecimalNumber(decimal: scaled).int64Value : -1
+        })
     }
 
     private func lookup() {

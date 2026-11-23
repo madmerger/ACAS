@@ -22,6 +22,11 @@ public struct SalesLedger {
         public var notes1 = ""
         public var notes2 = ""
         public var lateCharges = false
+        public var lateChargeMinimumBalance: Int64 = 0
+        public var lateChargeMaximum: Int64 = 0
+        public var creditDays: Int64 = 0
+        public var creditLimit: Int64 = 0
+        public var discount: Int64 = 0
         public var dunning = false
         public var emailInvoice = false
         public var emailStatement = false
@@ -76,6 +81,11 @@ public struct SalesLedger {
         var customer = Customer()
         customer.lateCharges = system.int("sl-charges") == 1
         customer.dunning = system.int("sl-dunning") == 1
+        customer.creditDays = system.int("sl-credit")
+        customer.discount = system.int("sl-disc")
+        customer.lateChargeMinimumBalance = system.int("sl-min")
+        customer.lateChargeMaximum = system.int("sl-max")
+        customer.creditLimit = system.int("sl-limit")
         return customer
     }
 
@@ -98,12 +108,7 @@ public struct SalesLedger {
             }
         }
         record["sales-key"] = key
-        for (target, source) in [
-            ("sales-credit", "sl-credit"), ("sales-discount", "sl-disc"), ("sales-late-min", "sl-min"),
-            ("sales-late-max", "sl-max"), ("sales-limit", "sl-limit"), ("sales-create-date", "run-date"),
-        ] {
-            record.setInt(target, system.int(source))
-        }
+        record.setInt("sales-create-date", system.int("run-date"))
         record.setInt("sales-status", 1)
         try apply(customer, to: &record, system: system)
 
@@ -169,6 +174,11 @@ public struct SalesLedger {
         customer.fax = value("sales-fax")
         customer.active = record.int("sales-status") == 1
         customer.lateCharges = record.int("sales-late") == 1
+        customer.creditDays = record.int("sales-credit")
+        customer.discount = record.int("sales-discount")
+        customer.lateChargeMinimumBalance = record.int("sales-late-min")
+        customer.lateChargeMaximum = record.int("sales-late-max")
+        customer.creditLimit = record.int("sales-limit")
         customer.dunning = record.int("sales-dunning") == 1
         customer.emailInvoice = record.int("email-invoice") == 1
         customer.emailStatement = record.int("email-statement") == 1
@@ -190,6 +200,16 @@ public struct SalesLedger {
     }
 
     private func apply(_ customer: Customer, to record: inout Record, system: Record) throws {
+        for (field, value, maximum): (String, Int64, Int64) in [
+            ("sales-credit", customer.creditDays, 99),
+            ("sales-discount", customer.discount, 9_999),
+            ("sales-late-min", customer.lateChargeMinimumBalance, 9_999),
+            ("sales-late-max", customer.lateChargeMaximum, 9_999),
+            ("sales-limit", customer.creditLimit, 9_999_999),
+        ] {
+            guard (0...maximum).contains(value) else { throw Error.invalidField }
+            record.setInt(field, value)
+        }
         for (field, value) in customer.textFields {
             record[field] = value
             guard Cobol.rtrim(record.str(field)) == Cobol.rtrim(value) else { throw Error.invalidField }
