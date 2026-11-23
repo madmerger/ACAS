@@ -116,6 +116,12 @@ enum SLB {
     static func z99cr(_ value: Int64, _ intDigits: Int) -> String {
         z99(value, intDigits) + (value < 0 ? "CR" : "  ")
     }
+    /// -(n)9 形式 (幅 n+1、浮動マイナス)。value は整数部のみ渡す。negative は送り側の符号。
+    static func minus(_ value: Int64, _ n: Int, negative: Bool? = nil) -> String {
+        let v = String(abs(value) % Cobol.pow10(n))
+        let t = ((negative ?? (value < 0)) ? "-" : "") + v
+        return String(repeating: " ", count: n + 1 - t.count) + t
+    }
     /// z(n)9 形式
     static func zz(_ value: Int64, _ digits: Int) -> String {
         let v = String(abs(value) % Cobol.pow10(digits))

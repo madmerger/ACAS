@@ -182,3 +182,10 @@
 "report.sl160.deliver_a" = "   納品先";
 "report.sl160.deliver_b" = "住所";
 "report.sl160.notes" = "備考: ";
+/* sl180 */
+"sl180.sl005" = "SL005 日付不正";
+"report.sl180.title" = "得意先別売上高表";
+"report.sl180.page" = "頁   ";
+"report.sl180.head3" = "与信条件      <--------------- 売 上 高 ---------------> <--売 掛 金-->  <----最 終 日---->";
+"report.sl180.head4_a" = "得意先           名称";
+"report.sl180.head4_b" = "日数   限度額 件数 平均額    第1Q    第2Q    第3Q    第4Q 当月       前月  請求       入金";
