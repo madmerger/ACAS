@@ -106,7 +106,7 @@ public struct SalesPaymentProof {
                 let prefix = batchLabel + (journal ? "J " : "P ") + Cobol.x(date(record.int("date")), 11)
                 let accountBytes = record.raw("customer") + [0x20]
                 let amounts = paidText + appliedText + deductionText
-                printer.after(2, SJIS.encode(prefix, size: 22) + accountBytes + name + SJIS.encode(amounts, size: 73))
+                printer.after(2, SJIS.encode(prefix, size: 23) + accountBytes + name + SJIS.encode(amounts, size: 72))
                 lines += 2
             }
         }
