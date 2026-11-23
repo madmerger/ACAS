@@ -4,6 +4,26 @@ import XCTest
 @testable import ACASCore
 
 final class PurchaseLedgerTests: XCTestCase {
+    func testDuplicateConfiguredFolioAdvancesWithoutOverwritingInvoice() throws {
+        let ledger = try makeLedger()
+        var transaction = PurchaseLedger.Transaction(date: ledger.processingDate)
+        transaction.supplier = try addSupplier(ledger)
+        transaction.lines[0].code = "a1"
+        transaction.lines[0].net = 10_000
+        let folio = try ledger.saveTransaction(transaction)
+        var settings = ledger.invoiceSettings()
+        settings.nextFolio = folio
+        try ledger.saveInvoiceSettings(settings)
+        let original = ledger.store.all(ledger.invoicePath).map(\.data)
+
+        XCTAssertThrowsError(try ledger.saveTransaction(transaction)) { error in
+            XCTAssertEqual(error as? PurchaseLedger.Error, .duplicateTransaction)
+        }
+        XCTAssertEqual(ledger.store.all(ledger.invoicePath).map(\.data), original)
+        XCTAssertEqual(ledger.invoiceSettings().nextFolio, folio + 1)
+        XCTAssertEqual(try ledger.saveTransaction(transaction), folio + 1)
+    }
+
     func testInvoiceSettingsWriteOnlyConfiguredFieldsAndSetNextTransactionFolio() throws {
         let ledger = try makeLedger()
         var configuration = ledger.system

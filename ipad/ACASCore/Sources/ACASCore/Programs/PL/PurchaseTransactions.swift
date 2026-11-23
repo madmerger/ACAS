@@ -152,10 +152,13 @@ extension PurchaseLedger {
 
     @discardableResult
     public func saveTransaction(_ value: Transaction) throws -> Int64 {
-        try store.withTransaction { try persistTransaction(value) }
+        guard let number = try store.withTransaction({ try persistTransaction(value) }) else {
+            throw Error.duplicateTransaction
+        }
+        return number
     }
 
-    private func persistTransaction(_ value: Transaction) throws -> Int64 {
+    private func persistTransaction(_ value: Transaction) throws -> Int64? {
         guard let supplier = supplierRecord(value.supplier) else { throw Error.supplierNotFound }
         guard (1...40).contains(value.lines.count), (0..<1_000_000_000).contains(value.carriage),
               (0..<100_000).contains(value.deduction), (0...99).contains(value.deductionDays),
@@ -178,7 +181,11 @@ extension PurchaseLedger {
         guard (1...99_999_999).contains(number) else { throw Error.invalidTransaction }
         let previous = header(number)
         if value.number != nil && previous == nil { throw Error.transactionNotFound }
-        if value.number == nil && previous != nil { throw Error.duplicateTransaction }
+        if value.number == nil && previous != nil {
+            configuration.setInt("next-folio", number + 1)
+            try systemFile.write(1, configuration.bytes)
+            return nil
+        }
         if previous?.str("ih-status").uppercased() == "Z" { throw Error.alreadyPosted }
         if value.type == .creditNote, value.creditReference != 0 {
             guard value.creditReference != number, value.creditReference != 99_999_999 else { throw Error.invalidTransaction }
