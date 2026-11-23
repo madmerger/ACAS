@@ -3,6 +3,7 @@ import argparse
 import base64
 import json
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 
 IPAD = Path(__file__).resolve().parents[2]
@@ -32,6 +33,77 @@ REACH_CASES = {
     "ST-224": ("rebuild", "在庫ファイル圧縮の準備"),
     "ST-226": ("date.initial", "在庫開始時の処理日入力"),
 }
+
+REPORTS = {
+    "ST-216": ("valuation", "在庫評価帳票"),
+    "ST-217": ("activity", "在庫活動帳票"),
+    "ST-218": ("reorder", "発注点帳票"),
+    "ST-219": ("history", "在庫履歴帳票"),
+    "ST-220": ("listing", "在庫一覧帳票"),
+}
+
+OPERATIONS = {
+    "ST-090": ("stock.create", "業務用在庫品目二件の登録"),
+    "ST-203": ("stock.create", "在庫品目登録"),
+    "ST-204": ("stock.edit", "在庫品目変更"),
+    "ST-213": ("stock.order", "在庫発注記録"),
+    "ST-222": ("stock.import", "在庫品目一括取込"),
+    "ST-223": ("stock.close", "在庫管理を閉じる"),
+    "ST-225": ("stock.settings.open", "共通設定を開く"),
+}
+
+
+def printed_time(report):
+    printed = report.split(b"\n")[1][-16:].decode("ascii")
+    return datetime.strptime(printed, "%d/%m/%Y %H:%M").replace(tzinfo=timezone.utc).timestamp()
+
+
+def confirmed_report_fixture(evidence, run, case_id):
+    route, title = REPORTS[case_id]
+    path = "ledgers/acas/prt-1"
+    result = read_json(evidence_path(evidence, run / "result.json"))
+    report = evidence_path(evidence, run / "files" / path).read_bytes()
+    spooled = [file for file in result["changed"] if file.startswith("spool/") and file.endswith("/prt-1")]
+    changes = expected_changes(evidence, run / "record-diff.json")
+    if result["error"] or not report or len(spooled) != 1 or changes:
+        raise ValueError(f"{case_id}: 台帳差分のない帳票の原本とスプールが必要です")
+    if report != evidence_path(evidence, run / "files" / spooled[0]).read_bytes():
+        raise ValueError(f"{case_id}: 帳票原本がスプールと異なります")
+    return {
+        "id": case_id, "title": title, "workflow": "stock.report." + route, "dateSeconds": printed_time(report),
+        "seed": snapshot_seed(evidence, run), "changes": changes, "reports": {path: report.hex()},
+    }
+
+
+def operation_fixture(evidence, run, case_id):
+    workflow, title = OPERATIONS[case_id]
+    result = read_json(evidence_path(evidence, run / "result.json"))
+    if result["error"]:
+        raise ValueError(f"{case_id}: レガシー実行に失敗しました")
+    changes = expected_changes(evidence, run / "record-diff.json")
+    record_files = None
+    reports = {}
+    with evidence_path(evidence, run / "terminal.cast").open(encoding="utf-8") as recording:
+        timestamp = json.loads(recording.readline())["timestamp"]
+    if case_id == "ST-090":
+        record_files = ["ledgers/acas/stockctl.dat"]
+        changes = [change for change in changes if change["file"] in record_files]
+        if len(changes) != 2 or any(change["before"] is not None for change in changes):
+            raise ValueError("在庫品目二件の登録証跡が必要です")
+    if case_id == "ST-213":
+        path = "ledgers/acas/prt-1"
+        report = evidence_path(evidence, run / "files" / path).read_bytes()
+        spool, = [file for file in result["changed"] if file.startswith("spool/") and file.endswith("/prt-1")]
+        if report != evidence_path(evidence, run / "files" / spool).read_bytes():
+            raise ValueError(f"{case_id}: 帳票原本がスプールと異なります")
+        timestamp = printed_time(report)
+        reports[path] = report.hex()
+        audit = "ledgers/acas/staudit.dat"
+        reports[audit] = evidence_path(evidence, run / "files" / audit).read_bytes().hex()
+    return {
+        "id": case_id, "title": title, "workflow": workflow, "dateSeconds": timestamp,
+        "seed": snapshot_seed(evidence, run), "changes": changes, "recordFiles": record_files, "reports": reports,
+    }
 
 
 def reach_fixture(evidence, case):
@@ -92,8 +164,28 @@ def movement_fixture(evidence, case):
     }
 
 
+def master_report_fixture(evidence, case):
+    legacy = case["legacy_result"]
+    run = evidence_path(evidence, legacy["evidence"][0])
+    targets = legacy["comparison_targets"]
+    report = "ledgers/acas/prt-1"
+    original = evidence_path(evidence, run / "files" / report).read_bytes()
+    spool = [evidence_path(evidence, path).read_bytes() for path in targets["report_files"] if "/files/spool/" in path]
+    if legacy["verdict"] != "合格" or spool != [original]:
+        raise ValueError(f'{case["id"]}: 帳票原本とスプールの実測が一致しません')
+    with evidence_path(evidence, run / "terminal.cast").open(encoding="utf-8") as recording:
+        timestamp = json.loads(recording.readline())["timestamp"]
+    return {
+        "id": case["id"], "title": "在庫品目帳票", "workflow": "stock.masterReport",
+        "dateSeconds": timestamp, "seed": snapshot_seed(evidence, run),
+        "changes": expected_changes(evidence, targets["keyed_record_diff"]), "reports": {report: original.hex()},
+    }
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--confirmed-root", type=Path)
+    parser.add_argument("--operations-root", type=Path)
     parser.add_argument("evidence", type=Path)
     parser.add_argument("--output", type=Path, default=IPAD / ".generated" / "fixtures")
     args = parser.parse_args()
@@ -119,9 +211,25 @@ def main():
     })
     for case_id in ("ST-400", "ST-401", "ST-402", "ST-403"):
         save(args.output / (case_id + ".json"), movement_fixture(evidence, cases[case_id]))
+    save(args.output / "ST-208.json", master_report_fixture(evidence, cases["ST-208"]))
     for case_id in REACH_CASES:
         save(args.output / (case_id + ".json"), reach_fixture(evidence, cases[case_id]))
-    print(f"在庫の実画面用データ {5 + len(REACH_CASES)} 件")
+    if args.confirmed_root:
+        root = args.confirmed_root.resolve()
+        for case_id in REPORTS:
+            run = Path(case_id) / "confirmed"
+            save(args.output / (case_id + ".json"), confirmed_report_fixture(root, run, case_id))
+    if args.operations_root:
+        for case_id in OPERATIONS:
+            if case_id in ("ST-203", "ST-213"):
+                root, run = args.operations_root.resolve(), Path(case_id) / "confirmed"
+            elif case_id == "ST-090":
+                root, run = evidence, Path("runs/SYS-001-all-recorded")
+            else:
+                root, run = evidence, Path(f"runs/{case_id}-breadth")
+            save(args.output / (case_id + ".json"), operation_fixture(root, run, case_id))
+    count = 6 + len(REACH_CASES) + (len(REPORTS) if args.confirmed_root else 0)
+    print(f"在庫の実画面用データ {count + (len(OPERATIONS) if args.operations_root else 0)} 件")
 
 
 if __name__ == "__main__":

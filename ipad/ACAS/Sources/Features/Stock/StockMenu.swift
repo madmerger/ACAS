@@ -3,6 +3,7 @@ import SwiftUI
 
 struct StockMenu: View {
     let workspace: Workspace
+    let closeStock: () -> Void
     @State private var processingDate: Date?
     @State private var proposedDate = Date()
     @State private var showDate = true
@@ -32,8 +33,15 @@ struct StockMenu: View {
                     .onAppear { workspace.completed("stock.rebuild.open") }
             }
             .accessibilityIdentifier("stock.rebuild")
-            NavigationLink(stockText("menu.settings")) { SystemMenu(workspace: workspace) }
+            NavigationLink(stockText("menu.settings")) {
+                SystemMenu(workspace: workspace)
+                    .onAppear { workspace.completed("stock.settings.open") }
+            }
                 .accessibilityIdentifier("stock.settings")
+            NavigationLink(stockText("import.title")) { StockImportView(workspace: workspace) }
+                .accessibilityIdentifier("stock.import")
+            Button(stockText("action.closeStock"), action: closeStock)
+                .accessibilityIdentifier("stock.closeStock")
         }
         .onAppear { if processingDate == nil { proposedDate = stock.today } }
         .sheet(isPresented: $showDate) {
@@ -64,7 +72,8 @@ struct StockMenu: View {
             itemForm(.delete)
             itemForm(.renumber)
             itemForm(.lookup)
-            report(stockText("report.master"), id: "masterReport")
+            NavigationLink(stockText("report.master")) { StockMasterReportView(workspace: workspace) }
+                .accessibilityIdentifier("stock.masterReport")
         }
         .navigationTitle(stockText("menu.master"))
         .onAppear { workspace.completed("stock.master.open") }
@@ -87,11 +96,12 @@ struct StockMenu: View {
 
     private var reports: some View {
         List {
-            report(stockText("report.valuation"), id: "valuation")
-            report(stockText("report.activity"), id: "activity")
-            report(stockText("report.reorder"), id: "reorder")
-            report(stockText("report.history"), id: "history")
-            report(stockText("report.listing"), id: "listing")
+            ForEach(StockService.Report.allCases, id: \.rawValue) { report in
+                NavigationLink(stockText("report." + report.rawValue)) {
+                    StockReportForm(workspace: workspace, report: report, date: processingDate ?? stock.today)
+                }
+                .accessibilityIdentifier("stock." + report.rawValue)
+            }
         }
         .navigationTitle(stockText("menu.reports"))
         .onAppear { workspace.completed("stock.reports.open") }
@@ -104,9 +114,49 @@ struct StockMenu: View {
         .accessibilityIdentifier("stock." + operation.rawValue)
     }
 
-    private func report(_ title: String, id: String) -> some View {
-        NavigationLink(title) { StockItemTable(stock: stock, title: title, id: id) }
-            .accessibilityIdentifier("stock." + id)
+}
+
+private struct StockReportForm: View {
+    let workspace: Workspace
+    let report: StockService.Report
+    let date: Date
+    @State private var selection = StockService.ReportSelection.all
+    @State private var abbreviation = false
+    @State private var from = ""
+    @State private var through = ""
+    @State private var message = ""
+
+    var body: some View {
+        Form {
+            let options = StockService.ReportSelection.options(for: report)
+            if options.count > 1 {
+                Picker(stockText("report.selection"), selection: $selection) {
+                    ForEach(options, id: \.rawValue) { option in
+                        Text(stockText("report.selection." + option.rawValue)).tag(option)
+                    }
+                }
+            }
+            Toggle(stockText("report.abbreviationRange"), isOn: $abbreviation)
+            TextField(stockText("report.from"), text: $from)
+                .textInputAutocapitalization(.characters)
+                .autocorrectionDisabled()
+            TextField(stockText("report.through"), text: $through)
+                .textInputAutocapitalization(.characters)
+                .autocorrectionDisabled()
+            Button(stockText("action.generateReport")) {
+                do {
+                    try StockService(workspace.context).printReport(report, date: date, selection: selection,
+                                                                  byAbbreviation: abbreviation, from: from, through: through)
+                    message = stockText("result.reportGenerated")
+                    workspace.completed("stock.report." + report.rawValue)
+                } catch { message = stockError(error) }
+            }
+            .accessibilityIdentifier("stock.generateReport")
+            if !message.isEmpty {
+                Text(message).accessibilityIdentifier("stock.reportResult")
+            }
+        }
+        .navigationTitle(stockText("report." + report.rawValue))
     }
 }
 
@@ -159,6 +209,33 @@ private struct StockItemTable: View {
         }
         .searchable(text: $filter, prompt: stockText("search.prompt"))
         .navigationTitle(title)
+    }
+}
+
+private struct StockMasterReportView: View {
+    let workspace: Workspace
+    @State private var message = ""
+
+    var body: some View {
+        let stock = StockService(workspace.context)
+        StockItemTable(stock: stock, title: stockText("report.master"), id: "masterReport")
+            .safeAreaInset(edge: .bottom) {
+                HStack {
+                    Button(stockText("action.generateReport")) {
+                        do {
+                            try stock.printMasterReport()
+                            message = stockText("result.reportGenerated")
+                            workspace.completed("stock.masterReport")
+                        } catch {
+                            message = stockError(error)
+                        }
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .accessibilityIdentifier("stock.generateMasterReport")
+                    Text(message).accessibilityIdentifier("stock.masterReportResult")
+                }
+                .padding()
+            }
     }
 }
 
