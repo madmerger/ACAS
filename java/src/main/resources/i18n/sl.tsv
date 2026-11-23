@@ -32,3 +32,91 @@ Enter todays date as dd/mm/yyyy - [          ]	本日の日付 (dd/mm/yyyy)   - 
 Enter todays date as mm/dd/yyyy - [          ]	本日の日付 (mm/dd/yyyy)   - [          ]
 Enter todays date as yyyy/mm/dd - [          ]	本日の日付 (yyyy/mm/dd)   - [          ]
 SL005 Invalid Date	SL005 日付不正
+Error not in error.txt. Hit return to close	error.txt に未登録のエラー。Enter で閉じる
+hit return	Enter 押下
+SL101 Addr Err	SL101 住所不正
+Error	エラー
+SL103 Sales Ledger files have not been set up yet	SL103 売掛元帳ファイルが未作成です
+SL104 Do you wish to create them (Y/N) ? [ ]	SL104 作成しますか (Y/N) ?              [ ]
+SL105 Creating Sales & Delivery Files	SL105 売掛・納品先ファイルを作成中
+SL106 Opening Sales files gives	SL106 売掛ファイルのオープン結果
+SL107 Opening Delivery files gives	SL107 納品先ファイルのオープン結果
+SL108 Abort Or Recover (A/R) : [ ]	SL108 中止／回復 (A/R)       : [ ]
+SL109 <<<Can not Delete currently active account>>>	SL109 <<<取引中の顧客は削除できません>>>
+Customer Listing	顧客一覧表
+Page	頁
+Report On :	出力条件 :
+Customer  Status    <---------------Name & Address-------------->     ----Telephone---- -----Fax-----     Late       Credit	顧客      状態      <---------------名称・住所------------------>     ------電話------- -----FAX-----     延滞       与信
+Disc	値引
+Number   ------	番号     ------
+Chg  Let   Limit/Days    %	料  督促   限度/日数     %
+Select one of the following by number :- [ ]	番号で選択してください                :- [ ]
+Select one of the following by letter  :- [ ]	英字で選択してください                 :- [ ]
+(1)  Set-up customer records	(1)  顧客登録
+(2)  Amend Customer records	(2)  顧客変更
+(3)  Delete Customer records	(3)  顧客削除
+(4)  Print Customer records	(4)  顧客一覧印刷
+(5)  Display Customer records	(5)  顧客表示
+(9)  Return to system menu	(9)  メニューへ戻る
+Customer File Set-Up & Maintenance	顧客マスター登録・保守
+Function  Menu	機能メニュー
+Customer Record Creation	顧客登録
+Customer Record Amendment	顧客変更
+Customer Record Deletion	顧客削除
+Customer Record Display	顧客表示
+Check Digit {	検査数字    {
+Customer Nos : [	顧客番号     : [
+Customer Name: [	顧客名       : [
+Addr: [	住所: [
+Delivery name: [	納品先名     : [
+Customer Note: [	顧客メモ     : [
+Telephone    : [	電話番号     : [
+Ext: [	内線:[
+Fax : [	FAX : [
+Email Sales  : [	営業メール   : [
+Late charges : [	延滞料       : [
+Minimum balance before late charge : [	延滞料対象の最低残高               : [
+Late letters : [	督促状       : [
+Maximum late charge	延滞料上限
+Credit period: [	支払期間     : [
+EMail-Inv:[	請求Mail  :[
+Stat: [	明細: [
+Dun : [	督促: [
+Credit limit : [	与信限度額   : [
+] Discount : [	] 値引率   : [
+Unapplied Bal: {	未消込残高   : {
+* Escape Code [	* 操作コード  [
+Current Bal  : {	現在残高     : {
+* <B> = Back      *	* <B> = 戻る      *
+Last invoice : {	最終請求日   : {
+* <S> = Save      *	* <S> = 保存      *
+Last payment : {	最終入金日   : {
+* <Q> = Quit      *	* <Q> = 中止      *
+D> = Dormant	D> = 休眠
+K> = Kill	K> = 削除
+Note and hit return	確認後 Enter 押下
+write deliverytag	納品先 書込エラー
+rewrite deliverytag	納品先 更新エラー
+Delete deliverytag	納品先 削除エラー
+write notes tag	メモ 書込エラー
+Rewrite notes tag	メモ 更新エラー
+Delete notes tag	メモ 削除エラー
+Rewrite Sales Rec	顧客 更新エラー
+Customer File	顧客ファイル
+Report Attributes	帳票出力条件
+Customer Number - [	顧客番号        - [
+Enter characters in positions to match	照合する位置に文字を入力
+Status          - [	状態            - [
+<L> Live;<D> Dormant;< > All	<L> 有効;<D> 休眠;< > 全件
+Credit Period   - [	支払期間        - [
+Enter number of days & operator	日数と比較条件を入力
+<L>  for credit periods < than	<L>  支払期間が指定未満
+<G>  for credit periods > than	<G>  支払期間が指定超
+<E>  for credit periods = to	<E>  支払期間が指定一致
+Invoice Activity  [	請求件数          [
+Enter number of invoices & operator	請求件数と比較条件を入力
+Average Value   - [	平均金額        - [
+Enter invoice value & operator	請求金額と比較条件を入力
+Overdue A/Cs    - [	延滞顧客        - [
+Date Entered-[	登録日      -[
+Enter date & operator	日付と比較条件を入力
