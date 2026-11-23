@@ -3,6 +3,7 @@ using System.IO.Compression;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using System.Xml;
 using System.Xml.Linq;
 using Acas.Core;
 using Acas.Core.Engine;
@@ -34,10 +35,19 @@ static string ConsoleText(string text) => string.Concat(text.Select(c =>
 
 static Dictionary<string, string> Workbook(string location)
 {
+    const int maxSheetSize = 16 * 1024 * 1024;
     XNamespace ns = "http://schemas.openxmlformats.org/spreadsheetml/2006/main";
     using var workbook = ZipFile.OpenRead(location);
-    using var sheet = workbook.GetEntry("xl/worksheets/sheet4.xml")!.Open();
-    var rows = XDocument.Load(sheet).Descendants(ns + "row");
+    var entry = workbook.GetEntry("xl/worksheets/sheet4.xml")
+        ?? throw new InvalidDataException("結果表に売掛のシートがありません。");
+    if (entry.Length > maxSheetSize) throw new InvalidDataException("結果表の売掛シートが大きすぎます。");
+    using var sheet = entry.Open();
+    using var reader = XmlReader.Create(sheet, new XmlReaderSettings
+    {
+        DtdProcessing = DtdProcessing.Prohibit,
+        MaxCharactersInDocument = maxSheetSize
+    });
+    var rows = XDocument.Load(reader).Descendants(ns + "row");
     string Text(XElement row, string column) => string.Concat(row.Elements(ns + "c")
         .Where(c => (c.Attribute("r")?.Value ?? "").TrimEnd('0','1','2','3','4','5','6','7','8','9') == column)
         .Descendants(ns + "t").Select(t => t.Value));
