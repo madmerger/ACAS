@@ -152,6 +152,10 @@ extension PurchaseLedger {
 
     @discardableResult
     public func saveTransaction(_ value: Transaction) throws -> Int64 {
+        try store.withTransaction { try persistTransaction(value) }
+    }
+
+    private func persistTransaction(_ value: Transaction) throws -> Int64 {
         guard let supplier = supplierRecord(value.supplier) else { throw Error.supplierNotFound }
         guard (1...40).contains(value.lines.count), (0..<1_000_000_000).contains(value.carriage),
               (0..<100_000).contains(value.deduction), (0...99).contains(value.deductionDays),
