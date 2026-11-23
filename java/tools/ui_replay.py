@@ -31,16 +31,19 @@ def authenticated_route(route, origin, token):
     headers = {k: v for k, v in request.headers.items() if k.lower() != replay.TOKEN_HEADER.lower()}
     headers[replay.TOKEN_HEADER] = token
     response = route.fetch(headers=headers, max_redirects=0)
-    if 300 <= response.status < 400 and "location" in response.headers:
-        route.abort()
-    else:
-        route.fulfill(response=response)
+    try:
+        if 300 <= response.status < 400 and "location" in response.headers:
+            route.abort()
+        else:
+            route.fulfill(response=response)
+    finally:
+        response.dispose()
 
 
 class Browser:
     def __init__(self, url):
         origin = replay.test_server_origin(url)
-        token = os.environ["ACAS_TEST_API_TOKEN"]
+        token = replay.required_token()
         self.url = url.rstrip("/")
         self.video = os.environ.get("ACAS_VIDEO")
         self.tmp = tempfile.mkdtemp(prefix="acas-video-")
@@ -206,7 +209,8 @@ def main_calc(a):
         r["video_start_seconds"] = round(t - b.started, 2) if b.video else None
         b.page.evaluate("(v) => { document.getElementById('case-banner').textContent += '　判定 ' + v; window.scrollTo(0, 0); }", r["verdict"])
         time.sleep(CASE_PAUSE)
-        results.append(r); print(r["id"], r["verdict"], r["reason"][:150], flush=True)
+        results.append(r)
+        print(replay.terminal_text(r["id"]), r["verdict"], replay.terminal_text(r["reason"][:150]), flush=True)
     b.close()
     if a.out: a.out.parent.mkdir(parents=True, exist_ok=True); a.out.write_text(json.dumps(results, ensure_ascii=False, indent=1))
     print(dict(Counter(r["verdict"] for r in results)))

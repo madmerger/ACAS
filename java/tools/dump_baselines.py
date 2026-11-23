@@ -5,6 +5,7 @@ Web 版の初期データ JSON（{論理ファイル名: {キー16進: レコー
 GnuCOBOL 3.1.2 (cobc) が必要。コピー句はこのリポジトリの原本を使う。"""
 import json, os, struct, subprocess, sys, tempfile
 from pathlib import Path
+from replay import terminal_text
 
 REPO = Path(__file__).resolve().parents[2]
 # 物理ファイル名: (コピー句, FD名, レコード名, 主キー, SELECT 追加句, FD 前置き)
@@ -94,7 +95,7 @@ def seqkey(n): return struct.pack(">q", n).hex()
 def validate_evidence(root):
     def reject_link(path):
         if path.is_symlink():
-            raise SystemExit(f"証跡のシンボリックリンクは使用できません: {path}")
+            raise SystemExit(terminal_text(f"証跡のシンボリックリンクは使用できません: {path}"))
 
     def unreadable(error):
         raise error
@@ -127,9 +128,9 @@ def main():
                         alt = subprocess.run([str(phys[rel]), str(p)], capture_output=True, text=True, errors="replace")
                         if not alt.returncode:
                             data[rel] = dict(line.split("|") for line in alt.stdout.splitlines() if "|" in line); continue
-                        raise SystemExit(f"{base.name}/{rel}: 索引レコード境界を確認できません: "
-                                         f"{out.stderr.strip()} / {alt.stderr.strip()}")
-                    if out.returncode: raise SystemExit(f"{base.name}/{rel}: {out.stderr.strip()}")
+                        raise SystemExit(terminal_text(f"{base.name}/{rel}: 索引レコード境界を確認できません: "
+                                                       f"{out.stderr.strip()} / {alt.stderr.strip()}"))
+                    if out.returncode: raise SystemExit(terminal_text(f"{base.name}/{rel}: {out.stderr.strip()}"))
                     out = out.stdout
                     data[rel] = dict(line.split("|") for line in out.splitlines() if "|" in line)
                 elif rel == "acas/system.dat":   # 相対編成: 8 バイト長 + レコード
@@ -145,9 +146,9 @@ def main():
                     if lines and lines[-1] == b"": lines.pop()
                     data[rel] = {seqkey(i + 1): l.hex() for i, l in enumerate(lines)}
                 else:
-                    raise SystemExit(f"未対応ファイル: {base.name}/{rel}")
+                    raise SystemExit(terminal_text(f"未対応ファイル: {base.name}/{rel}"))
             (out_dir / f"{base.name}.json").write_text(json.dumps(data, indent=0, sort_keys=True))
-            print(base.name, {k: len(v) for k, v in data.items()})
+            print(terminal_text(base.name), terminal_text({k: len(v) for k, v in data.items()}))
 
 if __name__ == "__main__":
     main()

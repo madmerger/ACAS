@@ -13,6 +13,17 @@ import calc_replay
 
 
 class ReplayTest(unittest.TestCase):
+    def test_terminal_text_escapes_nonprinting_characters(self):
+        self.assertEqual(replay.terminal_text("確認\n" + chr(27)), r"確認\n\x1b")
+
+    def test_calculator_requires_token_before_reading_catalog(self):
+        with patch.dict("replay.os.environ", {}, clear=True), patch("sys.argv", ["calc_replay.py", "evidence"]), \
+                patch("calc_replay.load_catalog") as catalog, patch("sys.stderr"):
+            with self.assertRaises(SystemExit) as error:
+                calc_replay.main()
+            self.assertEqual(error.exception.code, 2)
+            catalog.assert_not_called()
+
     def test_api_refuses_non_loopback_before_building_transport(self):
         for url in ["https://example.invalid", "http://192.0.2.1", "http://localhost.example.invalid"]:
             with self.subTest(url=url), patch("replay.urllib.request.build_opener") as build:
@@ -86,7 +97,8 @@ class ReplayTest(unittest.TestCase):
                 replay.main(args=replay.argument_parser().parse_args([str(evid), "GL-test"]))
             with self.assertRaisesRegex(ValueError, "展開ルート内"):
                 ui_replay.main([str(evid), "CALC-"])
-            with patch("calc_replay.argparse.ArgumentParser.parse_args") as parse_args:
+            with patch.dict("replay.os.environ", {"ACAS_TEST_API_TOKEN": "a" * 32}), \
+                    patch("calc_replay.argparse.ArgumentParser.parse_args") as parse_args:
                 parse_args.return_value.evidence = evid
                 with self.assertRaisesRegex(ValueError, "展開ルート内"):
                     calc_replay.main()
