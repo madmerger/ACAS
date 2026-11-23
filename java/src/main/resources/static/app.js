@@ -196,6 +196,7 @@ function editableKeys(input, keys) {
 screen.addEventListener('keydown', event => {
   if (!sessionId || event.ctrlKey || event.metaKey || event.altKey || event.isComposing) return;
   const input = event.target instanceof HTMLInputElement;
+  if (input && event.shiftKey && ['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
   if (event.target instanceof HTMLButtonElement && ['Enter', ' '].includes(event.key)) return;
   if (event.key === 'Tab' && (!input || !view.multiple)) return;
   if (!input && event.key === ' ' && event.target !== screen) return;
