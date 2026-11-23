@@ -54,10 +54,7 @@ extension StockService {
         let rows = records.sorted { $0.raw(orderKey).lexicographicallyPrecedes($1.raw(orderKey)) }.filter { row in
             let key = row.raw(orderKey)
             if let lower, key.lexicographicallyPrecedes(lower) { return false }
-            if let upper {
-                let prefix = upper.reversed().drop(while: { $0 == 0x20 }).reversed()
-                if prefix.lexicographicallyPrecedes(key.prefix(prefix.count)) { return false }
-            }
+            if let upper, upper.lexicographicallyPrecedes(key) { return false }
             switch selection {
             case .all: return true
             case .current: return ["adds", "deducts", "wip-adds", "wip-deds"].contains { row.int("stock-" + $0) != 0 }
