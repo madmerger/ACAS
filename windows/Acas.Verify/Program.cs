@@ -248,9 +248,10 @@ static void CheckScreen(string id, string[] path, string evidence, Screen result
 static bool SettingsMatch(string evidence, TableScreen settings, List<string> issues)
 {
     var expected = new List<string>();
+    Match Find(string pattern) => Regex.Match(evidence, pattern, RegexOptions.NonBacktracking);
     string Value(string pattern)
     {
-        var match = Regex.Match(evidence, pattern);
+        var match = Find(pattern);
         return match.Success ? match.Groups[1].Value : throw new InvalidDataException("共通設定の証跡から項目値を抽出できません。");
     }
     string Text(string field) => Value(field + @"\s*\[([^\]\r\n]*)\]").TrimEnd('_', ' ').Replace('_', ' ');
@@ -259,7 +260,7 @@ static bool SettingsMatch(string evidence, TableScreen settings, List<string> is
     string Date(string text) => DateTime.ParseExact(text, "dd/MM/yyyy", CultureInfo.InvariantCulture)
         .ToString("yyyy年MM月dd日", CultureInfo.InvariantCulture);
     expected.Add(Value(@"Name\s*-\s*\{([^}]+)\}").Trim());
-    var addresses = Regex.Match(evidence, @"Address\s*-\s*\[([^\]]*)\]\s*\[([^\]]*)\]\s*\[([^\]]*)\]\s*\[([^\]]*)\]");
+    var addresses = Find(@"Address\s*-\s*\[([^\]]*)\]\s*\[([^\]]*)\]\s*\[([^\]]*)\]\s*\[([^\]]*)\]");
     if (!addresses.Success) return false;
     expected.AddRange(addresses.Groups.Values.Skip(1).Select(g => g.Value.TrimEnd('_', ' ').Replace('_', ' ')));
     expected.Add(Text("Post Code"));
