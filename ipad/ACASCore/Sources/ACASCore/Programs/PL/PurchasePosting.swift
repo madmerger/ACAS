@@ -49,7 +49,7 @@ private final class PurchasePosting {
                 throw PurchaseLedger.Error.duplicateTransaction
             }
             let header = ledger.header(item.int("oi-invoice")).flatMap {
-                $0.raw("ih-supplier") == item.raw("oi-supplier") ? $0 : nil
+                $0.raw("ih-supplier") == item.raw("oi-supplier") && $0.str("ih-status").uppercased() == "Z" ? $0 : nil
             }
             items.append((header, item, true))
         }
@@ -58,8 +58,9 @@ private final class PurchasePosting {
             guard ledger.decodeTransaction(header) != nil else { throw PurchaseLedger.Error.invalidTransaction }
             let item = openItem(header)
             let key = openKey(item)
-            if !keys.insert(key).inserted { continue }
-            guard store.read(archivePath, key: key) == nil else { throw PurchaseLedger.Error.duplicateTransaction }
+            guard keys.insert(key).inserted, store.read(archivePath, key: key) == nil else {
+                throw PurchaseLedger.Error.duplicateTransaction
+            }
             items.append((header, item, false))
         }
         guard !items.isEmpty else { return [] }

@@ -92,6 +92,30 @@ final class PurchaseLedgerTests: XCTestCase {
         XCTAssertEqual(ledger.store.readRaw(path), [])
     }
 
+    func testPostingRejectsUnrelatedStagedItemWithSameFolio() throws {
+        let ledger = try makeLedger()
+        let code = try addSupplier(ledger)
+        var transaction = PurchaseLedger.Transaction(date: ledger.processingDate)
+        transaction.supplier = code
+        transaction.lines[0].code = "a1"
+        transaction.lines[0].net = 10_000
+        let number = try ledger.saveTransaction(transaction)
+        var staged = Record(PurchaseRecords.oiLayout)
+        staged["oi-supplier"] = code
+        staged.setInt("oi-invoice", number)
+        staged.setInt("oi-type", 2)
+        staged.setInt("oi-net", 4_000)
+        let path = ledger.base + "openitm4.dat"
+        try ledger.store.writeRaw(path, staged.bytes)
+
+        XCTAssertThrowsError(try ledger.postTransactions()) { error in
+            XCTAssertEqual(error as? PurchaseLedger.Error, .duplicateTransaction)
+        }
+        XCTAssertEqual(ledger.transactions().first?.posted, false)
+        XCTAssertEqual(ledger.store.readRaw(path), staged.bytes)
+        XCTAssertTrue(ledger.openItems(supplier: code).isEmpty)
+    }
+
     func testCreditRejectsReceiptAndOtherSuppliersInvoice() throws {
         let ledger = try makeLedger()
         let code = try addSupplier(ledger)
