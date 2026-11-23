@@ -25,14 +25,19 @@ jobs:
       - name: Select an available iPad simulator
         run: |
           IPAD_UDID=$(xcrun simctl list devices available -j | python3 -c '
-          import json, sys
+          import json, re, sys
           devices = json.load(sys.stdin)["devices"]
-          ipads = [device["udid"] for runtime, group in devices.items()
-                   if "iOS" in runtime for device in group
-                   if device["name"].startswith("iPad") and device["isAvailable"]]
+          ipads = []
+          for runtime, group in devices.items():
+              match = re.search(r"iOS-(\d+)-(\d+)", runtime)
+              if not match or int(match.group(1)) < 18:
+                  continue
+              version = tuple(map(int, match.groups()))
+              ipads += [(version, device["udid"]) for device in group
+                        if device["name"].startswith("iPad") and device["isAvailable"]]
           if not ipads:
-              sys.exit("No available iPad simulator found")
-          print(ipads[0])
+              sys.exit("No available iPad simulator with iOS 18.0 or later found")
+          print(max(ipads)[1])
           ')
           echo "IPAD_UDID=$IPAD_UDID" >> "$GITHUB_ENV"
       - name: Test

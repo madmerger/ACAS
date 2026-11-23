@@ -6,7 +6,8 @@ there is no accounting data storage or backend integration yet.
 Open `ACAS.xcodeproj` in Xcode 16.4 or later and select the shared `ACAS`
 scheme and an iPad simulator. No signing team is needed for simulator builds.
 
-From the repository root, choose an available iPad and run the model tests:
+From the repository root, choose an available iPad simulator running iOS 18.0 or later
+and run the model tests:
 
 ```sh
 xcrun simctl list devices available
