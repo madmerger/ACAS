@@ -806,3 +806,113 @@ Stock File Report                                                  	在庫ファ
 Abrev   Number         Number               Price      Cost        in Stk   in Stk  Point    Qty   Ordered     Due      Order  B/Ord	短縮    番号           番号                 単価       単価        金額     数量    発注点 数量   発注日      納期     発注残 受注残
      Description: 	     品名:
  Total Stock Records 	 在庫品目件数
+(1)  System Set-Up & Maintenance	(1)  システム設定・保守
+(2)  Accounts Set-Up & Maintenance	(2)  勘定科目設定・保守
+(3)  Default A/Cs Set-Up & Maintenance	(3)  既定勘定設定・保守
+(4)  Posting	(4)  転記
+(5)  Trial Balance	(5)  試算表
+(6)  Audit Trail	(6)  監査証跡
+(7)  Accounts Production	(7)  決算書作成
+(8)  Posting Amendments	(8)  転記修正
+(9)  Analysis Report	(9)  分析表
+(A)  Nominal File Fix up	(A)  勘定ファイル修復
+(X)  Exit to Linux	(X)  Linuxへ終了
+Back Up Script Not Found	ﾊﾞｯｸｱｯﾌﾟｽｸﾘﾌﾟﾄなし
+Date - {	日付 - {
+End date - 	終了日   -
+F1 to F10 = options 1 to A;  Return to Accept data;   Escape to quit	F1～F10 = 機能 1～A;  Enter = 確定;   Esc = 終了
+Pass Word - {****}	ﾊﾟｽﾜｰﾄﾞ   - {****}
+S Y S T E M   M E N U	システムメニュー
+Select the required function    [_]	機能を選択してください          [_]
+Start date - 	開始日     -
+SYSTEM FILE SET-UP	システム設定
+(1)  Set-Up Chart of Accounts	(1)  勘定科目表登録
+(2)  Amend  Chart of Accounts	(2)  勘定科目表修正
+(3)  Display the Chart	(3)  科目表表示
+(4)  Print   the Chart	(4)  科目表印刷
+(5)  Export  the Chart	(5)  科目表出力
+(6)  Import  the Chart	(6)  科目表取込
+Accounts File Utilities	勘定ファイル機能
+Before responding (Y)es ensure you have a back copy of the original file	(Y) と答える前に元ファイルのバックアップがあることを確認
+Can I clear down all amounts from these, so that you can start with a clean	これらの金額をすべてクリアし、残高ゼロの状態から
+Continue Y/N [ ]	続行 Y/N     [ ]
+F1 to F4 = options 1 to 4;  Return to Accept data;   Escape to quit	F1～F4 = 機能 1～4;  Enter = 確定;   Esc = 終了
+Otherwise respond (N)o and then exit the main menu to do so.	未取得なら (N) と答え、メニューを終了して取得
+set of accounts	開始しますか
+set of accounts (Nominal Ledger) present	勘定科目(名目元帳)が存在します
+This appears to be the first time you are running IRS and there is a	IRS の初回実行と思われますが、既に
+Warning: This is NON RECOVERABLE, so think about it	警告: この処理は元に戻せません
+(3)  Display the Defaults	(3)  既定勘定表示
+(4)  Print   the Defaults	(4)  既定勘定印刷
+(5)  Set-Up Final Accounts	(5)  決算書設定
+F1 to F5 = options 1 to 5;  Return to Accept data;   Escape to quit	F1～F5 = 機能 1～5;  Enter = 確定;   Esc = 終了
+(<66>    Add PL or SL Postings from file)	(<66>    PL/SL転記をファイルから追加)
+(<77>    Clear Existing Postings)	(<77>    既存転記をクリア)
+(<88>    Add to Existing Postings)	(<88>    既存転記に追加)
+(<Return> to exit to System Menu)	(<Enter>  システムメニューへ)
+Enter Run Option     -    [00] (<99>    Display Existing Defaults)	実行オプション       -    [00] (<99>    既定勘定を表示)
+Display or Print  <D> or <P>......[ ]	表示/印刷  <D> / <P>............  [ ]
+Press <Return> to exit	<Enter> で終了
+Summary or Detail <S> or <D>......[ ]	集計/明細  <S> / <D>............  [ ]
+Zero balances to Print (Y/N)......[ ]	残高ゼロも印刷 (Y/N)............  [ ]
+(1) - Code order sequence	(1) - コード順
+(2) - Date order sequence	(2) - 日付順
+(3) - Transaction number sequence	(3) - 取引番号順
+(A) - Audit Report	(A) - 監査表
+(D) - VAT Day Book	(D) - VAT日記帳
+(L) - Ledgers	(L) - 元帳
+Input Report required by letter...[ ]	帳票を英字で選択................  [ ]
+Posting  Reports	転記帳票
+Press <RETURN> to exit	<Enter> で終了
+Select required sort by number....[ ]	並び順を番号で選択..............  [ ]
+Enter comparative to use (0 to 4) -  [0]	使用する比較期 (0～4)           -    [0]
+Final Accounts Production	決算書作成
+error code = 	ｴﾗｰｺｰﾄﾞ    =
+Failure to open posting-file	転記ファイルを開けません
+Hit return to continue	Enterで続行
+Error opening postings = 	転記ファイルオープンエラー=
+Enter pass word - [    ]	パスワード入力  - [    ]
+Fixup Accounts File	勘定ファイル修復
+To quit, just enter an invalid password	中止するには誤ったパスワードを入力
+You have, made a backup of all the data files? If not do it NOW!!	全データファイルのバックアップは済みですか? 未了なら今すぐ!!
+(2) Answering no (N) destroys the existing chart	(2) (N) と答えると既存の科目表は消去
+Accounts Directory	勘定科目一覧
+Add to Existing Chart (Y/N) ? - [_]	既存科目表に追加 (Y/N) ?      - [_]
+Chart of Accounts Setup	勘定科目表登録
+End of display. Hit return for Menu.	表示終了  Enterでメニューへ
+Escape to quit;    Return to Accept data	Esc = 終了;        Enter = 確定
+Incomplete Records System	不完全記録会計システム
+Main       Sub             Description              Type	主科目     補助            摘要                     種別
+N.B. (1) If first time setup for this client answer no (N)	注   (1) この顧客の初回設定時は (N) と回答
+OTherwise, If you have not made a back up of it you should quit this process.	バックアップ未取得の場合は、この処理を中止してください。
+overwriting any existing IRS Chart of Accounts.	既存の IRS 勘定科目表は上書きされます。
+This must only be done for a new set of accounts for a new client.	新規顧客の新しい勘定科目に対してのみ実行してください。
+This process will import a CoA (Chart of Accounts) in TEXT format	テキスト形式の勘定科目表 (CoA) を取り込みます
+             Main A/C       Sub-Account     ------Description------    A/C Type	             主科目         補助科目        ----------摘要---------    科目種別
+(2) Answering no (N) destroys the existing defaults	(2) (N) と答えると既存の既定勘定は消去
+A/C Nos   Description        Code VAT	科目番号  摘要               ｺｰﾄﾞ VAT
+Accounts Directory                      	勘定科目一覧
+Add to Existing Defaults (Y/N) ? - [_]	既存既定勘定に追加 (Y/N) ?       - [_]
+Default Accounts Amendments	既定勘定修正
+Default Accounts Setup	既定勘定登録
+Give Default to amend - [00]  (Use 00 to quit)	修正する既定番号      - [00]  (00 で終了)
+Incomplete Records System                   	不完全記録会計システム
+overwriting any copy of the file if it exists.	既存の出力ファイルは上書きされます。
+This process will export a copy of the current CoA (Chart of Accounts)	現在の勘定科目表 (CoA) の写しを出力します
+Chart of Accounts Amendments	勘定科目表修正
+Main A/C      Sub-Nominal       Sub-Account       Description          A/C Type	主科目        補助名目          補助科目          摘要                 科目種別
+             A/C Nos     ------Description------    Code VAT	             科目番号    ----------摘要---------    ｺｰﾄﾞ VAT
+Incomplete Records System                 	不完全記録会計システム
+Posting Defaults	転記既定勘定
+--------Heading---------  Sign	----------見出し--------  符号
+Balance Sheet	貸借対照表
+Capital Accounts	資本勘定
+Client 	顧客
+Direct Cost Accounts	直接原価勘定
+Finished Accounts Setup	決算書設定
+Fixed     Assets	固定資産
+Income Accounts	収益勘定
+Indirect Cost Accounts	間接費勘定
+P & L Appropriation Account [00000]	損益処分勘定                [00000]
+Sundry Income Accounts	雑収入勘定
+Trading and Profit & Loss Account	売上総利益・損益計算書
