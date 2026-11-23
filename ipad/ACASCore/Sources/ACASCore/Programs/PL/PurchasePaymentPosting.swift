@@ -38,9 +38,6 @@ extension PurchaseLedger {
         guard !payments.isEmpty else { return [] }
         var settings = system
         guard settings.int("p-flag-p") == 2 else { throw PaymentError.notProofed }
-        for payment in payments {
-            guard supplierRecord(payment.supplier) != nil else { throw Error.supplierNotFound }
-        }
         let gl = settings.int("level-1") == 1
         let irs = settings.str("irs-instead") == "Y"
         let batchPath = base + "batch.dat"
@@ -72,7 +69,7 @@ extension PurchaseLedger {
         var rrn = max(1, Int(settings.int("postings") + 1))
         var batch = Record(PurchaseRecords.batchLayout)
         for (offset, payment) in payments.enumerated() {
-            guard var supplier = supplierRecord(payment.supplier) else { continue }
+            let name = supplierRecord(payment.supplier)?.str("purch-name") ?? "Supplier Unknown"
             let id = payment.number ?? 0
             let key = openItemKey(supplier: payment.supplier, number: id)
             guard let bytes = store.read(openItemsPath, key: key) else { continue }
@@ -80,13 +77,18 @@ extension PurchaseLedger {
             let amount = item.int("oi-paid")
             let applied = item.int("oi-net")
             let deduction = item.int("oi-deduct-amt")
-            let old = supplier.int("purch-current") - supplier.int("purch-unapplied")
-            let current = Cobol.truncate(supplier.int("purch-current") - applied - deduction, digits: 10)
-            let unapplied = Cobol.truncate(supplier.int("purch-unapplied") + amount - applied - min(0, current), digits: 10)
-            supplier.setInt("purch-current", max(0, current))
-            supplier.setInt("purch-unapplied", unapplied)
-            supplier.setInt("purch-last-pay", item.int("oi-date"))
-            try requirePostingWrite(store.rewrite(suppliersPath, key: supplier.raw("purch-key"), data: supplier.bytes), path: suppliersPath)
+            var old: Int64 = 0
+            var new: Int64 = 0
+            if var supplier = supplierRecord(payment.supplier) {
+                old = supplier.int("purch-current") - supplier.int("purch-unapplied")
+                let current = Cobol.truncate(supplier.int("purch-current") - applied - deduction, digits: 10)
+                let unapplied = Cobol.truncate(supplier.int("purch-unapplied") + amount - applied - min(0, current), digits: 10)
+                supplier.setInt("purch-current", max(0, current))
+                supplier.setInt("purch-unapplied", unapplied)
+                supplier.setInt("purch-last-pay", item.int("oi-date"))
+                try requirePostingWrite(store.rewrite(suppliersPath, key: supplier.raw("purch-key"), data: supplier.bytes), path: suppliersPath)
+                new = max(0, current) - unapplied
+            }
             item.setInt("oi-paid", applied)
             item.setInt("oi-status", 1)
             try requirePostingWrite(store.rewrite(openItemsPath, key: key, data: item.bytes), path: openItemsPath)
@@ -97,10 +99,10 @@ extension PurchaseLedger {
             summary[group][0] += amount; summary[group][1] += deduction; summary[group][2] += applied
             let date = Maps04.toDate(Int(item.int("oi-date")))
             let ref = Pic.edit("z9(4)", value: item.int("oi-b-nos"), scale: 0) + "/" + Cobol.z(item.int("oi-b-item"), 3) + " "
-            let detail = ref + Cobol.x(date, 11) + Cobol.x(payment.supplier, 8) + Cobol.x(supplier.str("purch-name"), 25)
+            let detail = ref + Cobol.x(date, 11) + Cobol.x(payment.supplier, 8) + Cobol.x(name, 25)
                 + "    " + Cobol.x(payment.credit ? "Cr Journal" : "Payment", 10)
                 + PurchaseRecords.cr("z(6)9.99cr", old, int: 7) + "  "
-                + PurchaseRecords.cr("z(6)9.99cr", max(0, current) - unapplied, int: 7)
+                + PurchaseRecords.cr("z(6)9.99cr", new, int: 7)
                 + " " + paymentFigures([amount, deduction, applied])
             printer.write(detail, after: 1)
             if gl {
@@ -127,7 +129,7 @@ extension PurchaseLedger {
                 entry.setInt("post-dr", Cobol.truncate(settings.int("p-creditors"), digits: 6, signed: false))
                 entry.setInt("post-cr", Cobol.truncate(settings.int("bl-pay-ac"), digits: 6, signed: false))
                 entry.setInt("post-amount", applied)
-                entry["post-legend"] = String(id) + " : " + supplier.str("purch-name")
+                entry["post-legend"] = String(id) + " : " + name
                 entry["post-vat-side"] = "DR"
                 try writePaymentEntry(entry, rrn: rrn, irs: irs)
                 if !irs { rrn += 1 }
