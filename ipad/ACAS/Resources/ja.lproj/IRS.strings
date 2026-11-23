@@ -88,7 +88,9 @@
 "bookkeeping.posting.append" = "既存の転記に追加";
 "bookkeeping.posting.clear" = "既存の転記を消去";
 "bookkeeping.posting.import" = "売掛・買掛のファイルから転記";
-"bookkeeping.posting.unavailable" = "消去とファイルからの転記は未対応です。";
+"bookkeeping.posting.unavailable" = "ファイルからの転記は未対応です。";
+"bookkeeping.posting.clearBackup" = "データのバックアップを確認してください。";
+"bookkeeping.posting.clearUnavailable" = "ここでは転記の消去は実行されません。";
 "bookkeeping.audit.kind" = "帳票の種類";
 "bookkeeping.audit.audit" = "監査帳票";
 "bookkeeping.audit.ledger" = "元帳";

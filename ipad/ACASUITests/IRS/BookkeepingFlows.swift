@@ -25,14 +25,21 @@ final class BookkeepingFlows: XCTestCase {
     func testReachIRS004() throws { try verifyPostingMenu("IRS-004") }
 
     @MainActor
-    func testReachIRS215() throws { try verifyPostingMenu("IRS-215") }
+    func testReachIRS215() throws {
+        try verifyPostingMenu("IRS-215") { app in
+            tap(app, "irs.postClear")
+            XCTAssertTrue(app.staticTexts["データのバックアップを確認してください。"].exists)
+            XCTAssertTrue(app.secureTextFields["irs.postClearPassword"].waitForExistence(timeout: 5))
+        }
+    }
 
     @MainActor
-    private func verifyPostingMenu(_ id: String) throws {
+    private func verifyPostingMenu(_ id: String, assertClear: (XCUIApplication) -> Void = { _ in }) throws {
         try verifyReach(id, path: ["post"]) { app in
             for field in ["postDefaults", "postAppend", "postClear", "postImport"] { expectLink(app, field) }
-            XCTAssertFalse(app.buttons["irs.postClear"].exists)
+            XCTAssertTrue(app.buttons["irs.postClear"].exists)
             XCTAssertFalse(app.buttons["irs.postImport"].exists)
+            assertClear(app)
         }
     }
 

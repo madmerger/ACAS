@@ -234,7 +234,8 @@ def reach_fixture(evidence, case):
         reports[path] = data.hex()
     return {
         "id": case["id"], "title": title + "への到達確認",
-        "workflow": f"irs.{destination}.open", "dateSeconds": timestamp,
+        "workflow": "irs.postClear.open" if case["id"] == "IRS-215" else f"irs.{destination}.open",
+        "dateSeconds": timestamp,
         "seed": base64.b64encode(json.dumps(seed, separators=(",", ":")).encode()).decode(),
         "changes": changes, "reports": reports,
     }

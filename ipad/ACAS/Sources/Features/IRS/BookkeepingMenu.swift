@@ -48,9 +48,7 @@ struct BookkeepingMenu: View {
                 .accessibilityIdentifier("irs.postDefaults")
             NavigationLink(irsText("posting.append")) { BookkeepingPostingForm(workspace: workspace) }
                 .accessibilityIdentifier("irs.postAppend")
-            Text(irsText("posting.clear"))
-                .foregroundStyle(.secondary)
-                .accessibilityIdentifier("irs.postClear")
+            link(irsText("posting.clear"), "postClear") { BookkeepingPostingClearAuthentication() }
             Text(irsText("posting.import"))
                 .foregroundStyle(.secondary)
                 .accessibilityIdentifier("irs.postImport")
@@ -166,6 +164,20 @@ private struct BookkeepingAuditOptions<Journal: View>: View {
             NavigationLink(irsText("journal.list"), destination: journal)
         }
         .navigationTitle(irsText("menu.audit"))
+    }
+}
+
+private struct BookkeepingPostingClearAuthentication: View {
+    @State private var password = ""
+
+    var body: some View {
+        Form {
+            Text(irsText("posting.clearBackup"))
+            SecureField(irsText("field.password"), text: $password)
+                .accessibilityIdentifier("irs.postClearPassword")
+            Text(irsText("posting.clearUnavailable")).font(.footnote)
+        }
+        .navigationTitle(irsText("posting.clear"))
     }
 }
 
