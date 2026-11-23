@@ -68,7 +68,7 @@ class RunHistoryTests(unittest.TestCase):
             actual.write_bytes(b"abc")
             reports = original_reports(case, root, root / "actual", result["verdict"])
         self.assertEqual(observed_summary(case, result, reports), "帳票 3 B を生成、原本 1,200 B")
-        self.assertIn("最初の差分位置 1", reports[0][1])
+        self.assertIn("先頭 1 B 一致、2 バイト目が最初の差分（原本 61、移行版 62）", reports[0][1])
 
     def test_direct_difference_applies_only_to_its_attempt(self):
         target = "run/files/ledgers/acas/prt-1"

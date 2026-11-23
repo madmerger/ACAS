@@ -52,12 +52,15 @@ def read_run(directory):
               for case, seconds in re.findall(r"^ACAS_PL_START\|(PL-\d{3})\|([\d.]+)$", log, re.M)}
     results = {case: (VERDICTS[verdict], reason)
                for case, verdict, reason in re.findall(r"^ACAS_PL_RESULT\|(PL-\d{3})\|case\.verdict\.(\w+)\|(.*)$", log, re.M)}
+    screens = dict(re.findall(r"^ACAS_PL_SCREEN\|(PL-\d{3})\|(.*)$", log, re.M))
     tests = {}
     for case, body, outcome in re.findall(
             r"Test Case '-\[ACASUITests.PurchaseFlows testPL(\d{3})\]' started\.(.*?)"
             r"Test Case '-\[ACASUITests.PurchaseFlows testPL\1\]' (passed|failed|skipped)", log, re.S):
         case = f"PL-{case}"
         verdict, reason = results.get(case, ("未判定", "照合まで到達していません"))
+        if case in screens:
+            reason = "、".join(filter(None, [reason, screens[case]]))
         if outcome == "failed":
             errors = re.findall(r"error: .*? : (.*)", body)
             notes = [error for error in errors
@@ -96,8 +99,12 @@ def original_reports(case, root, actual_root, verdict):
             results.append((summary, f"{name}：原本と全 {len(expected):,} B 一致", False))
         else:
             offset = next((i for i, (a, b) in enumerate(zip(actual, expected)) if a != b), min(len(actual), len(expected)))
+            if offset == min(len(actual), len(expected)):
+                difference = "短い方は全バイト一致、長さが相違"
+            else:
+                difference = f"{offset + 1:,} バイト目が最初の差分（原本 {expected[offset]:02X}、移行版 {actual[offset]:02X}）"
             results.append((f"帳票 {len(actual):,} B を生成、原本 {len(expected):,} B",
-                            f"{name}：原本 {len(expected):,} B、実測 {len(actual):,} B、最初の差分位置 {offset:,}", True))
+                            f"{name}：原本 {len(expected):,} B、実測 {len(actual):,} B、先頭 {offset:,} B 一致、{difference}", True))
     return results
 
 
@@ -121,6 +128,10 @@ def observed_summary(case, current, reports):
         return MATCHED_ACTIONS[case_id]
     if verdict == "一致" and reason.startswith("条件画面到達：帳票未作成"):
         return "帳票条件画面に到達、帳票未作成（原本 0 B）"
+    if verdict == "一致" and reason.startswith("旧証跡は"):
+        return reason.replace("旧証跡は", "", 1) + "で一致、保存差分なし"
+    if verdict == "一致" and reason.startswith("分析コード Z"):
+        return reason + "、保存差分なし"
     if verdict == "対象外":
         program = re.fullmatch(r"到達先ヘッダに無い: (\w+)", reason)
         if program:
@@ -221,11 +232,14 @@ def main():
         *supplier_rerun,
         "## 不一致", "\n".join(mismatches) if mismatches else "なし",
         "## 対象外", "\n".join(excluded) if excluded else "なし",
+        "## 再判定と比較範囲",
+        "\n".join(f"- {case_id}：{markdown_text(diagnoses[case_id])}"
+                  for case_id in ("PL-222", "PL-232", "PL-414") if case_id in diagnoses) or "追加事項なし",
         "## 帳票照合", "\n".join(byte_checks) if byte_checks else "帳票原本なし",
         "## 未検証事項", "\n".join(unverified) if unverified else "照合未到達のケースなし。",
         "- 判定はケースごとの最終実行に基づく。再実行しなかったケースは前回の結果を引き継ぐ。"
         "\n- レガシーで実際に記録された操作段階までを比較し、未到達の業務処理や存在しない帳票原本を合格扱いしない。"
-        "\n- 到達確認のケースは、移行画面を実操作で開くところまで。確定操作は別途明記されたケースのみ。"
+        "\n- レガシー未実施のみを対象外とし、実測のあるケースは証跡時点の画面・入力・保存差分・帳票を比較。"
         "\n- 保存データは SQLite ファイルそのものではなく、レガシーと共通のキー付き論理レコードの内容を比較。"
         "\n- PL-090 は SYS-001 のうち仕入先2件のみ。SYS-001 の他台帳と帳票は対象外。",
         "\n- 帳票作成前の PL-018・PL-228 は、旧版の空ファイルと iPad の未作成を同じ『帳票なし』の状態として比較。"
