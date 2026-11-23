@@ -18,7 +18,7 @@ java -jar target/acas-web-1.0.0.jar      # http://localhost:8080/
 | `ACAS_WEB_PASSWORD_HASH` | 空 | Web 利用者 `acas` の BCrypt パスワードハッシュ。未設定時はログイン不可 |
 | `acas.initial-baseline` | 空 | DB が空のとき投入する初期データ名。検証用途では `biz` 等を指定 |
 | `acas.test-api` | `false` | 同一性検証モード。ループバックの待ち受けとインメモリの H2 を指定して起動 |
-| `ACAS_TEST_API_TOKEN` | 空 | 同一性検証モードの全リクエストを認証する32文字以上のトークン。サーバーと再生スクリプトに同じ値を渡す |
+| `ACAS_TEST_API_TOKEN` | 空 | 同一性検証モードの全リクエストを認証する32文字以上のトークン。半角英数字・記号を使い、空白は含めない。サーバーと再生スクリプトに同じ値を渡す |
 | `acas.fixed-date` | なし | システム日付の固定（`yyyy-MM-dd`、検証用） |
 
 ## 構成
