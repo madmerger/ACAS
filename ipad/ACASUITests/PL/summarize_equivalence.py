@@ -5,6 +5,7 @@ import json
 import re
 from collections import Counter, defaultdict
 from pathlib import Path
+from generate_fixtures import evidence_path, validate_case_id
 
 
 VERDICTS = {"match": "一致", "mismatch": "不一致", "out_of_scope": "対象外"}
@@ -68,7 +69,7 @@ def read_run(directory):
 
 
 def original_reports(case, root, actual_root, verdict):
-    case_id = case["id"]
+    case_id = validate_case_id(case["id"])
     if case_id == "PL-090" or verdict == "対象外":
         return []
     targets = case["legacy_result"]["comparison_targets"]["report_files"]
@@ -76,9 +77,9 @@ def original_reports(case, root, actual_root, verdict):
     for target in targets:
         if "/files/ledgers/" not in target:
             continue
-        expected = (root / target).read_bytes()
+        expected = evidence_path(root.resolve(), target).read_bytes()
         name = Path(target).name
-        actual_path = actual_root / case_id / name
+        actual_path = evidence_path(actual_root.resolve(), Path(case_id) / name)
         if not actual_path.exists():
             if verdict == "一致":
                 results.append((f"帳票 {len(expected):,} B をアプリ内で原本照合",
@@ -143,8 +144,10 @@ def main():
     parser.add_argument("--diagnoses", type=Path, help="ケース ID ごとの原因・対処（JSON）")
     parser.add_argument("--sha", default="未 push")
     args = parser.parse_args()
-    catalog = json.loads((args.evidence / "scenarios/catalog.json").read_text())["cases"]
+    catalog = json.loads(evidence_path(args.evidence.resolve(), "scenarios/catalog.json").read_text())["cases"]
     cases = sorted((c for c in catalog if c["id"].startswith("PL-")), key=lambda case: case["id"])
+    for case in cases:
+        validate_case_id(case["id"])
     diagnoses = json.loads(args.diagnoses.read_text()) if args.diagnoses else {}
     history = defaultdict(list)
     for part in json.loads(args.timeline.read_text()):

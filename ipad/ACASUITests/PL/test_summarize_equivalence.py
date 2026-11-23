@@ -7,6 +7,15 @@ from summarize_equivalence import comparison_note, observed_summary, original_re
 
 
 class RunHistoryTests(unittest.TestCase):
+    def test_report_source_must_stay_in_evidence_root(self):
+        case = {"id": "PL-222", "legacy_result": {"comparison_targets": {
+            "report_files": ["../files/ledgers/report"],
+        }}}
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            with self.assertRaisesRegex(ValueError, "証跡ルート外"):
+                original_reports(case, root, root, "一致")
+
     def test_distinguishes_ui_failure_from_byte_mismatch(self):
         with tempfile.TemporaryDirectory() as directory:
             run = Path(directory)
