@@ -8,8 +8,7 @@ final class SalesReachFlows: XCTestCase {
     func testSL227() throws { try unavailableSalesMenuItem("SL-227", labels: ["売掛金年齢表", "年齢分析"]) }
 
     func testSL090() throws {
-        let url = try XCTUnwrap(Bundle(for: Self.self).url(forResource: "SL-090", withExtension: "json",
-                                                          subdirectory: "fixtures"))
+        let url = try fixtureURL("SL-090")
         let fixture = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(contentsOf: url)) as? [String: Any])
         let customers = try XCTUnwrap(fixture["customers"] as? [String: String])
         XCTAssertEqual(customers.count, 2)
@@ -370,13 +369,17 @@ final class SalesReachFlows: XCTestCase {
         XCTAssertEqual(app.buttons["sales.invoice.save"].label, save)
     }
 
-    private func reach(_ id: String, through route: [String], title: String, verdict: String? = "match",
-                       check: (XCUIApplication) -> Void) throws {
-        continueAfterFailure = false
+    private func fixtureURL(_ id: String) throws -> URL {
         let bundle = Bundle(for: Self.self)
         let first = bundle.url(forResource: "SL-002", withExtension: "json", subdirectory: "fixtures")
         try XCTSkipIf(first == nil, "generate_reach_fixtures.py で到達確認の証跡を準備してください")
-        let url = try XCTUnwrap(bundle.url(forResource: id, withExtension: "json", subdirectory: "fixtures"))
+        return try XCTUnwrap(bundle.url(forResource: id, withExtension: "json", subdirectory: "fixtures"))
+    }
+
+    private func reach(_ id: String, through route: [String], title: String, verdict: String? = "match",
+                       check: (XCUIApplication) -> Void) throws {
+        continueAfterFailure = false
+        let url = try fixtureURL(id)
         let app = XCUIApplication()
         app.launchEnvironment["ACAS_FIXTURE"] = try Data(contentsOf: url).base64EncodedString()
         app.launchArguments += ["-AppleLanguages", "(ja)", "-AppleLocale", "ja_JP"]
