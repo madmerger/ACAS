@@ -26,14 +26,15 @@ public sealed partial class PurchaseLedger
             bool irs = system.S("Irs-Instead") == "Y";
             bool general = GeneralLedgerEnabled;
             var pending = Invoices().Where(invoice => !invoice.Posted).ToArray();
-            if (pending.Length == 0 || pending.Any(invoice => invoice.Type is < 1 or > 3)) return false;
+            if (pending.Any(invoice => invoice.Type is < 1 or > 3)) return false;
             int quarter = system.I("Current-Quarter");
             if (quarter is < 1 or > 4) return false;
             int nextBatch = system.I("Next-Batch");
             int nextPosting = system.I("Postings") + 1;
 
             if (!HasInvalidAnalysisLength && !AccumulatePurchaseAnalysis(pending)) return false;
-            foreach (var batch in pending.Chunk(99))
+            if (pending.Length == 0) database.Create(OpenItemFile);
+            foreach (var batch in pending.Chunk(99).DefaultIfEmpty([]))
             {
                 if (general && (nextBatch < 1 || nextBatch >= 32767 || (!irs && nextPosting + batch.Length > 32767))) return false;
                 if (general && !WriteBatch(system, batch, nextBatch, nextPosting, irs)) return false;

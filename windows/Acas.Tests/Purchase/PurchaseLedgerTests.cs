@@ -148,6 +148,19 @@ public sealed class PurchaseLedgerTests
     }
 
     [Fact]
+    public void 最後の未転記伝票を削除した後に空の仕入転記で支払入力の制限を解除できる()
+    {
+        using var db = Fixture("pl-invoice");
+        var ledger = new PurchaseLedger(db);
+        Assert.True(ledger.DeleteInvoice("00000001"));
+        Assert.True(ledger.InvoicesPending);
+        Assert.Empty(ledger.PostInvoices()!);
+        Assert.False(ledger.InvoicesPending);
+        Assert.Equal(1, ledger.System().I("File-Status-29"));
+        Assert.True(db.Exists("ledgers/acas/openitm5.dat"));
+    }
+
+    [Fact]
     public void 投稿済みの掛仕入の未決済レコードは旧バイト列と一致する()
     {
         using var db = Fixture("pl-invoice");
