@@ -22,6 +22,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Acas.Core\Acas.Core.csproj" />
+    <Compile Include="..\Acas.Verify.Irs\ReportComparison.cs" Link="Irs\ReportComparison.cs" />
   </ItemGroup>
 
 </Project>

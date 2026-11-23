@@ -62,11 +62,8 @@ foreach (var item in ledger.RootElement.GetProperty("cases").EnumerateArray())
                     diffs.Add("帳票出力なし: " + path);
                     continue;
                 }
-                var expectedLines = NormalizeReports(Read(path)).Split('\n');
-                var actualLines = NormalizeReports(body).Split('\n');
-                var unequal = Enumerable.Range(0, Math.Max(expectedLines.Length, actualLines.Length))
-                    .Where(i => expectedLines.ElementAtOrDefault(i) != actualLines.ElementAtOrDefault(i)).Select(i => i + 1).ToArray();
-                if (unequal.Length > 0) diffs.Add($"帳票内容の相違: {path} 行 {string.Join(",", unequal)}");
+                if (ReportComparison.Difference(Read(path), body) is string difference)
+                    diffs.Add($"帳票内容の相違: {path} 行 {difference}");
             }
         }
     }
@@ -115,9 +112,6 @@ string Read(string name)
 }
 
 JsonDocument ReadJson(string name) => JsonDocument.Parse(Read(name));
-
-static string NormalizeReports(string body) => string.Join('\n', body.Replace("\r\n", "\n")
-    .Split('\n').Select(line => line.TrimEnd(' ', '\r')).SkipWhile(string.IsNullOrEmpty)).TrimEnd('\n');
 
 static string[] CompareRecords(SortedDictionary<string, SortedDictionary<string, string>> before,
     SortedDictionary<string, SortedDictionary<string, string>> after, JsonElement expected, HashSet<string> unsupported,
