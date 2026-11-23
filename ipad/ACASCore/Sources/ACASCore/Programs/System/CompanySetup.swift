@@ -79,8 +79,9 @@ public struct CompanySetup {
         }
         if let stored = file.read(1) {
             let initial = Record(SystemLayout.layout, bytes: stored)
-            record.setRaw("user-code", initial.raw("user-code"))
-            record.setRaw("pass-word", initial.raw("pass-word"))
+            for field in ["user-code", "pass-word", "file-statuses", "sales-ledger", "purchase-ledger", "stock-control"] {
+                record.setRaw(field, initial.raw(field))
+            }
         } else {
             record["user-code"] = LegacyCompanyCode.encode(record.str("usera"))
             record["pass-word"] = "CEJE"

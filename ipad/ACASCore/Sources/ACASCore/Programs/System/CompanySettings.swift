@@ -57,7 +57,7 @@ public struct SystemReportPaths: Codable {
         self.ledgers = ledgers
     }
 
-    var isValid: Bool {
+    public var isValid: Bool {
         [incompleteRecords, ledgers].allSatisfy { label in
             label.utf8.count <= 1024 && !label.unicodeScalars.contains(where: CharacterSet.controlCharacters.contains)
         }

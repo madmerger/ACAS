@@ -32,6 +32,27 @@ final class CompanySettingsTests: XCTestCase {
         XCTAssertEqual(settings.number("sl-credit"), 99)
     }
 
+    func testInitialConfirmationPreservesMasterRegistrationStatus() throws {
+        let store = try FileStore()
+        let context = BusinessContext(store: store)
+        let setup = CompanySetup(context)
+        var draft = setup.settings
+        try draft.setText("TEST", for: "usera")
+        try draft.setText("Test Street", for: "address-1")
+        try setup.prepareInitialRecord(draft)
+        var contact = MasterContact()
+        contact.code = "CUST01"
+        contact.name = "ALPHA CUSTOMER"
+        try MasterSetup(context).add(contact, as: .customer)
+        let statuses = setup.settings.text("file-statuses")
+        XCTAssertEqual(setup.settings.text("sales-ledger"), "Y")
+
+        try setup.save(draft)
+        XCTAssertEqual(setup.settings.text("sales-ledger"), "Y")
+        XCTAssertEqual(setup.settings.text("file-statuses"), statuses)
+        XCTAssertEqual(setup.settings.text("address-1"), "Test Street")
+    }
+
     func testSettingsCodesNormalizeLowercaseLikeLegacyInput() throws {
         let setup = CompanySetup(BusinessContext(store: try FileStore()))
         var settings = setup.settings
