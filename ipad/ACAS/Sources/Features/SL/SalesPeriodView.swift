@@ -33,6 +33,7 @@ struct SalesDayBookView: View {
         do {
             guard let rows = try SalesDayBook(workspace.context).generate() else {
                 failure = "sales.dayBook.missing"
+                workspace.completed("sales-day-book-unavailable")
                 return
             }
             entries = rows

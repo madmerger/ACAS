@@ -11,10 +11,35 @@ final class SalesReachFlows: XCTestCase {
     func testSL010() throws { try paymentProof("SL-010") }
     func testSL011() throws { try paymentPost("SL-011") }
     func testSL012() throws { try analysisMenu("SL-012") }
+    func testSL013() throws { try missingAnalysisTotals("SL-013") }
+    func testSL014() throws { try missingDayBook("SL-014") }
     func testSL015() throws { try missingOpenItems("SL-015", screen: "statement", title: "得意先明細書") }
     func testSL016() throws { try missingOpenItems("SL-016", screen: "dunning", title: "督促状出力") }
     func testSL021() throws { try periodConfirmation("SL-021") }
     func testSL022() throws { try customerReport("SL-022") }
+
+    func testSL091() throws {
+        try reach("SL-091", through: ["sales.analysis.codes", "sales.analysis.add"],
+                  title: "売上分析コード登録", verdict: "mismatch") { app in
+            for (field, text) in [("group", "A"), ("account", "400001"), ("description", "SALES")] {
+                let input = app.textFields["sales.analysis." + field]
+                XCTAssertTrue(input.isHittable, field)
+                input.tap()
+                input.typeText(text)
+            }
+            XCTAssertEqual(app.textFields["sales.analysis.printCode"].value as? String, "A")
+            app.buttons["sales.analysis.save"].tap()
+            let display = app.buttons["sales.analysis.display"]
+            XCTAssertTrue(display.waitForExistence(timeout: 5))
+            display.tap()
+            let row = app.descendants(matching: .any)["sales.analysis.code.SA"].firstMatch
+            XCTAssertTrue(row.waitForExistence(timeout: 5))
+            XCTAssertTrue(row.label.contains("SALES"))
+            XCTAssertTrue(row.label.contains("印字コード　A"))
+            XCTAssertEqual(row.value as? String, "400001")
+        }
+    }
+
     func testSL202() throws { try customerMenu("SL-202") }
     func testSL203() throws { try customer("SL-203", mode: "register", title: "得意先登録") }
     func testSL204() throws { try customer("SL-204", mode: "edit", title: "得意先変更") }
@@ -41,6 +66,10 @@ final class SalesReachFlows: XCTestCase {
         }
     }
 
+    func testSL219() throws { try emptyAnalysisList("SL-219", operation: "edit", title: "売上分析コード変更・削除") }
+    func testSL222() throws { try emptyAnalysisList("SL-222", operation: "display", title: "売上分析コード表示") }
+    func testSL223() throws { try missingAnalysisTotals("SL-223") }
+    func testSL224() throws { try missingDayBook("SL-224") }
     func testSL225() throws { try missingOpenItems("SL-225", screen: "statement", title: "得意先明細書") }
     func testSL226() throws { try missingOpenItems("SL-226", screen: "dunning", title: "督促状出力") }
 
@@ -120,6 +149,33 @@ final class SalesReachFlows: XCTestCase {
             for operation in ["add", "edit", "print", "printAll", "display"] {
                 XCTAssertTrue(app.buttons["sales.analysis." + operation].exists)
             }
+        }
+    }
+
+    private func emptyAnalysisList(_ id: String, operation: String, title: String) throws {
+        try reach(id, through: ["sales.analysis.codes", "sales.analysis." + operation], title: title) { app in
+            XCTAssertFalse(app.staticTexts["sales.analysis.error"].exists)
+            let codes = app.descendants(matching: .any)
+                .matching(NSPredicate(format: "identifier BEGINSWITH %@", "sales.analysis.code."))
+            XCTAssertEqual(codes.count, 0)
+        }
+    }
+
+    private func missingAnalysisTotals(_ id: String) throws {
+        try reach(id, through: ["sales.analysis.totals"], title: "売上分析帳票") { app in
+            XCTAssertTrue(app.buttons["sales.analysis.generate"].isHittable)
+            app.buttons["sales.analysis.generate"].tap()
+            XCTAssertTrue(app.staticTexts["集計ファイルがありません"].waitForExistence(timeout: 5))
+            XCTAssertFalse(app.buttons["sales.analysis.export"].exists)
+        }
+    }
+
+    private func missingDayBook(_ id: String) throws {
+        try reach(id, through: ["sales.dayBook"], title: "売上日計簿") { app in
+            XCTAssertTrue(app.buttons["sales.dayBook.generate"].isHittable)
+            app.buttons["sales.dayBook.generate"].tap()
+            XCTAssertTrue(app.staticTexts["売上日計簿に必要なファイルがありません"].waitForExistence(timeout: 5))
+            XCTAssertFalse(app.buttons["sales.dayBook.export"].exists)
         }
     }
 

@@ -48,6 +48,7 @@ private struct SalesAnalysisCodeList: View {
                 try service.prepare()
                 codes = try service.codes()
                 failure = nil
+                workspace.completed("sales-analysis-code-list-view")
             } catch {
                 failure = analysisFailure(error)
             }
@@ -218,6 +219,7 @@ struct SalesAnalysisReportView: View {
             if kind == .totals {
                 guard let entries = try service.printTotals() else {
                     failure = "sales.analysis.noTotals"
+                    workspace.completed("sales-analysis-totals-unavailable")
                     return
                 }
                 totals = entries

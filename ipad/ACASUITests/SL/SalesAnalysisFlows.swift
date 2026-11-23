@@ -20,9 +20,8 @@ final class SalesAnalysisFlows: XCTestCase {
         app.launchArguments += ["-AppleLanguages", "(ja)", "-AppleLocale", "ja_JP"]
         XCUIDevice.shared.orientation = .landscapeLeft
         app.launch()
-        for id in ["section.sales", "sales.date.save", "sales.analysis.codes", "sales.analysis.add"] {
-            tap(id, in: app)
-        }
+        openAnalysisMenu(in: app)
+        tap("sales.analysis.add", in: app)
         let group = app.textFields["sales.analysis.group"]
         XCTAssertTrue(group.waitForExistence(timeout: 5))
         group.tap()
@@ -63,13 +62,28 @@ final class SalesAnalysisFlows: XCTestCase {
         screenshot.lifetime = .keepAlways
         add(screenshot)
 
-        app.navigationBars["売上分析コード表示"].buttons.firstMatch.tap()
+        tap("section.system", in: app)
+        openAnalysisMenu(in: app)
         tap("sales.analysis.printAll", in: app)
         tap("sales.analysis.generate", in: app)
         let purchaseCarriage = app.descendants(matching: .any)["sales.analysis.code.Pza"].firstMatch
         if !purchaseCarriage.isHittable { app.swipeUp() }
         XCTAssertTrue(purchaseCarriage.waitForExistence(timeout: 5))
         XCTAssertTrue(purchaseCarriage.label.contains("仕入運賃"))
+    }
+
+    @MainActor
+    private func openAnalysisMenu(in app: XCUIApplication) {
+        for id in ["section.sales", "sales.date.save"] {
+            tap(id, in: app)
+        }
+        let codes = app.buttons["sales.analysis.codes"]
+        for _ in 0..<3 where !codes.isHittable {
+            let start = app.coordinate(withNormalizedOffset: CGVector(dx: 0.80, dy: 0.80))
+            let end = app.coordinate(withNormalizedOffset: CGVector(dx: 0.80, dy: 0.34))
+            start.press(forDuration: 0.05, thenDragTo: end)
+        }
+        tap("sales.analysis.codes", in: app)
     }
 
     @MainActor
