@@ -123,9 +123,9 @@ public enum ACASMenu {
         let c = s.console
         c.display(progName, at: 101, color: 2, eraseEOS: true)
         c.display(s.t("acas.setup_title"), at: 122, color: 2)
-        var sys = Record(SystemLayout.layout)
+        var sys = SystemAuxRecords.initialSystem()
         sys.setInt("system-record-version-prime", 1)
-        sys.setInt("system-record-version-secondary", 3)
+        sys.setInt("system-record-version-secondary", 1)
         sys.setInt("date-form", 1)
         var usera = sys.str("usera")
         while true {
@@ -137,8 +137,8 @@ public enum ACASMenu {
             if r == "Y" || r == "y" { break }
         }
         sys["usera"] = usera
-        sys["user-code"] = Maps01.encodeName(usera)
-        sys["pass-word"] = Maps01.encodePassword("pass")
+        sys["user-code"] = Maps01.name(s, usera)
+        sys["pass-word"] = Maps01.password(s, "pass")
         sys["sl-own-nos"] = "N"
         let d = s.today
         sys.setInt("run-date", Int64(Maps04.integerOfDate(year: d.year, month: d.month, day: d.day)))
@@ -149,7 +149,7 @@ public enum ACASMenu {
         let f = s.systemFile
         f.write(1, sys.bytes)
         f.write(2, SystemAuxRecords.initialDefault())
-        f.write(3, [UInt8](repeating: 0x20, count: 1024))
+        f.write(3, SystemAuxRecords.initialFinal())
         f.write(4, SystemAuxRecords.initialRecord4())
     }
 
@@ -201,14 +201,90 @@ extension Maps04 {
     }
 }
 
-/// common/maps01.cbl: 会社名・パスワードの符号化 (オープンソース版は符号化処理が除去されている)
+/// common/maps01.cbl: 会社名・パスワードの符号化。
+/// レガシーの作業領域 (pass-name-output / pass-word-output) は呼び出しをまたいで残るため、
+/// 変換表に無い文字の位置は前回の出力が残る (初回は空白)。
 public enum Maps01 {
-    public static func encodeName(_ name: String) -> String { name }
-    public static func encodePassword(_ pw: String) -> String { pw }
+    private static let alpha = Array("CKQUAELSMWYIZJRPBXFVGNODTH")
+    private static let lower = Array("ckquaelsmwyizjrpbxfvgnodth")
+    private static func index(_ ch: Character) -> Int? {
+        if let i = alpha.firstIndex(of: ch) { return i + 1 }
+        if let i = lower.firstIndex(of: ch) { return i + 1 }
+        return nil
+    }
+
+    /// encode-name (encode = "N")。`previous` は前回呼び出しの pass-name-output
+    public static func encodeName(_ name: String, previous: String = "") -> String {
+        let input = Array(Cobol.x(name, 32))
+        var out = Array(Cobol.x(previous, 32))
+        for y in 1...31 {
+            guard let a = index(input[y - 1]) else { continue }
+            var base = (2 * (y + 51) + y) / (2 * y)   // divide ... rounded
+            if base > 25 { base -= 26 }
+            var z = a + base - 27
+            if z < 1 { z = -z }
+            if z > 26 { z -= 26 }
+            out[y - 1] = z != 0 ? alpha[z - 1] : " "
+        }
+        return String(out)
+    }
+
+    /// encode-pass (encode = "P")。`previous` は前回呼び出しの pass-word-output
+    public static func encodePassword(_ pw: String, previous: String = "") -> String {
+        let input = Array(Cobol.x(pw, 4))
+        var out = Array(Cobol.x(previous, 4))
+        for y in 1...4 {
+            guard let a = index(input[y - 1]) else { continue }
+            var z = a + y * y + 3 - 26
+            if z < 1 { z = -z }
+            out[4 - y] = z != 0 ? alpha[z - 1] : " "
+        }
+        return String(out)
+    }
+
+    /// call "maps01": 実行単位内で作業領域を保持する版
+    public static func name(_ s: Session, _ name: String) -> String {
+        let r = encodeName(name, previous: s.shared["maps01-name-output"] as? String ?? "")
+        s.shared["maps01-name-output"] = r
+        return r
+    }
+    public static func password(_ s: Session, _ pw: String) -> String {
+        let r = encodePassword(pw, previous: s.shared["maps01-pass-output"] as? String ?? "")
+        s.shared["maps01-pass-output"] = r
+        return r
+    }
 }
 
 /// system.dat の RRN 2-4 (既定値 / 決算 / 拡張) の初期値
 public enum SystemAuxRecords {
-    static func initialDefault() -> [UInt8] { [UInt8](repeating: 0x20, count: 1024) }
-    static func initialRecord4() -> [UInt8] { [UInt8](repeating: 0x20, count: 1024) }
+    /// initialize default-record: Def-Acs (comp 9(4)v99 × 33 = 132 バイト) は 0、Def-Codes / Def-Vat は空白。残りは空白。
+    static func initialDefault() -> [UInt8] {
+        [UInt8](repeating: 0, count: 132) + [UInt8](repeating: 0x20, count: 1024 - 132)
+    }
+    /// move spaces to final-record
+    /// INITIALIZE system-record (FD レコード領域)。FILLER と REDEFINES 項目は初期化対象外なので、
+    /// FILLER は領域確保時の 0x00 のまま、IRS-Data-Block (filler-dummy4 pic x(128)) と
+    /// Order-Entry-Block (filler-Dummy) は空白、File-Status (9 occurs 32) は "0" になる。
+    static func initialSystem() -> Record {
+        var r = Record(SystemLayout.layout)
+        let l = SystemLayout.layout
+        let size = l.size
+        for f in l.order {
+            if case .filler(let n) = f.type, f.offset < size - 256 {
+                r.bytes.replaceSubrange(f.offset..<f.offset + n, with: [UInt8](repeating: 0, count: n))
+            }
+        }
+        r.bytes.replaceSubrange(size - 256..<size, with: [UInt8](repeating: 0x20, count: 256))
+        let fs = l.offset("file-statuses")
+        r.bytes.replaceSubrange(fs..<fs + 32, with: [UInt8](repeating: 0x30, count: 32))
+        return r
+    }
+
+    static func initialFinal() -> [UInt8] { [UInt8](repeating: 0x20, count: 1024) }
+    /// initialize system-record-4: comp-3 s9(8)v99 × 20 は +0 (00000000000c)、filler x(904) は空白
+    static func initialRecord4() -> [UInt8] {
+        var b: [UInt8] = []
+        for _ in 0..<20 { b += [0, 0, 0, 0, 0, 0x0c] }
+        return b + [UInt8](repeating: 0x20, count: 1024 - b.count)
+    }
 }
