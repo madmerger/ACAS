@@ -24,6 +24,15 @@ struct CalculationForm: View {
             case .average: ["value", "qty"]
             }
         }
+
+        var numericLimits: [(field: String, integer: Int, fraction: Int)] {
+            switch self {
+            case .checkDigit, .date: []
+            case .vat: [("net", 7, 2), ("rate", 2, 2)]
+            case .age: [("days", 7, 0)]
+            case .average: [("value", 8, 2), ("qty", 6, 0)]
+            }
+        }
     }
 
     private enum Result {
@@ -31,7 +40,7 @@ struct CalculationForm: View {
         case date(serial: Int, normalized: String)
         case invalidDate
         case value(String, String)
-        case invalidNumber, divisionByZero
+        case invalidNumber, numberTooLong, divisionByZero
 
         #if DEBUG
         var oracleValues: [String: String] {
@@ -44,7 +53,7 @@ struct CalculationForm: View {
                 ["integer": "0", "normalized": "", "valid": "false"]
             case .value(let name, let value):
                 [name: value]
-            case .invalidNumber, .divisionByZero:
+            case .invalidNumber, .numberTooLong, .divisionByZero:
                 [:]
             }
         }
@@ -131,6 +140,13 @@ struct CalculationForm: View {
     }
 
     private func evaluate() -> Result {
+        for limit in function.numericLimits {
+            let input = inputs[limit.field, default: ""].trimmingCharacters(in: .whitespaces)
+            if let parts = input.wholeMatch(of: #/[+-]?([0-9]+)(?:\.([0-9]+))?/#),
+               parts.1.count > limit.integer || (parts.2?.count ?? 0) > limit.fraction {
+                return .numberTooLong
+            }
+        }
         func amount(_ name: String, scale: Int = 2) -> Int64? {
             Calc.amount(inputs[name, default: ""], scale: scale)
         }
@@ -179,6 +195,9 @@ struct CalculationForm: View {
             row(name, name == "bucket" ? value + "日" : value)
         case .invalidNumber:
             Text("calculation.invalidNumber", tableName: "CALC")
+        case .numberTooLong:
+            Text("calculation.number_too_long", tableName: "CALC")
+                .accessibilityIdentifier("calc.error.numberTooLong")
         case .divisionByZero:
             Text("calculation.divisionByZero", tableName: "CALC")
         }

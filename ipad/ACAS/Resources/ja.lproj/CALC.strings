@@ -25,6 +25,7 @@
 "calculation.bucket" = "区分の下限";
 "calculation.cost" = "平均原価";
 "calculation.invalidNumber" = "半角の数字で入力してください";
+"calculation.number_too_long" = "入力できる桁数を超えています";
 "calculation.divisionByZero" = "在庫数量がゼロのため計算できません";
 "calculation.running" = "実施中";
 "calculation.match" = "一致";

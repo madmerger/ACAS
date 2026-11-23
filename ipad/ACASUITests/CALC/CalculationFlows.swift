@@ -50,6 +50,43 @@ final class CalculationFlows: XCTestCase {
     }
 
     @MainActor
+    private func openCalculation() -> XCUIApplication {
+        let app = XCUIApplication()
+        app.launchEnvironment["ACAS_CALC_EVIDENCE"] = "W10="
+        app.launchArguments += ["-AppleLanguages", "(ja)", "-AppleLocale", "ja_JP"]
+        XCUIDevice.shared.orientation = .landscapeLeft
+        app.launch()
+        let menu = app.descendants(matching: .any).matching(identifier: "calculation.title").firstMatch
+        XCTAssertTrue(menu.waitForExistence(timeout: 10))
+        menu.tap()
+        return app
+    }
+
+    @MainActor
+    func testRejectsNumericInputBeyondLegacyPicture() {
+        let scenarios: [(Function, [String], String)] = [
+            (.vat, ["10000000", "10"], "calc.result.tax"),
+            (.vat, ["100", "100"], "calc.result.tax"),
+            (.vat, ["100.001", "10"], "calc.result.tax"),
+            (.age, ["10000000"], "calc.result.bucket"),
+            (.average, ["100000000", "1"], "calc.result.cost"),
+            (.average, ["100", "1000000"], "calc.result.cost"),
+        ]
+        for (function, values, resultID) in scenarios {
+            let app = openCalculation()
+            app.buttons[function.title].tap()
+            for (fieldID, value) in zip(function.fields, values) {
+                let field = app.textFields[fieldID]
+                field.tap()
+                field.typeText(value)
+            }
+            app.buttons["action.calculate"].tap()
+            XCTAssertEqual(app.staticTexts["calc.error.numberTooLong"].label, "入力できる桁数を超えています")
+            XCTAssertFalse(app.staticTexts[resultID].exists)
+        }
+    }
+
+    @MainActor
     func testCALCIdenticalToLegacy() throws {
         let fixture = try XCTUnwrap(Bundle(for: Self.self).url(
             forResource: "calc-suite", withExtension: "json", subdirectory: "fixtures"
