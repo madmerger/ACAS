@@ -10,6 +10,7 @@ final class DebugEvidence: Decodable, ObservableObject {
     let dateSeconds: TimeInterval
     let seed: Data?
     let changes: [RecordChange]
+    let rawFiles: [String: String]?
     let reports: [String: String]
     let reportSHA256: [String: String]?
     let calculation: DebugCalculation?
@@ -19,7 +20,7 @@ final class DebugEvidence: Decodable, ObservableObject {
     var date: Date { Date(timeIntervalSince1970: dateSeconds) }
 
     enum CodingKeys: String, CodingKey {
-        case id, title, workflow, dateSeconds, seed, changes, reports, reportSHA256, calculation
+        case id, title, workflow, dateSeconds, seed, changes, rawFiles, reports, reportSHA256, calculation
     }
 
     static func load() throws -> DebugEvidence? {
@@ -35,7 +36,10 @@ final class DebugEvidence: Decodable, ObservableObject {
                 guard let bytes = store.readRaw(path) else { return false }
                 return SHA256.hash(data: Data(bytes)).map { String(format: "%02x", $0) }.joined() == digest
             }
-        result = changesMatch && reportsMatch && actual == calculation ? "match" : "mismatch"
+        let rawFilesMatch = (rawFiles ?? [:]).allSatisfy { path, expected in
+            store.readRaw(path).map(FileStore.hex) == expected
+        }
+        result = changesMatch && rawFilesMatch && reportsMatch && actual == calculation ? "match" : "mismatch"
     }
 }
 

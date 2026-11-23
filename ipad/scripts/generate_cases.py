@@ -269,6 +269,10 @@ def fixture(evidence, case):
             seed = base64.b64encode(json.dumps(payload, separators=(",", ":")).encode()).decode()
         changes += [dict(file=path, key=key, before=before.get(key), after=after.get(key))
                     for key in sorted(before.keys() | after.keys()) if before.get(key) != after.get(key)]
+    raw_files = {}
+    if case["id"] in ("GL-004", "GL-212", "GL-213"):
+        path = "ledgers/acas/posting.dat"
+        raw_files[path] = evidence_path(evidence, run / "files" / path).read_bytes().hex()
     return {
         "id": case["id"],
         "workflow": workflow,
@@ -276,6 +280,7 @@ def fixture(evidence, case):
         "dateSeconds": date,
         "seed": seed,
         "changes": changes,
+        "rawFiles": raw_files,
         "reports": {path: data.hex() for path, data in reports.items() if len(data) <= 65536},
         "reportSHA256": {path: hashlib.sha256(data).hexdigest() for path, data in reports.items() if len(data) > 65536},
         "calculation": legacy.get("actual") if workflow == "check-digit" else None,

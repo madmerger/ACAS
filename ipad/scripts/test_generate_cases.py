@@ -69,6 +69,19 @@ class EvidencePathTests(unittest.TestCase):
         self.assertEqual(output["reports"], {})
         self.assertEqual(output["reportSHA256"], {"ledgers/acas/report": hashlib.sha256(raw).hexdigest()})
 
+    def test_batch_menu_compares_an_existing_empty_posting_file(self):
+        run = self.root / "run"
+        path = "ledgers/acas/posting.dat"
+        (run / "files" / path).parent.mkdir(parents=True)
+        (run / "files" / path).touch()
+        (run / "before-records").mkdir()
+        save(run / "before-records/records.json", {"files": {}})
+        (run / "terminal.cast").write_text('{"timestamp": 0}\n', encoding="utf-8")
+        output = fixture(self.root, {
+            "id": "GL-004", "input_data": {}, "legacy_result": {"evidence": ["run"]},
+        })
+        self.assertEqual(output["rawFiles"], {path: ""})
+
 
 if __name__ == "__main__":
     unittest.main()
