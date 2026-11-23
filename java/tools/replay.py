@@ -63,7 +63,7 @@ def snap_diff(before, after):
 
 def norm_report(text):
     """帳票の正規化。実行環境のディレクトリを印字する行（Path to IRS / Ledgers）の値欄は環境依存のためマスクする。"""
-    lines = norm_screen(text.replace("\f", ""))
+    lines = [re.sub(r"\b\d\d:\d\d\b", "HH:MM", l) for l in norm_screen(text.replace("\f", ""))]  # 見出しの印刷時刻（時:分）もマスク
     return [l[:27] + "<PATH>".ljust(43) + l[70:] if l.startswith("          Path to ") else l for l in lines]
 
 
@@ -110,7 +110,7 @@ def run_case(api, evid, case, verbose=False):
     if dpath and (evid / dpath).exists():
         ld = json.loads((evid / dpath).read_text())
         unsupported = {Path(f).name for f in ld.get("unsupported_files", [])}
-        lset = sorted((c["file"].replace("ledgers/", "", 1), c["operation"], (c.get("before") or {}).get("hex"), (c.get("after") or {}).get("hex")) for c in ld["changes"])
+        lset = sorted((c["file"].replace("ledgers/", "", 1), {"変更": "更新"}.get(c["operation"], c["operation"]), (c.get("before") or {}).get("hex"), (c.get("after") or {}).get("hex")) for c in ld["changes"])
         jset = sorted(d for d in jdiff if Path(d[0]).name not in unsupported)
         rec = {"compared": True, "legacy_changes": len(lset), "java_changes": len(jset), "match": lset == jset,
                "java_changes_in_files_without_legacy_decoder": sorted({d[0] for d in jdiff if Path(d[0]).name in unsupported})}
