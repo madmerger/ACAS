@@ -342,3 +342,18 @@ Items  ---Gross---- -----VAT----	件数   ----総額---- ----税額----
 -----VAT----	----税額----
 Activity	処理日
 Items	件数
+Direct Income	直接収益
+Indirect Cost	間接費
+Fixed Assets	固定資産
+Current Asset	流動資産
+Current Liab.	流動負債
+Capital A/Cs	資本勘定
+<----Detail	<----明細
+Level----><-------Level	階層----><-------階層
+4-------><-------Level	4-------><-------階層
+3-------><-------Level	3-------><-------階層
+2-------><-------Level	2-------><-------階層
+Level	階層
+<--------This	<--------当
+Year-------->	年度-------->
+<--------Last	<--------前

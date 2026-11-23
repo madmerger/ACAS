@@ -331,3 +331,26 @@ File Statuses	ファイル状態
 End of System Parameter Report	システムパラメータ一覧 終了
 Credit Period nn Days	与信期間 nn 日
 Yes	はい
+S Y S T E M	システム
+P A R A M E T E R S	パラメータ一覧
+Parameters	パラメータ
+Late Charge Rate	延滞料率
+Cobol/Dup Mode Not Used	Cobol/二重化モード 未使用
+Pay	支払
+Account	勘定
+Purchase Range Most Signif.	仕入範囲 最上位
+Digit is -	桁 -
+Rate 2/5.	税率 2/5.
+Rate 3.	税率 3.
+VAT    Rate 1/4.	税率 1/4.
+Rate 1/4.	税率 1/4.
+Company Heads Print on Delivery notes:	会社見出し印字 納品書:
+Company Heads Print on Invoices	会社見出し印字 請求書
+Company Heads Print on Late Letters	会社見出し印字 督促状
+Company Heads Print on Statements	会社見出し印字 取引明細書
+Debtors	売掛金
+Ledger	元帳
+Creditor Account	買掛金 勘定
+Creditor	買掛金
+Sales Range most Significant Digit is -	売上範囲 最上位桁 -
+Path to Ledgers	元帳パス
