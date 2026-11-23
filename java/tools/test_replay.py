@@ -1,7 +1,11 @@
 import unittest
+from io import BytesIO
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from unittest.mock import Mock, patch
+from urllib.error import HTTPError
+from urllib.request import HTTPHandler, ProxyHandler, build_opener
+from urllib.response import addinfourl
 
 import replay
 import ui_replay
@@ -9,6 +13,44 @@ import calc_replay
 
 
 class ReplayTest(unittest.TestCase):
+    def test_api_refuses_non_loopback_before_building_transport(self):
+        for url in ["https://example.invalid", "http://192.0.2.1", "http://localhost.example.invalid"]:
+            with self.subTest(url=url), patch("replay.urllib.request.build_opener") as build:
+                with self.assertRaisesRegex(ValueError, "ループバック"):
+                    replay.Api(url)
+                build.assert_not_called()
+
+    def test_api_builds_opener_without_proxies(self):
+        with patch("replay.urllib.request.build_opener") as build:
+            for host in ["127.0.0.1", "[::1]", "localhost"]:
+                replay.Api(f"http://{host}:18080")
+                proxy, redirect = build.call_args.args
+                self.assertEqual(proxy.proxies, {})
+                self.assertIsInstance(redirect, replay.NoRedirect)
+
+    def test_api_sends_token_to_all_paths_and_does_not_follow_redirect(self):
+        seen = []
+
+        class SyntheticHttpHandler(HTTPHandler):
+            def http_open(self, request):
+                seen.append((request.selector, request.get_header("X-acas-test-token")))
+                redirected = request.selector == "/api/redirect"
+                headers = {"Location": "/not-requested"} if redirected else {}
+                response = addinfourl(BytesIO(b""), headers, request.full_url, 302 if redirected else 200)
+                response.msg = "synthetic response"
+                return response
+
+        api = replay.Api("http://localhost")
+        api.opener = build_opener(ProxyHandler({}), replay.NoRedirect(), SyntheticHttpHandler())
+        with patch.dict("replay.os.environ", {"ACAS_TEST_API_TOKEN": "synthetic"}):
+            api.call("GET", "/api/test/snapshot")
+            api.call("POST", "/api/sessions")
+            with self.assertRaises(HTTPError) as error:
+                api.call("GET", "/api/redirect")
+        self.assertEqual(error.exception.code, 302)
+        self.assertEqual(seen, [("/api/test/snapshot", "synthetic"), ("/api/sessions", "synthetic"),
+                                ("/api/redirect", "synthetic")])
+
     def test_comparison_paths_cannot_leave_evidence_root(self):
         with TemporaryDirectory() as tmp:
             root = Path(tmp)

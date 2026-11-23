@@ -1,12 +1,44 @@
 import unittest
 from contextlib import redirect_stderr
 from io import StringIO
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 import ui_replay
 
 
 class UiReplayTest(unittest.TestCase):
+    def test_browser_only_attaches_token_to_same_origin(self):
+        origin = ("http", "localhost", 80)
+        for url, same in [("http://localhost/calc.html", True), ("http://LOCALHOST:80/api/calc", True),
+                          ("https://localhost", False), ("http://localhost:81", False),
+                          ("http://127.0.0.1", False), ("http://example.invalid", False)]:
+            with self.subTest(url=url):
+                route = Mock()
+                route.request.url = url
+                route.request.headers = {"accept": "*/*"}
+                route.fetch.return_value.status = 200
+                ui_replay.authenticated_route(route, origin, "synthetic")
+                if same:
+                    route.fetch.assert_called_once_with(
+                        headers={"accept": "*/*", "X-ACAS-Test-Token": "synthetic"}, max_redirects=0)
+                    route.fulfill.assert_called_once_with(response=route.fetch.return_value)
+                    route.continue_.assert_not_called()
+                else:
+                    route.fetch.assert_not_called()
+                    route.continue_.assert_called_once_with()
+
+    def test_browser_aborts_same_origin_redirect_without_forwarding_token(self):
+        route = Mock()
+        route.request.url = "http://localhost"
+        route.request.headers = {}
+        route.fetch.return_value.status = 302
+        route.fetch.return_value.headers = {"location": "https://example.invalid/"}
+        ui_replay.authenticated_route(route, ("http", "localhost", 80), "synthetic")
+        route.fetch.assert_called_once_with(headers={"X-ACAS-Test-Token": "synthetic"}, max_redirects=0)
+        route.fulfill.assert_not_called()
+        route.continue_.assert_not_called()
+        route.abort.assert_called_once_with()
+
     def test_visible_calc_result_is_compared_independently_of_payload(self):
         for name, actual, shown, wrong in [
             ("vat", {"vat": "20.00"}, "税額：20.00", "税額：-20.00"),
