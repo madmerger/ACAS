@@ -44,7 +44,8 @@ public class TerminalController {
         return c.term.webSnapshot();
     }
     private static boolean validKey(String key) {
-        return key != null && (COMMANDS.contains(key) || key.length() == 1 && key.charAt(0) >= ' ' && key.charAt(0) <= '~');
+        return key != null && (COMMANDS.contains(key) || key.matches("ERASE:[0-9]{1,4}:[0-9]{1,4}")
+                || key.length() == 1 && key.charAt(0) >= ' ' && key.charAt(0) <= '~');
     }
     @DeleteMapping("/sessions/{id}")
     public void close(@PathVariable String id) { sessions.close(id); }
