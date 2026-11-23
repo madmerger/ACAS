@@ -398,6 +398,8 @@ internal sealed partial class PurchaseScreens
             if (customQuarter) fields.Add(new ChoiceField("PurchaseClosingQuarter", "四半期末", yesNo, "no"));
             return new FormScreen(title, fields, "締めを実行", values =>
             {
+                if (!_ledger.HasConfiguredCyclePassword)
+                    return Notice(title, "旧版の共通設定で初期暗証文字を変更した台帳を使用してください。");
                 if (!_ledger.MatchesCyclePassword(values.Text("PurchaseClosingPassword")))
                     return Notice(title, "締め処理の暗証文字が一致しません。");
                 return Notice(title, _ledger.ClosePeriod(date, buy && values.Choice("PurchaseClosingPurchases") == "yes",

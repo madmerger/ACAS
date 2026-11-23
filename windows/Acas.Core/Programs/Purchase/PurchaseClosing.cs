@@ -22,10 +22,18 @@ public sealed partial class PurchaseLedger
     private static readonly Layout CycleTotals = new Layout().Group(2, (layout, i) =>
         layout.C3("last" + i, 8, 2).Group(7, (record, j) => record.C3($"total{i}_{j}", 8, 2)).Fill(12)).Fill(904);
 
+    private const string LegacyInitialCyclePasswordEncoding = "CEJE";
+
+    public bool HasConfiguredCyclePassword => IsConfiguredCyclePassword(System().S("Pass-Word"));
+
+    private static bool IsConfiguredCyclePassword(string encoded) =>
+        !string.IsNullOrWhiteSpace(encoded) && encoded != LegacyInitialCyclePasswordEncoding;
+
     public bool MatchesCyclePassword(string password)
     {
         const string alphabet = "CKQUAELSMWYIZJRPBXFVGNODTH";
-        if (password.Length > 4) return false;
+        string stored = System().S("Pass-Word");
+        if (!IsConfiguredCyclePassword(stored) || password.Length is < 1 or > 4) return false;
         char[] encoded = [' ', ' ', ' ', ' '];
         for (int i = 0; i < password.Length; i++)
         {
@@ -34,7 +42,7 @@ public sealed partial class PurchaseLedger
             int position = Math.Abs(index + 1 + (i + 1) * (i + 1) + 3 - 26);
             if (position != 0) encoded[3 - i] = alphabet[position - 1];
         }
-        return System().S("Pass-Word") == new string(encoded);
+        return stored == new string(encoded);
     }
 
     public bool ClosePeriod(DateTime date, bool purchase, bool sales, bool quarter, bool allowUnposted) =>

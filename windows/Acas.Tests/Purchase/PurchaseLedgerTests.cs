@@ -342,6 +342,23 @@ public sealed class PurchaseLedgerTests
     }
 
     [Fact]
+    public void 期間締めは初期設定の暗証文字を拒否し設定済みの暗証文字だけを照合する()
+    {
+        using var db = Fixture("pl-invoice");
+        var ledger = new PurchaseLedger(db);
+        var system = ledger.System();
+        system.Set("Pass-Word", "CEJE");
+        Assert.True(ledger.SaveSystem(system));
+        Assert.False(ledger.HasConfiguredCyclePassword);
+        Assert.False(ledger.MatchesCyclePassword(""));
+        system.Set("Pass-Word", "CCPI");
+        Assert.True(ledger.SaveSystem(system));
+        Assert.True(ledger.HasConfiguredCyclePassword);
+        Assert.True(ledger.MatchesCyclePassword("WQZE"));
+        Assert.False(ledger.MatchesCyclePassword("WQZA"));
+    }
+
+    [Fact]
     public void 途中で失敗した複数台帳の変更はロールバックする()
     {
         using var db = new Db();
