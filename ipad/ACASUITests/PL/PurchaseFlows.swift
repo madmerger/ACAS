@@ -179,6 +179,15 @@ final class PurchaseFlows: XCTestCase {
         XCTAssertTrue(app.buttons["pl.cheques.share"].waitForExistence(timeout: 5))
     }
 
+    func testPeriodCloseRequiresConfirmation() throws {
+        let app = try launch("PL-413", smokeID: "買掛の期間締め")
+        tap(app, "pl.period.close", scrolling: true)
+        XCTAssertTrue(app.navigationBars["買掛の期間締め"].waitForExistence(timeout: 5))
+        tap(app, "pl.period.close.run")
+        XCTAssertTrue(app.buttons["pl.period.close.confirm"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.staticTexts["pl.period.close.completed"].exists)
+    }
+
     func testEmptyPaymentProofCannotGenerateReport() throws {
         let app = try launch("PL-413", smokeID: "空の支払検証")
         tap(app, "pl.payment.proof", scrolling: true)

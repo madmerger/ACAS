@@ -4,6 +4,142 @@ import XCTest
 @testable import ACASCore
 
 final class PurchaseLedgerTests: XCTestCase {
+    func testPeriodCloseCarriesPurchaseRecordsAndRetainsSalesValues() throws {
+        let ledger = try makeLedger()
+        let supplier = try addSupplier(ledger)
+        let supplierKey = SJIS.encode(supplier, size: 7)
+        var code = PurchaseLedger.AnalysisCode()
+        code.code = "a"
+        try ledger.saveAnalysisCode(code, creating: true)
+        code.code = "a1"
+        try ledger.saveAnalysisCode(code, creating: true)
+        var invoice = PurchaseLedger.Transaction(date: ledger.processingDate)
+        invoice.supplier = supplier
+        invoice.lines[0].code = "a1"
+        invoice.lines[0].net = 10_000
+        let closed = try ledger.saveTransaction(invoice)
+        let outstanding = try ledger.saveTransaction(invoice)
+        try ledger.postTransactions()
+        let pending = try ledger.saveTransaction(invoice)
+        let closedKey = ledger.openItemKey(supplier: supplier, number: closed)
+        var closedItem = Record(PurchaseRecords.oiLayout, bytes: try XCTUnwrap(ledger.store.read(ledger.openItemsPath, key: closedKey)))
+        closedItem.setInt("oi-status", 1)
+        XCTAssertTrue(ledger.store.rewrite(ledger.openItemsPath, key: closedKey, data: closedItem.bytes))
+
+        var credit = Record(PurchaseRecords.oiLayout)
+        credit["oi-supplier"] = supplier
+        credit.setInt("oi-invoice", 101)
+        credit.setInt("oi-type", 6)
+        credit.setInt("oi-deduct-amt", 100)
+        credit.setInt("oi-p-c", 99)
+        let creditKey = ledger.openItemKey(supplier: supplier, number: 101)
+        XCTAssertTrue(ledger.store.write(ledger.openItemsPath, key: creditKey, data: credit.bytes))
+
+        var supplierRecord = try XCTUnwrap(ledger.supplierRecord(supplier))
+        supplierRecord.setInt("purch-current", -9_000)
+        supplierRecord.setInt("purch-unapplied", 3_000)
+        supplierRecord.setInt("turnover-q2", 300)
+        supplierRecord.setInt("purch-average", 20)
+        XCTAssertTrue(ledger.store.rewrite(ledger.suppliersPath, key: supplierKey, data: supplierRecord.bytes))
+        let valuePath = ledger.base + "value.dat"
+        var value = Record(PurchaseRecords.valueLayout)
+        value["code"] = "SAA"
+        value.setInt("this-count", 42)
+        let salesKey = Array("SAA".utf8)
+        XCTAssertTrue(ledger.store.write(valuePath, key: salesKey, data: value.bytes))
+        var settings = ledger.system
+        settings.setInt("scycle", 3)
+        settings.setInt("period", 3)
+        settings.setInt("current-quarter", 1)
+        try ledger.systemFile.write(1, settings.bytes)
+        let before = try XCTUnwrap(ledger.systemFile.read(4))
+        let day = try ledger.legacyDate(ledger.processingDate)
+        XCTAssertThrowsError(try ledger.closePeriod(confirmUnpostedInvoices: false, password: "", endQuarter: false)) {
+            XCTAssertEqual($0 as? PurchaseLedger.PeriodCloseError, .unpostedInvoices)
+        }
+        XCTAssertThrowsError(try ledger.closePeriod(confirmUnpostedInvoices: true, password: "", endQuarter: false)) {
+            XCTAssertEqual($0 as? PurchaseLedger.PeriodCloseError, .analysisRequired)
+        }
+        let dayBook = try XCTUnwrap(ledger.purchaseDayBook())
+        XCTAssertTrue(SJIS.decode(Array(dayBook)[...]).contains("Purchase Ledger Day Book"))
+        let analysis = try XCTUnwrap(ledger.purchaseAnalysisReport())
+        XCTAssertTrue(SJIS.decode(Array(analysis)[...]).contains("Purchase  Analysis"))
+        let beforeAnalysis = ledger.store.all(valuePath).filter { $0.key.first == 0x50 }
+        XCTAssertFalse(beforeAnalysis.isEmpty)
+        try ledger.closePeriod(confirmUnpostedInvoices: true, password: "", endQuarter: false)
+
+        let afterSupplier = try XCTUnwrap(ledger.supplierRecord(supplier))
+        XCTAssertEqual(afterSupplier.int("purch-current"), 0)
+        XCTAssertEqual(afterSupplier.int("purch-last"), 0)
+        XCTAssertEqual(afterSupplier.int("purch-unapplied"), 12_000)
+        XCTAssertEqual(afterSupplier.int("turnover-q2"), 0)
+        XCTAssertEqual(afterSupplier.int("purch-average"), 20)
+        XCTAssertNil(ledger.header(closed))
+        XCTAssertNil(ledger.store.read(ledger.invoicePath, key: ledger.invoiceKey(closed, 1)))
+        XCTAssertEqual(ledger.header(outstanding)?.str("ih-day-book-flag"), "B")
+        XCTAssertEqual(ledger.header(outstanding)?.int("ih-lines"), 0)
+        XCTAssertEqual(ledger.header(pending)?.int("ih-lines"), 1)
+        XCTAssertNil(ledger.store.read(ledger.openItemsPath, key: closedKey))
+        let afterCredit = Record(PurchaseRecords.oiLayout, bytes: try XCTUnwrap(ledger.store.read(ledger.openItemsPath, key: creditKey)))
+        XCTAssertEqual(afterCredit.str("oi-applied"), "z")
+        XCTAssertEqual(afterCredit.int("oi-p-c"), 0)
+        XCTAssertEqual(afterCredit.int("oi-deduct-amt"), 0)
+        XCTAssertEqual(ledger.store.read(valuePath, key: salesKey), value.bytes)
+        for entry in beforeAnalysis {
+            let old = Record(PurchaseRecords.valueLayout, bytes: entry.data)
+            let new = Record(PurchaseRecords.valueLayout, bytes: try XCTUnwrap(ledger.store.read(valuePath, key: entry.key)))
+            XCTAssertEqual(new.int("last-count"), old.int("this-count"))
+            XCTAssertEqual(new.int("last-net"), old.int("this-net"))
+            XCTAssertEqual(new.int("this-count"), 0)
+            XCTAssertEqual(new.int("this-net"), 0)
+        }
+        let after = try XCTUnwrap(ledger.systemFile.read(4))
+        let totals = Record(PurchaseRecords.sys4Layout, bytes: after)
+        XCTAssertEqual(totals.int("pl-os-bal-last-month"), Record(PurchaseRecords.sys4Layout, bytes: before).int("pl-os-bal-this-month"))
+        XCTAssertEqual(totals.int("pl-invoices-this-month"), 0)
+        XCTAssertEqual(after.dropFirst(PurchaseRecords.sys4Layout.size), before.dropFirst(PurchaseRecords.sys4Layout.size))
+        XCTAssertEqual(ledger.system.int("scycle"), 4)
+        XCTAssertEqual(ledger.system.int("current-quarter"), 2)
+        XCTAssertEqual(ledger.system.int("bl-end-cycle-date"), day)
+        XCTAssertEqual(ledger.system.str("oi-5-flag"), "Y")
+    }
+
+    func testPeriodCloseWeeklyYearEndRequiresPasswordAndNoPendingPayments() throws {
+        let ledger = try makeLedger()
+        let supplier = try addSupplier(ledger)
+        var settings = ledger.system
+        for flag in [15, 29] { ledger.setFileFlag(flag, in: &settings) }
+        settings.setInt("scycle", 52)
+        settings.setInt("period", 13)
+        settings.setInt("current-quarter", 4)
+        settings.setInt("s-flag-p", 2)
+        settings["pass-word"] = "QYBG"
+        try ledger.systemFile.write(1, settings.bytes)
+        let path = ledger.base + "value.dat"
+        XCTAssertTrue(ledger.store.write(path, key: Array("SAA".utf8), data: Record(PurchaseRecords.valueLayout).bytes))
+        XCTAssertThrowsError(try ledger.closePeriod(confirmUnpostedInvoices: false, password: "CKQU", endQuarter: false)) {
+            XCTAssertEqual($0 as? PurchaseLedger.PeriodCloseError, .unpostedPayments)
+        }
+        settings.setInt("s-flag-p", 0)
+        try ledger.systemFile.write(1, settings.bytes)
+        XCTAssertThrowsError(try ledger.closePeriod(confirmUnpostedInvoices: false, password: "", endQuarter: false)) {
+            XCTAssertEqual($0 as? PurchaseLedger.PeriodCloseError, .incorrectPassword)
+        }
+        var record = try XCTUnwrap(ledger.supplierRecord(supplier))
+        record.setInt("turnover-q1", 100)
+        record.setInt("purch-activety", 12)
+        record.setInt("purch-average", 456)
+        XCTAssertTrue(ledger.store.rewrite(ledger.suppliersPath, key: SJIS.encode(supplier, size: 7), data: record.bytes))
+        try ledger.closePeriod(confirmUnpostedInvoices: false, password: "CKQU", endQuarter: false)
+        let after = try XCTUnwrap(ledger.supplierRecord(supplier))
+        XCTAssertEqual(after.int("turnover-q1"), 0)
+        XCTAssertEqual(after.int("purch-activety"), 0)
+        XCTAssertEqual(after.int("purch-average"), 0)
+        XCTAssertTrue(ledger.store.all(path).isEmpty)
+        XCTAssertEqual(ledger.system.int("scycle"), 1)
+        XCTAssertEqual(ledger.system.int("current-quarter"), 1)
+    }
+
     func testDuplicateConfiguredFolioAdvancesWithoutOverwritingInvoice() throws {
         let ledger = try makeLedger()
         var transaction = PurchaseLedger.Transaction(date: ledger.processingDate)

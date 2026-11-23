@@ -139,7 +139,14 @@ extension PurchaseLedger {
         record["description"] = value.name
         record["print"] = value.printGroup
         if creating {
-            guard store.write(analysisPath, key: key, data: record.bytes) else { throw Error.invalidCode }
+            try store.withTransaction {
+                guard store.write(analysisPath, key: key, data: record.bytes) else { throw Error.invalidCode }
+                var settings = system
+                if settings.raw("file-statuses")[14] != 0x31 {
+                    setFileFlag(15, in: &settings)
+                    try systemFile.write(1, settings.bytes)
+                }
+            }
         } else {
             guard store.rewrite(analysisPath, key: key, data: record.bytes) else { throw Error.analysisCodeNotFound }
         }
