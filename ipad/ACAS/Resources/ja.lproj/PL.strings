@@ -159,6 +159,7 @@
 "purchase.report.activity" = "取引件数";
 "purchase.report.average" = "平均取引額";
 "purchase.report.overdue" = "最終仕入からの日数";
+"purchase.report.overdue.help" = "この条件は現在残高が正の仕入先にのみ適用します。";
 "purchase.report.created" = "登録日";
 "purchase.report.threshold" = "比較値";
 "purchase.report.error.open_items" = "未決済明細が初期化されていません。";

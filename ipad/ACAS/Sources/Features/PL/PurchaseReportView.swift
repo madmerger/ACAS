@@ -68,6 +68,11 @@ struct PurchaseReportView: View {
                         criterion("purchase.report.activity", $filter.activity)
                         criterion("purchase.report.average", $filter.average)
                         criterion("purchase.report.overdue", $filter.overdue)
+                        if filter.overdue.comparison != .any {
+                            Text(plString("purchase.report.overdue.help"))
+                                .font(.footnote)
+                                .foregroundStyle(.secondary)
+                        }
                         if mode != .file {
                             comparison("purchase.report.created", $filter.created.comparison)
                             if filter.created.comparison != .any {
