@@ -378,3 +378,31 @@ extension IndexedFile {
         return .miss
     }
 }
+
+/// gl070/gl071/gl072 の作業ファイル (pretrans.tmp / postrans.tmp: line sequential、70 バイト)
+enum GLTrans {
+    static let layout = Layout("trans-record", [
+        ("batch", .n9(digits: 5, scale: 0, signed: false)),
+        ("post", .n9(digits: 5, scale: 0, signed: false)),
+        ("code", .x(2)),
+        ("date", .x(8)),
+        ("ac", .n9(digits: 6, scale: 0, signed: false)),
+        ("pc", .n9(digits: 2, scale: 0, signed: false)),
+        ("amount", .n9(digits: 10, scale: 2, signed: true)),
+        ("legend", .x(32)),
+    ])
+    static func prePath(_ s: Session) -> String { s.ledgers + "pretrans.tmp" }
+    static func postPath(_ s: Session) -> String { s.ledgers + "postrans.tmp" }
+    /// line sequential の全レコード (各行を 70 バイトへ空白で伸長)
+    static func readAll(_ s: Session, _ path: String) -> [Record]? {
+        guard let d = s.store.readRaw(path) else { return nil }
+        var out: [Record] = []
+        for line in d.split(separator: 0x0a, omittingEmptySubsequences: false).dropLast(d.last == 0x0a || d.isEmpty ? 1 : 0) {
+            var b = Array(line.prefix(layout.size))
+            if b.count < layout.size { b += [UInt8](repeating: 0x20, count: layout.size - b.count) }
+            out.append(Record(layout, bytes: b))
+        }
+        return out
+    }
+    static func append(_ s: Session, _ path: String, _ r: Record) { s.store.appendRaw(path, r.bytes + [0x0a]) }
+}

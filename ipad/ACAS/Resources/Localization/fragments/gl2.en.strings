@@ -303,3 +303,41 @@
 "gl060.p_h2b" = "Items  ---Gross---- -----VAT----";
 "gl060.p_header" = "Header   ";
 "gl060.p_actual" = "Actual   ";
+
+/* gl070.cbl */
+"gl070.title" = "Transaction Posting";
+"gl070.phase1" = "Phase - 1.  Batch Check";
+"gl070.phase2" = "Phase - 2.  Transaction Pre-process";
+"gl070.l_gl" = " G/L";
+"gl070.l_pl" = " P/L";
+"gl070.l_sl" = " S/L";
+"gl070.s_open" = "Open";
+"gl070.s_waiting" = "Waiting";
+"gl070.s_processed" = "Processed";
+"gl070.s_archived" = "Archived";
+"gl070.next_screen" = "Enter <N> for next screen or <X> to exit :- [ ]";
+"gl070.type_return" = "Type return to exit.";
+"gl070.p_title" = "Batch Status Report";
+"gl070.p_page" = " Page ";
+"gl070.p_cycle" = "Cycle - ";
+"gl070.p_h1a" = "Ledger  Batch  Status       Last";
+"gl070.p_h1b" = "---------Batch Controls---------";
+"gl070.p_h2a" = "------  -----  ------     Activity";
+"gl070.p_h2b" = "Items  ---Gross---- -----VAT----";
+"gl070.p_header" = "Header   ";
+"gl070.p_actual" = "Actual   ";
+
+/* gl071.cbl */
+"gl071.sorting" = "Sorting.......Please wait            ";
+
+/* gl072.cbl */
+"gl072.phase4" = "Phase - 4.  Transaction Update";
+"gl072.p_title" = "Transaction  Posting";
+"gl072.p_page" = "Page ";
+"gl072.p_cycle" = "Cycle - ";
+"gl072.p_batch" = "          Batch - ";
+"gl072.p_type" = "General";
+"gl072.p_head" = "Account   Br/P C    --Balance--   Trans  --Date--    ---Debit---    ---Credit--       -------------Legend------------";
+"gl072.p_rule1" = "-------";
+"gl072.p_rule2" = "-----";
+"gl072.brought_forward" = "brought forward";
