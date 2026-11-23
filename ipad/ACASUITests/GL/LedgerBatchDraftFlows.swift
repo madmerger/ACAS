@@ -153,7 +153,7 @@ final class LedgerBatchDraftFlows: XCTestCase {
     @MainActor
     private func tapOption(_ app: XCUIApplication, _ name: String) {
         let option = app.buttons.matching(NSPredicate(format: "label == %@", name)).firstMatch
-        XCTAssertTrue(option.waitForExistence(timeout: 5), name)
+        XCTAssertTrue(option.wait(for: \.isHittable, toEqual: true, timeout: 5), name)
         option.tap()
     }
 
