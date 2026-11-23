@@ -13,6 +13,7 @@ CASES = {
     "SL-004": ("sales-invoice-entry-view", "売上取引入力を開く"),
     "SL-005": ("sales-invoice-edit-list-view", "売上取引修正を開く"),
     "SL-006": ("sales-proof", "売上の確認帳票・取引なし"),
+    "SL-007": ("sales-posting-work-file-unavailable", "売上転記・作業ファイルなし"),
     "SL-008": ("sales-payment-unavailable", "入金登録・売掛明細なし"),
     "SL-009": ("sales-payment-unavailable", "入金修正・対象なし"),
     "SL-010": ("sales-payment-unavailable", "入金検証帳票・対象なし"),
@@ -34,6 +35,7 @@ CASES = {
     "SL-209": ("sales-invoice-entry-view", "売上取引入力の到達確認"),
     "SL-210": ("sales-invoice-edit-list-view", "売上取引修正の到達確認"),
     "SL-211": ("sales-proof", "売上の確認帳票・取引なし"),
+    "SL-212": ("sales-posting-work-file-unavailable", "売上転記・作業ファイルなし"),
     "SL-213": ("sales-payment-unavailable", "入金登録・売掛明細なし"),
     "SL-214": ("sales-payment-unavailable", "入金修正・対象なし"),
     "SL-215": ("sales-payment-unavailable", "入金検証帳票・対象なし"),
@@ -52,21 +54,38 @@ CASES = {
     "SL-233": ("sales-invoice-immediate-view", "請求書即時印刷の到達確認"),
     "SL-234": ("sales-invoice-edit-list-view", "請求書修正の到達確認"),
     "SL-235": ("sales-invoice-delete-list-view", "請求書削除の到達確認"),
+    "SL-236": ("sales-invoice-deletion-report", "請求書削除帳票・削除済み請求書なし"),
     "SL-239": ("sales-period-view", "期間締めの確認画面"),
     "SL-240": ("sales-customer-report-view", "得意先ファイル帳票の抽出条件"),
     "SL-244": ("sales-invoice-fixed-data-view", "請求書固定項目設定・初回表示"),
 }
 
 
-def unchanged_reports(evidence, run):
+def report_evidence(evidence, run, expected_files):
     before = BASE.read_json(BASE.evidence_path(evidence, run / "before.json"))
     after = BASE.read_json(BASE.evidence_path(evidence, run / "result.json"))["after"]
-    reports = {}
+    seed_reports = {}
+    expected_reports = {}
+    changed = {}
+    for name in expected_files:
+        file = BASE.evidence_path(evidence, name)
+        path = file.relative_to(run / "files")
+        data = file.read_bytes()
+        if hashlib.sha256(data).hexdigest() != after[str(path)]["sha256"]:
+            raise ValueError(f"帳票の実測バイトが一致しません: {run.name}: {path}")
+        if path.parent == PurePosixPath("ledgers/acas"):
+            changed[str(path)] = data.hex()
+    for name in expected_files:
+        file = BASE.evidence_path(evidence, name)
+        path = file.relative_to(run / "files")
+        if path.parent != PurePosixPath("ledgers/acas"):
+            if path.parts[0] != "spool" or changed.get(f"ledgers/acas/{path.name}") != file.read_bytes().hex():
+                raise ValueError(f"照合できない帳票の証跡です: {run.name}: {path}")
     for name, metadata in before.items():
         path = PurePosixPath(name)
         if path.parent != PurePosixPath("ledgers/acas") or not path.name.startswith("prt-"):
             continue
-        if after.get(name) != metadata:
+        if name not in changed and after.get(name) != metadata:
             raise ValueError(f"到達確認の帳票が変化しました: {run.name}: {name}")
         source = BASE.evidence_path(evidence, run / "before-files" / name)
         if not source.is_file():
@@ -74,8 +93,10 @@ def unchanged_reports(evidence, run):
         data = source.read_bytes()
         if hashlib.sha256(data).hexdigest() != metadata["sha256"]:
             raise ValueError(f"帳票の証跡バイトが一致しません: {run.name}: {name}")
-        reports[name] = data.hex()
-    return reports
+        seed_reports[name] = data.hex()
+        if name not in changed:
+            expected_reports[name] = data.hex()
+    return seed_reports, expected_reports | changed
 
 
 def save_analysis_reports(evidence, cases, fixtures):
@@ -123,13 +144,11 @@ def main():
         legacy = cases[case_id]["legacy_result"]
         run = BASE.evidence_path(evidence, legacy["evidence"][0])
         targets = legacy["comparison_targets"]
-        if targets["report_files"]:
-            raise ValueError(f"到達確認に帳票差分があります: {case_id}")
         with BASE.evidence_path(evidence, run / "terminal.cast").open(encoding="utf-8") as recording:
             date = json.loads(recording.readline())["timestamp"]
-        reports = unchanged_reports(evidence, run)
+        seed_reports, reports = report_evidence(evidence, run, targets["report_files"])
         seed = json.loads(base64.b64decode(customer_seed(evidence, run)))
-        seed["files"].update({name: {"type": "raw", "hex": data} for name, data in reports.items()})
+        seed["files"].update({name: {"type": "raw", "hex": data} for name, data in seed_reports.items()})
         BASE.save(fixtures / f"{case_id}.json", {
             "id": case_id, "title": title, "workflow": workflow, "dateSeconds": date,
             "seed": base64.b64encode(json.dumps(seed, separators=(",", ":")).encode()).decode(),
