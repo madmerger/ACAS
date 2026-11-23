@@ -4,5 +4,6 @@ import Foundation
 enum Sys002Part {
     static func register(_ s: Session) {
         s.programs["maps99"] = Sys002Maps99.run
+        s.programs["sys002"] = Sys002.run
     }
 }
