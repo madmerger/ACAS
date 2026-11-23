@@ -117,8 +117,11 @@ public sealed partial class SalesScreens(SalesLedger sales, Func<DateTime>? cloc
     private Screen SalesPost()
     {
         const string title = "売上転記";
-        return !sales.HasFile("openitm2.dat") ? Missing(title, "転記先の売掛明細")
-            : new InformationScreen(title, "転記先がある環境での売上転記には対応していません。");
+        if (!sales.HasFile("invoice.dat")) return Missing(title, "転記先の売掛明細");
+        bool unprinted = sales.ExtractSalesForPosting();
+        string message = unprinted ? "未印刷の請求書を除き、抽出済みの売上取引を転記しますか。"
+            : "抽出済みの売上取引を転記しますか。";
+        return Confirm(title, message, "転記する", () => new ReportScreen(title, sales.PostSales()), MainMenu);
     }
 
     private Screen OpenItemReport(string title)
