@@ -13,32 +13,32 @@ struct BookkeepingConfigurationForm: View {
 
     var body: some View {
         Form {
-            Section("事業者情報") {
-                TextField("担当者名", text: $value.operatorName).accessibilityIdentifier("irs.operatorName")
-                TextField("事業者名", text: $value.client).accessibilityIdentifier("irs.client")
-                TextField("番地", text: $value.street)
-                TextField("市区町村", text: $value.city)
-                TextField("国・地域", text: $value.country)
-                TextField("郵便番号", text: $value.postcode)
+            Section(irsText("settings.company")) {
+                TextField(irsText("settings.operator"), text: $value.operatorName).accessibilityIdentifier("irs.operatorName")
+                TextField(irsText("settings.client"), text: $value.client).accessibilityIdentifier("irs.client")
+                TextField(irsText("settings.street"), text: $value.street)
+                TextField(irsText("settings.city"), text: $value.city)
+                TextField(irsText("settings.country"), text: $value.country)
+                TextField(irsText("settings.postcode"), text: $value.postcode)
             }
-            Section("会計期間と税率") {
-                DatePicker("開始日", selection: $value.start, displayedComponents: .date)
-                DatePicker("終了日", selection: $value.end, displayedComponents: .date)
-                TextField("付加価値税率", value: $value.taxRate, format: .percent.scale(0.01))
+            Section(irsText("settings.period")) {
+                DatePicker(irsText("settings.start"), selection: $value.start, displayedComponents: .date)
+                DatePicker(irsText("settings.end"), selection: $value.end, displayedComponents: .date)
+                TextField(irsText("settings.taxRate"), value: $value.taxRate, format: .percent.scale(0.01))
                     .keyboardType(.decimalPad)
-                TextField("帳票の出力先", text: $value.printDestination)
+                TextField(irsText("settings.printDestination"), text: $value.printDestination)
             }
-            Button("保存") {
+            Button(irsText("action.save")) {
                 do {
                     try BookkeepingService(workspace.context).save(value)
-                    message = "簡易記帳設定を保存しました。"
+                    message = irsText("result.settingsSaved")
                 } catch { message = bookkeepingError(error) }
                 workspace.completed("irs.settings")
             }
             .accessibilityIdentifier("irs.saveSettings")
             if !message.isEmpty { Text(message).accessibilityIdentifier("irs.result") }
         }
-        .navigationTitle("簡易記帳設定")
+        .navigationTitle(irsText("menu.settings"))
     }
 }
 
@@ -57,8 +57,8 @@ struct BookkeepingAccountForm: View {
     var body: some View {
         Form {
             if editing {
-                Picker("勘定科目", selection: $selection) {
-                    Text("選択してください").tag(String?.none)
+                Picker(irsText("field.account"), selection: $selection) {
+                    Text(irsText("field.choose")).tag(String?.none)
                     ForEach(service.accounts) { row in
                         Text(row.name).tag(Optional(row.id))
                     }
@@ -72,21 +72,21 @@ struct BookkeepingAccountForm: View {
                     message = ""
                 }
             } else {
-                TextField("科目番号", text: $code).keyboardType(.numberPad).accessibilityIdentifier("irs.accountCode")
-                TextField("補助科目番号（任意）", text: $child).keyboardType(.numberPad)
+                TextField(irsText("field.accountCode"), text: $code).keyboardType(.numberPad).accessibilityIdentifier("irs.accountCode")
+                TextField(irsText("field.childAccount"), text: $child).keyboardType(.numberPad)
             }
-            TextField("科目名", text: $name).accessibilityIdentifier("irs.accountName")
-            Picker("分類", selection: $category) {
+            TextField(irsText("field.accountName"), text: $name).accessibilityIdentifier("irs.accountName")
+            Picker(irsText("field.category"), selection: $category) {
                 ForEach(BookkeepingService.Category.allCases, id: \.self) { Text($0.title).tag($0) }
             }
-            Button("保存") {
+            Button(irsText("action.save")) {
                 guard let id = Int(code), let sub = child.isEmpty ? 0 : Int(child) else {
-                    message = "科目番号を確認してください。"
+                    message = irsText("error.accountCode")
                     return
                 }
                 do {
                     try service.saveAccount(code: id, child: sub, name: name, category: category, editing: editing)
-                    message = "勘定科目を保存しました。"
+                    message = irsText("result.accountSaved")
                     if !editing { code = ""; child = ""; name = "" }
                 } catch { message = bookkeepingError(error) }
                 workspace.completed("irs.accounts")
@@ -95,7 +95,7 @@ struct BookkeepingAccountForm: View {
             .disabled(editing && selection == nil)
             if !message.isEmpty { Text(message).accessibilityIdentifier("irs.result") }
         }
-        .navigationTitle(editing ? "科目表変更" : "科目表登録")
+        .navigationTitle(editing ? irsText("accounts.edit") : irsText("accounts.create"))
     }
 }
 
@@ -112,28 +112,28 @@ struct BookkeepingDefaultForm: View {
 
     var body: some View {
         Form {
-            Picker("登録番号", selection: $slot) {
+            Picker(irsText("field.registration"), selection: $slot) {
                 ForEach(1...29, id: \.self) { Text(verbatim: String($0)).tag($0) }
-                Text("期首残高").tag(30)
-                Text("仕入付加価値税").tag(31)
-                Text("売上付加価値税").tag(32)
+                Text(irsText("defaults.openingBalance")).tag(30)
+                Text(irsText("defaults.inputTax")).tag(31)
+                Text(irsText("defaults.outputTax")).tag(32)
             }
-            TextField("科目番号", text: $account).keyboardType(.numberPad)
+            TextField(irsText("field.accountCode"), text: $account).keyboardType(.numberPad)
             if slot < 30 {
-                TextField("略号", text: $label)
-                Toggle("付加価値税の対象", isOn: $tax)
+                TextField(irsText("field.abbreviation"), text: $label)
+                Toggle(irsText("field.usesTax"), isOn: $tax)
             }
-            Button("保存") {
-                guard let code = Int(account) else { message = "科目番号を確認してください。"; return }
+            Button(irsText("action.save")) {
+                guard let code = Int(account) else { message = irsText("error.accountCode"); return }
                 do {
                     try service.saveDefault(slot: slot, account: code, label: label, usesTax: tax)
-                    message = "既定勘定を保存しました。"
+                    message = irsText("result.defaultSaved")
                 } catch { message = bookkeepingError(error) }
                 workspace.completed("irs.defaults")
             }
             if !message.isEmpty { Text(message).accessibilityIdentifier("irs.result") }
         }
-        .navigationTitle(editing ? "既定勘定変更" : "既定勘定登録")
+        .navigationTitle(editing ? irsText("defaults.edit") : irsText("defaults.create"))
         .onAppear(perform: load)
         .onChange(of: slot) { _, _ in load() }
     }
@@ -161,34 +161,34 @@ struct BookkeepingPostingForm: View {
 
     var body: some View {
         Form {
-            Picker("既定勘定", selection: $slot) {
+            Picker(irsText("field.defaultAccount"), selection: $slot) {
                 ForEach(service.defaults.filter { $0.account != 0 }) { Text($0.label).tag($0.id) }
             }
-            Picker("既定勘定の区分", selection: $side) {
-                Text("借方").tag(BookkeepingService.Side.debit)
-                Text("貸方").tag(BookkeepingService.Side.credit)
+            Picker(irsText("field.defaultType"), selection: $side) {
+                Text(irsText("field.debit")).tag(BookkeepingService.Side.debit)
+                Text(irsText("field.credit")).tag(BookkeepingService.Side.credit)
             }
-            DatePicker("取引日", selection: $date, displayedComponents: .date)
-            TextField("相手科目番号", text: $account).keyboardType(.numberPad)
+            DatePicker(irsText("field.date"), selection: $date, displayedComponents: .date)
+            TextField(irsText("field.otherAccount"), text: $account).keyboardType(.numberPad)
                 .accessibilityIdentifier("irs.postAccount")
-            TextField("摘要", text: $description).accessibilityIdentifier("irs.postDescription")
-            TextField("金額", text: $amount).keyboardType(.numbersAndPunctuation)
+            TextField(irsText("field.narrative"), text: $description).accessibilityIdentifier("irs.postDescription")
+            TextField(irsText("field.amount"), text: $amount).keyboardType(.numbersAndPunctuation)
                 .accessibilityIdentifier("irs.postAmount")
-            Button("転記") {
+            Button(irsText("action.post")) {
                 guard let id = Int(account), let decimal = Decimal(string: amount, locale: Locale(identifier: "ja_JP")),
                       (-9_999_999...9_999_999).contains(decimal)
-                else { message = "科目番号と金額を確認してください。"; return }
+                else { message = irsText("error.posting"); return }
                 do {
                     try service.post(defaultSlot: slot, side: side, account: id, date: date,
                                      amount: NSDecimalNumber(decimal: decimal * 100).int64Value, description: description)
-                    message = "仕訳を転記しました。"
+                    message = irsText("result.posted")
                 } catch { message = bookkeepingError(error) }
                 workspace.completed("irs.post")
             }
             .accessibilityIdentifier("irs.submitPost")
             if !message.isEmpty { Text(message).accessibilityIdentifier("irs.result") }
         }
-        .navigationTitle("仕訳転記")
+        .navigationTitle(irsText("menu.post"))
         .onAppear {
             date = service.today
             slot = service.defaults.first(where: { $0.account != 0 })?.id ?? 1

@@ -63,9 +63,9 @@ public struct BookkeepingService {
         store.readRaw(path).map { Array($0.prefix { $0 != 0x0a }) }
     }
 
-    func writeLine(_ path: String, _ bytes: [UInt8]) {
+    func writeLine(_ path: String, _ bytes: [UInt8]) throws {
         let count = bytes.lastIndex { $0 != 0x20 }.map { $0 + 1 } ?? 0
-        store.writeRaw(path, Array(bytes.prefix(count)) + [0x0a])
+        try store.writeRaw(path, Array(bytes.prefix(count)) + [0x0a])
     }
 
     func dateString(_ date: Date) -> String {
@@ -120,7 +120,7 @@ public struct BookkeepingService {
         ] { row[field] = value }
         row.setInt("vat", configuration.taxRate)
         for field in ["pass-value", "save-sequ", "first-time-flag"] { row.setInt(field, 0) }
-        writeLine(systemPath, row.bytes)
+        try writeLine(systemPath, row.bytes)
     }
 
     func accountKey(_ base: Int, _ child: Int = 0) -> [UInt8] {
@@ -197,6 +197,6 @@ public struct BookkeepingService {
         bytes.replaceSubrange((5 * index)..<(5 * index + 5), with: Array(Cobol.z(account, 5).utf8))
         bytes.replaceSubrange((160 + 2 * index)..<(162 + 2 * index), with: SJIS.encode(name, size: 2))
         bytes[224 + index] = usesTax && reserved[slot] == nil ? 0x59 : 0x4e
-        writeLine(defaultsPath, bytes)
+        try writeLine(defaultsPath, bytes)
     }
 }

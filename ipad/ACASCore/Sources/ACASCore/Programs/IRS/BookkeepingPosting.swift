@@ -56,7 +56,7 @@ extension BookkeepingService {
         store.rewrite(accountsPath, key: balance.raw("key"), data: balance.bytes)
         system.setInt("next-post", Int64(sequence))
         system.setInt("save-sequ", 0)
-        writeLine(systemPath, system.bytes)
+        try writeLine(systemPath, system.bytes)
     }
 
     public func recalculate() throws {
