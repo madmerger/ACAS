@@ -162,7 +162,7 @@
 "sales.invoice.printPrompt" = "請求書帳票を生成しますか？";
 "sales.invoice.confirmPrint" = "生成する";
 "sales.invoice.deleted" = "請求書を削除しました";
-"sales.invoice.error.missingCustomer" = "取引中の得意先コードを指定してください";
+"sales.invoice.error.missingCustomer" = "登録済みの得意先コードを指定してください";
 "sales.invoice.error.missingInvoice" = "指定した請求書が見つかりません";
 "sales.invoice.error.invalidCreditTarget" = "指定番号は、この得意先の取消対象となる請求書ではありません";
 "sales.invoice.creditedInvoiceSuffix" = "対象請求書番号の枝番";

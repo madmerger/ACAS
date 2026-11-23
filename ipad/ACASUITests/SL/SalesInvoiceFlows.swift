@@ -8,6 +8,20 @@ final class SalesInvoiceFlows: XCTestCase {
     func testSL101() throws { try create("SL-101", credit: true) }
 
     @MainActor
+    func testUnregisteredCustomerShowsRegistrationError() throws {
+        let (app, _) = try launch("SL-100")
+        tap("sales.invoice.pending", in: app)
+        let customer = app.textFields["sales.invoice.customer"]
+        reveal(customer, in: app)
+        customer.tap()
+        customer.typeText("ZZZZZZ9\n")
+        tap("sales.invoice.save", in: app)
+        let result = app.staticTexts["sales.invoice.result"]
+        XCTAssertTrue(result.waitForExistence(timeout: 5))
+        XCTAssertEqual(result.label, "登録済みの得意先コードを指定してください")
+    }
+
+    @MainActor
     func testSL103() throws {
         let (app, _) = try launch("SL-103")
         tap("sales.invoice.print", in: app)
