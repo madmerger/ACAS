@@ -10,6 +10,7 @@ public final class Session: @unchecked Sendable {
     public let l10n: L10n
     /// 現在日時 (テストでは固定値を注入)
     public var now: () -> Date = { Date() }
+    public var timeZone = TimeZone.current
     /// レガシーの ACAS_LEDGERS / ACAS_IRS に相当するデータ領域
     public var ledgers = "ledgers/acas/"
     public var irsDir = "ledgers/irs/"
@@ -43,7 +44,7 @@ public final class Session: @unchecked Sendable {
 
     private var calendar: Calendar {
         var c = Calendar(identifier: .gregorian)
-        c.timeZone = TimeZone.current
+        c.timeZone = timeZone
         return c
     }
     public var today: (year: Int, month: Int, day: Int) {

@@ -1,0 +1,12189 @@
+[
+ {
+  "id": "GL-001",
+  "subsystem": "GL",
+  "title": "Start Of Day — 画面表示",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "A",
+   "A"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "A",
+    "expect": "Start Of Day"
+   },
+   {
+    "key": "ENTER",
+    "expect": "General Ledger System Menu"
+   },
+   {
+    "text": "A",
+    "expect": "Start Of Day"
+   }
+  ]
+ },
+ {
+  "id": "GL-002",
+  "subsystem": "GL",
+  "title": "Chart Of Account Utilities — 画面表示",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "A",
+   "B"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "A",
+    "expect": "Start Of Day"
+   },
+   {
+    "key": "ENTER",
+    "expect": "General Ledger System Menu"
+   },
+   {
+    "text": "B",
+    "expect": "Chart Of Account Utilities"
+   }
+  ]
+ },
+ {
+  "id": "GL-003",
+  "subsystem": "GL",
+  "title": "Default File Utilities — 画面表示",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "A",
+   "C"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "A",
+    "expect": "Start Of Day"
+   },
+   {
+    "key": "ENTER",
+    "expect": "General Ledger System Menu"
+   },
+   {
+    "text": "C",
+    "expect": "Default File Utilities"
+   }
+  ]
+ },
+ {
+  "id": "GL-004",
+  "subsystem": "GL",
+  "title": "Transaction Entry Functions — 画面表示",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "A",
+   "E"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "A",
+    "expect": "Start Of Day"
+   },
+   {
+    "key": "ENTER",
+    "expect": "General Ledger System Menu"
+   },
+   {
+    "text": "E",
+    "expect": "Transaction Entry Functions"
+   }
+  ]
+ },
+ {
+  "id": "GL-005",
+  "subsystem": "GL",
+  "title": "Batch Amendment / Reporting Functions — 画面表示",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "A",
+   "F"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "A",
+    "expect": "Start Of Day"
+   },
+   {
+    "key": "ENTER",
+    "expect": "General Ledger System Menu"
+   },
+   {
+    "text": "F",
+    "expect": "Batch Amendment / Reporting Functions"
+   }
+  ]
+ },
+ {
+  "id": "GL-006",
+  "subsystem": "GL",
+  "title": "Batch Status Report — 画面表示",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "A",
+   "G"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "A",
+    "expect": "Start Of Day"
+   },
+   {
+    "key": "ENTER",
+    "expect": "General Ledger System Menu"
+   },
+   {
+    "text": "G",
+    "expect": "Batch Status Report"
+   }
+  ]
+ },
+ {
+  "id": "GL-007",
+  "subsystem": "GL",
+  "title": "Transaction Posting — 画面表示",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "A",
+   "H"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "A",
+    "expect": "Start Of Day"
+   },
+   {
+    "key": "ENTER",
+    "expect": "General Ledger System Menu"
+   },
+   {
+    "text": "H",
+    "expect": "Transaction Posting"
+   }
+  ]
+ },
+ {
+  "id": "GL-008",
+  "subsystem": "GL",
+  "title": "End Of Cycle Processing — 画面表示",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "A",
+   "I"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "A",
+    "expect": "Start Of Day"
+   },
+   {
+    "key": "ENTER",
+    "expect": "General Ledger System Menu"
+   },
+   {
+    "text": "I",
+    "expect": "End Of Cycle Processing"
+   }
+  ]
+ },
+ {
+  "id": "GL-009",
+  "subsystem": "GL",
+  "title": "Trial Balance — 画面表示",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "A",
+   "J"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "A",
+    "expect": "Start Of Day"
+   },
+   {
+    "key": "ENTER",
+    "expect": "General Ledger System Menu"
+   },
+   {
+    "text": "J",
+    "expect": "Trial Balance"
+   }
+  ]
+ },
+ {
+  "id": "GL-010",
+  "subsystem": "GL",
+  "title": "P&L and Balance Sheet — 画面表示",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "A",
+   "K"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "A",
+    "expect": "Start Of Day"
+   },
+   {
+    "key": "ENTER",
+    "expect": "General Ledger System Menu"
+   },
+   {
+    "text": "K",
+    "expect": "P&L and Balance Sheet"
+   }
+  ]
+ },
+ {
+  "id": "GL-011",
+  "subsystem": "GL",
+  "title": "Ledger Print - Sort — 画面表示",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "A",
+   "L"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "A",
+    "expect": "Start Of Day"
+   },
+   {
+    "key": "ENTER",
+    "expect": "General Ledger System Menu"
+   },
+   {
+    "text": "L",
+    "expect": "Ledger Print - Sort"
+   }
+  ]
+ },
+ {
+  "id": "IRS-001",
+  "subsystem": "IRS",
+  "title": "System Set-Up & Maintenance — 画面表示",
+  "baseline": "irs-biz",
+  "app": "irs",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "1"
+  ],
+  "steps": [
+   {
+    "expect": "S Y S T E M   M E N U"
+   },
+   {
+    "text": "1"
+   }
+  ]
+ },
+ {
+  "id": "IRS-002",
+  "subsystem": "IRS",
+  "title": "Accounts Set-Up & Maintenance — 画面表示",
+  "baseline": "irs-biz",
+  "app": "irs",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "2"
+  ],
+  "steps": [
+   {
+    "expect": "S Y S T E M   M E N U"
+   },
+   {
+    "text": "2"
+   },
+   {
+    "text": "N\r"
+   }
+  ]
+ },
+ {
+  "id": "IRS-003",
+  "subsystem": "IRS",
+  "title": "Default A/Cs Set-Up & Maintenance — 画面表示",
+  "baseline": "irs-biz",
+  "app": "irs",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "3"
+  ],
+  "steps": [
+   {
+    "expect": "S Y S T E M   M E N U"
+   },
+   {
+    "text": "3"
+   }
+  ]
+ },
+ {
+  "id": "IRS-004",
+  "subsystem": "IRS",
+  "title": "Posting — 画面表示",
+  "baseline": "irs-biz",
+  "app": "irs",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "4"
+  ],
+  "steps": [
+   {
+    "expect": "S Y S T E M   M E N U"
+   },
+   {
+    "text": "4"
+   }
+  ]
+ },
+ {
+  "id": "IRS-005",
+  "subsystem": "IRS",
+  "title": "Trial Balance — 画面表示",
+  "baseline": "irs-biz",
+  "app": "irs",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "5"
+  ],
+  "steps": [
+   {
+    "expect": "S Y S T E M   M E N U"
+   },
+   {
+    "text": "5"
+   }
+  ]
+ },
+ {
+  "id": "IRS-006",
+  "subsystem": "IRS",
+  "title": "Audit Trail — 画面表示",
+  "baseline": "irs-biz",
+  "app": "irs",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "6"
+  ],
+  "steps": [
+   {
+    "expect": "S Y S T E M   M E N U"
+   },
+   {
+    "text": "6"
+   }
+  ]
+ },
+ {
+  "id": "IRS-007",
+  "subsystem": "IRS",
+  "title": "Accounts Production — 画面表示",
+  "baseline": "irs-biz",
+  "app": "irs",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "7"
+  ],
+  "steps": [
+   {
+    "expect": "S Y S T E M   M E N U"
+   },
+   {
+    "text": "7"
+   }
+  ]
+ },
+ {
+  "id": "IRS-008",
+  "subsystem": "IRS",
+  "title": "Posting Amendments — 画面表示",
+  "baseline": "irs-biz",
+  "app": "irs",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "8"
+  ],
+  "steps": [
+   {
+    "expect": "S Y S T E M   M E N U"
+   },
+   {
+    "text": "8"
+   }
+  ]
+ },
+ {
+  "id": "IRS-009",
+  "subsystem": "IRS",
+  "title": "Analysis Report — 画面表示",
+  "baseline": "irs-biz",
+  "app": "irs",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "9"
+  ],
+  "steps": [
+   {
+    "expect": "S Y S T E M   M E N U"
+   },
+   {
+    "text": "9"
+   }
+  ]
+ },
+ {
+  "id": "IRS-010",
+  "subsystem": "IRS",
+  "title": "Nominal File Fix up — 画面表示",
+  "baseline": "irs-biz",
+  "app": "irs",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "A"
+  ],
+  "steps": [
+   {
+    "expect": "S Y S T E M   M E N U"
+   },
+   {
+    "text": "A"
+   }
+  ]
+ },
+ {
+  "id": "PL-001",
+  "subsystem": "PL",
+  "title": "Date Entry — 画面表示",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "C",
+   "A"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "C"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "A"
+   }
+  ]
+ },
+ {
+  "id": "PL-002",
+  "subsystem": "PL",
+  "title": "Supplier File Maintenance — 画面表示",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "C",
+   "B"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "C"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "B"
+   }
+  ]
+ },
+ {
+  "id": "PL-003",
+  "subsystem": "PL",
+  "title": "Purchase Ledger Enquiry — 画面表示",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "C",
+   "C"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "C"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "C"
+   }
+  ]
+ },
+ {
+  "id": "PL-004",
+  "subsystem": "PL",
+  "title": "Purchase Transactions Input — 画面表示",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "C",
+   "D"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "C"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "D"
+   }
+  ]
+ },
+ {
+  "id": "PL-005",
+  "subsystem": "PL",
+  "title": "Purchase Transactions Amend — 画面表示",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "C",
+   "E"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "C"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "E"
+   }
+  ]
+ },
+ {
+  "id": "PL-006",
+  "subsystem": "PL",
+  "title": "Purchase Transactions Delete — 画面表示",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "C",
+   "F"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "C"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "F"
+   }
+  ]
+ },
+ {
+  "id": "PL-007",
+  "subsystem": "PL",
+  "title": "Purchase Transactions Proof — 画面表示",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "C",
+   "G"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "C"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "G"
+   }
+  ]
+ },
+ {
+  "id": "PL-008",
+  "subsystem": "PL",
+  "title": "Purchase Transactions Post — 画面表示",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "C",
+   "H"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "C"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "H"
+   }
+  ]
+ },
+ {
+  "id": "PL-009",
+  "subsystem": "PL",
+  "title": "Payment Input — 画面表示",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "C",
+   "I"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "C"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "I"
+   }
+  ]
+ },
+ {
+  "id": "PL-010",
+  "subsystem": "PL",
+  "title": "Payment Amend — 画面表示",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "C",
+   "J"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "C"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "J"
+   }
+  ]
+ },
+ {
+  "id": "PL-011",
+  "subsystem": "PL",
+  "title": "Payment Proof — 画面表示",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "C",
+   "K"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "C"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "K"
+   }
+  ]
+ },
+ {
+  "id": "PL-012",
+  "subsystem": "PL",
+  "title": "Payment Post — 画面表示",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "C",
+   "L"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "C"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "L"
+   }
+  ]
+ },
+ {
+  "id": "PL-013",
+  "subsystem": "PL",
+  "title": "Set-Up Purchase Analysis Codes — 画面表示",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "C",
+   "M"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "C"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "M"
+   }
+  ]
+ },
+ {
+  "id": "PL-014",
+  "subsystem": "PL",
+  "title": "Purchase Analysis Report — 画面表示",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "C",
+   "N"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "C"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "N"
+   }
+  ]
+ },
+ {
+  "id": "PL-015",
+  "subsystem": "PL",
+  "title": "Purchase Day Book — 画面表示",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "C",
+   "O"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "C"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "O"
+   }
+  ]
+ },
+ {
+  "id": "PL-016",
+  "subsystem": "PL",
+  "title": "Aged Creditors Report — 画面表示",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "C",
+   "P"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "C"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "P"
+   }
+  ]
+ },
+ {
+  "id": "PL-017",
+  "subsystem": "PL",
+  "title": "Alphabetical Supplier List — 画面表示",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "C",
+   "Q"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "C"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "Q"
+   }
+  ]
+ },
+ {
+  "id": "PL-018",
+  "subsystem": "PL",
+  "title": "Supplier Turnover Report — 画面表示",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "C",
+   "R"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "C"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "R"
+   }
+  ]
+ },
+ {
+  "id": "PL-019",
+  "subsystem": "PL",
+  "title": "Cheque  Sub-System — 画面表示",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "C",
+   "S"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "C"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "S"
+   }
+  ]
+ },
+ {
+  "id": "PL-020",
+  "subsystem": "PL",
+  "title": "End Of Cycle Processing — 画面表示",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "C",
+   "T"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "C"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "T"
+   }
+  ]
+ },
+ {
+  "id": "PL-021",
+  "subsystem": "PL",
+  "title": "Invoice Parameter Amend — 画面表示",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "C",
+   "U"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "C"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "U"
+   }
+  ]
+ },
+ {
+  "id": "PL-022",
+  "subsystem": "PL",
+  "title": "Supplier File Dump — 画面表示",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "C",
+   "V"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "C"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "V"
+   }
+  ]
+ },
+ {
+  "id": "SL-001",
+  "subsystem": "SL",
+  "title": "Date Entry — 画面表示",
+  "baseline": "sl-ready",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "B",
+   "A"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "B",
+    "expect": "Start Of Day"
+   },
+   {
+    "text": "\r",
+    "expect": "Sales Ledger System Menu"
+   },
+   {
+    "text": "A",
+    "expect": "SL000"
+   }
+  ]
+ },
+ {
+  "id": "SL-002",
+  "subsystem": "SL",
+  "title": "Customer File Maintenance — 画面表示",
+  "baseline": "sl-ready",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "B",
+   "B"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "B",
+    "expect": "Start Of Day"
+   },
+   {
+    "text": "\r",
+    "expect": "Sales Ledger System Menu"
+   },
+   {
+    "text": "B",
+    "expect": "SL010"
+   }
+  ]
+ },
+ {
+  "id": "SL-003",
+  "subsystem": "SL",
+  "title": "Sales Ledger Enquiry — 画面表示",
+  "baseline": "sl-ready",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "B",
+   "C"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "C"
+   }
+  ]
+ },
+ {
+  "id": "SL-004",
+  "subsystem": "SL",
+  "title": "Sales Transactions Input — 画面表示",
+  "baseline": "sl-ready",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "B",
+   "D"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "B",
+    "expect": "Start Of Day"
+   },
+   {
+    "text": "\r",
+    "expect": "Sales Ledger System Menu"
+   },
+   {
+    "text": "D",
+    "expect": "SL910"
+   }
+  ]
+ },
+ {
+  "id": "SL-005",
+  "subsystem": "SL",
+  "title": "Sales Transactions Amend — 画面表示",
+  "baseline": "sl-ready",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "B",
+   "E"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "B",
+    "expect": "Start Of Day"
+   },
+   {
+    "text": "\r",
+    "expect": "Sales Ledger System Menu"
+   },
+   {
+    "text": "E",
+    "expect": "SL920"
+   }
+  ]
+ },
+ {
+  "id": "SL-006",
+  "subsystem": "SL",
+  "title": "Sales Transactions Proof — 画面表示",
+  "baseline": "sl-ready",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "B",
+   "F"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "B",
+    "expect": "Start Of Day"
+   },
+   {
+    "text": "\r",
+    "expect": "Sales Ledger System Menu"
+   },
+   {
+    "text": "F",
+    "expect": "SL050"
+   }
+  ]
+ },
+ {
+  "id": "SL-007",
+  "subsystem": "SL",
+  "title": "Sales Transactions Post — 画面表示",
+  "baseline": "sl-ready",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "B",
+   "G"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "B",
+    "expect": "Start Of Day"
+   },
+   {
+    "text": "\r",
+    "expect": "Sales Ledger System Menu"
+   },
+   {
+    "text": "G",
+    "expect": "SL055"
+   }
+  ]
+ },
+ {
+  "id": "SL-008",
+  "subsystem": "SL",
+  "title": "Payment Input — 画面表示",
+  "baseline": "sl-ready",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "B",
+   "H"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "H"
+   }
+  ]
+ },
+ {
+  "id": "SL-009",
+  "subsystem": "SL",
+  "title": "Payment Amend — 画面表示",
+  "baseline": "sl-ready",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "B",
+   "I"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "I"
+   }
+  ]
+ },
+ {
+  "id": "SL-010",
+  "subsystem": "SL",
+  "title": "Payment Proof — 画面表示",
+  "baseline": "sl-ready",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "B",
+   "J"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "B",
+    "expect": "Start Of Day"
+   },
+   {
+    "text": "\r",
+    "expect": "Sales Ledger System Menu"
+   },
+   {
+    "text": "J",
+    "expect": "SL090"
+   }
+  ]
+ },
+ {
+  "id": "SL-011",
+  "subsystem": "SL",
+  "title": "Payment Post — 画面表示",
+  "baseline": "sl-ready",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "B",
+   "K"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "K"
+   }
+  ]
+ },
+ {
+  "id": "SL-012",
+  "subsystem": "SL",
+  "title": "Set-Up Sales Analysis Codes — 画面表示",
+  "baseline": "sl-ready",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "B",
+   "L"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "B",
+    "expect": "Start Of Day"
+   },
+   {
+    "text": "\r",
+    "expect": "Sales Ledger System Menu"
+   },
+   {
+    "text": "L",
+    "expect": "SL070"
+   }
+  ]
+ },
+ {
+  "id": "SL-013",
+  "subsystem": "SL",
+  "title": "Sales Analysis Report — 画面表示",
+  "baseline": "sl-ready",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "B",
+   "M"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "M"
+   }
+  ]
+ },
+ {
+  "id": "SL-014",
+  "subsystem": "SL",
+  "title": "Sales Day Book — 画面表示",
+  "baseline": "sl-ready",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "B",
+   "N"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "N"
+   }
+  ]
+ },
+ {
+  "id": "SL-015",
+  "subsystem": "SL",
+  "title": "Statement Production — 画面表示",
+  "baseline": "sl-ready",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "B",
+   "O"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "O"
+   }
+  ]
+ },
+ {
+  "id": "SL-016",
+  "subsystem": "SL",
+  "title": "Dunning Letters Generation — 画面表示",
+  "baseline": "sl-ready",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "B",
+   "P"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "P"
+   }
+  ]
+ },
+ {
+  "id": "SL-017",
+  "subsystem": "SL",
+  "title": "Aged Debtors Analysis — 画面表示",
+  "baseline": "sl-ready",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "B",
+   "Q"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "Q"
+   }
+  ]
+ },
+ {
+  "id": "SL-018",
+  "subsystem": "SL",
+  "title": "Alphabetical Customer List — 画面表示",
+  "baseline": "sl-ready",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "B",
+   "R"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "R"
+   }
+  ]
+ },
+ {
+  "id": "SL-019",
+  "subsystem": "SL",
+  "title": "Customer Turnover Report — 画面表示",
+  "baseline": "sl-ready",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "B",
+   "S"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "B",
+    "expect": "Start Of Day"
+   },
+   {
+    "text": "\r",
+    "expect": "Sales Ledger System Menu"
+   },
+   {
+    "text": "S",
+    "expect": "SL180"
+   }
+  ]
+ },
+ {
+  "id": "SL-020",
+  "subsystem": "SL",
+  "title": "Invoice Sub-System — 画面表示",
+  "baseline": "sl-ready",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "B",
+   "T"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "B",
+    "expect": "Start Of Day"
+   },
+   {
+    "text": "\r",
+    "expect": "Sales Ledger System Menu"
+   },
+   {
+    "text": "T",
+    "expect": "SL900"
+   }
+  ]
+ },
+ {
+  "id": "SL-021",
+  "subsystem": "SL",
+  "title": "End of Cycle Processing — 画面表示",
+  "baseline": "sl-ready",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "B",
+   "U"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "U"
+   }
+  ]
+ },
+ {
+  "id": "SL-022",
+  "subsystem": "SL",
+  "title": "Customer File Dump — 画面表示",
+  "baseline": "sl-ready",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "B",
+   "V"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "B",
+    "expect": "Start Of Day"
+   },
+   {
+    "text": "\r",
+    "expect": "Sales Ledger System Menu"
+   },
+   {
+    "text": "V",
+    "expect": "SL170"
+   }
+  ]
+ },
+ {
+  "id": "ST-001",
+  "subsystem": "ST",
+  "title": "Date Entry — 画面表示",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "D",
+   "A"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "D"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "A"
+   }
+  ]
+ },
+ {
+  "id": "ST-002",
+  "subsystem": "ST",
+  "title": "Stock Item Maintenance — 画面表示",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "D",
+   "B"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "D"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "B"
+   }
+  ]
+ },
+ {
+  "id": "ST-003",
+  "subsystem": "ST",
+  "title": "Stock Movements — 画面表示",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "D",
+   "C"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "D"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "C"
+   }
+  ]
+ },
+ {
+  "id": "ST-004",
+  "subsystem": "ST",
+  "title": "Reports — 画面表示",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "D",
+   "D"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "D"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "D"
+   }
+  ]
+ },
+ {
+  "id": "ST-005",
+  "subsystem": "ST",
+  "title": "End of Cycle Processing — 画面表示",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "D",
+   "E"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "D"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "E"
+   }
+  ]
+ },
+ {
+  "id": "ST-006",
+  "subsystem": "ST",
+  "title": "Stock File Compression — 画面表示",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "D",
+   "Y"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "D"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "Y"
+   }
+  ]
+ },
+ {
+  "id": "GL-020",
+  "subsystem": "GL",
+  "title": "新規ヘッダ勘定7000/00登録",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [
+   "A",
+   "B",
+   "1"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "A",
+    "expect": "Start Of Day"
+   },
+   {
+    "key": "ENTER",
+    "expect": "General Ledger System Menu"
+   },
+   {
+    "text": "B",
+    "expect": "Chart Of Account Utilities"
+   },
+   {
+    "text": "1\r",
+    "expect": "Chart of Accounts Set-Up"
+   },
+   {
+    "text": "7000\r00\rTEST HEADER\r0\rS\r1\r",
+    "expect": "TEST HEADER"
+   },
+   {
+    "text": "0\r"
+   },
+   {
+    "text": "9\r",
+    "expect": "General Ledger System Menu"
+   },
+   {
+    "text": "X",
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "X",
+    "expect": "please press a key to exit"
+   },
+   {
+    "key": "ENTER"
+   }
+  ]
+ },
+ {
+  "id": "GL-021",
+  "subsystem": "GL",
+  "title": "既存ヘッダ3000/00名称更新",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [
+   "A",
+   "B",
+   "2"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "A",
+    "expect": "Start Of Day"
+   },
+   {
+    "key": "ENTER",
+    "expect": "General Ledger System Menu"
+   },
+   {
+    "text": "B",
+    "expect": "Chart Of Account Utilities"
+   },
+   {
+    "text": "2\r",
+    "expect": "Chart Of Accounts Update"
+   },
+   {
+    "text": "3000\r00\rASSETS UPDATED\r0\rS\r1\r"
+   },
+   {
+    "text": "0\r"
+   },
+   {
+    "text": "9\r",
+    "expect": "General Ledger System Menu"
+   },
+   {
+    "text": "X",
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "X",
+    "expect": "please press a key to exit"
+   },
+   {
+    "key": "ENTER"
+   }
+  ]
+ },
+ {
+  "id": "GL-022",
+  "subsystem": "GL",
+  "title": "残高ゼロ詳細勘定削除",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [
+   "A",
+   "B",
+   "2"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "A",
+    "expect": "Start Of Day"
+   },
+   {
+    "key": "ENTER",
+    "expect": "General Ledger System Menu"
+   },
+   {
+    "text": "B",
+    "expect": "Chart Of Account Utilities"
+   },
+   {
+    "text": "2\r",
+    "expect": "Chart Of Accounts Update"
+   },
+   {
+    "text": "3000\r01\r+\r"
+   },
+   {
+    "text": "0\r"
+   },
+   {
+    "text": "9\r",
+    "expect": "General Ledger System Menu"
+   },
+   {
+    "text": "X",
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "X",
+    "expect": "please press a key to exit"
+   },
+   {
+    "key": "ENTER"
+   }
+  ]
+ },
+ {
+  "id": "GL-023",
+  "subsystem": "GL",
+  "title": "勘定科目照会",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "A",
+   "B",
+   "3"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "A",
+    "expect": "Start Of Day"
+   },
+   {
+    "key": "ENTER",
+    "expect": "General Ledger System Menu"
+   },
+   {
+    "text": "B",
+    "expect": "Chart Of Account Utilities"
+   },
+   {
+    "text": "3\r",
+    "expect": "Enter the start Account"
+   },
+   {
+    "text": "300000\r",
+    "expect": "ASSETS"
+   },
+   {
+    "text": "N\r",
+    "expect": "BANK"
+   }
+  ]
+ },
+ {
+  "id": "GL-024",
+  "subsystem": "GL",
+  "title": "下限未満0999",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "A",
+   "B",
+   "1"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "A",
+    "expect": "Start Of Day"
+   },
+   {
+    "key": "ENTER",
+    "expect": "General Ledger System Menu"
+   },
+   {
+    "text": "B",
+    "expect": "Chart Of Account Utilities"
+   },
+   {
+    "text": "1\r",
+    "expect": "Chart of Accounts Set-Up"
+   },
+   {
+    "text": "0999\r",
+    "expect": "GL102"
+   }
+  ]
+ },
+ {
+  "id": "GL-025",
+  "subsystem": "GL",
+  "title": "予約勘定9999",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "A",
+   "B",
+   "1"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "A",
+    "expect": "Start Of Day"
+   },
+   {
+    "key": "ENTER",
+    "expect": "General Ledger System Menu"
+   },
+   {
+    "text": "B",
+    "expect": "Chart Of Account Utilities"
+   },
+   {
+    "text": "1\r",
+    "expect": "Chart of Accounts Set-Up"
+   },
+   {
+    "text": "9999\r00\r",
+    "expect": "Is reserved!"
+   }
+  ]
+ },
+ {
+  "id": "GL-026",
+  "subsystem": "GL",
+  "title": "売上範囲1000",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "A",
+   "B",
+   "1"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "A",
+    "expect": "Start Of Day"
+   },
+   {
+    "key": "ENTER",
+    "expect": "General Ledger System Menu"
+   },
+   {
+    "text": "B",
+    "expect": "Chart Of Account Utilities"
+   },
+   {
+    "text": "1\r",
+    "expect": "Chart of Accounts Set-Up"
+   },
+   {
+    "text": "1000\r00\r",
+    "expect": "Invalid start number!"
+   }
+  ]
+ },
+ {
+  "id": "GL-027",
+  "subsystem": "GL",
+  "title": "仕入範囲2000",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "A",
+   "B",
+   "1"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "A",
+    "expect": "Start Of Day"
+   },
+   {
+    "key": "ENTER",
+    "expect": "General Ledger System Menu"
+   },
+   {
+    "text": "B",
+    "expect": "Chart Of Account Utilities"
+   },
+   {
+    "text": "1\r",
+    "expect": "Chart of Accounts Set-Up"
+   },
+   {
+    "text": "2000\r00\r",
+    "expect": "Invalid start number!"
+   }
+  ]
+ },
+ {
+  "id": "GL-028",
+  "subsystem": "GL",
+  "title": "不正Type",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "A",
+   "B",
+   "1"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "A",
+    "expect": "Start Of Day"
+   },
+   {
+    "key": "ENTER",
+    "expect": "General Ledger System Menu"
+   },
+   {
+    "text": "B",
+    "expect": "Chart Of Account Utilities"
+   },
+   {
+    "text": "1\r",
+    "expect": "Chart of Accounts Set-Up"
+   },
+   {
+    "text": "7000\r00\rBAD TYPE\r2\r",
+    "expect": "Invalid type!"
+   }
+  ]
+ },
+ {
+  "id": "GL-029",
+  "subsystem": "GL",
+  "title": "不正Placement",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "A",
+   "B",
+   "1"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "A",
+    "expect": "Start Of Day"
+   },
+   {
+    "key": "ENTER",
+    "expect": "General Ledger System Menu"
+   },
+   {
+    "text": "B",
+    "expect": "Chart Of Account Utilities"
+   },
+   {
+    "text": "1\r",
+    "expect": "Chart of Accounts Set-Up"
+   },
+   {
+    "text": "7000\r00\rBAD PLACE\r0\r1\r",
+    "expect": "Invalid Placement!"
+   }
+  ]
+ },
+ {
+  "id": "GL-030",
+  "subsystem": "GL",
+  "title": "不正Level下限",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "A",
+   "B",
+   "1"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "A",
+    "expect": "Start Of Day"
+   },
+   {
+    "key": "ENTER",
+    "expect": "General Ledger System Menu"
+   },
+   {
+    "text": "B",
+    "expect": "Chart Of Account Utilities"
+   },
+   {
+    "text": "1\r",
+    "expect": "Chart of Accounts Set-Up"
+   },
+   {
+    "text": "7000\r00\rBAD LEVEL\r0\rS\r0\r",
+    "expect": "Invalid!"
+   }
+  ]
+ },
+ {
+  "id": "GL-031",
+  "subsystem": "GL",
+  "title": "不正Level上限",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "A",
+   "B",
+   "1"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "A",
+    "expect": "Start Of Day"
+   },
+   {
+    "key": "ENTER",
+    "expect": "General Ledger System Menu"
+   },
+   {
+    "text": "B",
+    "expect": "Chart Of Account Utilities"
+   },
+   {
+    "text": "1\r",
+    "expect": "Chart of Accounts Set-Up"
+   },
+   {
+    "text": "7000\r00\rBAD LEVEL\r0\rS\r5\r",
+    "expect": "Invalid!"
+   }
+  ]
+ },
+ {
+  "id": "GL-032",
+  "subsystem": "GL",
+  "title": "存在しない勘定の更新要求",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "A",
+   "B",
+   "2"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "A",
+    "expect": "Start Of Day"
+   },
+   {
+    "key": "ENTER",
+    "expect": "General Ledger System Menu"
+   },
+   {
+    "text": "B",
+    "expect": "Chart Of Account Utilities"
+   },
+   {
+    "text": "2\r",
+    "expect": "Chart Of Accounts Update"
+   },
+   {
+    "text": "8888\r88\r",
+    "expect": "Does not exist!"
+   }
+  ]
+ },
+ {
+  "id": "GL-033",
+  "subsystem": "GL",
+  "title": "勘定科目表印刷",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [
+   "A",
+   "B",
+   "4"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "A",
+    "expect": "Start Of Day"
+   },
+   {
+    "key": "ENTER",
+    "expect": "General Ledger System Menu"
+   },
+   {
+    "text": "B",
+    "expect": "Chart Of Account Utilities"
+   },
+   {
+    "text": "4\r",
+    "expect": "Chart Of Account Utilities"
+   },
+   {
+    "text": "9\r",
+    "expect": "General Ledger System Menu"
+   },
+   {
+    "text": "X",
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "X",
+    "expect": "please press a key to exit"
+   },
+   {
+    "key": "ENTER"
+   }
+  ]
+ },
+ {
+  "id": "GL-034",
+  "subsystem": "GL",
+  "title": "詳細試算表印刷",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "A",
+   "J",
+   "1"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "A",
+    "expect": "Start Of Day"
+   },
+   {
+    "key": "ENTER",
+    "expect": "General Ledger System Menu"
+   },
+   {
+    "text": "J",
+    "expect": "Trial Balance"
+   },
+   {
+    "text": "1\r",
+    "expect": "Trial Balance"
+   }
+  ]
+ },
+ {
+  "id": "GL-035",
+  "subsystem": "GL",
+  "title": "P&L/BS印刷",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "A",
+   "K"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "A",
+    "expect": "Start Of Day"
+   },
+   {
+    "key": "ENTER",
+    "expect": "General Ledger System Menu"
+   },
+   {
+    "text": "K",
+    "expect": "P&L and Balance Sheet"
+   },
+   {
+    "text": "\r",
+    "expect": "Ok to continue"
+   },
+   {
+    "text": "Y\r"
+   }
+  ]
+ },
+ {
+  "id": "GL-036",
+  "subsystem": "GL",
+  "title": "無効日付31/02/2026",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "A",
+   "A"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "A",
+    "expect": "Start Of Day"
+   },
+   {
+    "key": "ENTER",
+    "expect": "General Ledger System Menu"
+   },
+   {
+    "text": "A",
+    "expect": "Start Of Day"
+   },
+   {
+    "text": "\u001bOH31/02/2026\r",
+    "expect": "GL009"
+   }
+  ]
+ },
+ {
+  "id": "GL-037",
+  "subsystem": "GL",
+  "title": "EOC中止",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [
+   "A",
+   "I"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "A",
+    "expect": "Start Of Day"
+   },
+   {
+    "key": "ENTER",
+    "expect": "General Ledger System Menu"
+   },
+   {
+    "text": "I",
+    "expect": "End Of Cycle Processing"
+   },
+   {
+    "text": "A",
+    "expect": "General Ledger System Menu"
+   },
+   {
+    "text": "X",
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "X",
+    "expect": "please press a key to exit"
+   },
+   {
+    "key": "ENTER"
+   }
+  ]
+ },
+ {
+  "id": "GL-038",
+  "subsystem": "GL",
+  "title": "明細3000/04追加（P/C未選択の初回呼出）",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "A",
+   "B",
+   "1"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "A",
+    "expect": "Start Of Day"
+   },
+   {
+    "key": "ENTER",
+    "expect": "General Ledger System Menu"
+   },
+   {
+    "text": "B",
+    "expect": "Chart Of Account Utilities"
+   },
+   {
+    "text": "1\r",
+    "expect": "Chart of Accounts Set-Up"
+   },
+   {
+    "text": "3000\r04\rNEW DETAIL\r"
+   }
+  ]
+ },
+ {
+  "id": "GL-040",
+  "subsystem": "GL",
+  "title": "デフォルト勘定1をBANKへ更新",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [
+   "A",
+   "C",
+   "2"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "A",
+    "expect": "Start Of Day"
+   },
+   {
+    "key": "ENTER",
+    "expect": "General Ledger System Menu"
+   },
+   {
+    "text": "C",
+    "expect": "Default File Utilities"
+   },
+   {
+    "text": "2",
+    "expect": "Enter Number To Alter"
+   },
+   {
+    "text": "01\r3000.01\rBK\rN\r",
+    "expect": "Enter Number To Alter"
+   },
+   {
+    "text": "00\r",
+    "expect": "Default File Utilities"
+   },
+   {
+    "text": "9",
+    "expect": "General Ledger System Menu"
+   },
+   {
+    "text": "X",
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "X",
+    "expect": "please press a key to exit"
+   },
+   {
+    "key": "ENTER"
+   }
+  ]
+ },
+ {
+  "id": "GL-041",
+  "subsystem": "GL",
+  "title": "存在しないデフォルト勘定入力後に終了",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [
+   "A",
+   "C",
+   "2"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "A",
+    "expect": "Start Of Day"
+   },
+   {
+    "key": "ENTER",
+    "expect": "General Ledger System Menu"
+   },
+   {
+    "text": "C",
+    "expect": "Default File Utilities"
+   },
+   {
+    "text": "2",
+    "expect": "Enter Number To Alter"
+   },
+   {
+    "text": "01\r8888.88\r",
+    "expect": "Enter Number To Alter"
+   },
+   {
+    "text": "00\r",
+    "expect": "Default File Utilities"
+   },
+   {
+    "text": "9",
+    "expect": "General Ledger System Menu"
+   },
+   {
+    "text": "X",
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "X",
+    "expect": "please press a key to exit"
+   },
+   {
+    "key": "ENTER"
+   }
+  ]
+ },
+ {
+  "id": "GL-042",
+  "subsystem": "GL",
+  "title": "デフォルト勘定照会",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "A",
+   "C",
+   "3"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "A",
+    "expect": "Start Of Day"
+   },
+   {
+    "key": "ENTER",
+    "expect": "General Ledger System Menu"
+   },
+   {
+    "text": "C",
+    "expect": "Default File Utilities"
+   },
+   {
+    "text": "3",
+    "expect": "default accounts display"
+   }
+  ]
+ },
+ {
+  "id": "GL-043",
+  "subsystem": "GL",
+  "title": "バッチサイクル範囲外00",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "A",
+   "E",
+   "1",
+   "33"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "A",
+    "expect": "Start Of Day"
+   },
+   {
+    "key": "ENTER",
+    "expect": "General Ledger System Menu"
+   },
+   {
+    "text": "E",
+    "expect": "Transaction Entry Functions"
+   },
+   {
+    "text": "1\r",
+    "expect": "Posting Set-Up"
+   },
+   {
+    "text": "33\r",
+    "expect": "Default Set-Up"
+   },
+   {
+    "text": "3000.01\r",
+    "expect": "BANK"
+   },
+   {
+    "text": "N\r"
+   },
+   {
+    "text": "BK\r"
+   },
+   {
+    "text": "DR\r"
+   },
+   {
+    "text": "\r",
+    "expect": "Enter Cycle"
+   },
+   {
+    "text": "00\r",
+    "expect": "GL108"
+   }
+  ]
+ },
+ {
+  "id": "GL-044",
+  "subsystem": "GL",
+  "title": "バッチサイクル範囲外03",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "A",
+   "E",
+   "1",
+   "33"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "A",
+    "expect": "Start Of Day"
+   },
+   {
+    "key": "ENTER",
+    "expect": "General Ledger System Menu"
+   },
+   {
+    "text": "E",
+    "expect": "Transaction Entry Functions"
+   },
+   {
+    "text": "1\r",
+    "expect": "Posting Set-Up"
+   },
+   {
+    "text": "33\r",
+    "expect": "Default Set-Up"
+   },
+   {
+    "text": "3000.01\r",
+    "expect": "BANK"
+   },
+   {
+    "text": "N\r"
+   },
+   {
+    "text": "BK\r"
+   },
+   {
+    "text": "DR\r"
+   },
+   {
+    "text": "\r",
+    "expect": "Enter Cycle"
+   },
+   {
+    "text": "03\r",
+    "expect": "GL109"
+   }
+  ]
+ },
+ {
+  "id": "GL-045",
+  "subsystem": "GL",
+  "title": "バッチ作成中止（デフォルト0）",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [
+   "A",
+   "E",
+   "1"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "A",
+    "expect": "Start Of Day"
+   },
+   {
+    "key": "ENTER",
+    "expect": "General Ledger System Menu"
+   },
+   {
+    "text": "E",
+    "expect": "Transaction Entry Functions"
+   },
+   {
+    "text": "1\r",
+    "expect": "Posting Set-Up"
+   },
+   {
+    "text": "00\r",
+    "expect": "General Ledger System Menu"
+   },
+   {
+    "text": "X",
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "X",
+    "expect": "please press a key to exit"
+   },
+   {
+    "key": "ENTER"
+   }
+  ]
+ },
+ {
+  "id": "GL-046",
+  "subsystem": "GL",
+  "title": "1明細バッチ登録・E終了",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "A",
+   "E",
+   "1",
+   "33"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "A",
+    "expect": "Start Of Day"
+   },
+   {
+    "key": "ENTER",
+    "expect": "General Ledger System Menu"
+   },
+   {
+    "text": "E",
+    "expect": "Transaction Entry Functions"
+   },
+   {
+    "text": "1\r",
+    "expect": "Posting Set-Up"
+   },
+   {
+    "text": "33\r",
+    "expect": "Default Set-Up"
+   },
+   {
+    "text": "3000.01\r",
+    "expect": "BANK"
+   },
+   {
+    "text": "N\r"
+   },
+   {
+    "text": "BK\r"
+   },
+   {
+    "text": "DR\r"
+   },
+   {
+    "text": "\r",
+    "expect": "Enter Cycle"
+   },
+   {
+    "text": "01\r01\r000000100.00\r000000000.00\rEQUIV BATCH\r",
+    "expect": "Posting Input"
+   },
+   {
+    "text": "\r4000.01\r00000100.00\rTEST SALE\r",
+    "expect": "Posting Input"
+   },
+   {
+    "text": "E\r",
+    "expect": "Invalid Date"
+   }
+  ]
+ },
+ {
+  "id": "SYS-001",
+  "subsystem": "SYS",
+  "title": "会社・各台帳設定と業務用マスタ投入",
+  "baseline": "empty",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [
+   "Z"
+  ],
+  "steps": [
+   {},
+   {
+    "text": "EQUIVALENCE BUSINESS\rY\rY\rY\rY\rY\rY\rN\rY\r"
+   },
+   {
+    "text": "Test Street\t\t\t\tTEST1\tUK\t1\t01/01/2026\t31/12/2026\t048\t20.00\t00.00\t05.00\t00.00\t00.00\t01\tTESTVAT\tN\t01\t\t03\t0\t0\r"
+   },
+   {
+    "text": "Y\r"
+   },
+   {
+    "text": "0\t6\t0\r"
+   },
+   {
+    "text": "CAPTURE\tCAPTURE\tCAPTURE\r"
+   },
+   {
+    "text": "Y\r"
+   },
+   {
+    "text": "\t\t\t\t\tY\t\t1\t2\tY\t00001\tN\r"
+   },
+   {
+    "text": "Y\r"
+   },
+   {
+    "text": "0\t0\t30\t00.00\t0000\t0000\t0010000\t\\\tN\t0.00\t00001\tY\t300001\t400001\t300002\r"
+   },
+   {
+    "text": "Y\r"
+   },
+   {
+    "text": "Y\tY\tY\tY\r"
+   },
+   {
+    "text": "Y\r"
+   },
+   {
+    "text": "\\\tY\t00001\t300001\t500001\t300003\r"
+   },
+   {
+    "text": "Y\r"
+   },
+   {
+    "text": "0\t0\t0\t1\t1\tM\tY\t1\t0\t000\r"
+   },
+   {
+    "text": "Y\r"
+   },
+   {
+    "text": "A"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "Y\r"
+   },
+   {
+    "text": "A"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "23/11/2026\r"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "1\r"
+   },
+   {
+    "text": "\u001b[H23/11/2026\r"
+   },
+   {
+    "text": "\u001bOH23/11/2026\r"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "1\r"
+   },
+   {
+    "text": "3000\r00\rASSETS\r0\rS\r1\r"
+   },
+   {
+    "text": "3000\r01\rBANK\r3000\r02\rDEBTORS\r3000\r03\rCREDITORS\r4000\r00\rINCOME\r0\rA\r1\r4000\r01\rSALES\r5000\r00\rCOSTS\r0\rB\r1\r5000\r01\rPURCHASES\r6000\r00\rVAT\r0\rS\r1\r6000\r01\rVAT INPUT\r6000\r02\rVAT OUTPUT\r0\r"
+   },
+   {
+    "text": "9\r"
+   },
+   {
+    "text": "X"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "1"
+   },
+   {
+    "text": "Y\r"
+   },
+   {
+    "text": "1"
+   },
+   {
+    "text": "CUST01\r"
+   },
+   {
+    "text": "ALPHA CUSTOMER\t1 TEST ROAD\tLONDON\t\t\t\t\t\t01234567890\t\t\talpha@example.test\tN\t0000\tN\t0000\t30\tN\tN\tN\t0010000\t00.00\r"
+   },
+   {
+    "text": "S\r"
+   },
+   {
+    "text": "CUST02\r"
+   },
+   {
+    "text": "BETA CUSTOMER\t2 TEST ROAD\tLONDON\r"
+   },
+   {
+    "text": "S\r"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "9"
+   },
+   {
+    "text": "X"
+   },
+   {
+    "text": "C"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "Q\r"
+   },
+   {
+    "text": "1"
+   },
+   {
+    "text": "CUST01\r"
+   },
+   {
+    "text": "ALPHA CUSTOMER\t1 TEST ROAD\\LONDON\\UK\t\r"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "CUST02\r"
+   },
+   {
+    "text": "BETA CUSTOMER\t2 TEST ROAD\\LONDON\\UK\r"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "9"
+   },
+   {
+    "text": "X"
+   },
+   {
+    "text": "C"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "Y\r"
+   },
+   {
+    "text": "1"
+   },
+   {
+    "text": "SUPP01\r"
+   },
+   {
+    "text": "ALPHA SUPPLIER\t1 SUPPLY ROAD\\LONDON\\UK\r"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "SUPP02\r"
+   },
+   {
+    "text": "BETA SUPPLIER\t2 SUPPLY ROAD\\LONDON\\UK\r"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "9"
+   },
+   {
+    "text": "X"
+   },
+   {
+    "text": "D"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "ITEM001\r"
+   },
+   {
+    "text": "ITM001\r"
+   },
+   {
+    "text": "ALPHA WIDGET\tBIN-A\t\t\t\t000010\t000000\t000002\t000000\t000005\t000000\t\t\tN\r"
+   },
+   {
+    "text": "0000012.00\r"
+   },
+   {
+    "text": "0000005.0000\r"
+   },
+   {
+    "text": "000000050.00\r"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "ITEM002\r"
+   },
+   {
+    "text": "ITM002\r"
+   },
+   {
+    "text": "BETA WIDGET\tBIN-B\t\t\t\t000020\t000000\t000003\t000000\t000010\t000000\t\t\tN\r"
+   },
+   {
+    "text": "0000024.00\r"
+   },
+   {
+    "text": "0000010.0000\r"
+   },
+   {
+    "text": "000000200.00\r"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "9"
+   },
+   {
+    "text": "X"
+   },
+   {
+    "text": "A"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "1\r"
+   },
+   {
+    "text": "3000\r"
+   },
+   {
+    "text": "01\r"
+   },
+   {
+    "text": "BANK\r"
+   },
+   {
+    "text": "\u001bOH23/11/2026\r"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "1\r"
+   },
+   {
+    "text": "3000\r"
+   },
+   {
+    "text": "01\r"
+   },
+   {
+    "text": "BANK\r"
+   },
+   {
+    "text": "0\r"
+   },
+   {
+    "text": "2\r"
+   },
+   {
+    "text": "3000\r00\r"
+   },
+   {
+    "text": "ASSETS\r0\rS\r1\r"
+   },
+   {
+    "text": "0\r"
+   },
+   {
+    "text": "1\r"
+   },
+   {
+    "text": "3000\r01\rBANK\r"
+   },
+   {
+    "text": "3000\r02\rDEBTORS\r3000\r03\rCREDITORS\r4000\r01\rSALES\r5000\r01\rPURCHASES\r6000\r01\rVAT INPUT\r6000\r02\rVAT OUTPUT\r0\r"
+   },
+   {
+    "text": "9\r"
+   },
+   {
+    "text": "X"
+   },
+   {
+    "text": "X"
+   },
+   {
+    "text": "\r"
+   }
+  ]
+ },
+ {
+  "id": "SYS-002",
+  "subsystem": "SYS",
+  "title": "システム設定User Data表示",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "Z"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "Z",
+    "expect": "User Data"
+   }
+  ]
+ },
+ {
+  "id": "SYS-003",
+  "subsystem": "SYS",
+  "title": "設定画面ESC中止",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [
+   "Z",
+   "ESC"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "Z",
+    "expect": "User Data"
+   },
+   {
+    "key": "ESC",
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "X",
+    "expect": "please press a key to exit"
+   },
+   {
+    "key": "ENTER"
+   }
+  ]
+ },
+ {
+  "id": "SYS-004",
+  "subsystem": "SYS",
+  "title": "全有効台帳の設定項目表示・設定帳票",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [
+   "Z",
+   "ENTER",
+   "Y"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "Z",
+    "expect": "User Data"
+   },
+   {
+    "text": "\r",
+    "expect": "User Data Complete"
+   },
+   {
+    "text": "Y\r",
+    "expect": "OPS  Data 1"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "Y\r",
+    "expect": "G-L  Data"
+   },
+   {
+    "text": "\r",
+    "expect": "G-L Data Complete"
+   },
+   {
+    "text": "Y\r",
+    "expect": "S-L  Data 1"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "Y\r",
+    "expect": "S-L  Data 2"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "Y\r",
+    "expect": "P-L  Data"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "Y\r",
+    "expect": "Stock Data"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "Y\r",
+    "expect": "Do you want printed copy"
+   },
+   {
+    "text": "Y\r",
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "X",
+    "expect": "please press a key to exit"
+   },
+   {
+    "key": "ENTER"
+   }
+  ]
+ },
+ {
+  "id": "SYS-005",
+  "subsystem": "SYS",
+  "title": "Page-Lines境界028",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "Z"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "Z",
+    "expect": "User Data"
+   },
+   {
+    "text": "\t\t\t\t\t\t\t\t\t028\r",
+    "expect": "SY105"
+   }
+  ]
+ },
+ {
+  "id": "SYS-006",
+  "subsystem": "SYS",
+  "title": "Page-Lines境界029",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "Z"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "Z",
+    "expect": "User Data"
+   },
+   {
+    "text": "\t\t\t\t\t\t\t\t\t029\r",
+    "expect": "User Data Complete"
+   }
+  ]
+ },
+ {
+  "id": "SYS-007",
+  "subsystem": "SYS",
+  "title": "Cycle Period=13",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "Z"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "Z",
+    "expect": "User Data"
+   },
+   {
+    "text": "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t13\r",
+    "expect": "Weekly"
+   }
+  ]
+ },
+ {
+  "id": "SYS-008",
+  "subsystem": "SYS",
+  "title": "Cycle Period=06",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "Z"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "Z",
+    "expect": "User Data"
+   },
+   {
+    "text": "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t06\r",
+    "expect": "Fortnightly"
+   }
+  ]
+ },
+ {
+  "id": "SYS-009",
+  "subsystem": "SYS",
+  "title": "Cycle Period=99",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "Z"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "Z",
+    "expect": "User Data"
+   },
+   {
+    "text": "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t99\r",
+    "expect": "Monthly"
+   }
+  ]
+ },
+ {
+  "id": "SL-090",
+  "subsystem": "SL",
+  "title": "業務用マスタ2件投入（SYS-001内）",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "SYS-001"
+  ],
+  "steps": []
+ },
+ {
+  "id": "PL-090",
+  "subsystem": "PL",
+  "title": "業務用マスタ2件投入（SYS-001内）",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "SYS-001"
+  ],
+  "steps": []
+ },
+ {
+  "id": "ST-090",
+  "subsystem": "ST",
+  "title": "業務用マスタ2件投入（SYS-001内）",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "SYS-001"
+  ],
+  "steps": []
+ },
+ {
+  "id": "IRS-090",
+  "subsystem": "IRS",
+  "title": "業務用クライアント・VAT・期間設定",
+  "baseline": "empty",
+  "app": "irs",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [
+   "1"
+  ],
+  "steps": [
+   {},
+   {
+    "text": "\r"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "EQUIV OPERATOR\t2000\tEQUIVALENCE BUSINESS\t1 TEST ROAD\tLONDON\tUK\tTEST1\t01/01/26\t31/12/26\t6\tCAPTURE\r"
+   },
+   {
+    "text": "X"
+   }
+  ]
+ },
+ {
+  "id": "GL-047",
+  "subsystem": "GL",
+  "title": "明細入力後に科目欄ESCでバッチを破棄",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [
+   "A",
+   "E",
+   "1"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "A",
+    "expect": "Start Of Day"
+   },
+   {
+    "key": "ENTER",
+    "expect": "General Ledger System Menu"
+   },
+   {
+    "text": "E",
+    "expect": "Transaction Entry Functions"
+   },
+   {
+    "text": "1\r",
+    "expect": "Posting Set-Up"
+   },
+   {
+    "text": "33\r",
+    "expect": "Default Set-Up"
+   },
+   {
+    "text": "3000.01\r",
+    "expect": "BANK"
+   },
+   {
+    "text": "N\r"
+   },
+   {
+    "text": "BK\r"
+   },
+   {
+    "text": "DR\r"
+   },
+   {
+    "text": "\r",
+    "expect": "Enter Cycle"
+   },
+   {
+    "text": "01\r01\r000000100.00\r000000000.00\rEQUIV BATCH\r",
+    "expect": "Posting Input"
+   },
+   {
+    "text": "\r4000.01\r00000100.00\rTEST SALE\r",
+    "expect": "Posting Input"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "key": "ESC",
+    "expect": "Transaction Entry Functions"
+   },
+   {
+    "text": "9\r",
+    "expect": "General Ledger System Menu"
+   },
+   {
+    "text": "X",
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "X",
+    "expect": "please press a key to exit"
+   },
+   {
+    "key": "ENTER"
+   }
+  ]
+ },
+ {
+  "id": "GL-048",
+  "subsystem": "GL",
+  "title": "空科目ENTER",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "A",
+   "E",
+   "1"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "A",
+    "expect": "Start Of Day"
+   },
+   {
+    "key": "ENTER",
+    "expect": "General Ledger System Menu"
+   },
+   {
+    "text": "E",
+    "expect": "Transaction Entry Functions"
+   },
+   {
+    "text": "1\r",
+    "expect": "Posting Set-Up"
+   },
+   {
+    "text": "33\r",
+    "expect": "Default Set-Up"
+   },
+   {
+    "text": "3000.01\r",
+    "expect": "BANK"
+   },
+   {
+    "text": "N\r"
+   },
+   {
+    "text": "BK\r"
+   },
+   {
+    "text": "DR\r"
+   },
+   {
+    "text": "\r",
+    "expect": "Enter Cycle"
+   },
+   {
+    "text": "01\r01\r000000100.00\r000000000.00\rEQUIV BATCH\r",
+    "expect": "Posting Input"
+   },
+   {
+    "text": "\r\r",
+    "expect": "Invalid A/C number"
+   }
+  ]
+ },
+ {
+  "id": "GL-049",
+  "subsystem": "GL",
+  "title": "金額0で日付へ戻る",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "A",
+   "E",
+   "1"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "A",
+    "expect": "Start Of Day"
+   },
+   {
+    "key": "ENTER",
+    "expect": "General Ledger System Menu"
+   },
+   {
+    "text": "E",
+    "expect": "Transaction Entry Functions"
+   },
+   {
+    "text": "1\r",
+    "expect": "Posting Set-Up"
+   },
+   {
+    "text": "33\r",
+    "expect": "Default Set-Up"
+   },
+   {
+    "text": "3000.01\r",
+    "expect": "BANK"
+   },
+   {
+    "text": "N\r"
+   },
+   {
+    "text": "BK\r"
+   },
+   {
+    "text": "DR\r"
+   },
+   {
+    "text": "\r",
+    "expect": "Enter Cycle"
+   },
+   {
+    "text": "01\r01\r000000100.00\r000000000.00\rEQUIV BATCH\r",
+    "expect": "Posting Input"
+   },
+   {
+    "text": "\r4000.01\r0\r",
+    "expect": "Posting Input"
+   }
+  ]
+ },
+ {
+  "id": "GL-050",
+  "subsystem": "GL",
+  "title": "日付欄ESCは終了しない",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "A",
+   "E",
+   "1"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "A",
+    "expect": "Start Of Day"
+   },
+   {
+    "key": "ENTER",
+    "expect": "General Ledger System Menu"
+   },
+   {
+    "text": "E",
+    "expect": "Transaction Entry Functions"
+   },
+   {
+    "text": "1\r",
+    "expect": "Posting Set-Up"
+   },
+   {
+    "text": "33\r",
+    "expect": "Default Set-Up"
+   },
+   {
+    "text": "3000.01\r",
+    "expect": "BANK"
+   },
+   {
+    "text": "N\r"
+   },
+   {
+    "text": "BK\r"
+   },
+   {
+    "text": "DR\r"
+   },
+   {
+    "text": "\r",
+    "expect": "Enter Cycle"
+   },
+   {
+    "text": "01\r01\r000000100.00\r000000000.00\rEQUIV BATCH\r",
+    "expect": "Posting Input"
+   },
+   {
+    "key": "ESC",
+    "expect": "Posting Input"
+   }
+  ]
+ },
+ {
+  "id": "GL-051",
+  "subsystem": "GL",
+  "title": "日付欄F1は終了しない",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "A",
+   "E",
+   "1"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "A",
+    "expect": "Start Of Day"
+   },
+   {
+    "key": "ENTER",
+    "expect": "General Ledger System Menu"
+   },
+   {
+    "text": "E",
+    "expect": "Transaction Entry Functions"
+   },
+   {
+    "text": "1\r",
+    "expect": "Posting Set-Up"
+   },
+   {
+    "text": "33\r",
+    "expect": "Default Set-Up"
+   },
+   {
+    "text": "3000.01\r",
+    "expect": "BANK"
+   },
+   {
+    "text": "N\r"
+   },
+   {
+    "text": "BK\r"
+   },
+   {
+    "text": "DR\r"
+   },
+   {
+    "text": "\r",
+    "expect": "Enter Cycle"
+   },
+   {
+    "text": "01\r01\r000000100.00\r000000000.00\rEQUIV BATCH\r",
+    "expect": "Posting Input"
+   },
+   {
+    "key": "F1",
+    "expect": "Posting Input"
+   }
+  ]
+ },
+ {
+  "id": "IRS-091",
+  "subsystem": "IRS",
+  "title": "名目勘定7件とBANK/OB/VATデフォルト設定",
+  "baseline": "irs-biz-client-only",
+  "app": "irs",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "2",
+   "1",
+   "3",
+   "1"
+  ],
+  "steps": [
+   {},
+   {
+    "text": "2"
+   },
+   {
+    "text": "1"
+   },
+   {
+    "text": "N"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "30001\rN\rBANK\rR\r30002\rN\rDEBTORS\rR\r30003\rN\rCREDITORS\rU\r40001\rN\rSALES\rA\r50001\rN\rPURCHASES\rE\r60001\rN\rVAT INPUT\rR\r60002\rN\rVAT OUTPUT\rU\r00000\r"
+   },
+   {
+    "text": "9"
+   },
+   {
+    "text": "3"
+   },
+   {
+    "text": "2"
+   },
+   {
+    "text": "\r00\r"
+   },
+   {
+    "text": "1"
+   },
+   {
+    "text": "N"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "30001\rBK\rN\r00000\r30001\r60001\r60002\r"
+   }
+  ]
+ },
+ {
+  "id": "SYS-010",
+  "subsystem": "SYS",
+  "title": "SL単独取引fixture: Sales/Stock LinkをNへ",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [
+   "Z"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "Z",
+    "expect": "User Data"
+   },
+   {
+    "text": "\r",
+    "expect": "User Data Complete"
+   },
+   {
+    "text": "Y\r",
+    "expect": "OPS  Data 1"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "Y\r",
+    "expect": "G-L  Data"
+   },
+   {
+    "text": "\r",
+    "expect": "G-L Data Complete"
+   },
+   {
+    "text": "Y\r",
+    "expect": "S-L  Data 1"
+   },
+   {
+    "text": "\t\t\t\t\t\t\t\t\t\t\tN\r",
+    "expect": "S-L Data Complete"
+   },
+   {
+    "text": "Y\r",
+    "expect": "S-L  Data 2"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "Y\r",
+    "expect": "P-L  Data"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "Y\r",
+    "expect": "Stock Data"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "Y\r",
+    "expect": "Do you want printed copy"
+   },
+   {
+    "text": "Y\r",
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "X",
+    "expect": "please press a key to exit"
+   },
+   {
+    "key": "ENTER"
+   }
+  ]
+ },
+ {
+  "id": "SL-091",
+  "subsystem": "SL",
+  "title": "売上分析コードAとGL400001の設定",
+  "baseline": "sl-ready-config",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [
+   "B",
+   "L",
+   "1"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "B",
+    "expect": "Start Of Day"
+   },
+   {
+    "text": "\r",
+    "expect": "Sales Ledger System Menu"
+   },
+   {
+    "text": "L"
+   },
+   {
+    "text": "1"
+   },
+   {
+    "text": "A \r400001\rSALES\rA  \rS\r  \r"
+   },
+   {
+    "text": "9",
+    "expect": "Sales Ledger System Menu"
+   },
+   {
+    "text": "X",
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "X",
+    "expect": "please press a key to exit"
+   },
+   {
+    "key": "ENTER"
+   }
+  ]
+ },
+ {
+  "id": "SL-100",
+  "subsystem": "SL",
+  "title": "通常掛売請求書1明細の保存",
+  "baseline": "sl-ready",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [
+   "B",
+   "D"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "B",
+    "expect": "Start Of Day"
+   },
+   {
+    "text": "\r",
+    "expect": "Sales Ledger System Menu"
+   },
+   {
+    "text": "D",
+    "expect": "Invoicing Data Entry"
+   },
+   {
+    "text": "\rCUST011\rEQUIVREF\rORDER001\r2\r"
+   },
+   {
+    "text": "INVTEST\r"
+   },
+   {
+    "text": "a1\r"
+   },
+   {
+    "text": "TEST SERVICE\r"
+   },
+   {
+    "text": "00001\r"
+   },
+   {
+    "text": "0000100.00\r"
+   },
+   {
+    "text": "00.00\r"
+   },
+   {
+    "text": "1\r"
+   },
+   {
+    "text": "             \r"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "\r",
+    "expect": "Invoice Ok to Store"
+   },
+   {
+    "text": "Y\r",
+    "expect": "Enter Further Invoices"
+   },
+   {
+    "text": "N\r",
+    "expect": "Sales Ledger System Menu"
+   },
+   {
+    "text": "X",
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "X",
+    "expect": "please press a key to exit"
+   },
+   {
+    "key": "ENTER"
+   }
+  ]
+ },
+ {
+  "id": "SL-101",
+  "subsystem": "SL",
+  "title": "クレジットノート1明細の保存",
+  "baseline": "sl-ready",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [
+   "B",
+   "D"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "B",
+    "expect": "Start Of Day"
+   },
+   {
+    "text": "\r",
+    "expect": "Sales Ledger System Menu"
+   },
+   {
+    "text": "D",
+    "expect": "Invoicing Data Entry"
+   },
+   {
+    "text": "\rCUST011\rEQUIVREF\rORDER001\r3\r"
+   },
+   {
+    "text": "0\r"
+   },
+   {
+    "text": "INVTEST\r"
+   },
+   {
+    "text": "a1\r"
+   },
+   {
+    "text": "TEST SERVICE\r"
+   },
+   {
+    "text": "00001\r"
+   },
+   {
+    "text": "0000050.00\r"
+   },
+   {
+    "text": "00.00\r"
+   },
+   {
+    "text": "1\r"
+   },
+   {
+    "text": "             \r"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "\r",
+    "expect": "Invoice Ok to Store"
+   },
+   {
+    "text": "Y\r",
+    "expect": "Enter Further Invoices"
+   },
+   {
+    "text": "N\r",
+    "expect": "Sales Ledger System Menu"
+   },
+   {
+    "text": "X",
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "X",
+    "expect": "please press a key to exit"
+   },
+   {
+    "key": "ENTER"
+   }
+  ]
+ },
+ {
+  "id": "SL-103",
+  "subsystem": "SL",
+  "title": "保存済み掛売請求書の正式印刷",
+  "baseline": "sl-invoice",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [
+   "B",
+   "T",
+   "7"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "B",
+    "expect": "Start Of Day"
+   },
+   {
+    "text": "\r",
+    "expect": "Sales Ledger System Menu"
+   },
+   {
+    "text": "T",
+    "expect": "Invoicing Menu"
+   },
+   {
+    "text": "7",
+    "expect": "Invoice Printing"
+   },
+   {
+    "text": "P\r"
+   },
+   {
+    "text": "N\r",
+    "expect": "Invoicing Menu"
+   },
+   {
+    "text": "9",
+    "expect": "Sales Ledger System Menu"
+   },
+   {
+    "text": "X",
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "X",
+    "expect": "please press a key to exit"
+   },
+   {
+    "key": "ENTER"
+   }
+  ]
+ },
+ {
+  "id": "SL-104",
+  "subsystem": "SL",
+  "title": "印刷済み請求書のproof帳票",
+  "baseline": "sl-printed",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [
+   "B",
+   "F"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "B",
+    "expect": "Start Of Day"
+   },
+   {
+    "text": "\r",
+    "expect": "Sales Ledger System Menu"
+   },
+   {
+    "text": "F",
+    "expect": "Sales Ledger System Menu"
+   },
+   {
+    "text": "X",
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "X",
+    "expect": "please press a key to exit"
+   },
+   {
+    "key": "ENTER"
+   }
+  ]
+ },
+ {
+  "id": "SL-105",
+  "subsystem": "SL",
+  "title": "印刷済み請求書を得意先・売掛へ転記",
+  "baseline": "sl-printed",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [
+   "B",
+   "G"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "B",
+    "expect": "Start Of Day"
+   },
+   {
+    "text": "\r",
+    "expect": "Sales Ledger System Menu"
+   },
+   {
+    "text": "G",
+    "expect": "SL121"
+   },
+   {
+    "text": "\r",
+    "expect": "OK to post Sales transactions"
+   },
+   {
+    "text": "YES\r"
+   },
+   {
+    "text": "\r",
+    "expect": "Sales Ledger System Menu"
+   },
+   {
+    "text": "X",
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "X",
+    "expect": "please press a key to exit"
+   },
+   {
+    "key": "ENTER"
+   }
+  ]
+ },
+ {
+  "id": "SYS-200",
+  "subsystem": "SYS",
+  "title": "SYS-M ACAS起動・メニュー：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   }
+  ]
+ },
+ {
+  "id": "SYS-201",
+  "subsystem": "SYS",
+  "title": "SYS-P01 会社の初期登録：到達確認",
+  "baseline": "empty",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [],
+  "steps": [
+   {},
+   {
+    "text": "EQUIVALENCE BUSINESS\rY\rY\rY\rY\rY\rY\rN\rY\r"
+   },
+   {
+    "text": "Test Street\t\t\t\tTEST1\tUK\t1\t01/01/2026\t31/12/2026\t048\t20.00\t00.00\t05.00\t00.00\t00.00\t01\tTESTVAT\tN\t01\t\t03\t0\t0\r"
+   },
+   {
+    "text": "Y\r"
+   },
+   {
+    "text": "0\t6\t0\r"
+   },
+   {
+    "text": "CAPTURE\tCAPTURE\tCAPTURE\r"
+   },
+   {
+    "text": "Y\r"
+   },
+   {
+    "text": "\t\t\t\t\tY\t\t1\t2\tY\t00001\tN\r"
+   },
+   {
+    "text": "Y\r"
+   },
+   {
+    "text": "0\t0\t30\t00.00\t0000\t0000\t0010000\t\\\tN\t0.00\t00001\tY\t300001\t400001\t300002\r"
+   },
+   {
+    "text": "Y\r"
+   },
+   {
+    "text": "Y\tY\tY\tY\r"
+   },
+   {
+    "text": "Y\r"
+   },
+   {
+    "text": "\\\tY\t00001\t300001\t500001\t300003\r"
+   },
+   {
+    "text": "Y\r"
+   },
+   {
+    "text": "0\t0\t0\t1\t1\tM\tY\t1\t0\t000\r"
+   },
+   {
+    "text": "Y\r"
+   }
+  ]
+ },
+ {
+  "id": "GL-200",
+  "subsystem": "GL",
+  "title": "GL-M 総勘定元帳を開く：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "A"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "A"
+   }
+  ]
+ },
+ {
+  "id": "SL-200",
+  "subsystem": "SL",
+  "title": "SL-M 売掛元帳を開く：到達確認",
+  "baseline": "sl-ready",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "B"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "B"
+   }
+  ]
+ },
+ {
+  "id": "PL-200",
+  "subsystem": "PL",
+  "title": "PL-M 買掛元帳を開く：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "C"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "C"
+   }
+  ]
+ },
+ {
+  "id": "ST-200",
+  "subsystem": "ST",
+  "title": "ST-M 在庫管理を開く：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "D"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "D"
+   }
+  ]
+ },
+ {
+  "id": "SYS-202",
+  "subsystem": "SYS",
+  "title": "SYS-E 受注管理：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "E"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "E"
+   }
+  ]
+ },
+ {
+  "id": "SYS-203",
+  "subsystem": "SYS",
+  "title": "SYS-F 給与計算：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "F"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "F"
+   }
+  ]
+ },
+ {
+  "id": "SYS-204",
+  "subsystem": "SYS",
+  "title": "SYS-G POS：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "G"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "G"
+   }
+  ]
+ },
+ {
+  "id": "SYS-205",
+  "subsystem": "SYS",
+  "title": "SYS-X ACASを終了：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "X"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "X"
+   },
+   {
+    "text": "\r"
+   }
+  ]
+ },
+ {
+  "id": "SYS-206",
+  "subsystem": "SYS",
+  "title": "SYS-Z システム設定：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "Z"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "Z"
+   }
+  ]
+ },
+ {
+  "id": "GL-201",
+  "subsystem": "GL",
+  "title": "GL-A 処理日入力：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "A",
+   "A"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "A"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "A"
+   }
+  ]
+ },
+ {
+  "id": "GL-202",
+  "subsystem": "GL",
+  "title": "GL-B 勘定科目管理：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "A",
+   "B"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "A"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "B"
+   }
+  ]
+ },
+ {
+  "id": "GL-203",
+  "subsystem": "GL",
+  "title": "GL-B1 科目登録：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "A",
+   "B",
+   "1"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "A"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "1\r"
+   }
+  ]
+ },
+ {
+  "id": "GL-204",
+  "subsystem": "GL",
+  "title": "GL-B2 科目変更・削除：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "A",
+   "B",
+   "2"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "A"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "2\r"
+   }
+  ]
+ },
+ {
+  "id": "GL-205",
+  "subsystem": "GL",
+  "title": "GL-B3 科目一覧表示：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "A",
+   "B",
+   "3"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "A"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "3\r"
+   }
+  ]
+ },
+ {
+  "id": "GL-206",
+  "subsystem": "GL",
+  "title": "GL-B4 科目一覧印刷：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "A",
+   "B",
+   "4"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "A"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "4\r"
+   }
+  ]
+ },
+ {
+  "id": "GL-207",
+  "subsystem": "GL",
+  "title": "GL-C 既定勘定の管理：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "A",
+   "C"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "A"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "C"
+   }
+  ]
+ },
+ {
+  "id": "GL-208",
+  "subsystem": "GL",
+  "title": "GL-C1 既定勘定登録：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "A",
+   "C",
+   "1"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "A"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "C"
+   },
+   {
+    "text": "1\r"
+   }
+  ]
+ },
+ {
+  "id": "GL-209",
+  "subsystem": "GL",
+  "title": "GL-C2 既定勘定修正：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "A",
+   "C",
+   "2"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "A"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "C"
+   },
+   {
+    "text": "2\r"
+   }
+  ]
+ },
+ {
+  "id": "GL-210",
+  "subsystem": "GL",
+  "title": "GL-C3 既定勘定表示：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "A",
+   "C",
+   "3"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "A"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "C"
+   },
+   {
+    "text": "3\r"
+   }
+  ]
+ },
+ {
+  "id": "GL-211",
+  "subsystem": "GL",
+  "title": "GL-D 決算書設定：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "A",
+   "D"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "A"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "D"
+   }
+  ]
+ },
+ {
+  "id": "GL-212",
+  "subsystem": "GL",
+  "title": "GL-E 仕訳入力：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "A",
+   "E"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "A"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "E"
+   }
+  ]
+ },
+ {
+  "id": "GL-213",
+  "subsystem": "GL",
+  "title": "GL-E1 新規バッチ登録：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "A",
+   "E",
+   "1"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "A"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "E"
+   },
+   {
+    "text": "1\r"
+   }
+  ]
+ },
+ {
+  "id": "GL-214",
+  "subsystem": "GL",
+  "title": "GL-F 仕訳の検証・修正：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "A",
+   "F"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "A"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "F"
+   }
+  ]
+ },
+ {
+  "id": "GL-215",
+  "subsystem": "GL",
+  "title": "GL-F1 バッチ修正：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "A",
+   "F",
+   "1"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "A"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "F"
+   },
+   {
+    "text": "1\r"
+   }
+  ]
+ },
+ {
+  "id": "GL-216",
+  "subsystem": "GL",
+  "title": "GL-F2 全バッチ検証帳票：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "A",
+   "F",
+   "2"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "A"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "F"
+   },
+   {
+    "text": "2\r"
+   }
+  ]
+ },
+ {
+  "id": "GL-217",
+  "subsystem": "GL",
+  "title": "GL-F3 指定バッチ検証帳票：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "A",
+   "F",
+   "3"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "A"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "F"
+   },
+   {
+    "text": "3\r"
+   }
+  ]
+ },
+ {
+  "id": "GL-218",
+  "subsystem": "GL",
+  "title": "GL-F4 全仕訳の印刷：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "A",
+   "F",
+   "4"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "A"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "F"
+   },
+   {
+    "text": "4\r"
+   }
+  ]
+ },
+ {
+  "id": "GL-219",
+  "subsystem": "GL",
+  "title": "GL-G バッチ状態確認：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "A",
+   "G"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "A"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "G"
+   }
+  ]
+ },
+ {
+  "id": "GL-220",
+  "subsystem": "GL",
+  "title": "GL-G1 バッチ状態表示：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "A",
+   "G",
+   "1"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "A"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "G"
+   },
+   {
+    "text": "1\r"
+   }
+  ]
+ },
+ {
+  "id": "GL-221",
+  "subsystem": "GL",
+  "title": "GL-G2 バッチ状態印刷：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "A",
+   "G",
+   "2"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "A"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "G"
+   },
+   {
+    "text": "2\r"
+   }
+  ]
+ },
+ {
+  "id": "GL-222",
+  "subsystem": "GL",
+  "title": "GL-H 仕訳転記：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "A",
+   "H"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "A"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "H"
+   }
+  ]
+ },
+ {
+  "id": "GL-223",
+  "subsystem": "GL",
+  "title": "GL-I 期間締め：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "A",
+   "I"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "A"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "I"
+   }
+  ]
+ },
+ {
+  "id": "GL-224",
+  "subsystem": "GL",
+  "title": "GL-J 試算表：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "A",
+   "J"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "A"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "J"
+   }
+  ]
+ },
+ {
+  "id": "GL-225",
+  "subsystem": "GL",
+  "title": "GL-J1 詳細試算表：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "A",
+   "J",
+   "1"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "A"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "J"
+   },
+   {
+    "text": "1\r"
+   }
+  ]
+ },
+ {
+  "id": "GL-226",
+  "subsystem": "GL",
+  "title": "GL-J2 部門・拠点試算表：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "A",
+   "J",
+   "2"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "A"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "J"
+   },
+   {
+    "text": "2\r"
+   }
+  ]
+ },
+ {
+  "id": "GL-227",
+  "subsystem": "GL",
+  "title": "GL-K 損益計算書・貸借対照表：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "A",
+   "K"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "A"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "K"
+   }
+  ]
+ },
+ {
+  "id": "GL-228",
+  "subsystem": "GL",
+  "title": "GL-L 元帳印刷：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "A",
+   "L"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "A"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "L"
+   }
+  ]
+ },
+ {
+  "id": "GL-229",
+  "subsystem": "GL",
+  "title": "GL-MENU-M 決算書印刷：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "A",
+   "M"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "A"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "M"
+   }
+  ]
+ },
+ {
+  "id": "GL-230",
+  "subsystem": "GL",
+  "title": "GL-X 総勘定元帳を閉じる：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "A",
+   "X"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "A"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "X"
+   }
+  ]
+ },
+ {
+  "id": "GL-231",
+  "subsystem": "GL",
+  "title": "GL-Z 共通設定を開く：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "A",
+   "Z"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "A"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "Z"
+   }
+  ]
+ },
+ {
+  "id": "SL-201",
+  "subsystem": "SL",
+  "title": "SL-A 処理日入力：到達確認",
+  "baseline": "sl-ready",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "B",
+   "A"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "A"
+   }
+  ]
+ },
+ {
+  "id": "SL-202",
+  "subsystem": "SL",
+  "title": "SL-B 顧客マスター管理：到達確認",
+  "baseline": "sl-ready",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "B",
+   "B"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "B"
+   }
+  ]
+ },
+ {
+  "id": "SL-203",
+  "subsystem": "SL",
+  "title": "SL-B1 顧客登録：到達確認",
+  "baseline": "sl-ready",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "B",
+   "B",
+   "1"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "1"
+   }
+  ]
+ },
+ {
+  "id": "SL-204",
+  "subsystem": "SL",
+  "title": "SL-B2 顧客変更：到達確認",
+  "baseline": "sl-ready",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "B",
+   "B",
+   "2"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "2"
+   }
+  ]
+ },
+ {
+  "id": "SL-205",
+  "subsystem": "SL",
+  "title": "SL-B3 顧客削除：到達確認",
+  "baseline": "sl-ready",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "B",
+   "B",
+   "3"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "3"
+   }
+  ]
+ },
+ {
+  "id": "SL-206",
+  "subsystem": "SL",
+  "title": "SL-B4 顧客一覧印刷：到達確認",
+  "baseline": "sl-ready",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "B",
+   "B",
+   "4"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "4"
+   }
+  ]
+ },
+ {
+  "id": "SL-207",
+  "subsystem": "SL",
+  "title": "SL-B5 顧客表示：到達確認",
+  "baseline": "sl-ready",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "B",
+   "B",
+   "5"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "5"
+   }
+  ]
+ },
+ {
+  "id": "SL-208",
+  "subsystem": "SL",
+  "title": "SL-C 売掛残高・明細照会：到達確認",
+  "baseline": "sl-ready",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "B",
+   "C"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "C"
+   }
+  ]
+ },
+ {
+  "id": "SL-209",
+  "subsystem": "SL",
+  "title": "SL-D 売上取引入力：到達確認",
+  "baseline": "sl-ready",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "B",
+   "D"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "D"
+   }
+  ]
+ },
+ {
+  "id": "SL-210",
+  "subsystem": "SL",
+  "title": "SL-E 売上取引修正：到達確認",
+  "baseline": "sl-ready",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "B",
+   "E"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "E"
+   }
+  ]
+ },
+ {
+  "id": "SL-211",
+  "subsystem": "SL",
+  "title": "SL-F 売上の検証帳票：到達確認",
+  "baseline": "sl-ready",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "B",
+   "F"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "F"
+   }
+  ]
+ },
+ {
+  "id": "SL-212",
+  "subsystem": "SL",
+  "title": "SL-G 売上転記：到達確認",
+  "baseline": "sl-ready",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "B",
+   "G"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "G"
+   }
+  ]
+ },
+ {
+  "id": "SL-213",
+  "subsystem": "SL",
+  "title": "SL-H 入金入力・消込：到達確認",
+  "baseline": "sl-ready",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "B",
+   "H"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "H"
+   }
+  ]
+ },
+ {
+  "id": "SL-214",
+  "subsystem": "SL",
+  "title": "SL-I 入金修正：到達確認",
+  "baseline": "sl-ready",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "B",
+   "I"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "I"
+   }
+  ]
+ },
+ {
+  "id": "SL-215",
+  "subsystem": "SL",
+  "title": "SL-J 入金の検証帳票：到達確認",
+  "baseline": "sl-ready",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "B",
+   "J"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "J"
+   }
+  ]
+ },
+ {
+  "id": "SL-216",
+  "subsystem": "SL",
+  "title": "SL-K 入金転記：到達確認",
+  "baseline": "sl-ready",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "B",
+   "K"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "K"
+   }
+  ]
+ },
+ {
+  "id": "SL-217",
+  "subsystem": "SL",
+  "title": "SL-L 売上分析コード管理：到達確認",
+  "baseline": "sl-ready",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "B",
+   "L"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "L"
+   }
+  ]
+ },
+ {
+  "id": "SL-218",
+  "subsystem": "SL",
+  "title": "SL-L1 売上分析コード登録：到達確認",
+  "baseline": "sl-ready",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "B",
+   "L",
+   "1"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "L"
+   },
+   {
+    "text": "1"
+   }
+  ]
+ },
+ {
+  "id": "SL-219",
+  "subsystem": "SL",
+  "title": "SL-L2 売上分析コード変更・削除：到達確認",
+  "baseline": "sl-ready",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "B",
+   "L",
+   "2"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "L"
+   },
+   {
+    "text": "2"
+   }
+  ]
+ },
+ {
+  "id": "SL-220",
+  "subsystem": "SL",
+  "title": "SL-L3 売上分析コード印刷：到達確認",
+  "baseline": "sl-ready",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "B",
+   "L",
+   "3"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "L"
+   },
+   {
+    "text": "3"
+   }
+  ]
+ },
+ {
+  "id": "SL-221",
+  "subsystem": "SL",
+  "title": "SL-L4 売上分析コード全件印刷：到達確認",
+  "baseline": "sl-ready",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "B",
+   "L",
+   "4"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "L"
+   },
+   {
+    "text": "4"
+   }
+  ]
+ },
+ {
+  "id": "SL-222",
+  "subsystem": "SL",
+  "title": "SL-L5 売上分析コード表示：到達確認",
+  "baseline": "sl-ready",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "B",
+   "L",
+   "5"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "L"
+   },
+   {
+    "text": "5"
+   }
+  ]
+ },
+ {
+  "id": "SL-223",
+  "subsystem": "SL",
+  "title": "SL-OPT-M 売上分析帳票：到達確認",
+  "baseline": "sl-ready",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "B",
+   "M"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "M"
+   }
+  ]
+ },
+ {
+  "id": "SL-224",
+  "subsystem": "SL",
+  "title": "SL-N 売上日計帳：到達確認",
+  "baseline": "sl-ready",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "B",
+   "N"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "N"
+   }
+  ]
+ },
+ {
+  "id": "SL-225",
+  "subsystem": "SL",
+  "title": "SL-O 顧客明細書発行：到達確認",
+  "baseline": "sl-ready",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "B",
+   "O"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "O"
+   }
+  ]
+ },
+ {
+  "id": "SL-226",
+  "subsystem": "SL",
+  "title": "SL-P 督促状出力：到達確認",
+  "baseline": "sl-ready",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "B",
+   "P"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "P"
+   }
+  ]
+ },
+ {
+  "id": "SL-227",
+  "subsystem": "SL",
+  "title": "SL-Q 売掛金年齢表：到達確認",
+  "baseline": "sl-ready",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "B",
+   "Q"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "Q"
+   }
+  ]
+ },
+ {
+  "id": "SL-228",
+  "subsystem": "SL",
+  "title": "SL-R 顧客名順一覧：到達確認",
+  "baseline": "sl-ready",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "B",
+   "R"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "R"
+   }
+  ]
+ },
+ {
+  "id": "SL-229",
+  "subsystem": "SL",
+  "title": "SL-S 顧客別売上帳票：到達確認",
+  "baseline": "sl-ready",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "B",
+   "S"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "S"
+   }
+  ]
+ },
+ {
+  "id": "SL-230",
+  "subsystem": "SL",
+  "title": "SL-T 請求書サブシステム：到達確認",
+  "baseline": "sl-ready",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "B",
+   "T"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "T"
+   }
+  ]
+ },
+ {
+  "id": "SL-231",
+  "subsystem": "SL",
+  "title": "SL-T1 請求書固定項目設定：到達確認",
+  "baseline": "sl-ready",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "B",
+   "T",
+   "1"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "T"
+   },
+   {
+    "text": "1"
+   }
+  ]
+ },
+ {
+  "id": "SL-232",
+  "subsystem": "SL",
+  "title": "SL-T2 請求情報入力・一括印刷待ち：到達確認",
+  "baseline": "sl-invoice",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "B",
+   "T",
+   "2"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "T"
+   },
+   {
+    "text": "2"
+   }
+  ]
+ },
+ {
+  "id": "SL-233",
+  "subsystem": "SL",
+  "title": "SL-T3 請求書即時印刷：到達確認",
+  "baseline": "sl-invoice",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "B",
+   "T",
+   "3"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "T"
+   },
+   {
+    "text": "3"
+   }
+  ]
+ },
+ {
+  "id": "SL-234",
+  "subsystem": "SL",
+  "title": "SL-T4 請求書修正：到達確認",
+  "baseline": "sl-invoice",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "B",
+   "T",
+   "4"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "T"
+   },
+   {
+    "text": "4"
+   }
+  ]
+ },
+ {
+  "id": "SL-235",
+  "subsystem": "SL",
+  "title": "SL-T5 請求書削除：到達確認",
+  "baseline": "sl-invoice",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "B",
+   "T",
+   "5"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "T"
+   },
+   {
+    "text": "5"
+   }
+  ]
+ },
+ {
+  "id": "SL-236",
+  "subsystem": "SL",
+  "title": "SL-T6 請求書削除帳票：到達確認",
+  "baseline": "sl-invoice",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "B",
+   "T",
+   "6"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "T"
+   },
+   {
+    "text": "6"
+   }
+  ]
+ },
+ {
+  "id": "SL-237",
+  "subsystem": "SL",
+  "title": "SL-T7 請求書一括印刷：到達確認",
+  "baseline": "sl-invoice",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "B",
+   "T",
+   "7"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "T"
+   },
+   {
+    "text": "7"
+   }
+  ]
+ },
+ {
+  "id": "SL-238",
+  "subsystem": "SL",
+  "title": "SL-T8 納品書・ピッキングリスト印刷：到達確認",
+  "baseline": "sl-invoice",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "B",
+   "T",
+   "8"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "T"
+   },
+   {
+    "text": "8"
+   }
+  ]
+ },
+ {
+  "id": "SL-239",
+  "subsystem": "SL",
+  "title": "SL-U 売掛・買掛の期間締め：到達確認",
+  "baseline": "sl-ready",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "B",
+   "U"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "U"
+   }
+  ]
+ },
+ {
+  "id": "SL-240",
+  "subsystem": "SL",
+  "title": "SL-V 顧客ファイル帳票：到達確認",
+  "baseline": "sl-ready",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "B",
+   "V"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "V"
+   }
+  ]
+ },
+ {
+  "id": "SL-241",
+  "subsystem": "SL",
+  "title": "SL-X 売掛を閉じる：到達確認",
+  "baseline": "sl-ready",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "B",
+   "X"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "X"
+   }
+  ]
+ },
+ {
+  "id": "SL-242",
+  "subsystem": "SL",
+  "title": "SL-Z 共通設定を開く：到達確認",
+  "baseline": "sl-ready",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "B",
+   "Z"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "Z"
+   }
+  ]
+ },
+ {
+  "id": "PL-201",
+  "subsystem": "PL",
+  "title": "PL-A 処理日入力：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "C",
+   "A"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "C"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "A"
+   }
+  ]
+ },
+ {
+  "id": "PL-202",
+  "subsystem": "PL",
+  "title": "PL-B 仕入先マスター管理：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "C",
+   "B"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "C"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "B"
+   }
+  ]
+ },
+ {
+  "id": "PL-203",
+  "subsystem": "PL",
+  "title": "PL-B1 仕入先登録：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "C",
+   "B",
+   "1"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "C"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "1"
+   }
+  ]
+ },
+ {
+  "id": "PL-204",
+  "subsystem": "PL",
+  "title": "PL-B2 仕入先変更：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "C",
+   "B",
+   "2"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "C"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "2"
+   }
+  ]
+ },
+ {
+  "id": "PL-205",
+  "subsystem": "PL",
+  "title": "PL-B3 仕入先削除：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "C",
+   "B",
+   "3"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "C"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "3"
+   }
+  ]
+ },
+ {
+  "id": "PL-206",
+  "subsystem": "PL",
+  "title": "PL-B4 仕入先一覧印刷：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "C",
+   "B",
+   "4"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "C"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "4"
+   }
+  ]
+ },
+ {
+  "id": "PL-207",
+  "subsystem": "PL",
+  "title": "PL-B5 仕入先表示：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "C",
+   "B",
+   "5"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "C"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "5"
+   }
+  ]
+ },
+ {
+  "id": "PL-208",
+  "subsystem": "PL",
+  "title": "PL-C 買掛残高・明細照会：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "C",
+   "C"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "C"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "C"
+   }
+  ]
+ },
+ {
+  "id": "PL-209",
+  "subsystem": "PL",
+  "title": "PL-D 仕入取引入力：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "C",
+   "D"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "C"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "D"
+   }
+  ]
+ },
+ {
+  "id": "PL-210",
+  "subsystem": "PL",
+  "title": "PL-E 仕入取引修正：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "C",
+   "E"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "C"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "E"
+   }
+  ]
+ },
+ {
+  "id": "PL-211",
+  "subsystem": "PL",
+  "title": "PL-F 仕入取引削除：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "C",
+   "F"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "C"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "F"
+   }
+  ]
+ },
+ {
+  "id": "PL-212",
+  "subsystem": "PL",
+  "title": "PL-G 仕入の検証帳票：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "C",
+   "G"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "C"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "G"
+   }
+  ]
+ },
+ {
+  "id": "PL-213",
+  "subsystem": "PL",
+  "title": "PL-H 仕入転記：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "C",
+   "H"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "C"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "H"
+   }
+  ]
+ },
+ {
+  "id": "PL-214",
+  "subsystem": "PL",
+  "title": "PL-I 支払入力・消込：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "C",
+   "I"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "C"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "I"
+   }
+  ]
+ },
+ {
+  "id": "PL-215",
+  "subsystem": "PL",
+  "title": "PL-J 支払修正：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "C",
+   "J"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "C"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "J"
+   }
+  ]
+ },
+ {
+  "id": "PL-216",
+  "subsystem": "PL",
+  "title": "PL-K 支払の検証帳票：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "C",
+   "K"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "C"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "K"
+   }
+  ]
+ },
+ {
+  "id": "PL-217",
+  "subsystem": "PL",
+  "title": "PL-L 支払転記：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "C",
+   "L"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "C"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "L"
+   }
+  ]
+ },
+ {
+  "id": "PL-218",
+  "subsystem": "PL",
+  "title": "PL-OPT-M 仕入分析コード管理：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "C",
+   "M"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "C"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "M"
+   }
+  ]
+ },
+ {
+  "id": "PL-219",
+  "subsystem": "PL",
+  "title": "PL-OPT-M1 仕入分析コード登録：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "C",
+   "M",
+   "1"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "C"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "M"
+   },
+   {
+    "text": "1"
+   }
+  ]
+ },
+ {
+  "id": "PL-220",
+  "subsystem": "PL",
+  "title": "PL-OPT-M2 仕入分析コード変更・削除：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "C",
+   "M",
+   "2"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "C"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "M"
+   },
+   {
+    "text": "2"
+   }
+  ]
+ },
+ {
+  "id": "PL-221",
+  "subsystem": "PL",
+  "title": "PL-OPT-M3 仕入分析コード印刷：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "C",
+   "M",
+   "3"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "C"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "M"
+   },
+   {
+    "text": "3"
+   }
+  ]
+ },
+ {
+  "id": "PL-222",
+  "subsystem": "PL",
+  "title": "PL-OPT-M4 仕入分析コード全件印刷：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "C",
+   "M",
+   "4"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "C"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "M"
+   },
+   {
+    "text": "4"
+   }
+  ]
+ },
+ {
+  "id": "PL-223",
+  "subsystem": "PL",
+  "title": "PL-OPT-M5 仕入分析コード表示：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "C",
+   "M",
+   "5"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "C"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "M"
+   },
+   {
+    "text": "5"
+   }
+  ]
+ },
+ {
+  "id": "PL-224",
+  "subsystem": "PL",
+  "title": "PL-N 仕入分析帳票：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "C",
+   "N"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "C"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "N"
+   }
+  ]
+ },
+ {
+  "id": "PL-225",
+  "subsystem": "PL",
+  "title": "PL-O 仕入日計帳：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "C",
+   "O"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "C"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "O"
+   }
+  ]
+ },
+ {
+  "id": "PL-226",
+  "subsystem": "PL",
+  "title": "PL-P 買掛金年齢表：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "C",
+   "P"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "C"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "P"
+   }
+  ]
+ },
+ {
+  "id": "PL-227",
+  "subsystem": "PL",
+  "title": "PL-Q 仕入先名順一覧：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "C",
+   "Q"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "C"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "Q"
+   }
+  ]
+ },
+ {
+  "id": "PL-228",
+  "subsystem": "PL",
+  "title": "PL-R 仕入先別取引帳票：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "C",
+   "R"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "C"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "R"
+   }
+  ]
+ },
+ {
+  "id": "PL-229",
+  "subsystem": "PL",
+  "title": "PL-S 小切手・送金サブシステム：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "C",
+   "S"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "C"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "S"
+   }
+  ]
+ },
+ {
+  "id": "PL-230",
+  "subsystem": "PL",
+  "title": "PL-S1 支払予定生成：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "C",
+   "S",
+   "1"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "C"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "S"
+   },
+   {
+    "text": "1"
+   }
+  ]
+ },
+ {
+  "id": "PL-231",
+  "subsystem": "PL",
+  "title": "PL-S2 支払予定修正：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "C",
+   "S",
+   "2"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "C"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "S"
+   },
+   {
+    "text": "2"
+   }
+  ]
+ },
+ {
+  "id": "PL-232",
+  "subsystem": "PL",
+  "title": "PL-S3 支払予定の検証：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "C",
+   "S",
+   "3"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "C"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "S"
+   },
+   {
+    "text": "3"
+   }
+  ]
+ },
+ {
+  "id": "PL-233",
+  "subsystem": "PL",
+  "title": "PL-S4 小切手データ生成：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "C",
+   "S",
+   "4"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "C"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "S"
+   },
+   {
+    "text": "4"
+   }
+  ]
+ },
+ {
+  "id": "PL-234",
+  "subsystem": "PL",
+  "title": "PL-S5 小切手・BACS台帳印刷：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "C",
+   "S",
+   "5"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "C"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "S"
+   },
+   {
+    "text": "5"
+   }
+  ]
+ },
+ {
+  "id": "PL-235",
+  "subsystem": "PL",
+  "title": "PL-S6 送金案内印刷：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "C",
+   "S",
+   "6"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "C"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "S"
+   },
+   {
+    "text": "6"
+   }
+  ]
+ },
+ {
+  "id": "PL-236",
+  "subsystem": "PL",
+  "title": "PL-T 買掛・売掛の期間締め：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "C",
+   "T"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "C"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "T"
+   }
+  ]
+ },
+ {
+  "id": "PL-237",
+  "subsystem": "PL",
+  "title": "PL-U 仕入伝票の固定設定：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "C",
+   "U"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "C"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "U"
+   }
+  ]
+ },
+ {
+  "id": "PL-238",
+  "subsystem": "PL",
+  "title": "PL-V 仕入先ファイル帳票：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "C",
+   "V"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "C"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "V"
+   }
+  ]
+ },
+ {
+  "id": "PL-239",
+  "subsystem": "PL",
+  "title": "PL-X 買掛を閉じる：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "C",
+   "X"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "C"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "X"
+   }
+  ]
+ },
+ {
+  "id": "PL-240",
+  "subsystem": "PL",
+  "title": "PL-Z 共通設定を開く：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "C",
+   "Z"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "C"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "Z"
+   }
+  ]
+ },
+ {
+  "id": "ST-201",
+  "subsystem": "ST",
+  "title": "ST-A 処理日入力：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "D",
+   "A"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "D"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "A"
+   }
+  ]
+ },
+ {
+  "id": "ST-202",
+  "subsystem": "ST",
+  "title": "ST-B 在庫品目マスター管理：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "D",
+   "B"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "D"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "B"
+   }
+  ]
+ },
+ {
+  "id": "ST-203",
+  "subsystem": "ST",
+  "title": "ST-B1 在庫品目登録：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "D",
+   "B",
+   "1"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "D"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "1"
+   }
+  ]
+ },
+ {
+  "id": "ST-204",
+  "subsystem": "ST",
+  "title": "ST-B2 在庫品目変更：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "D",
+   "B",
+   "2"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "D"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "2"
+   }
+  ]
+ },
+ {
+  "id": "ST-205",
+  "subsystem": "ST",
+  "title": "ST-B3 在庫品目削除：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "D",
+   "B",
+   "3"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "D"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "3"
+   }
+  ]
+ },
+ {
+  "id": "ST-206",
+  "subsystem": "ST",
+  "title": "ST-B4 在庫コード変更：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "D",
+   "B",
+   "4"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "D"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "4"
+   }
+  ]
+ },
+ {
+  "id": "ST-207",
+  "subsystem": "ST",
+  "title": "ST-B5 在庫品目照会：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "D",
+   "B",
+   "5"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "D"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "5"
+   }
+  ]
+ },
+ {
+  "id": "ST-208",
+  "subsystem": "ST",
+  "title": "ST-B6 品目帳票：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "D",
+   "B",
+   "6"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "D"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "6"
+   }
+  ]
+ },
+ {
+  "id": "ST-209",
+  "subsystem": "ST",
+  "title": "ST-C 入出庫・発注記録：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "D",
+   "C"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "D"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "C"
+   }
+  ]
+ },
+ {
+  "id": "ST-210",
+  "subsystem": "ST",
+  "title": "ST-C1 入庫入力：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "D",
+   "C",
+   "1"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "D"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "C"
+   },
+   {
+    "text": "1"
+   }
+  ]
+ },
+ {
+  "id": "ST-211",
+  "subsystem": "ST",
+  "title": "ST-C2 出庫入力：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "D",
+   "C",
+   "2"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "D"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "C"
+   },
+   {
+    "text": "2"
+   }
+  ]
+ },
+ {
+  "id": "ST-212",
+  "subsystem": "ST",
+  "title": "ST-C3 バーコード入庫：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "D",
+   "C",
+   "3"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "D"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "C"
+   },
+   {
+    "text": "3"
+   }
+  ]
+ },
+ {
+  "id": "ST-213",
+  "subsystem": "ST",
+  "title": "ST-C4 在庫発注記録：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "D",
+   "C",
+   "4"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "D"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "C"
+   },
+   {
+    "text": "4"
+   }
+  ]
+ },
+ {
+  "id": "ST-214",
+  "subsystem": "ST",
+  "title": "ST-C5 在庫監査帳票：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "D",
+   "C",
+   "5"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "D"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "C"
+   },
+   {
+    "text": "5"
+   }
+  ]
+ },
+ {
+  "id": "ST-215",
+  "subsystem": "ST",
+  "title": "ST-D 在庫帳票：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "D",
+   "D"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "D"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "D"
+   }
+  ]
+ },
+ {
+  "id": "ST-216",
+  "subsystem": "ST",
+  "title": "ST-D1 在庫評価帳票：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "D",
+   "D",
+   "1"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "D"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "D"
+   },
+   {
+    "text": "1"
+   }
+  ]
+ },
+ {
+  "id": "ST-217",
+  "subsystem": "ST",
+  "title": "ST-D2 在庫活動帳票：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "D",
+   "D",
+   "2"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "D"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "D"
+   },
+   {
+    "text": "2"
+   }
+  ]
+ },
+ {
+  "id": "ST-218",
+  "subsystem": "ST",
+  "title": "ST-D3 発注点帳票：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "D",
+   "D",
+   "3"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "D"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "D"
+   },
+   {
+    "text": "3"
+   }
+  ]
+ },
+ {
+  "id": "ST-219",
+  "subsystem": "ST",
+  "title": "ST-D4 在庫履歴帳票：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "D",
+   "D",
+   "4"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "D"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "D"
+   },
+   {
+    "text": "4"
+   }
+  ]
+ },
+ {
+  "id": "ST-220",
+  "subsystem": "ST",
+  "title": "ST-D5 在庫一覧帳票：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "D",
+   "D",
+   "5"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "D"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "D"
+   },
+   {
+    "text": "5"
+   }
+  ]
+ },
+ {
+  "id": "ST-221",
+  "subsystem": "ST",
+  "title": "ST-E 在庫期間締め：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "D",
+   "E"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "D"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "E"
+   }
+  ]
+ },
+ {
+  "id": "ST-222",
+  "subsystem": "ST",
+  "title": "ST-F 在庫品目一括取込：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "D",
+   "F"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "D"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "F"
+   }
+  ]
+ },
+ {
+  "id": "ST-223",
+  "subsystem": "ST",
+  "title": "ST-X 在庫を閉じる：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "D",
+   "X"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "D"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "X"
+   }
+  ]
+ },
+ {
+  "id": "ST-224",
+  "subsystem": "ST",
+  "title": "ST-Y 在庫ファイル圧縮：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "D",
+   "Y"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "D"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "Y"
+   }
+  ]
+ },
+ {
+  "id": "ST-225",
+  "subsystem": "ST",
+  "title": "ST-Z 共通設定を開く：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "D",
+   "Z"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "D"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "Z"
+   }
+  ]
+ },
+ {
+  "id": "IRS-200",
+  "subsystem": "IRS",
+  "title": "IRS-M 簡易会計を開く：到達確認",
+  "baseline": "irs-biz",
+  "app": "irs",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [],
+  "steps": [
+   {
+    "expect": "S Y S T E M   M E N U"
+   }
+  ]
+ },
+ {
+  "id": "IRS-201",
+  "subsystem": "IRS",
+  "title": "IRS-1 IRS設定：到達確認",
+  "baseline": "irs-biz",
+  "app": "irs",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "1"
+  ],
+  "steps": [
+   {
+    "expect": "S Y S T E M   M E N U"
+   },
+   {
+    "text": "1"
+   }
+  ]
+ },
+ {
+  "id": "IRS-202",
+  "subsystem": "IRS",
+  "title": "IRS-2 IRS勘定科目管理：到達確認",
+  "baseline": "irs-biz",
+  "app": "irs",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "2"
+  ],
+  "steps": [
+   {
+    "expect": "S Y S T E M   M E N U"
+   },
+   {
+    "text": "2"
+   },
+   {
+    "text": "N\r"
+   }
+  ]
+ },
+ {
+  "id": "IRS-203",
+  "subsystem": "IRS",
+  "title": "IRS-21 IRS科目表登録：到達確認",
+  "baseline": "irs-biz",
+  "app": "irs",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "2",
+   "1"
+  ],
+  "steps": [
+   {
+    "expect": "S Y S T E M   M E N U"
+   },
+   {
+    "text": "2"
+   },
+   {
+    "text": "N\r"
+   },
+   {
+    "text": "1"
+   }
+  ]
+ },
+ {
+  "id": "IRS-204",
+  "subsystem": "IRS",
+  "title": "IRS-22 IRS科目表変更：到達確認",
+  "baseline": "irs-biz",
+  "app": "irs",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "2",
+   "2"
+  ],
+  "steps": [
+   {
+    "expect": "S Y S T E M   M E N U"
+   },
+   {
+    "text": "2"
+   },
+   {
+    "text": "N\r"
+   },
+   {
+    "text": "2"
+   }
+  ]
+ },
+ {
+  "id": "IRS-205",
+  "subsystem": "IRS",
+  "title": "IRS-23 IRS科目表表示：到達確認",
+  "baseline": "irs-biz",
+  "app": "irs",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "2",
+   "3"
+  ],
+  "steps": [
+   {
+    "expect": "S Y S T E M   M E N U"
+   },
+   {
+    "text": "2"
+   },
+   {
+    "text": "N\r"
+   },
+   {
+    "text": "3"
+   }
+  ]
+ },
+ {
+  "id": "IRS-206",
+  "subsystem": "IRS",
+  "title": "IRS-24 IRS科目表印刷：到達確認",
+  "baseline": "irs-biz",
+  "app": "irs",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "2",
+   "4"
+  ],
+  "steps": [
+   {
+    "expect": "S Y S T E M   M E N U"
+   },
+   {
+    "text": "2"
+   },
+   {
+    "text": "N\r"
+   },
+   {
+    "text": "4"
+   }
+  ]
+ },
+ {
+  "id": "IRS-207",
+  "subsystem": "IRS",
+  "title": "IRS-25 IRS科目表エクスポート：到達確認",
+  "baseline": "irs-biz",
+  "app": "irs",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "2",
+   "5"
+  ],
+  "steps": [
+   {
+    "expect": "S Y S T E M   M E N U"
+   },
+   {
+    "text": "2"
+   },
+   {
+    "text": "N\r"
+   },
+   {
+    "text": "5"
+   }
+  ]
+ },
+ {
+  "id": "IRS-208",
+  "subsystem": "IRS",
+  "title": "IRS-26 IRS科目表インポート：到達確認",
+  "baseline": "irs-biz",
+  "app": "irs",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "2",
+   "6"
+  ],
+  "steps": [
+   {
+    "expect": "S Y S T E M   M E N U"
+   },
+   {
+    "text": "2"
+   },
+   {
+    "text": "N\r"
+   },
+   {
+    "text": "6"
+   }
+  ]
+ },
+ {
+  "id": "IRS-209",
+  "subsystem": "IRS",
+  "title": "IRS-3 IRS既定勘定管理：到達確認",
+  "baseline": "irs-biz",
+  "app": "irs",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "3"
+  ],
+  "steps": [
+   {
+    "expect": "S Y S T E M   M E N U"
+   },
+   {
+    "text": "3"
+   }
+  ]
+ },
+ {
+  "id": "IRS-210",
+  "subsystem": "IRS",
+  "title": "IRS-31 IRS既定勘定登録：到達確認",
+  "baseline": "irs-biz",
+  "app": "irs",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "3",
+   "1"
+  ],
+  "steps": [
+   {
+    "expect": "S Y S T E M   M E N U"
+   },
+   {
+    "text": "3"
+   },
+   {
+    "text": "1"
+   }
+  ]
+ },
+ {
+  "id": "IRS-211",
+  "subsystem": "IRS",
+  "title": "IRS-32 IRS既定勘定変更：到達確認",
+  "baseline": "irs-biz",
+  "app": "irs",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "3",
+   "2"
+  ],
+  "steps": [
+   {
+    "expect": "S Y S T E M   M E N U"
+   },
+   {
+    "text": "3"
+   },
+   {
+    "text": "2"
+   }
+  ]
+ },
+ {
+  "id": "IRS-212",
+  "subsystem": "IRS",
+  "title": "IRS-33 IRS既定勘定表示：到達確認",
+  "baseline": "irs-biz",
+  "app": "irs",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "3",
+   "3"
+  ],
+  "steps": [
+   {
+    "expect": "S Y S T E M   M E N U"
+   },
+   {
+    "text": "3"
+   },
+   {
+    "text": "3"
+   }
+  ]
+ },
+ {
+  "id": "IRS-213",
+  "subsystem": "IRS",
+  "title": "IRS-34 IRS既定勘定印刷：到達確認",
+  "baseline": "irs-biz",
+  "app": "irs",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "3",
+   "4"
+  ],
+  "steps": [
+   {
+    "expect": "S Y S T E M   M E N U"
+   },
+   {
+    "text": "3"
+   },
+   {
+    "text": "4"
+   }
+  ]
+ },
+ {
+  "id": "IRS-214",
+  "subsystem": "IRS",
+  "title": "IRS-35 IRS決算書設定：到達確認",
+  "baseline": "irs-biz",
+  "app": "irs",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "3",
+   "5"
+  ],
+  "steps": [
+   {
+    "expect": "S Y S T E M   M E N U"
+   },
+   {
+    "text": "3"
+   },
+   {
+    "text": "5"
+   }
+  ]
+ },
+ {
+  "id": "IRS-215",
+  "subsystem": "IRS",
+  "title": "IRS-4 IRS仕訳転記：到達確認",
+  "baseline": "irs-biz",
+  "app": "irs",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "4"
+  ],
+  "steps": [
+   {
+    "expect": "S Y S T E M   M E N U"
+   },
+   {
+    "text": "4"
+   }
+  ]
+ },
+ {
+  "id": "IRS-216",
+  "subsystem": "IRS",
+  "title": "IRS-5 IRS試算表：到達確認",
+  "baseline": "irs-biz",
+  "app": "irs",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "5"
+  ],
+  "steps": [
+   {
+    "expect": "S Y S T E M   M E N U"
+   },
+   {
+    "text": "5"
+   }
+  ]
+ },
+ {
+  "id": "IRS-217",
+  "subsystem": "IRS",
+  "title": "IRS-6 IRS監査証跡：到達確認",
+  "baseline": "irs-biz",
+  "app": "irs",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "6"
+  ],
+  "steps": [
+   {
+    "expect": "S Y S T E M   M E N U"
+   },
+   {
+    "text": "6"
+   }
+  ]
+ },
+ {
+  "id": "IRS-218",
+  "subsystem": "IRS",
+  "title": "IRS-7 IRS決算書作成：到達確認",
+  "baseline": "irs-biz",
+  "app": "irs",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "7"
+  ],
+  "steps": [
+   {
+    "expect": "S Y S T E M   M E N U"
+   },
+   {
+    "text": "7"
+   }
+  ]
+ },
+ {
+  "id": "IRS-219",
+  "subsystem": "IRS",
+  "title": "IRS-8 IRS転記修正：到達確認",
+  "baseline": "irs-biz",
+  "app": "irs",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "8"
+  ],
+  "steps": [
+   {
+    "expect": "S Y S T E M   M E N U"
+   },
+   {
+    "text": "8"
+   }
+  ]
+ },
+ {
+  "id": "IRS-220",
+  "subsystem": "IRS",
+  "title": "IRS-9 IRS分析帳票：到達確認",
+  "baseline": "irs-biz",
+  "app": "irs",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "9"
+  ],
+  "steps": [
+   {
+    "expect": "S Y S T E M   M E N U"
+   },
+   {
+    "text": "9"
+   }
+  ]
+ },
+ {
+  "id": "IRS-221",
+  "subsystem": "IRS",
+  "title": "IRS-A IRS元帳再計算：到達確認",
+  "baseline": "irs-biz",
+  "app": "irs",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "A"
+  ],
+  "steps": [
+   {
+    "expect": "S Y S T E M   M E N U"
+   },
+   {
+    "text": "A"
+   }
+  ]
+ },
+ {
+  "id": "IRS-222",
+  "subsystem": "IRS",
+  "title": "IRS-X IRS終了：到達確認",
+  "baseline": "irs-biz",
+  "app": "irs",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "X"
+  ],
+  "steps": [
+   {
+    "expect": "S Y S T E M   M E N U"
+   },
+   {
+    "text": "X"
+   },
+   {
+    "text": ""
+   }
+  ]
+ },
+ {
+  "id": "SYS-207",
+  "subsystem": "SYS",
+  "title": "SYS-P02 利用領域の選択：到達確認",
+  "baseline": "empty",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [],
+  "steps": [
+   {},
+   {
+    "text": "EQUIVALENCE BUSINESS\rY\rY\rY\rY\rY\rY\rN\rY\r"
+   },
+   {
+    "text": "Test Street\t\t\t\tTEST1\tUK\t1\t01/01/2026\t31/12/2026\t048\t20.00\t00.00\t05.00\t00.00\t00.00\t01\tTESTVAT\tN\t01\t\t03\t0\t0\r"
+   },
+   {
+    "text": "Y\r"
+   },
+   {
+    "text": "0\t6\t0\r"
+   },
+   {
+    "text": "CAPTURE\tCAPTURE\tCAPTURE\r"
+   },
+   {
+    "text": "Y\r"
+   },
+   {
+    "text": "\t\t\t\t\tY\t\t1\t2\tY\t00001\tN\r"
+   },
+   {
+    "text": "Y\r"
+   },
+   {
+    "text": "0\t0\t30\t00.00\t0000\t0000\t0010000\t\\\tN\t0.00\t00001\tY\t300001\t400001\t300002\r"
+   },
+   {
+    "text": "Y\r"
+   },
+   {
+    "text": "Y\tY\tY\tY\r"
+   },
+   {
+    "text": "Y\r"
+   },
+   {
+    "text": "\\\tY\t00001\t300001\t500001\t300003\r"
+   },
+   {
+    "text": "Y\r"
+   },
+   {
+    "text": "0\t0\t0\t1\t1\tM\tY\t1\t0\t000\r"
+   },
+   {
+    "text": "Y\r"
+   }
+  ]
+ },
+ {
+  "id": "SYS-208",
+  "subsystem": "SYS",
+  "title": "SYS-P03 会社・期間設定：到達確認",
+  "baseline": "empty",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [],
+  "steps": [
+   {},
+   {
+    "text": "EQUIVALENCE BUSINESS\rY\rY\rY\rY\rY\rY\rN\rY\r"
+   },
+   {
+    "text": "Test Street\t\t\t\tTEST1\tUK\t1\t01/01/2026\t31/12/2026\t048\t20.00\t00.00\t05.00\t00.00\t00.00\t01\tTESTVAT\tN\t01\t\t03\t0\t0\r"
+   },
+   {
+    "text": "Y\r"
+   },
+   {
+    "text": "0\t6\t0\r"
+   },
+   {
+    "text": "CAPTURE\tCAPTURE\tCAPTURE\r"
+   },
+   {
+    "text": "Y\r"
+   },
+   {
+    "text": "\t\t\t\t\tY\t\t1\t2\tY\t00001\tN\r"
+   },
+   {
+    "text": "Y\r"
+   },
+   {
+    "text": "0\t0\t30\t00.00\t0000\t0000\t0010000\t\\\tN\t0.00\t00001\tY\t300001\t400001\t300002\r"
+   },
+   {
+    "text": "Y\r"
+   },
+   {
+    "text": "Y\tY\tY\tY\r"
+   },
+   {
+    "text": "Y\r"
+   },
+   {
+    "text": "\\\tY\t00001\t300001\t500001\t300003\r"
+   },
+   {
+    "text": "Y\r"
+   },
+   {
+    "text": "0\t0\t0\t1\t1\tM\tY\t1\t0\t000\r"
+   },
+   {
+    "text": "Y\r"
+   }
+  ]
+ },
+ {
+  "id": "SYS-209",
+  "subsystem": "SYS",
+  "title": "SYS-P04 運用・OS設定：到達確認",
+  "baseline": "empty",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [],
+  "steps": [
+   {},
+   {
+    "text": "EQUIVALENCE BUSINESS\rY\rY\rY\rY\rY\rY\rN\rY\r"
+   },
+   {
+    "text": "Test Street\t\t\t\tTEST1\tUK\t1\t01/01/2026\t31/12/2026\t048\t20.00\t00.00\t05.00\t00.00\t00.00\t01\tTESTVAT\tN\t01\t\t03\t0\t0\r"
+   },
+   {
+    "text": "Y\r"
+   },
+   {
+    "text": "0\t6\t0\r"
+   },
+   {
+    "text": "CAPTURE\tCAPTURE\tCAPTURE\r"
+   },
+   {
+    "text": "Y\r"
+   },
+   {
+    "text": "\t\t\t\t\tY\t\t1\t2\tY\t00001\tN\r"
+   },
+   {
+    "text": "Y\r"
+   },
+   {
+    "text": "0\t0\t30\t00.00\t0000\t0000\t0010000\t\\\tN\t0.00\t00001\tY\t300001\t400001\t300002\r"
+   },
+   {
+    "text": "Y\r"
+   },
+   {
+    "text": "Y\tY\tY\tY\r"
+   },
+   {
+    "text": "Y\r"
+   },
+   {
+    "text": "\\\tY\t00001\t300001\t500001\t300003\r"
+   },
+   {
+    "text": "Y\r"
+   },
+   {
+    "text": "0\t0\t0\t1\t1\tM\tY\t1\t0\t000\r"
+   },
+   {
+    "text": "Y\r"
+   }
+  ]
+ },
+ {
+  "id": "SYS-210",
+  "subsystem": "SYS",
+  "title": "SYS-P05 Linux印刷先設定：到達確認",
+  "baseline": "empty",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [],
+  "steps": [
+   {},
+   {
+    "text": "EQUIVALENCE BUSINESS\rY\rY\rY\rY\rY\rY\rN\rY\r"
+   },
+   {
+    "text": "Test Street\t\t\t\tTEST1\tUK\t1\t01/01/2026\t31/12/2026\t048\t20.00\t00.00\t05.00\t00.00\t00.00\t01\tTESTVAT\tN\t01\t\t03\t0\t0\r"
+   },
+   {
+    "text": "Y\r"
+   },
+   {
+    "text": "0\t6\t0\r"
+   },
+   {
+    "text": "CAPTURE\tCAPTURE\tCAPTURE\r"
+   },
+   {
+    "text": "Y\r"
+   },
+   {
+    "text": "\t\t\t\t\tY\t\t1\t2\tY\t00001\tN\r"
+   },
+   {
+    "text": "Y\r"
+   },
+   {
+    "text": "0\t0\t30\t00.00\t0000\t0000\t0010000\t\\\tN\t0.00\t00001\tY\t300001\t400001\t300002\r"
+   },
+   {
+    "text": "Y\r"
+   },
+   {
+    "text": "Y\tY\tY\tY\r"
+   },
+   {
+    "text": "Y\r"
+   },
+   {
+    "text": "\\\tY\t00001\t300001\t500001\t300003\r"
+   },
+   {
+    "text": "Y\r"
+   },
+   {
+    "text": "0\t0\t0\t1\t1\tM\tY\t1\t0\t000\r"
+   },
+   {
+    "text": "Y\r"
+   }
+  ]
+ },
+ {
+  "id": "SYS-211",
+  "subsystem": "SYS",
+  "title": "SYS-P06 設定内容の印刷確認：到達確認",
+  "baseline": "empty",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [],
+  "steps": [
+   {},
+   {
+    "text": "EQUIVALENCE BUSINESS\rY\rY\rY\rY\rY\rY\rN\rY\r"
+   },
+   {
+    "text": "Test Street\t\t\t\tTEST1\tUK\t1\t01/01/2026\t31/12/2026\t048\t20.00\t00.00\t05.00\t00.00\t00.00\t01\tTESTVAT\tN\t01\t\t03\t0\t0\r"
+   },
+   {
+    "text": "Y\r"
+   },
+   {
+    "text": "0\t6\t0\r"
+   },
+   {
+    "text": "CAPTURE\tCAPTURE\tCAPTURE\r"
+   },
+   {
+    "text": "Y\r"
+   },
+   {
+    "text": "\t\t\t\t\tY\t\t1\t2\tY\t00001\tN\r"
+   },
+   {
+    "text": "Y\r"
+   },
+   {
+    "text": "0\t0\t30\t00.00\t0000\t0000\t0010000\t\\\tN\t0.00\t00001\tY\t300001\t400001\t300002\r"
+   },
+   {
+    "text": "Y\r"
+   },
+   {
+    "text": "Y\tY\tY\tY\r"
+   },
+   {
+    "text": "Y\r"
+   },
+   {
+    "text": "\\\tY\t00001\t300001\t500001\t300003\r"
+   },
+   {
+    "text": "Y\r"
+   },
+   {
+    "text": "0\t0\t0\t1\t1\tM\tY\t1\t0\t000\r"
+   },
+   {
+    "text": "Y\r"
+   }
+  ]
+ },
+ {
+  "id": "GL-232",
+  "subsystem": "GL",
+  "title": "GL-ENTRY GL開始時の日付入力：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "A"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "A"
+   }
+  ]
+ },
+ {
+  "id": "SL-243",
+  "subsystem": "SL",
+  "title": "SL-ENTRY SL開始時の日付入力：到達確認",
+  "baseline": "sl-ready",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "B"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "B"
+   }
+  ]
+ },
+ {
+  "id": "PL-241",
+  "subsystem": "PL",
+  "title": "PL-ENTRY PL開始時の日付入力：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "C"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "C"
+   }
+  ]
+ },
+ {
+  "id": "ST-226",
+  "subsystem": "ST",
+  "title": "ST-ENTRY 在庫開始時の日付入力：到達確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "D"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "D"
+   }
+  ]
+ },
+ {
+  "id": "SL-244",
+  "subsystem": "SL",
+  "title": "SL-T-INIT 初回の請求固定データ：到達確認",
+  "baseline": "sl-ready",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "B",
+   "T"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "T"
+   }
+  ]
+ },
+ {
+  "id": "IRS-223",
+  "subsystem": "IRS",
+  "title": "IRS-1B IRS設定の詳細入力：到達確認",
+  "baseline": "irs-biz",
+  "app": "irs",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "1"
+  ],
+  "steps": [
+   {
+    "expect": "S Y S T E M   M E N U"
+   },
+   {
+    "text": "1"
+   }
+  ]
+ },
+ {
+  "id": "SL-400",
+  "subsystem": "SL",
+  "title": "CUSTOMER 名称更新",
+  "baseline": "sl-ready",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "B",
+   "B",
+   "2"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "2"
+   },
+   {
+    "text": "CUST011\r"
+   },
+   {
+    "text": "EQUIV UPDATED CUSTOMER\r"
+   },
+   {
+    "text": "S\r"
+   }
+  ]
+ },
+ {
+  "id": "SL-401",
+  "subsystem": "SL",
+  "title": "CUSTOMER 残高ゼロ削除",
+  "baseline": "sl-ready",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "B",
+   "B",
+   "3"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "3"
+   },
+   {
+    "text": "CUST020\r"
+   },
+   {
+    "text": "K\r"
+   }
+  ]
+ },
+ {
+  "id": "SL-402",
+  "subsystem": "SL",
+  "title": "CUSTOMER 存在しないキー照会",
+  "baseline": "sl-ready",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "B",
+   "B",
+   "5"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "5"
+   },
+   {
+    "text": "MISS001\r"
+   }
+  ]
+ },
+ {
+  "id": "SL-403",
+  "subsystem": "SL",
+  "title": "CUSTOMER 新規マスタ登録",
+  "baseline": "sl-ready",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "B",
+   "B",
+   "1"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "1"
+   },
+   {
+    "text": "TEST01\r"
+   },
+   {
+    "text": "EQUIV NEW CUSTOMER\t1 TEST ROAD\\LONDON\\UK\r"
+   },
+   {
+    "text": "S\r"
+   }
+  ]
+ },
+ {
+  "id": "PL-400",
+  "subsystem": "PL",
+  "title": "SUPPLIER 名称更新",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "C",
+   "B",
+   "2"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "C"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "2"
+   },
+   {
+    "text": "SUPP018\r"
+   },
+   {
+    "text": "EQUIV UPDATED SUPPLIER\r"
+   },
+   {
+    "text": "S\r"
+   }
+  ]
+ },
+ {
+  "id": "PL-401",
+  "subsystem": "PL",
+  "title": "SUPPLIER 残高ゼロ削除",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "C",
+   "B",
+   "3"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "C"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "3"
+   },
+   {
+    "text": "SUPP026\r"
+   },
+   {
+    "text": "K\r"
+   }
+  ]
+ },
+ {
+  "id": "PL-402",
+  "subsystem": "PL",
+  "title": "SUPPLIER 存在しないキー照会",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "C",
+   "B",
+   "5"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "C"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "5"
+   },
+   {
+    "text": "MISS001\r"
+   }
+  ]
+ },
+ {
+  "id": "PL-403",
+  "subsystem": "PL",
+  "title": "SUPPLIER 新規マスタ登録",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "C",
+   "B",
+   "1"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "C"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "1"
+   },
+   {
+    "text": "TEST01\r"
+   },
+   {
+    "text": "EQUIV NEW SUPPLIER\t1 TEST ROAD\\LONDON\\UK\r"
+   },
+   {
+    "text": "S\r"
+   }
+  ]
+ },
+ {
+  "id": "ST-400",
+  "subsystem": "ST",
+  "title": "在庫入庫1件",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "D",
+   "C",
+   "1"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "D"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "C"
+   },
+   {
+    "text": "1"
+   },
+   {
+    "text": "ITM001\r"
+   },
+   {
+    "text": "000002 \r"
+   },
+   {
+    "text": "000005.00\r"
+   },
+   {
+    "text": "\r"
+   }
+  ]
+ },
+ {
+  "id": "ST-401",
+  "subsystem": "ST",
+  "title": "入庫の不存在品目",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "D",
+   "C",
+   "1"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "D"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "C"
+   },
+   {
+    "text": "1"
+   },
+   {
+    "text": "MISSING\r"
+   }
+  ]
+ },
+ {
+  "id": "ST-402",
+  "subsystem": "ST",
+  "title": "在庫出庫1件",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "D",
+   "C",
+   "2"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "D"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "C"
+   },
+   {
+    "text": "2"
+   },
+   {
+    "text": "ITM001\r"
+   },
+   {
+    "text": "000001 \r"
+   },
+   {
+    "text": "\r"
+   }
+  ]
+ },
+ {
+  "id": "ST-403",
+  "subsystem": "ST",
+  "title": "出庫の不存在品目",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "D",
+   "C",
+   "2"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "D"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "C"
+   },
+   {
+    "text": "2"
+   },
+   {
+    "text": "MISSING\r"
+   }
+  ]
+ },
+ {
+  "id": "CALC-200",
+  "subsystem": "CALC",
+  "title": "V-01-01 チェックディジット K9P34Y",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-201",
+  "subsystem": "CALC",
+  "title": "V-01-02 チェックディジット 6N3WD2",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-202",
+  "subsystem": "CALC",
+  "title": "V-01-03 チェックディジット 5RQ4F5",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-203",
+  "subsystem": "CALC",
+  "title": "V-01-04 チェックディジット ZR3-7E",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-204",
+  "subsystem": "CALC",
+  "title": "V-01-05 チェックディジット 3-P3E2",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-205",
+  "subsystem": "CALC",
+  "title": "V-01-06 チェックディジット Z8IQ9Y",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-206",
+  "subsystem": "CALC",
+  "title": "V-01-07 チェックディジット 7-JZB6",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-207",
+  "subsystem": "CALC",
+  "title": "V-01-08 チェックディジット -CN6Z4",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-208",
+  "subsystem": "CALC",
+  "title": "V-01-09 チェックディジット -3DVYR",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-209",
+  "subsystem": "CALC",
+  "title": "V-01-10 チェックディジット KTTNJF",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-210",
+  "subsystem": "CALC",
+  "title": "V-01-11 チェックディジット BF5-JX",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-211",
+  "subsystem": "CALC",
+  "title": "V-01-12 チェックディジット VLSI47",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-212",
+  "subsystem": "CALC",
+  "title": "V-01-13 チェックディジット WQAL9V",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-213",
+  "subsystem": "CALC",
+  "title": "V-01-14 チェックディジット Q24Z-K",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-214",
+  "subsystem": "CALC",
+  "title": "V-01-15 チェックディジット LMVT45",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-215",
+  "subsystem": "CALC",
+  "title": "V-01-16 チェックディジット HU43J-",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-216",
+  "subsystem": "CALC",
+  "title": "V-01-17 チェックディジット SIOM1T",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-217",
+  "subsystem": "CALC",
+  "title": "V-01-18 チェックディジット MA7V3D",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-218",
+  "subsystem": "CALC",
+  "title": "V-01-19 チェックディジット I8FPPV",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-219",
+  "subsystem": "CALC",
+  "title": "V-01-20 チェックディジット 5ASPZH",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-220",
+  "subsystem": "CALC",
+  "title": "V-01-21 チェックディジット 8RZHQM",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-221",
+  "subsystem": "CALC",
+  "title": "V-01-22 チェックディジット OE95B9",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-222",
+  "subsystem": "CALC",
+  "title": "V-01-23 チェックディジット EE0VBG",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-223",
+  "subsystem": "CALC",
+  "title": "V-01-24 チェックディジット I09QYN",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-224",
+  "subsystem": "CALC",
+  "title": "V-01-25 チェックディジット -K8W3T",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-225",
+  "subsystem": "CALC",
+  "title": "V-01-26 チェックディジット ZPPPP6",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-226",
+  "subsystem": "CALC",
+  "title": "V-01-27 チェックディジット UP3C4D",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-227",
+  "subsystem": "CALC",
+  "title": "V-01-28 チェックディジット SA7L36",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-228",
+  "subsystem": "CALC",
+  "title": "V-01-29 チェックディジット 0-9Y6N",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-229",
+  "subsystem": "CALC",
+  "title": "V-01-30 チェックディジット 14DO9G",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-230",
+  "subsystem": "CALC",
+  "title": "V-01-31 チェックディジット MNU77V",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-231",
+  "subsystem": "CALC",
+  "title": "V-01-32 チェックディジット TUUJ59",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-232",
+  "subsystem": "CALC",
+  "title": "V-01-33 チェックディジット 6LGUAX",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-233",
+  "subsystem": "CALC",
+  "title": "V-01-34 チェックディジット 1DXN9Y",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-234",
+  "subsystem": "CALC",
+  "title": "V-01-35 チェックディジット 1XJ5GX",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-235",
+  "subsystem": "CALC",
+  "title": "V-01-36 チェックディジット NAMEYY",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-236",
+  "subsystem": "CALC",
+  "title": "V-01-37 チェックディジット WLECFP",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-237",
+  "subsystem": "CALC",
+  "title": "V-01-38 チェックディジット ECXVM1",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-238",
+  "subsystem": "CALC",
+  "title": "V-01-39 チェックディジット 1HUGCM",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-239",
+  "subsystem": "CALC",
+  "title": "V-01-40 チェックディジット SMN5E6",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-240",
+  "subsystem": "CALC",
+  "title": "V-01-41 チェックディジット 000003",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-241",
+  "subsystem": "CALC",
+  "title": "V-01-42 チェックディジット 000009",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-242",
+  "subsystem": "CALC",
+  "title": "V-01-43 チェックディジット 000000",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-243",
+  "subsystem": "CALC",
+  "title": "V-01-44 チェックディジット AAAAAA",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-244",
+  "subsystem": "CALC",
+  "title": "V-01-45 チェックディジット ------",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-245",
+  "subsystem": "CALC",
+  "title": "V-02-01 日付 01/01/2024",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-246",
+  "subsystem": "CALC",
+  "title": "V-02-02 日付 29/02/2024",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-247",
+  "subsystem": "CALC",
+  "title": "V-02-03 日付 29/02/2023",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-248",
+  "subsystem": "CALC",
+  "title": "V-02-04 日付 28/02/2023",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-249",
+  "subsystem": "CALC",
+  "title": "V-02-05 日付 31/04/2024",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-250",
+  "subsystem": "CALC",
+  "title": "V-02-06 日付 30/04/2024",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-251",
+  "subsystem": "CALC",
+  "title": "V-02-07 日付 15.06.2025",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-252",
+  "subsystem": "CALC",
+  "title": "V-02-08 日付 15-06-2025",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-253",
+  "subsystem": "CALC",
+  "title": "V-02-09 日付 15,06,2025",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-254",
+  "subsystem": "CALC",
+  "title": "V-02-10 日付 00/01/2024",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-255",
+  "subsystem": "CALC",
+  "title": "V-02-11 日付 32/01/2024",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-256",
+  "subsystem": "CALC",
+  "title": "V-02-12 日付 01/13/2024",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-257",
+  "subsystem": "CALC",
+  "title": "V-02-13 日付 01/00/2024",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-258",
+  "subsystem": "CALC",
+  "title": "V-02-14 日付 1/1/2024",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-259",
+  "subsystem": "CALC",
+  "title": "V-02-15 日付 01/01/24",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-260",
+  "subsystem": "CALC",
+  "title": "V-02-16 日付 AB/01/2024",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-261",
+  "subsystem": "CALC",
+  "title": "V-02-17 日付 31/12/1999",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-262",
+  "subsystem": "CALC",
+  "title": "V-02-18 日付 01/01/2000",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-263",
+  "subsystem": "CALC",
+  "title": "V-02-19 日付 29/02/2000",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-264",
+  "subsystem": "CALC",
+  "title": "V-02-20 日付 29/02/1900",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-265",
+  "subsystem": "CALC",
+  "title": "V-02-21 日付 31/12/2099",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-266",
+  "subsystem": "CALC",
+  "title": "V-02-22 日付 01/01/1601",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-267",
+  "subsystem": "CALC",
+  "title": "V-02-23 日付 25/12/2026",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-268",
+  "subsystem": "CALC",
+  "title": "V-02-24 日付 01/01/2024/ (末尾区切り)",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-269",
+  "subsystem": "CALC",
+  "title": "V-03-01 VAT 100.00×20.00%",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-270",
+  "subsystem": "CALC",
+  "title": "V-03-02 VAT 100.00×17.50%",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-271",
+  "subsystem": "CALC",
+  "title": "V-03-03 VAT 0.01×20.00%",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-272",
+  "subsystem": "CALC",
+  "title": "V-03-04 VAT 0.03×17.50%",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-273",
+  "subsystem": "CALC",
+  "title": "V-03-05 VAT 1.25×20.00%",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-274",
+  "subsystem": "CALC",
+  "title": "V-03-06 VAT 1.23×5.00%",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-275",
+  "subsystem": "CALC",
+  "title": "V-03-07 VAT 99.99×20.00%",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-276",
+  "subsystem": "CALC",
+  "title": "V-03-08 VAT 12.34×17.50%",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-277",
+  "subsystem": "CALC",
+  "title": "V-03-09 VAT -100.00×20.00%",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-278",
+  "subsystem": "CALC",
+  "title": "V-03-10 VAT -0.03×17.50%",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-279",
+  "subsystem": "CALC",
+  "title": "V-03-11 VAT 1234567.89×20.00%",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-280",
+  "subsystem": "CALC",
+  "title": "V-03-12 VAT 0.15×5.00%",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-281",
+  "subsystem": "CALC",
+  "title": "V-03-13 VAT 0.35×5.00%",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-282",
+  "subsystem": "CALC",
+  "title": "V-03-14 VAT 1.05×5.00%",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-283",
+  "subsystem": "CALC",
+  "title": "V-03-15 VAT 0.05×5.00%",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-284",
+  "subsystem": "CALC",
+  "title": "V-03-16 VAT 0.25×1.00%",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-285",
+  "subsystem": "CALC",
+  "title": "V-03-17 VAT 0.07×5.00%",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-286",
+  "subsystem": "CALC",
+  "title": "V-03-18 VAT 0.09×5.00%",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-287",
+  "subsystem": "CALC",
+  "title": "V-03-19 VAT 0.45×5.00%",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-288",
+  "subsystem": "CALC",
+  "title": "V-03-20 VAT 2.50×0.10%",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-289",
+  "subsystem": "CALC",
+  "title": "V-03-21 VAT 0.10×5.00%",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-290",
+  "subsystem": "CALC",
+  "title": "V-03-22 VAT 0.30×5.00%",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-291",
+  "subsystem": "CALC",
+  "title": "V-03-23 VAT 0.50×1.00%",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-292",
+  "subsystem": "CALC",
+  "title": "V-03-24 VAT 0.70×5.00%",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-293",
+  "subsystem": "CALC",
+  "title": "V-03-25 VAT -0.10×5.00%",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-294",
+  "subsystem": "CALC",
+  "title": "V-03-26 VAT 12.35×10.00%",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-295",
+  "subsystem": "CALC",
+  "title": "V-03-27 VAT 0.05×10.00%",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-296",
+  "subsystem": "CALC",
+  "title": "V-13-01 年齢区分 0日",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-297",
+  "subsystem": "CALC",
+  "title": "V-13-02 年齢区分 29日",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-298",
+  "subsystem": "CALC",
+  "title": "V-13-03 年齢区分 30日",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-299",
+  "subsystem": "CALC",
+  "title": "V-13-04 年齢区分 59日",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-300",
+  "subsystem": "CALC",
+  "title": "V-13-05 年齢区分 60日",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-301",
+  "subsystem": "CALC",
+  "title": "V-13-06 年齢区分 89日",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-302",
+  "subsystem": "CALC",
+  "title": "V-13-07 年齢区分 90日",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-303",
+  "subsystem": "CALC",
+  "title": "V-13-08 年齢区分 365日",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-304",
+  "subsystem": "CALC",
+  "title": "V-20-01 平均原価 1000.00/3",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-305",
+  "subsystem": "CALC",
+  "title": "V-20-02 平均原価 100.00/7",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-306",
+  "subsystem": "CALC",
+  "title": "V-20-03 平均原価 1234.56/100",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-307",
+  "subsystem": "CALC",
+  "title": "V-20-04 平均原価 0.10/3",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-308",
+  "subsystem": "CALC",
+  "title": "V-20-05 平均原価 99999.99/1",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-309",
+  "subsystem": "CALC",
+  "title": "V-S1-01 初回セットアップ後に自動ログインしメニュー表示",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-310",
+  "subsystem": "CALC",
+  "title": "V-S1-02 設定保存後に再読込で値が保持される",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-311",
+  "subsystem": "CALC",
+  "title": "V-S1-03 誤パスワードで SY001",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-312",
+  "subsystem": "CALC",
+  "title": "V-S1-04 正パスワードでログイン成功",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-313",
+  "subsystem": "CALC",
+  "title": "V-S1-05 6 回目の誤パスワードで SY010 (429)",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-314",
+  "subsystem": "CALC",
+  "title": "V-S1-06 パスワード変更で旧トークン無効 (SY003)",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-315",
+  "subsystem": "CALC",
+  "title": "V-S1-07 未初期化で GET /system は SY002 系エラー",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-316",
+  "subsystem": "CALC",
+  "title": "V-S1-08 バックエンド停止時にバナー表示・再試行で復帰",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-317",
+  "subsystem": "CALC",
+  "title": "V-M1-01 L-00 タイトル/ルート",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-318",
+  "subsystem": "CALC",
+  "title": "V-M1-02 L-10 タイトル/ルート",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-319",
+  "subsystem": "CALC",
+  "title": "V-M1-03 L-20 タイトル/ルート",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-320",
+  "subsystem": "CALC",
+  "title": "V-M1-04 L-30 タイトル/ルート",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-321",
+  "subsystem": "CALC",
+  "title": "V-M1-05 L-40 タイトル/ルート",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "CALC-322",
+  "subsystem": "CALC",
+  "title": "V-M1-06 L-50 タイトル/ルート",
+  "baseline": "pure-function",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [],
+  "steps": []
+ },
+ {
+  "id": "IRS-400",
+  "subsystem": "IRS",
+  "title": "BANKデフォルトからSALESへ100.00転記",
+  "baseline": "irs-biz",
+  "app": "irs",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "4"
+  ],
+  "steps": [
+   {
+    "expect": "S Y S T E M   M E N U"
+   },
+   {
+    "text": "4"
+   },
+   {
+    "text": "77\r"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "01\r"
+   },
+   {
+    "text": "Y\r"
+   },
+   {
+    "text": "DR\r"
+   },
+   {
+    "text": "23/11/26\r"
+   },
+   {
+    "text": "40001\r"
+   },
+   {
+    "text": "EQUIV POST\r"
+   },
+   {
+    "text": "100.00\r"
+   },
+   {
+    "text": "        \r"
+   }
+  ]
+ },
+ {
+  "id": "INT-400",
+  "subsystem": "INT",
+  "title": "ACAS_IRS切替: IRSクライアント更新 通常指定",
+  "baseline": "irs-biz",
+  "app": "irs",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "1"
+  ],
+  "steps": [
+   {
+    "expect": "S Y S T E M   M E N U"
+   },
+   {
+    "text": "1"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "EQUIV OPERATOR\t2000\tENV SWITCH CLIENT\t1 TEST ROAD\tLONDON\tUK\tTEST1\t01/01/26\t31/12/26\t6\tCAPTURE\r"
+   }
+  ]
+ },
+ {
+  "id": "INT-401",
+  "subsystem": "INT",
+  "title": "ACAS_IRS切替: IRSクライアント更新 acasディレクトリ指定",
+  "baseline": "irs-biz",
+  "app": "irs",
+  "irsPath": "ledgers/acas",
+  "expectExit": false,
+  "menuPath": [
+   "1"
+  ],
+  "steps": [
+   {
+    "expect": "S Y S T E M   M E N U"
+   },
+   {
+    "text": "1"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "EQUIV OPERATOR\t2000\tENV SWITCH CLIENT\t1 TEST ROAD\tLONDON\tUK\tTEST1\t01/01/26\t31/12/26\t6\tCAPTURE\r"
+   }
+  ]
+ },
+ {
+  "id": "INT-402",
+  "subsystem": "INT",
+  "title": "SL期末/EOC起動・確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "B",
+   "U"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "B"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "U"
+   },
+   {
+    "text": "Y\r"
+   }
+  ]
+ },
+ {
+  "id": "INT-403",
+  "subsystem": "INT",
+  "title": "PL期末/EOC起動・確認",
+  "baseline": "biz",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "C",
+   "T"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "C"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "T"
+   },
+   {
+    "text": "Y\r"
+   }
+  ]
+ },
+ {
+  "id": "INT-404",
+  "subsystem": "INT",
+  "title": "SL→GL/IRS転記の実行到達・生成先確認",
+  "baseline": "sl-printed",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [
+   "B",
+   "G"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "B",
+    "expect": "Start Of Day"
+   },
+   {
+    "text": "\r",
+    "expect": "Sales Ledger System Menu"
+   },
+   {
+    "text": "G",
+    "expect": "SL121"
+   },
+   {
+    "text": "\r",
+    "expect": "OK to post Sales transactions"
+   },
+   {
+    "text": "YES\r"
+   },
+   {
+    "text": "\r",
+    "expect": "Sales Ledger System Menu"
+   },
+   {
+    "text": "X",
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "X",
+    "expect": "please press a key to exit"
+   },
+   {
+    "key": "ENTER"
+   }
+  ]
+ },
+ {
+  "id": "PL-410",
+  "subsystem": "PL",
+  "title": "仕入分析コードZ/GL500001の画面設定",
+  "baseline": "sl-ready",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [
+   "C",
+   "M",
+   "1"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "C"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "M"
+   },
+   {
+    "text": "1"
+   },
+   {
+    "text": "Z\r"
+   },
+   {
+    "text": "500001\r"
+   },
+   {
+    "text": "PURCHASES\r"
+   },
+   {
+    "text": "P\r"
+   },
+   {
+    "text": "S\r"
+   },
+   {
+    "text": "  \r"
+   },
+   {
+    "text": "9"
+   },
+   {
+    "text": "X"
+   },
+   {
+    "text": "X"
+   },
+   {
+    "text": "\r"
+   }
+  ]
+ },
+ {
+  "id": "PL-411",
+  "subsystem": "PL",
+  "title": "通常仕入請求書1件・税抜100/VAT20保存",
+  "baseline": "sl-ready",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": true,
+  "menuPath": [
+   "C",
+   "D"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "C"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "D"
+   },
+   {
+    "text": "\rSUPP018\rPL-ORDER\rPL-REF\r2\r"
+   },
+   {
+    "text": "a1\r"
+   },
+   {
+    "text": "0000100.00\r"
+   },
+   {
+    "text": "1\r"
+   },
+   {
+    "text": "000020.00\r"
+   },
+   {
+    "text": "  \r"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "Y\r"
+   },
+   {
+    "text": "Y\r"
+   },
+   {
+    "text": "N\r"
+   },
+   {
+    "text": "X"
+   },
+   {
+    "text": "X"
+   },
+   {
+    "text": "\r"
+   }
+  ]
+ },
+ {
+  "id": "PL-412",
+  "subsystem": "PL",
+  "title": "請求書の不存在仕入先を拒否",
+  "baseline": "sl-ready",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "C",
+   "D"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "C"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "D"
+   },
+   {
+    "text": "\rMISS001\r"
+   }
+  ]
+ },
+ {
+  "id": "PL-413",
+  "subsystem": "PL",
+  "title": "保存済み仕入請求書proof",
+  "baseline": "pl-invoice",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "C",
+   "G"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "C"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "G"
+   },
+   {
+    "text": "\r"
+   }
+  ]
+ },
+ {
+  "id": "PL-414",
+  "subsystem": "PL",
+  "title": "保存済み仕入請求書転記",
+  "baseline": "pl-invoice",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "C",
+   "H"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "C"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "H"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "YES\r"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "\r"
+   }
+  ]
+ },
+ {
+  "id": "INT-405",
+  "subsystem": "INT",
+  "title": "PL転記からGLバッチ200001/仕訳postingの生成",
+  "baseline": "pl-invoice",
+  "app": "acas",
+  "irsPath": null,
+  "expectExit": false,
+  "menuPath": [
+   "C",
+   "H"
+  ],
+  "steps": [
+   {
+    "expect": "ACAS System Menu"
+   },
+   {
+    "text": "C"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "H"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "YES\r"
+   },
+   {
+    "text": "\r"
+   },
+   {
+    "text": "\r"
+   }
+  ]
+ }
+]
