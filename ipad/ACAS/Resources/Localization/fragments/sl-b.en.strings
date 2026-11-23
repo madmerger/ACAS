@@ -122,3 +122,18 @@
 "report.sl130.head5_b" = "Current   Previous   Y. to D      Current      Previous    Year To Date  Trans. Amount";
 "report.sl130.group" = "Group";
 "report.sl130.detail" = " Detail";
+/* sl140 */
+"sl140.title" = "Day Book";
+"sl140.printing" = "Printing.......Please wait";
+"report.sl140.title" = "Day Book";
+"report.sl140.page" = "Page ";
+"report.sl140.head4_a" = " Number   ---Date--- <------------Customer------------>";
+"report.sl140.head4_b" = "<---Net-->  <---Vat-->  <--Gross->";
+"report.sl140.receipt" = "Receipt";
+"report.sl140.invoice" = "Invoice";
+"report.sl140.cr_note" = "Cr. Note";
+"report.sl140.head7" = "Goods     Discount   Prompt Pay     Carriage          Net          Vat        Gross";
+"report.sl140.receipts" = "Receipts";
+"report.sl140.invoices" = "Invoices";
+"report.sl140.credit_notes" = "Credit Notes";
+"report.sl140.totals" = "    Totals";

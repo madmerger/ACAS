@@ -122,3 +122,18 @@
 "report.sl130.head5_b" = "当期      前期       年累計       当期         前期        年累計        件数    金額";
 "report.sl130.group" = "グループ";
 "report.sl130.detail" = " 明細";
+/* sl140 */
+"sl140.title" = "日記帳";
+"sl140.printing" = "印刷中.......お待ちを";
+"report.sl140.title" = "売上日記帳";
+"report.sl140.page" = "頁   ";
+"report.sl140.head4_a" = " 番号     ---日付--- <------------得意先-------------->";
+"report.sl140.head4_b" = "<--税抜-->  <-消費税->  <--税込-->";
+"report.sl140.receipt" = "領収";
+"report.sl140.invoice" = "請求書";
+"report.sl140.cr_note" = "赤伝";
+"report.sl140.head7" = "商品      値引       早期割引       運賃              税抜         消費税     税込";
+"report.sl140.receipts" = "領収";
+"report.sl140.invoices" = "請求書";
+"report.sl140.credit_notes" = "赤伝";
+"report.sl140.totals" = "    合計";

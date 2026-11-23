@@ -208,4 +208,52 @@ enum SLB {
         if v < 0 { b[0] += 0x40 }
         return b
     }
+
+    // MARK: - 請求書ファイル (invoice.dat)
+
+    /// sales/fdinv.cob Invoice-Record (134 バイト、キー = 番号 8 + 枝番 1 + 行 1)
+    static let invoiceLayout = Layout("invoice-record", [
+        d("invoice-nos", 8), ("invoice-let", .x(1)), ("item-nos", .native(bytes: 1, signed: true)),
+        ("invoice-customer", .x(7)), ("invoice-date", bl), ("", .filler(10)), d("invoice-type"), ("", .filler(10)),
+        ("", .filler(92)),
+    ])
+    static func invoiceFile(_ s: Session) -> IndexedFile {
+        IndexedFile(s.store, path: s.ledgers + "invoice.dat", layout: invoiceLayout, keyOffset: 0, keyLength: 10)
+    }
+
+    /// sales/wsinv.cob sinvoice-header (作業域は 137 バイト。ファイルレコードは 134 バイトなので
+    /// 書込時は末尾 3 バイトが切り捨てられ、読込時は空白で埋まる: レガシーどおり)
+    static let sihLayout = Layout("sinvoice-header", [
+        d("sih-invoice", 8), ("sih-letter", .x(1)), ("sih-test", .native(bytes: 1, signed: true)),
+        ("sih-customer", .x(7)), ("sih-date", bl), ("sih-order", .x(10)), d("sih-type"), ("sih-ref", .x(10)),
+        ("sih-description", .x(32)),
+        m9("sih-p-c"), m9("sih-net"), m9("sih-extra"), m9("sih-carriage"), m9("sih-vat"), m9("sih-discount"),
+        m9("sih-e-vat"), m9("sih-c-vat"),
+        ("sih-status", .x(1)), ("sih-status-p", .x(1)), ("sih-status-l", .x(1)), ("sih-status-c", .x(1)),
+        ("sih-status-a", .x(1)), ("sih-status-i", .x(1)),
+        ("sih-lines", .native(bytes: 1, signed: true)), ("sih-deduct-days", .native(bytes: 1, signed: true)),
+        ("sih-deduct-amt", .comp(digits: 5, scale: 2, signed: false)), ("sih-deduct-vat", .comp(digits: 5, scale: 2, signed: false)),
+        ("sih-days", .native(bytes: 1, signed: true)), ("sih-cr", bl),
+        ("sih-day-book-flag", .x(1)), ("sih-update", .x(1)),
+    ])
+    /// sInvoice-Bodies の 1 行 (80 バイト)
+    static let silLayout = Layout("invoice-line", [
+        d("sil-invoice", 8), ("sil-letter", .x(1)), ("sil-line", .native(bytes: 1, signed: true)),
+        ("sil-product", .x(13)), ("sil-pa", .x(2)), ("sil-qty", bs), ("sil-type", .x(1)), ("sil-description", .x(32)),
+        m9("sil-net"), m9("sil-unit"), ("sil-discount", .comp(digits: 4, scale: 2, signed: false)), m9("sil-vat"),
+        d("sil-vat-code"), ("sil-update", .x(1)), ("", .filler(1)),
+    ])
+    /// move invoice-record to sinvoice-header
+    static func sih(from rec: Record) -> Record {
+        Record(sihLayout, bytes: rec.bytes + [UInt8](repeating: 0x20, count: sihLayout.size - rec.bytes.count))
+    }
+    /// move invoice-record to invoice-line (n)
+    static func sil(from rec: Record) -> Record { Record(silLayout, bytes: Array(rec.bytes[0..<silLayout.size])) }
+    /// write/rewrite invoice-record from sinvoice-header / invoice-line (n)
+    static func invoiceRecord(from r: Record) -> Record {
+        let n = invoiceLayout.size
+        var b = Array(r.bytes.prefix(n))
+        if b.count < n { b += [UInt8](repeating: 0x20, count: n - b.count) }
+        return Record(invoiceLayout, bytes: b)
+    }
 }
