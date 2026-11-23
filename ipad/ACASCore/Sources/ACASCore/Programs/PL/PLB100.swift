@@ -20,6 +20,9 @@ enum PLB100 {
         var jPaid: Int64 = 0, jApprop: Int64 = 0, jDeduct: Int64 = 0
         let prt: PLBPrint
         var l2Date = ""
+        /// pl950 が bl-open / bl-close を共用するための差分 (バッチ摘要と ws-reply の桁)
+        var batchDescKey = "report.pl100.batch_desc"
+        var replySize = 1
         init(_ s: Session) {
             self.s = s
             batchFile = PLB.batchFile(s)
@@ -227,7 +230,7 @@ enum PLB100 {
         st.batch.setInt("batch-status", 0); st.batch.setInt("cleared-status", 0)
         st.batch.setInt("bcycle", Cobol.truncate(s.sys.int("scycle"), digits: 2))
         st.batch.setInt("entered", s.sys.int("run-date"))
-        st.batch.set("description", s.l10n.raw("report.pl100.batch_desc"))
+        st.batch.set("description", s.l10n.raw(st.batchDescKey))
         for f in ["bdefault", "batch-def-ac", "batch-def-pc", "items", "input-gross", "input-vat", "actual-gross", "actual-vat"] {
             st.batch.setInt(f, 0)
         }
@@ -290,7 +293,7 @@ enum PLB100 {
             c.display(st.batchFile.status, at: 2333)
             c.display(PLB.statusMessage(s, st.batchFile.status), at: 2336)
             c.display(s.t("plb.pl002"), at: 2401, color: 2)
-            _ = try c.accept(at: 2430, size: 1)
+            _ = try c.accept(at: 2430, size: st.replySize)
         }
         if !st.irsUsed { s.sys.setInt("postings", Int64(st.rrn)) }
         st.batchFile.close()
