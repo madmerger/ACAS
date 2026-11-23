@@ -553,6 +553,37 @@ final class PurchaseLedgerTests: XCTestCase {
         }
     }
 
+    func testPaymentProofReturnsNoReportForUnappliedCreditOnly() throws {
+        let ledger = try makeLedger()
+        let code = try addSupplier(ledger)
+        var payment = PurchaseLedger.Payment(date: ledger.processingDate)
+        payment.supplier = code
+        payment.amount = 5_000
+        try ledger.savePayment(payment)
+        let proof = try ledger.generatePaymentProof()
+        let posted = try ledger.postPaymentsWithReport()
+        let previous = try XCTUnwrap(posted.report)
+        XCTAssertNotEqual(try XCTUnwrap(proof.report), previous)
+
+        var invoice = PurchaseLedger.Transaction(date: ledger.processingDate)
+        invoice.supplier = code
+        invoice.lines[0].code = "a1"
+        invoice.lines[0].net = 10_000
+        let folio = try ledger.saveTransaction(invoice)
+        try ledger.postTransactions()
+        try ledger.store.writeRaw(PurchaseLedger.reportPath, Array(previous))
+
+        payment.credit = true
+        payment.allocations = [.init(invoice: folio, amount: 5_000)]
+        let credit = try ledger.savePayment(payment)
+        XCTAssertEqual(ledger.system.int("p-flag-p"), 0)
+        let result = try ledger.generatePaymentProof()
+        XCTAssertEqual(result.payments.map(\.number), [credit])
+        XCTAssertNil(result.report)
+        XCTAssertEqual(ledger.store.readRaw(PurchaseLedger.reportPath), Array(previous))
+        XCTAssertThrowsError(try ledger.postPayments())
+    }
+
     func testPaymentPostingUpdatesExistingDeductionAnalysis() throws {
         let ledger = try makeLedger()
         let code = try addSupplier(ledger)

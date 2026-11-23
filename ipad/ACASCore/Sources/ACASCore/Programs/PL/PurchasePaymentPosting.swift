@@ -3,13 +3,17 @@ import Foundation
 extension PurchaseLedger {
     @discardableResult
     public func proofPayments() throws -> [Payment] {
+        try generatePaymentProof().payments
+    }
+
+    public func generatePaymentProof() throws -> (payments: [Payment], report: Data?) {
         try store.withTransaction { try writePaymentProof() }
     }
 
-    private func writePaymentProof() throws -> [Payment] {
+    private func writePaymentProof() throws -> (payments: [Payment], report: Data?) {
         let payments = pendingPayments()
         var settings = system
-        guard settings.int("p-flag-p") != 0 else { return payments }
+        guard settings.int("p-flag-p") != 0 else { return (payments, nil) }
         let sortPath = base + "oisort.wrk"
         let fields = ["oi-b-nos", "oi-b-item", "oi-type", "oi-date", "oi-invoice"]
         let sorted = openItemRecords().filter {
@@ -25,12 +29,19 @@ extension PurchaseLedger {
         settings["oi-5-flag"] = "Y"
         settings.setInt("p-flag-p", 2)
         try systemFile.write(1, settings.bytes)
-        return payments
+        return (payments, store.readRaw(Self.reportPath).map { Data($0) })
     }
 
     @discardableResult
     public func postPayments() throws -> [Payment] {
-        try store.withTransaction { try postPendingPayments() }
+        try postPaymentsWithReport().payments
+    }
+
+    public func postPaymentsWithReport() throws -> (payments: [Payment], report: Data?) {
+        try store.withTransaction {
+            let payments = try postPendingPayments()
+            return (payments, payments.isEmpty ? nil : store.readRaw(Self.reportPath).map { Data($0) })
+        }
     }
 
     private func postPendingPayments() throws -> [Payment] {
