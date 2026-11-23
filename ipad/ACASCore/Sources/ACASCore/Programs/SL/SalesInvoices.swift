@@ -1,7 +1,10 @@
 import Foundation
 
 public struct SalesInvoices {
-    public enum Error: Swift.Error { case missingCompany, missingCustomer, missingInvoice, invalidInput, duplicate, locked, empty, writeFailed }
+    public enum Error: Swift.Error {
+        case missingCompany, missingCustomer, missingInvoice, invalidInput, duplicate, locked, empty, writeFailed
+        case unverifiedCreditTarget, invalidCreditTarget
+    }
     public enum Kind: Int64, CaseIterable, Identifiable {
         case receipt = 1, invoice, creditNote, proForma
         public var id: Int64 { rawValue }
@@ -34,6 +37,7 @@ public struct SalesInvoices {
         public var order = ""
         public var description = ""
         public var creditedInvoice: Int64 = 0
+        public var creditedInvoiceSuffix = ""
         public var requestedNumber: Int64?
         public var lines = [Line()]
         public init(date: Date) { self.date = date }
@@ -46,7 +50,6 @@ public struct SalesInvoices {
         public let net: Int64
         public let tax: Int64
         public let printed: Bool
-        let pending: Bool
         public var total: Int64 { net + tax }
     }
 
@@ -65,6 +68,8 @@ public struct SalesInvoices {
         guard let record = try? settings(), let date = date(for: record.int("run-date")) else { return context.now() }
         return date
     }
+
+    public var usesOwnNumbers: Bool { (try? settings().str("sl-own-nos")) == "Y" }
 
     func date(for day: Int64) -> Date? {
         guard (1...3_067_671).contains(day) else { return nil }
@@ -96,8 +101,7 @@ public struct SalesInvoices {
                 kind: Kind(rawValue: header.int("ih-type")) ?? .invoice,
                 net: ["ih-net", "ih-extra", "ih-carriage", "ih-deduct-amt"].reduce(0) { $0 + header.int($1) },
                 tax: ["ih-vat", "ih-e-vat", "ih-c-vat", "ih-deduct-vat"].reduce(0) { $0 + header.int($1) },
-                printed: header.str("ih-status-l") == "L",
-                pending: header.str("ih-status") == "P")
+                printed: header.str("ih-status") != "P" && header.str("ih-status-l") == "L")
     }
 
     public func invoices() -> [Invoice] {
@@ -129,7 +133,43 @@ public struct SalesInvoices {
         return draft
     }
 
-    public func save(_ draft: Draft, replacing existing: Number? = nil) throws -> Invoice {
+    private static let openItemCreditLayout = Layout("open-item-credit", [
+        ("key", .x(7)), ("invoice", .native(bytes: 4, signed: true)), ("", .filler(10)),
+        ("type", .n9(digits: 1, scale: 0, signed: false)), ("", .filler(72)),
+        ("status", .n9(digits: 1, scale: 0, signed: false)), ("", .filler(19)),
+    ])
+
+    private func validateCreditTarget(_ draft: Draft, customer: String, amending: Bool, confirmed: Bool) throws {
+        guard draft.kind == .creditNote, draft.creditedInvoice != 0 else { return }
+        guard draft.creditedInvoice < 99_999_999 else { throw Error.invalidInput }
+        if amending {
+            let suffix = draft.creditedInvoiceSuffix.uppercased()
+            guard ["", "A", "B", "C"].contains(suffix) else { throw Error.invalidInput }
+            let number = Number(value: draft.creditedInvoice, suffix: suffix)
+            if let target = header(number) {
+                guard target.int("ih-type") == Kind.invoice.rawValue, Cobol.rtrim(target.str("ih-customer")) == customer else {
+                    throw Error.invalidCreditTarget
+                }
+                return
+            }
+        } else {
+            var record = Record(Self.openItemCreditLayout)
+            record["key"] = customer
+            record.setInt("invoice", draft.creditedInvoice)
+            let key = Array(record.bytes.prefix(11))
+            if let bytes = context.store.read("ledgers/acas/openitm3.dat", key: key) {
+                let target = Record(Self.openItemCreditLayout, bytes: bytes)
+                guard bytes.count == Self.openItemCreditLayout.size,
+                      target.int("type") == Kind.invoice.rawValue, target.int("status") != 1 else {
+                    throw Error.invalidCreditTarget
+                }
+                return
+            }
+        }
+        guard confirmed else { throw Error.unverifiedCreditTarget }
+    }
+
+    public func save(_ draft: Draft, replacing existing: Number? = nil, confirmingUnknownCreditTarget: Bool = false) throws -> Invoice {
         var system = try settings()
         let customer = draft.customer.uppercased()
         guard customer.utf8.count == 7, let account = SalesProofRecords.salesFile(context.store).read(key: customer),
@@ -139,6 +179,7 @@ public struct SalesInvoices {
               (1...40).contains(draft.lines.count), (0...99_999_999).contains(draft.creditedInvoice) else {
             throw Error.invalidInput
         }
+        try validateCreditTarget(draft, customer: customer, amending: existing != nil, confirmed: confirmingUnknownCreditTarget)
         let dateNumber = Maps04.integerOfDate(year: y, month: m, day: d)
         let sequential = system.int("next-invoice")
         let ownNumber = system.str("sl-own-nos") == "Y" ? draft.requestedNumber : nil
