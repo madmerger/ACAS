@@ -17,8 +17,8 @@ struct BookkeepingMenu: View {
             link(irsText("menu.trialBalance"), "trialBalance") { accountTable(irsText("menu.trialBalance")) }
             link(irsText("menu.audit"), "audit") { journal(irsText("menu.audit")) }
             link(irsText("menu.statements"), "statements") { accountTable(irsText("menu.statements")) }
-            link(irsText("menu.amendment"), "amendment") { journal(irsText("menu.amendment")) }
-            link(irsText("menu.analysis"), "analysis") { journal(irsText("menu.analysis")) }
+            link(irsText("menu.amendment"), "amendment") { postingJournal("amendment") }
+            link(irsText("menu.analysis"), "analysis") { postingJournal("analysis") }
             link(irsText("menu.recalculate"), "recalculate") { BookkeepingRecalculate(service: service) }
             Button(irsText("action.close"), action: closeBookkeeping)
                 .accessibilityIdentifier("irs.close")
@@ -79,6 +79,20 @@ struct BookkeepingMenu: View {
             TableColumn(irsText("field.tax")) { Text($0.usesTax ? irsText("field.applicable") : irsText("field.notApplicable")) }
         }
         .navigationTitle(title)
+    }
+
+    @ViewBuilder private func postingJournal(_ destination: String) -> some View {
+        let title = irsText("menu." + destination)
+        if service.hasPostingFile {
+            journal(title)
+        } else {
+            ContentUnavailableView {
+                Label(irsText("error.openPosting"), systemImage: "exclamationmark.triangle")
+                    .accessibilityIdentifier("irs.openPostingError")
+            }
+            .navigationTitle(title)
+            .onAppear { workspace.completed("irs." + destination + ".missingPosting") }
+        }
     }
 
     @ViewBuilder private func journal(_ title: String) -> some View {

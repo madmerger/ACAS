@@ -33,6 +33,7 @@
 "bookkeeping.error.missingAccount" = "勘定科目が見つかりません。";
 "bookkeeping.error.missingDefault" = "選択した番号の既定勘定がありません。";
 "bookkeeping.error.missingPosting" = "転記データがありません。";
+"bookkeeping.error.openPosting" = "転記ファイルがないため開けませんでした（状態コード35）。";
 "bookkeeping.error.posting" = "科目番号と金額を確認してください。";
 "bookkeeping.field.abbreviation" = "略号";
 "bookkeeping.field.account" = "勘定科目";

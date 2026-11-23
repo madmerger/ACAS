@@ -3,6 +3,8 @@ import Foundation
 extension BookkeepingService {
     public enum Side { case debit, credit }
 
+    public var hasPostingFile: Bool { store.exists(postPath) }
+
     public var postings: [Posting] {
         store.all(postPath).map {
             let row = Record(BookkeepingRecords.postLayout, bytes: $0.data)
@@ -72,7 +74,7 @@ extension BookkeepingService {
     public func recalculate(password: String) throws {
         try verifyPassword(password, against: system)
         let journal = postings
-        guard store.exists(postPath) else { throw Failure.missingPosting }
+        guard hasPostingFile else { throw Failure.missingPosting }
         var debits: [[UInt8]: Int64] = [:]
         var credits: [[UInt8]: Int64] = [:]
         for entry in journal {

@@ -31,6 +31,44 @@ REPORT_CASES = {
     "IRS-213": ("defaultPrint", "既定勘定印刷"),
 }
 
+MISSING_POSTING_CASES = {
+    "IRS-008": ("amendment", "転記修正", "error code = 35"),
+    "IRS-009": ("analysis", "分析帳票", "Error opening postings = 35"),
+    "IRS-219": ("amendment", "転記修正", "error code = 35"),
+    "IRS-220": ("analysis", "分析帳票", "Error opening postings = 35"),
+}
+
+
+def missing_posting_fixture(evidence, case):
+    destination, title, message = MISSING_POSTING_CASES[case["id"]]
+    legacy = case["legacy_result"]
+    run = evidence_path(evidence, Path(legacy["evidence"][0]))
+    targets = legacy["comparison_targets"]
+    result = read_json(evidence_path(evidence, run / "result.json"))
+    before = read_json(evidence_path(evidence, run / "before-records/records.json"))
+    changes = expected_changes(evidence, targets["keyed_record_diff"])
+    if (legacy["verdict"] != "相違" or changes or result["changed"] or result["deleted"]
+            or targets["report_files"] or "ledgers/irs/post.dat" in before["files"]
+            or not any(message in evidence_path(evidence, Path(screen)).read_text(encoding="utf-8")
+                       for screen in targets["screen_text"])):
+        raise ValueError(f'{case["id"]}: 転記ファイル未作成による状態コード35の実測が必要です')
+    with evidence_path(evidence, run / "terminal.cast").open(encoding="utf-8") as recording:
+        timestamp = json.loads(recording.readline())["timestamp"]
+    seed = json.loads(base64.b64decode(snapshot_seed(evidence, run)))
+    seed["files"]["ledgers/irs/acnts.dat"] = seeded_accounts(evidence, run)
+    unchanged = {}
+    for name in ("system.dat", "dflt.dat"):
+        path = "ledgers/irs/" + name
+        contents = evidence_path(evidence, run / "before-files" / path).read_bytes().hex()
+        seed["files"][path] = {"type": "raw", "hex": contents}
+        unchanged[path] = contents
+    return {
+        "id": case["id"], "title": title + "：転記ファイル未作成",
+        "workflow": f"irs.{destination}.missingPosting", "dateSeconds": timestamp,
+        "seed": base64.b64encode(json.dumps(seed, separators=(",", ":")).encode()).decode(),
+        "changes": changes, "reports": unchanged,
+    }
+
 
 def exit_fixture(evidence, case):
     legacy = case["legacy_result"]
@@ -238,10 +276,12 @@ def main():
         save(args.output / (case_id + ".json"), reach_fixture(evidence, cases[case_id]))
     for case_id in REPORT_CASES:
         save(args.output / (case_id + ".json"), report_fixture(evidence, cases[case_id]))
+    for case_id in MISSING_POSTING_CASES:
+        save(args.output / (case_id + ".json"), missing_posting_fixture(evidence, cases[case_id]))
     save(args.output / "IRS-222.json", exit_fixture(evidence, cases["IRS-222"]))
     save(args.output / "IRS-090.json", setup_fixture(evidence, cases["IRS-090"]))
     save(args.output / "IRS-091.json", initial_accounts_fixture(evidence, cases["IRS-091"]))
-    print(f"簡易記帳の実画面用データ {4 + len(REACH_CASES) + len(REPORT_CASES)} 件")
+    print(f"簡易記帳の実画面用データ {4 + len(REACH_CASES) + len(REPORT_CASES) + len(MISSING_POSTING_CASES)} 件")
 
 
 if __name__ == "__main__":

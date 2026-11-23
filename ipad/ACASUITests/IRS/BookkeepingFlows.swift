@@ -22,6 +22,27 @@ final class BookkeepingFlows: XCTestCase {
     func testReachIRS003() throws { try verifyDefaults("IRS-003") }
 
     @MainActor
+    func testMissingPostingIRS008() throws { try verifyMissingPosting("IRS-008", destination: "amendment") }
+
+    @MainActor
+    func testMissingPostingIRS009() throws { try verifyMissingPosting("IRS-009", destination: "analysis") }
+
+    @MainActor
+    func testMissingPostingIRS219() throws { try verifyMissingPosting("IRS-219", destination: "amendment") }
+
+    @MainActor
+    func testMissingPostingIRS220() throws { try verifyMissingPosting("IRS-220", destination: "analysis") }
+
+    @MainActor
+    private func verifyMissingPosting(_ id: String, destination: String) throws {
+        try verifyReach(id, path: [destination]) { app in
+            let error = app.staticTexts["irs.openPostingError"]
+            XCTAssertTrue(error.waitForExistence(timeout: 5), id)
+            XCTAssertEqual(error.label, "転記ファイルがないため開けませんでした（状態コード35）。", id)
+        }
+    }
+
+    @MainActor
     func testReachIRS010() throws { try verifyRecalculate("IRS-010") }
 
     @MainActor
