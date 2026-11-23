@@ -1,6 +1,8 @@
 import XCTest
 
 final class SalesCustomersFlows: XCTestCase {
+    private let fixtureIDs = ["SL-400", "SL-401", "SL-402", "SL-403"]
+
     @MainActor
     func testChangingLookupCodeDiscardsEditSelection() throws {
         let (app, input) = try launch("SL-400", operation: "edit")
@@ -60,7 +62,10 @@ final class SalesCustomersFlows: XCTestCase {
     @MainActor
     private func launch(_ id: String, operation: String) throws -> (XCUIApplication, [String: String]) {
         continueAfterFailure = false
-        let url = try XCTUnwrap(Bundle(for: Self.self).url(forResource: id, withExtension: "json", subdirectory: "fixtures"))
+        let bundle = Bundle(for: Self.self)
+        let fixtures = fixtureIDs.compactMap { bundle.url(forResource: $0, withExtension: "json", subdirectory: "fixtures") }
+        try XCTSkipIf(fixtures.isEmpty, "得意先の証跡テストは generate_customer_fixtures.py <証跡ディレクトリ> --simulator <端末ID> で実行してください")
+        let url = try XCTUnwrap(bundle.url(forResource: id, withExtension: "json", subdirectory: "fixtures"), "\(id) の証跡がありません")
         let data = try Data(contentsOf: url)
         let fixture = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
         let input = try XCTUnwrap(fixture["input"] as? [String: String])

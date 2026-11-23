@@ -3,6 +3,7 @@ import argparse
 import importlib.util
 import json
 from pathlib import Path
+import subprocess
 
 IPAD = Path(__file__).resolve().parents[2]
 SPEC = importlib.util.spec_from_file_location("generate_cases", IPAD / "scripts/generate_cases.py")
@@ -20,6 +21,7 @@ CASES = {
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("evidence", type=Path)
+    parser.add_argument("--simulator", help="指定した iPad Simulator で得意先の実 UI テストも実行する（端末 ID）")
     args = parser.parse_args()
     cases = {c["id"]: c for c in BASE.read_json(args.evidence / "scenarios/catalog.json")["cases"]}
     fixtures = IPAD / ".generated/fixtures"
@@ -43,6 +45,14 @@ def main():
             "reports": {}, "input": values,
         })
     print(f"得意先の実 UI 用データ {len(CASES)} 件")
+    if args.simulator:
+        subprocess.run(["xcodegen", "generate", "--spec", str(IPAD / "project.yml")], check=True)
+        subprocess.run([
+            "xcodebuild", "-project", str(IPAD / "ACAS.xcodeproj"), "-scheme", "ACAS",
+            "-destination", f"platform=iOS Simulator,id={args.simulator}",
+            "-derivedDataPath", str(IPAD / ".derived"), "-parallel-testing-enabled", "NO",
+            "-only-testing:ACASUITests/SalesCustomersFlows", "test",
+        ], check=True)
 
 
 if __name__ == "__main__":
