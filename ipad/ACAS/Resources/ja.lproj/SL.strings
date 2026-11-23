@@ -6,6 +6,15 @@
 "sales.payment.post" = "入金転記";
 "sales.payment.post.confirm" = "検証済みの入金を転記しますか？";
 "sales.payment.post.finished" = "入金を転記しました";
+"sales.post.title" = "売上転記";
+"sales.post.confirm" = "印刷済みの売上取引を転記しますか？";
+"sales.post.finished" = "売上を転記しました";
+"sales.post.unprinted" = "未印刷の取引は転記していません";
+"sales.post.workMissing" = "売上転記に必要な作業ファイルがありません";
+"sales.post.analysisMissing" = "売上分析コードが設定されていません";
+"sales.post.analysisFormat" = "売上分析コードファイルの形式が一致しません";
+"sales.post.failed" = "売上を転記できませんでした";
+"sales.post.filename" = "売上転記帳票.prt";
 "sales.payment.post.failed" = "入金を転記できませんでした。先に入金検証帳票を作成してください";
 "sales.payment.post.filename" = "入金転記帳票";
 "sales.payment.reverse" = "入金を取り消す";

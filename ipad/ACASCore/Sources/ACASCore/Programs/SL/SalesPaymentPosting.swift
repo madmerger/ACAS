@@ -178,17 +178,19 @@ public struct SalesPaymentPosting {
         }
     }
 
-    private final class Ledger {
+    final class Ledger {
         private let store: FileStore
         private let irs: Bool
+        private let sales: Bool
         private let batches: IndexedFile
         private let postingPath = "ledgers/acas/posting.dat"
         private let irsPath = "ledgers/irs/postings2irs.dat"
         private var batch = Record(SalesPostingRecords.batch)
         private var rrn = 0
 
-        init(store: FileStore, system: inout Record) {
+        init(store: FileStore, system: inout Record, sales: Bool = false) {
             self.store = store
+            self.sales = sales
             irs = system.str("irs-instead") == "Y"
             batches = IndexedFile(store, path: "ledgers/acas/batch.dat", layout: SalesPostingRecords.batch, keyLength: 6)
             open(system: &system)
@@ -201,7 +203,7 @@ public struct SalesPaymentPosting {
             row.setInt("cycle", system.int("scycle"))
             row.setInt("entered", system.int("run-date"))
             row.setInt("start", system.int("postings") + 1)
-            row["description"] = "Sales-Ledger Payments"
+            row["description"] = sales ? "Sales Ledger Invoices" : "Sales-Ledger Payments"
             row["convention"] = "CR"
             row["code"] = "SL"
             row["tax-code"] = "O"
@@ -211,27 +213,42 @@ public struct SalesPaymentPosting {
         }
 
         func write(_ record: Record, customer: Record, system: inout Record) throws {
-            let count = batch.int("items") + 1
-            let number = batch.int("number")
-            let value = record.int("paid")
-            let date = Maps04.toDate(Int(record.int("date")))
-            let shortDate = String(date.prefix(6)) + String(date.suffix(2))
             let legend = Cobol.z(record.int("batch"), 5) + "/" + Cobol.z(record.int("item"), 3)
                 + "  :  " + customer.str("sales-name")
+            try write(date: record.int("date"), legend: legend, value: record.int("paid"), tax: 0,
+                      debit: system.int("sl-pay-ac"), credit: system.int("s-debtors"), system: &system)
+        }
+
+        func writeSale(_ record: Record, customer: Record, net: Int64, tax: Int64, system: inout Record) throws {
+            let legend = String(record.int("invoice")) + " : " + customer.str("sales-name")
+            try write(date: record.int("date"), legend: legend, value: net, tax: tax,
+                      debit: system.int("s-debtors"), credit: system.int("sl-sales-ac"), system: &system)
+        }
+
+        private func write(date day: Int64, legend: String, value: Int64, tax: Int64,
+                           debit: Int64, credit: Int64, system: inout Record) throws {
+            let count = batch.int("items") + 1
+            let number = batch.int("number")
+            let date = Maps04.toDate(Int(day))
+            let shortDate = String(date.prefix(6)) + String(date.suffix(2))
             batch.setInt("items", count)
             for field in ["input-gross", "actual-gross"] { batch.setInt(field, batch.int(field) + value) }
-            let debit = system.int("sl-pay-ac")
-            let credit = system.int("s-debtors")
+            for field in ["input-tax", "actual-tax"] { batch.setInt(field, batch.int(field) + tax) }
             if irs {
                 let head = Cobol.z(number, 5) + Cobol.z(count, 5) + "SL" + shortDate + Cobol.z(debit, 5) + Cobol.z(credit, 5)
                 let bytes = Array(head.utf8) + SalesPostingRecords.irsMoney(value) + SJIS.encode(legend, size: 32)
-                    + Array("32CR".utf8) + SalesPostingRecords.irsMoney(0)
+                    + Array("32CR".utf8) + SalesPostingRecords.irsMoney(tax)
                 try store.appendRaw(irsPath, bytes)
+                if sales { rrn += 1 }
             } else {
                 guard rrn > 0 else { throw SalesPayments.Error.writeFailed }
                 var posting = Record(SalesPostingRecords.posting)
                 for (field, amount) in [("batch", number), ("number", count), ("amount", value),
                                         ("debit", debit), ("credit", credit)] { posting.setInt(field, amount) }
+                if sales {
+                    posting.setInt("tax-account", system.int("vat-ac"))
+                    posting.setInt("tax-amount", tax)
+                }
                 posting["date"] = shortDate
                 posting["code"] = "SL"
                 posting["legend"] = legend
@@ -249,7 +266,7 @@ public struct SalesPaymentPosting {
             let path = irs ? irsPath : postingPath
             if !store.exists(path) { try store.writeRaw(path, []) }
             guard batches.write(batch) == "00" else { throw SalesPayments.Error.writeFailed }
-            if !irs { system.setInt("postings", Int64(rrn)) }
+            if !irs || sales { system.setInt("postings", Int64(rrn)) }
         }
     }
 }
