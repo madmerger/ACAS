@@ -327,10 +327,10 @@ public class Pl030 extends Pl020 {
         eraseEol(16, 1);
         wsDate = binToDate(ih.longv("ih-date"));
         // read-details
-        Rec l = invLineRec();
+        Rec l = fdRec(Layout.of("purchase/fdpinv.cob", "invoice-record"));
         for (int n = 1; n <= ih.intv("ih-lines"); n++) {
-            l.setNum("il-invoice", ih.longv("ih-invoice"));
-            l.setNum("il-line", n);
+            l.setNum("invoice-nos", ih.longv("ih-invoice"));
+            l.setNum("item-nos", n);
             invoiceFile.read(l);
             System.arraycopy(l.bytes(), 0, lines.bytes(), (n - 1) * LINE_SIZE, LINE_SIZE);
         }
