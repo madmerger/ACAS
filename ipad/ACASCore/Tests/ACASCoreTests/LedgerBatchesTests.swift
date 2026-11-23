@@ -83,7 +83,7 @@ final class LedgerBatchesTests: XCTestCase {
         XCTAssertEqual(Array(record.prefix(12)), Array("100001010001".utf8))
         XCTAssertEqual(Array(record.suffix(5)), Array("00001".utf8))
         let posting = try XCTUnwrap(RelativeFile(store, path: postingPath, recordSize: 98).read(2))
-        XCTAssertEqual(Array(posting.prefix(46)), Array("0000100001GL23/11/2630000000300001000000012345".utf8))
+        XCTAssertEqual(Array(posting.prefix(46)), Array("0000100001GL23/11/2030000000300001000000012345".utf8))
         XCTAssertEqual(company.settings.number("next-batch"), 2)
     }
 }

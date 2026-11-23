@@ -153,12 +153,12 @@ public struct LedgerBatches {
             let branch = branchEnabled ? line.branch : "00"
             guard chart.account(code: line.account, branch: branch) != nil else { throw Error.account }
             guard line.amount != 0, (-9_999_999_999...9_999_999_999).contains(line.amount) else { throw Error.amount }
-            let date = Maps04.dateOfInteger(try Self.date(line.date))
+            let date = Maps04.toDate(try Self.date(line.date))
             var posting = Record(Self.postingLayout)
             posting.setInt("batch", Int64(number))
             posting.setInt("sequence", Int64(index + 1))
             posting["code"] = template.transactionCode
-            posting["date"] = Cobol.z(date.day, 2) + "/" + Cobol.z(date.month, 2) + "/" + Cobol.z(date.year % 100, 2)
+            posting["date"] = Maps04.format(date, dateForm: Int(settings.int("date-form")))
             let debit = draft.direction == .debit
             posting["debit"] = debit ? line.account : template.account
             posting["credit"] = debit ? template.account : line.account
