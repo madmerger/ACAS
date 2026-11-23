@@ -5,7 +5,7 @@ import XCTest
 
 final class FoundationTests: XCTestCase {
     func testSnapshotsReadLogicalRecordsAndExcludeReports() throws {
-        let store = FileStore()
+        let store = try FileStore()
         let before = EvidenceComparison.snapshot(store)
         let setup = CompanySetup(BusinessContext(store: store))
         try setup.save(name: "テスト会社")
@@ -30,7 +30,7 @@ final class FoundationTests: XCTestCase {
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: false)
         defer { try? FileManager.default.removeItem(at: directory) }
         let path = directory.appendingPathComponent("ACAS.sqlite").path
-        let store = FileStore(path: path)
+        let store = try FileStore(path: path)
         let setup = CompanySetup(BusinessContext(store: store))
         try setup.save(name: "保存済み")
 
@@ -44,6 +44,24 @@ final class FoundationTests: XCTestCase {
             XCTAssertEqual((error as? FileStore.DatabaseError)?.code, SQLITE_CONSTRAINT)
         }
         XCTAssertEqual(setup.name, "保存済み")
+    }
+
+    func testFileStoreThrowsWhenDatabaseCannotBeOpened() {
+        let path = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString)
+            .appendingPathComponent("ACAS.sqlite").path
+        XCTAssertThrowsError(try FileStore(path: path)) { error in
+            XCTAssertEqual((error as? FileStore.DatabaseError)?.code, SQLITE_CANTOPEN)
+        }
+    }
+
+    func testFileStoreThrowsWhenSchemaCannotBeInitialized() throws {
+        let url = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: url) }
+        try Data("SQLite ではないファイル".utf8).write(to: url)
+        XCTAssertThrowsError(try FileStore(path: url.path)) { error in
+            XCTAssertEqual((error as? FileStore.DatabaseError)?.code, SQLITE_NOTADB)
+        }
     }
 
     func testCheckDigitUsesLegacyAlphabet() {

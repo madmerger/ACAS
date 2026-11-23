@@ -12,23 +12,26 @@ public final class FileStore: @unchecked Sendable {
     private let lock = NSRecursiveLock()
     private static let transient = unsafeBitCast(-1, to: sqlite3_destructor_type.self)
 
-    public init(path: String = ":memory:") {
-        if sqlite3_open(path, &db) != SQLITE_OK { fatalError("SQLite を開けません: \(path)") }
-        exec("PRAGMA journal_mode=WAL")
-        exec("CREATE TABLE IF NOT EXISTS files(name TEXT PRIMARY KEY, kind TEXT NOT NULL, data BLOB)")
-        exec("CREATE TABLE IF NOT EXISTS records(file TEXT NOT NULL, key BLOB NOT NULL, data BLOB NOT NULL, PRIMARY KEY(file, key)) WITHOUT ROWID")
+    public init(path: String = ":memory:") throws {
+        do {
+            let result = sqlite3_open(path, &db)
+            guard result == SQLITE_OK else { throw databaseError(result) }
+            try exec("PRAGMA journal_mode=WAL")
+            try exec("CREATE TABLE IF NOT EXISTS files(name TEXT PRIMARY KEY, kind TEXT NOT NULL, data BLOB)")
+            try exec("CREATE TABLE IF NOT EXISTS records(file TEXT NOT NULL, key BLOB NOT NULL, data BLOB NOT NULL, PRIMARY KEY(file, key)) WITHOUT ROWID")
+        } catch {
+            sqlite3_close(db)
+            db = nil
+            throw error
+        }
     }
 
     deinit { sqlite3_close(db) }
 
-    private func exec(_ sql: String) {
+    private func exec(_ sql: String) throws {
         lock.lock(); defer { lock.unlock() }
-        var err: UnsafeMutablePointer<CChar>?
-        if sqlite3_exec(db, sql, nil, nil, &err) != SQLITE_OK {
-            let msg = err.map { String(cString: $0) } ?? ""
-            sqlite3_free(err)
-            fatalError("SQLite: \(msg) [\(sql)]")
-        }
+        let result = sqlite3_exec(db, sql, nil, nil, nil)
+        guard result == SQLITE_OK else { throw databaseError(result) }
     }
 
     private func run<T>(_ sql: String, _ binds: [Any?], _ body: (OpaquePointer) -> T) -> T {
@@ -37,7 +40,8 @@ public final class FileStore: @unchecked Sendable {
     }
 
     private func databaseError(_ code: Int32) -> DatabaseError {
-        DatabaseError(code: code, message: String(cString: sqlite3_errmsg(db)))
+        let message = db.flatMap { sqlite3_errmsg($0) } ?? sqlite3_errstr(code)
+        return DatabaseError(code: code, message: message.map { String(cString: $0) } ?? "")
     }
 
     private func withStatement<T>(_ sql: String, _ binds: [Any?], _ body: (OpaquePointer) throws -> T) throws -> T {
@@ -173,8 +177,8 @@ public final class FileStore: @unchecked Sendable {
 
     // MARK: ベースライン
 
-    public func clearAll() {
-        exec("DELETE FROM files"); exec("DELETE FROM records")
+    public func clearAll() throws {
+        try exec("DELETE FROM files"); try exec("DELETE FROM records")
     }
 
     /// シード JSON (ベースライン) を読み込み、DB を置き換える
@@ -184,21 +188,26 @@ public final class FileStore: @unchecked Sendable {
             throw NSError(domain: "ACAS", code: 1, userInfo: [NSLocalizedDescriptionKey: "seed"])
         }
         lock.lock(); defer { lock.unlock() }
-        clearAll()
-        exec("BEGIN")
-        for (name, f) in files {
-            if f["type"] as? String == "indexed" {
-                // GnuCOBOL の副キー索引 (.1 .2) は主ファイルから導出するため保持しない
-                if name.hasSuffix(".1") || name.hasSuffix(".2") { continue }
-                createIndexed(name)
-                for pair in (f["records"] as? [[String]] ?? []) where pair.count == 2 {
-                    write(name, key: Self.bytes(hex: pair[0]), data: Self.bytes(hex: pair[1]))
+        try exec("BEGIN")
+        do {
+            try clearAll()
+            for (name, f) in files {
+                if f["type"] as? String == "indexed" {
+                    // GnuCOBOL の副キー索引 (.1 .2) は主ファイルから導出するため保持しない
+                    if name.hasSuffix(".1") || name.hasSuffix(".2") { continue }
+                    createIndexed(name)
+                    for pair in (f["records"] as? [[String]] ?? []) where pair.count == 2 {
+                        write(name, key: Self.bytes(hex: pair[0]), data: Self.bytes(hex: pair[1]))
+                    }
+                } else {
+                    try writeRaw(name, Self.bytes(hex: f["hex"] as? String ?? ""))
                 }
-            } else {
-                try writeRaw(name, Self.bytes(hex: f["hex"] as? String ?? ""))
             }
+            try exec("COMMIT")
+        } catch {
+            try? exec("ROLLBACK")
+            throw error
         }
-        exec("COMMIT")
     }
 
     public static func bytes(hex: String) -> [UInt8] {
