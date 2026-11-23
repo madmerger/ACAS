@@ -1,0 +1,153 @@
+import Foundation
+import XCTest
+@testable import ACASCore
+
+final class PurchaseLedgerTests: XCTestCase {
+    func testSupplierLifecyclePreservesFixedWidthRecord() throws {
+        let ledger = try makeLedger()
+        let code = try addSupplier(ledger)
+        let key = Array(code.utf8)
+        XCTAssertEqual(code, "SUPP018")
+        let initial = try XCTUnwrap(ledger.store.read(ledger.suppliersPath, key: key))
+        XCTAssertEqual(initial.count, 300)
+        XCTAssertEqual(initial.suffix(16), ArraySlice(repeating: UInt8(0), count: 16))
+        var supplier = try ledger.supplier(code: code)
+        supplier.name = "変更後"
+        try ledger.saveSupplier(supplier, creating: false)
+        let updated = try XCTUnwrap(ledger.store.read(ledger.suppliersPath, key: key))
+        XCTAssertEqual(initial.prefix(9), updated.prefix(9))
+        XCTAssertEqual(initial.dropFirst(39), updated.dropFirst(39))
+        XCTAssertEqual(try ledger.supplier(code: code).name, "変更後")
+        try ledger.removeSupplier(code: code, deactivate: true)
+        XCTAssertFalse(try ledger.supplier(code: code).active)
+        try ledger.removeSupplier(code: code, deactivate: false)
+        XCTAssertThrowsError(try ledger.supplier(code: code))
+    }
+
+    func testPurchaseEntryProofAndPosting() throws {
+        let ledger = try makeLedger()
+        let code = try addSupplier(ledger)
+        ledger.store.write(ledger.analysisPath, key: Array("Pa1".utf8), data: Array(repeating: 0, count: 66))
+        XCTAssertThrowsError(try ledger.analysisCodes())
+        var transaction = PurchaseLedger.Transaction(date: ledger.processingDate)
+        transaction.supplier = "MISS001"
+        transaction.lines[0].code = "a1"
+        transaction.lines[0].net = 10_000
+        XCTAssertThrowsError(try ledger.saveTransaction(transaction))
+        XCTAssertFalse(ledger.store.exists(ledger.invoicePath))
+        transaction.supplier = code
+        let number = try ledger.saveTransaction(transaction)
+        let header = try XCTUnwrap(ledger.header(number))
+        XCTAssertEqual(header.bytes.count, 129)
+        XCTAssertEqual(header.int("ih-vat"), 2_000)
+        let line = try XCTUnwrap(ledger.store.read(ledger.invoicePath, key: ledger.invoiceKey(number, 1)))
+        XCTAssertEqual(Record(PurchaseRecords.invLineLayout, bytes: line).raw("il-description"), Array(repeating: 0, count: 24))
+        XCTAssertEqual(ledger.purchaseProof().map(\.id), [number])
+        let proof = try XCTUnwrap(ledger.store.readRaw(PurchaseLedger.reportPath))
+        XCTAssertTrue(String(decoding: proof, as: UTF8.self).contains("Unapplied Purchase Transaction Report"))
+        XCTAssertEqual(try ledger.postTransactions().map(\.id), [number])
+        XCTAssertEqual(try ledger.supplier(code: code).currentBalance, 12_000)
+        XCTAssertEqual(ledger.openItems(supplier: code).first?.balance, 12_000)
+        XCTAssertTrue(try ledger.postTransactions().isEmpty)
+        XCTAssertThrowsError(try ledger.removeTransaction(number: number))
+        XCTAssertThrowsError(try ledger.removeSupplier(code: code, deactivate: false))
+    }
+
+    func testEvidencePurchaseEntryAndReports() throws {
+        guard let root = ProcessInfo.processInfo.environment["ACAS_PL_ORACLE"] else {
+            throw XCTSkip("実測照合には ACAS_PL_ORACLE を指定してください")
+        }
+        for run in ["PL-403-breadth", "PL-411-normal-exit", "PL-413-normal-exit-fixture", "PL-414-post-confirmed-input"] {
+            let url = URL(fileURLWithPath: root).appendingPathComponent("runs").appendingPathComponent(run)
+            let ledger = try makeLedger()
+            let fixture = try oracleRecords(url.appendingPathComponent("before-records/records.json"))
+            let lengths = ["purchled.dat": 7, "pinvoice.dat": 9, "analysis.dat": 3, "batch.dat": 6, "openitm5.dat": 11]
+            for (name, records) in fixture {
+                if name.hasSuffix("/system.dat") {
+                    ledger.store.writeRaw(name, Array(try Data(contentsOf: url.appendingPathComponent("before-files/" + name))))
+                } else if let length = lengths[URL(fileURLWithPath: name).lastPathComponent] {
+                    for bytes in records { ledger.store.write(name, key: Array(bytes.prefix(length)), data: bytes) }
+                }
+            }
+            switch run {
+            case "PL-403-breadth":
+                var value = ledger.newSupplier
+                value.code = "TEST01"
+                value.name = "EQUIV NEW SUPPLIER"
+                value.address1 = "1 TEST ROAD\\LONDON\\UK"
+                try ledger.saveSupplier(value, creating: true)
+            case "PL-411-normal-exit":
+                var transaction = PurchaseLedger.Transaction(date: ledger.processingDate)
+                transaction.supplier = "SUPP018"
+                transaction.order = "PL-ORDER"
+                transaction.reference = "PL-REF"
+                transaction.lines[0].code = "a1"
+                transaction.lines[0].net = 10_000
+                transaction.lines[0].tax = 2_000
+                try ledger.saveTransaction(transaction)
+            case "PL-413-normal-exit-fixture": ledger.purchaseProof()
+            default: try ledger.postTransactions()
+            }
+            let diff = try decode(Diff.self, in: url.appendingPathComponent("record-diff.json"))
+            for change in diff.changes {
+                guard let data = change.after else { continue }
+                let expected = FileStore.bytes(hex: data.hex)
+                let actual: [UInt8]?
+                if let length = lengths[URL(fileURLWithPath: change.file).lastPathComponent] {
+                    actual = ledger.store.read(change.file, key: Array(expected.prefix(length)))
+                } else if change.file.hasSuffix("/system.dat") {
+                    actual = ledger.systemFile.read(Int(change.key) ?? 0)
+                } else if change.file.hasSuffix("/posting.dat") {
+                    actual = RelativeFile(ledger.store, path: change.file, recordSize: 98).read(Int(change.key) ?? 0)
+                } else { continue }
+                assertBytes(actual, expected, context: "\(run) \(change.file) \(change.key)")
+            }
+            if run.hasPrefix("PL-413") || run.hasPrefix("PL-414") {
+                let report = try Data(contentsOf: url.appendingPathComponent("files/" + PurchaseLedger.reportPath))
+                assertBytes(ledger.store.readRaw(PurchaseLedger.reportPath), Array(report), context: run)
+            }
+        }
+    }
+
+    private func makeLedger() throws -> PurchaseLedger {
+        let context = BusinessContext(store: FileStore(), timeZone: .gmt, now: { Date(timeIntervalSince1970: 1_795_400_000) })
+        try CompanySetup(context).save(name: "試験会社")
+        let ledger = PurchaseLedger(context)
+        var record = ledger.system
+        record.setInt("vat-rate-1", 2_000)
+        record["pl-delim"] = "\\"
+        ledger.systemFile.write(1, record.bytes)
+        return ledger
+    }
+
+    private func addSupplier(_ ledger: PurchaseLedger) throws -> String {
+        var supplier = ledger.newSupplier
+        supplier.code = "SUPP01"
+        supplier.name = "試験仕入先"
+        supplier.address1 = "住所\\市"
+        return try ledger.saveSupplier(supplier, creating: true)
+    }
+
+    private struct HexRecord: Decodable { let hex: String }
+    private struct OracleFile: Decodable { let records: [String: HexRecord] }
+    private struct OracleSnapshot: Decodable { let files: [String: OracleFile] }
+    private struct Diff: Decodable {
+        struct Change: Decodable { let file: String; let key: String; let after: HexRecord? }
+        let changes: [Change]
+    }
+
+    private func decode<T: Decodable>(_ type: T.Type, in url: URL) throws -> T {
+        try JSONDecoder().decode(type, from: Data(contentsOf: url))
+    }
+
+    private func oracleRecords(_ url: URL) throws -> [String: [[UInt8]]] {
+        try decode(OracleSnapshot.self, in: url).files.mapValues { $0.records.values.map { FileStore.bytes(hex: $0.hex) } }
+    }
+
+    private func assertBytes(_ actual: [UInt8]?, _ expected: [UInt8], context: String, file: StaticString = #filePath, line: UInt = #line) {
+        guard let actual else { return XCTFail("\(context): レコードなし", file: file, line: line) }
+        XCTAssertEqual(actual.count, expected.count, context, file: file, line: line)
+        let differences = zip(actual, expected).enumerated().filter { $0.element.0 != $0.element.1 }
+        XCTAssertTrue(differences.isEmpty, "\(context): \(differences.prefix(12))", file: file, line: line)
+    }
+}
