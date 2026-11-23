@@ -133,7 +133,7 @@ public sealed partial class SalesLedger
         foreach (var line in lines)
         {
             if (line.Quantity is < 1 or > short.MaxValue || line.UnitPrice is < 0 or > 9_999_999.99m ||
-                line.Discount is < 0 or > 99.99m || line.VatCode is < 1 or > 5)
+                line.Discount is < 0 or > 99.99m || line.VatCode is < 0 or > 5)
                 throw new SalesRuleException("数量、単価、値引率または税区分が有効な範囲にありません。");
             var detail = InvoiceDetail.New();
             int index = details.Count + 1;
@@ -145,7 +145,7 @@ public sealed partial class SalesLedger
             SetText(detail, "analysis", line.Analysis, "分析コード");
             SetText(detail, "description", line.Description, "品目名");
             decimal net = TruncateMoney(line.Quantity * line.UnitPrice * (100 - line.Discount) / 100);
-            decimal vat = RoundMoney(net * system.N("Vat-Rate-" + line.VatCode) / 100);
+            decimal vat = line.VatCode == 0 ? 0 : RoundMoney(net * system.N("Vat-Rate-" + line.VatCode) / 100);
             totalNet += net;
             totalVat += vat;
             if (totalNet > 9_999_999.99m || totalVat > 9_999_999.99m)

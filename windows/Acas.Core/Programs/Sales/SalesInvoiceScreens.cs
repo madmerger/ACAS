@@ -97,8 +97,9 @@ public sealed partial class SalesScreens
         string? previous, int? index = null)
     {
         var line = index == null ? null : lines[index.Value];
-        var vatCodes = Enumerable.Range(1, 5).Select(i => new Choice(i.ToString(CultureInfo.InvariantCulture),
-            $"{i}　税率{SalesLedger.Amount(sales.SystemRecord().N("Vat-Rate-" + i))}％")).ToArray();
+        var system = sales.SystemRecord();
+        Choice[] vatCodes = [new("0", "0　非課税"), .. Enumerable.Range(1, 5).Select(i =>
+            new Choice(i.ToString(CultureInfo.InvariantCulture), $"{i}　税率{SalesLedger.Amount(system.N("Vat-Rate-" + i))}％"))];
         return Form("請求明細入力",
         [
             new TextField("SalesLineProduct", "品目コード", line?.Product ?? "", 13),

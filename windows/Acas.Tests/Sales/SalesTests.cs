@@ -77,6 +77,20 @@ public sealed class SalesTests
     }
 
     [Fact]
+    public void InvoiceWithTaxCodeZeroDoesNotChargeStandardTax()
+    {
+        using var db = new Db();
+        db.LoadBaseline("sl-ready");
+        var sales = new SalesLedger(db);
+        var invoice = new InvoiceInput(new DateTime(2026, 11, 23), "CUST011", "", "",
+            InvoiceKind.Account, null, 0, "", 0m, null);
+        sales.SaveInvoice(invoice, [new("INVTEST", "a1", "非課税の品目", 1, 100m, 0m, 0)]);
+        var saved = Assert.Single(sales.Invoices());
+        Assert.Equal(0, Assert.Single(saved.Lines).VatCode);
+        Assert.Equal(0m, saved.Vat);
+    }
+
+    [Fact]
     public void InvoiceProofIncludesPendingCreditWithNegativeAmounts()
     {
         using var db = new Db();
