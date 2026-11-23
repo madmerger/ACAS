@@ -42,6 +42,8 @@ struct GeneralLedgerMenu: View {
                     .accessibilityIdentifier("gl.trial-balance")
                 NavigationLink(ledgerText("financial-statements")) { FinancialStatementsForm(workspace: workspace) }
                     .accessibilityIdentifier("gl.financial-statements")
+                NavigationLink(ledgerText("archive-sort.print")) { LedgerArchiveSortForm(workspace: workspace) }
+                    .accessibilityIdentifier("gl.archive-sort")
                 Button(ledgerText("final-print")) {}
                     .disabled(true)
                     .accessibilityIdentifier("gl.final-print")
