@@ -42,11 +42,18 @@ final class LedgerBatchFlows: XCTestCase {
         tap(app, "gl.batch.new")
         tap(app, "gl.batch.default")
         tap(app, "1：300001")
+        enter(app, "gl.batch-gross", "123.45")
         tap(app, "gl.batch.add-line")
         enter(app, "gl.account-code", "400001")
         enter(app, "gl.batch-amount", "123.45")
         tap(app, "gl.batch.save")
         XCTAssertTrue(app.descendants(matching: .any)["gl.batch.row.1"].firstMatch.waitForExistence(timeout: 5))
+        tap(app, "gl.batch.proof.one")
+        tap(app, "gl.batch.proof.1")
+        let status = app.staticTexts["gl.batch.proof.status"]
+        XCTAssertTrue(status.waitForExistence(timeout: 5))
+        XCTAssertEqual(status.label, "予定額と明細の合計が一致しました")
+        XCTAssertTrue(app.buttons["gl.report.share"].exists)
     }
 
     @MainActor
