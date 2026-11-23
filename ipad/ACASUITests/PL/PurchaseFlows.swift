@@ -201,7 +201,7 @@ final class PurchaseFlows: XCTestCase {
         preview.name = "買掛帳票プレビュー"
         preview.lifetime = .keepAlways
         add(preview)
-        app.navigationBars.buttons.firstMatch.tap()
+        tap(app, "pl.report.preview.close")
         app.swipeDown()
         enter(app, "pl.report.supplier", "MISS001")
         dismissKeyboard(app)

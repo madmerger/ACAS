@@ -35,6 +35,7 @@ struct PurchaseReportView: View {
     @State private var minimum: Decimal = 0
     @State private var alphabetical = false
     @State private var output: Data?
+    @State private var showingPreview = false
     @State private var empty = false
     @State private var notice: PurchaseNotice?
 
@@ -86,8 +87,8 @@ struct PurchaseReportView: View {
                 Button(plString("purchase.report.generate"), action: generate)
                     .accessibilityIdentifier("pl.report.generate")
                 if let output {
-                    NavigationLink(plString("purchase.report.preview")) {
-                        PurchaseReportPreview(title: mode.title, bytes: output)
+                    Button(plString("purchase.report.preview")) {
+                        showingPreview = true
                     }
                     .accessibilityIdentifier("pl.report.preview")
                     ShareLink(item: output, preview: SharePreview(mode.title)) {
@@ -99,6 +100,19 @@ struct PurchaseReportView: View {
             }
         }
         .navigationTitle(mode.title)
+        .sheet(isPresented: $showingPreview) {
+            if let output {
+                NavigationStack {
+                    PurchaseReportPreview(title: mode.title, bytes: output)
+                        .toolbar {
+                            ToolbarItem(placement: .confirmationAction) {
+                                Button("action.close") { showingPreview = false }
+                                    .accessibilityIdentifier("pl.report.preview.close")
+                            }
+                        }
+                }
+            }
+        }
         .onAppear { date = ledger.processingDate }
         .purchaseAlert($notice)
     }
