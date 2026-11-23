@@ -373,6 +373,73 @@ final class PurchaseLedgerTests: XCTestCase {
         XCTAssertEqual(ledger.store.readRaw(ledger.base + "delfolio.dat"), [])
     }
 
+    func testSupplierFormCanSeparateAddressAcrossFields() throws {
+        let ledger = try makeLedger()
+        var supplier = ledger.newSupplier
+        supplier.code = "SUPP01"
+        supplier.address1 = "東京都"
+        supplier.address2 = "千代田区"
+        let code = try ledger.saveSupplier(supplier, creating: true, joiningAddressLines: true)
+        let record = try XCTUnwrap(ledger.supplierRecord(code))
+        XCTAssertEqual(record.raw("purch-address"), SJIS.encode("東京都\\千代田区", size: 96))
+        let address = ledger.supplierAddressLines(try ledger.supplier(code: code))
+        XCTAssertEqual(address.first, "東京都")
+        XCTAssertEqual(address.second, "千代田区")
+
+        supplier.code = code
+        supplier.address2 = ""
+        try ledger.saveSupplier(supplier, creating: false, joiningAddressLines: true)
+        let updated = try XCTUnwrap(ledger.supplierRecord(code))
+        XCTAssertEqual(updated.raw("purch-address"), SJIS.encode("東京都\\", size: 96))
+    }
+
+    func testSupplierAddressEditRejectsTruncatingSecondLine() throws {
+        let ledger = try makeLedger()
+        var supplier = ledger.newSupplier
+        supplier.code = "SUPP01"
+        supplier.address1 = "東京"
+        supplier.address2 = String(repeating: "町", count: 34)
+        supplier.code = try ledger.saveSupplier(supplier, creating: true, joiningAddressLines: true)
+        let before = try XCTUnwrap(ledger.supplierRecord(supplier.code)).bytes
+        supplier.address1 = String(repeating: "東", count: 14)
+        XCTAssertThrowsError(try ledger.saveSupplier(supplier, creating: false, joiningAddressLines: true)) {
+            XCTAssertEqual($0 as? PurchaseLedger.Error, .addressTooLong)
+        }
+        XCTAssertEqual(ledger.supplierRecord(supplier.code)?.bytes, before)
+    }
+
+    func testSupplierFormRejectsTwoBlankAddressFields() throws {
+        let ledger = try makeLedger()
+        var supplier = ledger.newSupplier
+        supplier.code = "SUPP01"
+        supplier.address1 = " "
+        supplier.address2 = ""
+        XCTAssertThrowsError(try ledger.saveSupplier(supplier, creating: true, joiningAddressLines: true)) {
+            XCTAssertEqual($0 as? PurchaseLedger.Error, .missingAddress)
+        }
+        XCTAssertTrue(ledger.suppliers().isEmpty)
+    }
+
+    func testPostingPreviewUsesSignedFixedWidthHeaderTotals() throws {
+        let ledger = try makeLedger()
+        var transaction = PurchaseLedger.Transaction(date: ledger.processingDate)
+        transaction.supplier = try addSupplier(ledger)
+        transaction.type = .creditNote
+        transaction.lines[0].code = "a1"
+        transaction.lines[0].net = 999_999_950
+        transaction.lines[0].tax = 2_000
+        transaction.carriage = 100
+        transaction.carriageTax = 20
+        let folio = try ledger.saveTransaction(transaction)
+        let amounts = try XCTUnwrap(ledger.postingAmounts(for: folio))
+        XCTAssertEqual(amounts.net, -50)
+        XCTAssertEqual(amounts.tax, -2_020)
+
+        try ledger.postTransactions()
+        let report = try XCTUnwrap(ledger.store.readRaw(PurchaseLedger.reportPath))
+        XCTAssertTrue(String(decoding: report, as: UTF8.self).contains("0.50CR"))
+    }
+
     func testReusedFolioRemainsAvailableAfterConfigurationWriteFailure() throws {
         try withDiskLedger { ledger, db in
             var value = PurchaseLedger.Transaction(date: ledger.processingDate)
