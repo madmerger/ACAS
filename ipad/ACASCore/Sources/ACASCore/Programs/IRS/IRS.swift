@@ -109,6 +109,9 @@ enum IRS {
         var fileNames = Cobol.x("", 49)
         var nlFile: IndexedFile?
         var postFile: IndexedFile?
+        /// irsubp: postsort.dat の読込位置 (nil = 未オープン)
+        var sortPos: Int?
+        var sortData = [UInt8]()
         /// wsdflt.cob: default-record
         var dflt = [UInt8](repeating: 0x20, count: IRS.defaultSize)
         var file1: String { Cobol.rtrim(String(Array(fileNames)[0..<9])) }
