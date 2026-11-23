@@ -22,6 +22,7 @@ public static class GroupOneVerification
                 .SelectMany(item => item.Children?.Prepend(item) ?? [item])
                 .ToDictionary(item => item.Id);
             Screen screen = model.Start();
+            MenuScreen? currentMenu = null;
             var inputs = new Dictionary<string, object?>();
             var observations = new List<string>();
             var differences = new List<string>();
@@ -58,7 +59,10 @@ public static class GroupOneVerification
                         differences.Add($"実画面での操作が必要です：{action.Type} {action.Id}。");
                         break;
                     default:
-                        screen = Move(navigation, screen, action, inputs);
+                        if (action.Type == ActionType.Tree) currentMenu = null;
+                        screen = action is { Type: ActionType.Menu, Id: "ScreenMenuBack" } && currentMenu is not null
+                            ? currentMenu : Move(navigation, screen, action, inputs);
+                        if (screen is MenuScreen menu) currentMenu = menu;
                         inputs.Clear();
                         break;
                 }

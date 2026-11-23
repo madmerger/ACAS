@@ -24,7 +24,7 @@ public sealed class GeneralLedger(Db database)
 
     public Account? Find(AccountCode code) => database.Read(LedgerFile, code.Key) is { } bytes ? Decode(bytes) : null;
 
-    public AccountError Register(Rec system, Account account)
+    public AccountError Register(Rec system, Account account, bool divisionKeyInitialized = true)
     {
         var code = account.Code;
         if (code.Ledger is < 1000 or > 9999 || code.Sub is < 0 or > 99) return AccountError.InvalidCode;
@@ -42,14 +42,15 @@ public sealed class GeneralLedger(Db database)
             int interval = code.Ledger % 1000 == 0 ? 1000 : code.Ledger % 100 == 0 ? 100 : code.Ledger % 10 == 0 ? 10 : 1;
             int level = interval == 1000 ? 1 : interval == 100 ? 2 : interval == 10 ? 3 : 4;
             int parent = code.Ledger / (interval * 10) * (interval * 10);
-            if (level != 1 && Find(new AccountCode(parent, 0, code.Division)) == null) return AccountError.MissingHeader;
+            if (level != 1 && (!divisionKeyInitialized || Find(new AccountCode(parent, 0, code.Division)) == null))
+                return AccountError.MissingHeader;
             record.SetN("type", account.Type);
             if (account.Type == 0) record.Set("place", account.Placement.ToString());
             record.SetN("level", level);
         }
         else
         {
-            var header = Find(code with { Sub = 0 });
+            var header = divisionKeyInitialized ? Find(code with { Sub = 0 }) : null;
             if (header == null) return AccountError.MissingHeader;
             record.SetN("type", header.Type == 9 ? 9 : 1);
             record.Set("place", header.Placement.ToString());

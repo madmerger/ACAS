@@ -44,7 +44,6 @@ public sealed record GroupOnePlan(string LegacyScreen, IReadOnlyList<ScreenActio
             string[] firstAccount = Input(29), accounts = Input(30);
             IEnumerable<ScreenAction> Account(string[] code)
             {
-                yield return Tree(chart);
                 yield return Menu("ChartAdd");
                 foreach (var action in AccountCode(code)) yield return action;
                 if (code[1] == "00")
@@ -52,8 +51,15 @@ public sealed record GroupOnePlan(string LegacyScreen, IReadOnlyList<ScreenActio
                 else yield return Text("AccountName", code[2]);
                 yield return Submit;
                 yield return Check("ScreenMessage|登録しました");
+                yield return Menu("ScreenMenuBack");
             }
+            yield return Tree(chart);
             foreach (var action in Account(firstAccount)) yield return action;
+            yield return Menu("ChartEdit");
+            foreach (var action in AccountCode(firstAccount)) yield return action;
+            yield return Submit;
+            yield return Menu("UpdateAccount");
+            yield return Menu("FormBack");
             for (int index = 0; index + 2 < accounts.Length;)
             {
                 int count = accounts[index + 1] == "00" ? 6 : 3;
@@ -166,9 +172,9 @@ public sealed record GroupOnePlan(string LegacyScreen, IReadOnlyList<ScreenActio
             case "GL-020" or "GL-021" or "GL-022" or "GL-038":
             {
                 string[] values = Input(5);
-                if (scenario.Id == "GL-038") return new("NEW DETAIL",
+                if (scenario.Id == "GL-038") return new("Header Missing",
                     [Tree(chart), Menu("ChartAdd"), .. AccountCode(values), Text("AccountName", values[2]), Submit,
-                     Check("ScreenMessage|登録しました")]);
+                     Check("Status|上位の見出し勘定がありません")]);
                 if (scenario.Id == "GL-020") return new("TEST HEADER",
                     [Tree(chart), Menu("ChartAdd"), .. AccountCode(values), .. AccountFields(values), Submit, Check("ScreenMessage|登録しました")]);
                 return new("Chart Of Accounts Update",
@@ -236,9 +242,13 @@ public sealed record GroupOnePlan(string LegacyScreen, IReadOnlyList<ScreenActio
                      Text("JournalTax", header[3]), Text("JournalDescription", header[4]), Submit,
                      Menu("JournalLineAdd"), Text("JournalLineAccount", line[1]), Text("JournalLineAmount", line[2]),
                      .. (scenario.Id is "GL-046" or "GL-047" ? new[] { Text("JournalLineDescription", line[3]) } : []),
-                     Submit, .. (scenario.Id is "GL-046" or "GL-047"
-                        ? new[] { Menu(scenario.Id == "GL-046" ? "JournalSave" : "JournalDiscard"), Confirm, Check("NewJournalBatch") }
-                        : new[] { Check("Status|明細") })]);
+                     Submit, .. (scenario.Id switch
+                     {
+                         "GL-046" => new[] { Menu("JournalLineAdd"), DateText("JournalLineDate", Input(13)[0] + "3/11/20"),
+                             Submit, Check("Status|日付が無効です"), Check("JournalLineDate") },
+                         "GL-047" => new[] { Menu("JournalDiscard"), Confirm, Check("NewJournalBatch") },
+                         _ => new[] { Check("Status|明細") }
+                     })]);
             }
             case "GL-045":
                 return new("Posting Set-Up", [Tree(journal), Menu("NewJournalBatch"), Menu("FormBack"), Confirm, Check("GeneralJournalEntry")]);

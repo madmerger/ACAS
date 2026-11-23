@@ -24,7 +24,7 @@ internal sealed partial class Desktop
                     OpenTree(action.Id);
                     break;
                 case ActionType.Menu:
-                    if (action.Id == "FormBack") Find(action.Id).AsButton().Invoke();
+                    if (action.Id is "FormBack" or "ScreenMenuBack") Find(action.Id).AsButton().Invoke();
                     else SelectAction(action.Id);
                     break;
                 case ActionType.Submit:

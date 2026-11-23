@@ -161,39 +161,49 @@ internal sealed partial class AccountingScreens(Db database)
     private Screen ChartMenu()
     {
         var system = _settings.Read();
-        int first = system?.S("P-C") is "P" or "B" ? 2 : 1;
+        bool divisions = system?.S("P-C") is "P" or "B";
+        bool divisionKeyInitialized = divisions;
+        int first = divisions ? 2 : 1;
         int display = first + (system?.S("Ledger-2nd-Index") == "Y" ? 3 : 2);
-        return new MenuScreen("勘定科目管理",
+        return Menu();
+
+        Screen Menu() => new MenuScreen("勘定科目管理",
         [
-            new("ChartAdd", "科目登録", first, Open: () => AccountForm(null)),
-            new("ChartEdit", "科目変更・削除", first + 1, Open: () => AccountLookup(true)),
-            new("ChartList", "科目一覧表示", display, Open: () => AccountLookup(false)),
+            new("ChartAdd", "科目登録", first, Open: () => AccountForm(Menu, () => divisionKeyInitialized, null)),
+            new("ChartEdit", "科目変更・削除", first + 1, Open: () => AccountLookup(Menu, InitializeDivisionKey, true)),
+            new("ChartList", "科目一覧表示", display, Open: () => AccountLookup(Menu, InitializeDivisionKey, false)),
             new("ChartPrint", "勘定科目一覧を印刷", display + 1,
-                Open: () => LedgerReport("勘定科目一覧", _ledgerReports.PrintChart(), ChartMenu)),
+                Open: () => LedgerReport("勘定科目一覧", _ledgerReports.PrintChart(), Menu)),
             new("ChartBack", "総勘定元帳に戻る", 9, Open: GeneralMenu)
         ]);
+
+        void InitializeDivisionKey() => divisionKeyInitialized = true;
     }
 
-    private Screen AccountLookup(bool edit, string? error = null) => new FormScreen(
+    private Screen AccountLookup(Func<Screen> menu, Action initializeDivisionKey, bool edit, string? error = null) => new FormScreen(
         edit ? "科目変更・削除" : "科目一覧表示",
         edit ? CodeFields(null) : [new TextField("StartAccount", "照会を開始する勘定コード", "", 6)],
         edit ? "検索" : "表示", values =>
         {
             if (edit)
             {
-                if (ReadCode(values) is { } code && _ledger.Find(code) is { } account)
-                    return new MenuScreen("科目変更・削除",
-                    [
-                        new("UpdateAccount", "選択した科目を変更", Open: () => AccountForm(account, true)),
-                        new("DeleteAccount", "選択した科目を削除", Open: () => DeleteAccount(account)),
-                        new("AccountLookupBack", "検索に戻る", Open: () => AccountLookup(true))
-                    ]);
-                return AccountLookup(true, "指定された勘定科目は存在しません。");
+                if (ReadCode(values) is { Ledger: not 0 } code)
+                {
+                    initializeDivisionKey();
+                    if (_ledger.Find(code) is { } account)
+                        return new MenuScreen("科目変更・削除",
+                        [
+                            new("UpdateAccount", "選択した科目を変更", Open: () => AccountForm(menu, () => true, account, true)),
+                            new("DeleteAccount", "選択した科目を削除", Open: () => DeleteAccount(account, () => AccountLookup(menu, initializeDivisionKey, true))),
+                            new("AccountLookupBack", "検索に戻る", Open: () => AccountLookup(menu, initializeDivisionKey, true))
+                        ]);
+                }
+                return AccountLookup(menu, initializeDivisionKey, true, "指定された勘定科目は存在しません。");
             }
             var start = values.Text("StartAccount");
-            if (start.Length > 0 && !Number(start, out _)) return AccountLookup(false, "勘定コードは数字で入力してください。");
+            if (start.Length > 0 && !Number(start, out _)) return AccountLookup(menu, initializeDivisionKey, false, "勘定コードは数字で入力してください。");
             return Accounts(start.PadLeft(6, '0'));
-        }, ChartMenu, error);
+        }, menu, error);
 
     private Screen Accounts(string start) => new TableScreen("勘定科目一覧", "AccountList",
         ["勘定コード", "部門", "科目名", "種類", "配置", "階層", "残高"],
@@ -202,7 +212,7 @@ internal sealed partial class AccountingScreens(Db database)
                 Kind(a.Type), a.Placement == ' ' ? "" : Classes[PlacementIndex(a.Placement)],
                 a.Level.ToString(), a.Balance.ToString("N2")])).ToArray());
 
-    private Screen AccountForm(Account? draft, bool edit = false, string? error = null)
+    private Screen AccountForm(Func<Screen> menu, Func<bool> divisionKeyInitialized, Account? draft, bool edit = false, string? error = null)
     {
         var fields = edit ? new List<Field>() : CodeFields(draft?.Code).ToList();
         fields.AddRange([
@@ -216,21 +226,21 @@ internal sealed partial class AccountingScreens(Db database)
             var code = edit ? draft?.Code : ReadCode(values);
             if (code == null || _settings.Read() is not { } system ||
                 !Number(values.Choice("AccountType"), out int type) || !Number(values.Choice("AccountLevel"), out int level))
-                return AccountForm(draft, edit, "勘定コードと入力内容を確認してください。");
+                return AccountForm(menu, divisionKeyInitialized, draft, edit, "勘定コードと入力内容を確認してください。");
             var account = new Account(code.Value, values.Text("AccountName"), type, values.Choice("AccountPlacement")![0], level);
-            var result = edit ? _ledger.Amend(system, account) : _ledger.Register(system, account);
+            var result = edit ? _ledger.Amend(system, account) : _ledger.Register(system, account, divisionKeyInitialized());
             return result == AccountError.None
                 ? new InformationScreen(edit ? "科目変更" : "科目登録", edit ? "科目を変更しました。" : "科目を登録しました。")
-                : AccountForm(account, edit, AccountMessage(result));
-        }, ChartMenu, error);
+                : AccountForm(menu, divisionKeyInitialized, account, edit, AccountMessage(result));
+        }, menu, error);
     }
 
-    private Screen DeleteAccount(Account account) => new ConfirmationScreen("勘定科目の削除",
+    private Screen DeleteAccount(Account account, Func<Screen> cancel) => new ConfirmationScreen("勘定科目の削除",
         $"「{account.Name}」を削除しますか。", "削除", () =>
         {
             var result = _ledger.Delete(account.Code);
             return new InformationScreen("勘定科目の削除", result == AccountError.None ? "科目を削除しました。" : AccountMessage(result));
-        }, () => AccountLookup(true));
+        }, cancel);
 
     private IReadOnlyList<Field> CodeFields(AccountCode? code)
     {

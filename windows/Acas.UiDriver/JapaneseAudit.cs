@@ -83,12 +83,22 @@ internal static partial class JapaneseAudit
 
         void Visit(string tree, string[] actions)
         {
-            desktop.OpenTree(tree);
+            if (tree == "SalesCycle")
+            {
+                var node = desktop.Find(tree).AsTreeItem();
+                if (node.Patterns.ScrollItem.IsSupported)
+                    node.Patterns.ScrollItem.Pattern.ScrollIntoView();
+                node.Click();
+                Desktop.Wait(() => desktop.Confirmation(), tree);
+            }
+            else
+                desktop.OpenTree(tree);
             string route = string.Join(" / ", actions.Prepend(tree));
             foreach (string action in actions)
             {
                 var previousMenu = desktop.Find("ScreenMenu");
-                desktop.SelectAction(action);
+                desktop.Find(action).AsListBoxItem().Select();
+                desktop.Find("ScreenMenuOpen").Click();
                 for (int attempt = 0; attempt < 12; attempt++)
                 {
                     if (desktop.Confirmation() is not null ||
@@ -103,6 +113,12 @@ internal static partial class JapaneseAudit
                 string? action = actions.LastOrDefault();
                 switch (action)
                 {
+                    case null when tree is "SalesCycle":
+                        ClickDialog(dialog, "ConfirmationConfirm");
+                        Desktop.Wait(() => desktop.Window.FindFirstDescendant(c =>
+                            c.ByAutomationId("SalesCyclePassword").Or(c.ByAutomationId("ScreenMessage"))), route);
+                        Inspect(route + " / 期間締めの入力", desktop.Window);
+                        break;
                     case "CreateSettingsReport" or "ProofAllBatches" or "JournalPostConfirm":
                         ClickDialog(dialog, "ConfirmationConfirm");
                         InspectReport(route);
@@ -169,7 +185,7 @@ internal static partial class JapaneseAudit
 
         static void ClickDialog(Window dialog, string buttonId) =>
             (dialog.FindFirstDescendant(c => c.ByAutomationId(buttonId)) ??
-                throw new InvalidOperationException("確認画面の操作が見つかりません。")).AsButton().Invoke();
+                throw new InvalidOperationException("確認画面の操作が見つかりません。")).Click();
 
         void Inspect(string screen, Window window)
         {

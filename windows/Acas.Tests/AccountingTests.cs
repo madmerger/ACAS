@@ -112,6 +112,23 @@ public class AccountingTests
     }
 
     [Fact]
+    public void 部門検索キー未設定時は親勘定が見つからない()
+    {
+        using var db = new Db();
+        var settings = new SystemSettings(db);
+        Assert.True(settings.Initialize(Company, Start));
+        var ledger = new GeneralLedger(db);
+        var system = settings.Read()!;
+        var header = new Account(new(3000, 0), "Header", 0, 'A', 1);
+        var detail = new Account(new(3000, 4), "Detail", 1, ' ', 0);
+
+        Assert.Equal(AccountError.None, ledger.Register(system, header, divisionKeyInitialized: false));
+        Assert.Equal(AccountError.MissingHeader, ledger.Register(system, detail, divisionKeyInitialized: false));
+        Assert.Null(ledger.Find(detail.Code));
+        Assert.Equal(AccountError.None, ledger.Register(system, detail, divisionKeyInitialized: true));
+    }
+
+    [Fact]
     public void 勘定科目と既定勘定を固定長レコードで更新する()
     {
         using var db = new Db();
