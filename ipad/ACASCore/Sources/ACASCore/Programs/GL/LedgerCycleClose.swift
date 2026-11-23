@@ -5,7 +5,7 @@ public struct LedgerCycleClose {
 
     private static let systemPath = "ledgers/acas/system.dat"
     static let archivePath = "archives/archive.dat"
-    private static let archiveLayout = Layout("archive-transaction", [
+    static let archiveLayout = Layout("archive-transaction", [
         ("batch", .n9(digits: 5, scale: 0, signed: false)),
         ("sequence", .n9(digits: 5, scale: 0, signed: false)),
         ("code", .x(2)), ("date", .x(8)),

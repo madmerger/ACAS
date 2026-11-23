@@ -6,6 +6,11 @@
 "gl.financial-statements.ready" = "損益計算書・貸借対照表の帳票を出力しました";
 "gl.final-setup" = "決算書の設定";
 "gl.final-print" = "設定済み決算書を印刷（利用不可）";
+"gl.archive-sort.print" = "元帳を印刷";
+"gl.archive-sort" = "元帳印刷：仕訳の並べ替え";
+"gl.archive-sort.ended" = "処理が終了しました";
+"gl.archive-sort.ready" = "仕訳の並べ替えが完了しました。元帳帳票の出力はまだ利用できません。";
+"gl.archive-sort.failed" = "仕訳を並べ替えられませんでした";
 "gl.posting" = "仕訳転記";
 "gl.posting.check" = "バッチの確認";
 "gl.posting.run" = "転記を実行";
