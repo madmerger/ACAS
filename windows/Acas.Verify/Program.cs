@@ -26,8 +26,11 @@ File.WriteAllText(args[3], JsonSerializer.Serialize(results,
     new JsonSerializerOptions { WriteIndented = true, Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping }));
 Console.WriteLine($"売掛 {results.Length}件：一致 {results.Count(r => r.Verdict == "一致")}件、不一致 {results.Count(r => r.Verdict == "不一致")}件、対象外 {results.Count(r => r.Verdict == "対象外")}件");
 foreach (var r in results.Where(r => r.Verdict != "一致"))
-    Console.WriteLine($"{r.Id} {r.Verdict}: {string.Join("／", r.Differences)}");
+    Console.WriteLine($"{r.Id} {r.Verdict}: {ConsoleText(string.Join("／", r.Differences))}");
 return results.Any(r => r.Verdict == "不一致") ? 1 : 0;
+
+static string ConsoleText(string text) => string.Concat(text.Select(c =>
+    char.IsControl(c) ? $"\\u{(int)c:x4}" : c.ToString()));
 
 static Dictionary<string, string> Workbook(string location)
 {
