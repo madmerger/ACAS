@@ -569,10 +569,10 @@ enum GL030 {
         v == 0 ? Cobol.x("", Pic.size(pic)) : Pic.edit(pic, value: v, scale: scale)
     }
     /// page-heading (heading: 見出し行、second: 2 行目)
-    static func pageHeading(_ ws: WS, second: String, heading: String) {
+    static func pageHeading(_ ws: WS, second: @autoclosure () -> String, heading: String) {
         ws.pageNos = Int(Int8(truncatingIfNeeded: ws.pageNos + 1))
         if ws.pageNos != 1 { GLPrint.writePage(ws.s, line1(ws)) } else { GLPrint.write(ws.s, line1(ws), after: 1) }
-        GLPrint.write(ws.s, second, after: 1)
+        GLPrint.write(ws.s, second(), after: 1)
         GLPrint.write(ws.s, heading, after: 2)
         GLPrint.write(ws.s, "", after: 1)
         ws.lineCnt = 5

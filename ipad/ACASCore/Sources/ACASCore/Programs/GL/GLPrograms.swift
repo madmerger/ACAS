@@ -9,6 +9,7 @@ public enum GLPrograms {
         s.programs["gl030"] = GL030.run
         s.programs["gl050"] = GL050.run
         s.programs["gl051"] = GL051.run
+        s.programs["gl060"] = GL060.run
         if s.programs["maps99"] == nil { s.programs["maps99"] = GLMaps99.run }
     }
 }

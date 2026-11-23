@@ -277,3 +277,29 @@
 "gl051.p_verified" = "* Batch Verified Ok *";
 "gl051.p_in_error" = "*  Batch In ERROR   *";
 "gl051.p_error_mark" = "^^^^^^^^^^";
+
+/* gl060.cbl */
+"gl060.title" = "Batch Status Report";
+"gl060.select" = "Select one of the following by number :- [ ]";
+"gl060.opt1" = "(1)  Display Batch Report";
+"gl060.opt2" = "(2)  Print Batch Report";
+"gl060.opt9" = "(9)  Exit to system menu";
+"gl060.cycle" = "cycle - ";
+"gl060.l_gl" = " G/L";
+"gl060.l_pl" = " P/L";
+"gl060.l_sl" = " S/L";
+"gl060.s_open" = "Open";
+"gl060.s_waiting" = "Waiting";
+"gl060.s_processed" = "Processed";
+"gl060.s_archived" = "Archived";
+"gl060.next_screen" = "Enter <N> for next screen or <X> to exit :- [ ]";
+"gl060.type_return" = "Type return to exit.";
+"gl060.p_title" = "Batch Status Report";
+"gl060.p_page" = "Page -";
+"gl060.p_cycle" = "Cycle - ";
+"gl060.p_h1a" = "Ledger  Batch  Status       Last";
+"gl060.p_h1b" = "---------Batch Controls---------";
+"gl060.p_h2a" = "------  -----  ------     Activity";
+"gl060.p_h2b" = "Items  ---Gross---- -----VAT----";
+"gl060.p_header" = "Header   ";
+"gl060.p_actual" = "Actual   ";

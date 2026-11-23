@@ -194,39 +194,51 @@ enum GL {
     /// 画面右上の "at hh:mm:ss" 等で使う時刻 hh:mm:ss
     static func hhmmss(_ s: Session) -> String { s.timeHHMMSS }
 
-    /// 帳票 1 行 (write print-record [after n]) を追記する。
-    static func writePrint(_ s: Session, _ line: String, after: Int = 1) {
-        GLPrint.write(s, line, after: after)
-    }
 }
 
-/// print-file (line sequential "prt-1")。GnuCOBOL の WRITE ... AFTER n / AFTER PAGE を再現する。
+/// print-file (line sequential "prt-1"、レコード長 132)。GnuCOBOL の WRITE ... AFTER/BEFORE ADVANCING を再現する。
+/// AFTER n: 改行 n 個 → レコード (行末の改行は次の WRITE か CLOSE で補われる)。BEFORE n: レコード → 改行 n 個。指定なし: レコード → 改行。
 enum GLPrint {
+    static let recordSize = 132
     static func path(_ s: Session) -> String { s.ledgers + "prt-1" }
+    private static func needsNL(_ s: Session) -> Bool { (s.shared["gl.print.needs-nl"] as? Bool) ?? false }
+    private static func setNeedsNL(_ s: Session, _ v: Bool) { s.shared["gl.print.needs-nl"] = v }
+    private static func record(_ line: String) -> [UInt8] { SJIS.encode(line, size: recordSize) }
+
     /// OPEN OUTPUT
-    static func open(_ s: Session) { s.store.writeRaw(path(s), []) }
-    static func close(_ s: Session) { s.onReport?(path(s)) }
-    /// WRITE print-record AFTER n LINES (line sequential: 先に改行 n 個、その後レコード本体。AFTER 指定があると末尾改行なし)
+    static func open(_ s: Session) { s.store.writeRaw(path(s), []); setNeedsNL(s, false) }
+    /// OPEN EXTEND
+    static func openExtend(_ s: Session) { if !s.store.exists(path(s)) { s.store.writeRaw(path(s), []) }; setNeedsNL(s, false) }
+    static func close(_ s: Session) {
+        if needsNL(s) { s.store.appendRaw(path(s), [0x0a]); setNeedsNL(s, false) }
+        s.onReport?(path(s))
+    }
+    /// WRITE print-record AFTER n LINES
     static func write(_ s: Session, _ line: String, after: Int) {
-        var out = [UInt8](repeating: 0x0a, count: max(after, 0))
-        out += SJIS.encode(Cobol.rtrim(line), size: Cobol.rtrim(line).utf8.count > 0 ? encodedCount(Cobol.rtrim(line)) : 0)
-        s.store.appendRaw(path(s), out)
+        s.store.appendRaw(path(s), [UInt8](repeating: 0x0a, count: max(after, 0)) + record(line))
+        setNeedsNL(s, true)
     }
-    /// WRITE print-record AFTER PAGE (改ページ 0x0c の後にレコード)
+    /// WRITE print-record AFTER PAGE
     static func writePage(_ s: Session, _ line: String) {
-        let t = Cobol.rtrim(line)
-        s.store.appendRaw(path(s), [0x0c] + SJIS.encode(t, size: encodedCount(t)))
+        s.store.appendRaw(path(s), [0x0c] + record(line))
+        setNeedsNL(s, true)
     }
-    /// WRITE print-record (AFTER/BEFORE なし: レコード + 改行)
-    static func writePlain(_ s: Session, _ line: String) {
-        let t = Cobol.rtrim(line)
-        s.store.appendRaw(path(s), SJIS.encode(t, size: encodedCount(t)) + [0x0a])
+    /// WRITE print-record BEFORE n LINES
+    static func write(_ s: Session, _ line: String, before: Int) {
+        var out = needsNL(s) ? [UInt8(0x0a)] : []
+        out += record(line) + [UInt8](repeating: 0x0a, count: max(before, 0))
+        s.store.appendRaw(path(s), out)
+        setNeedsNL(s, false)
     }
-    static func encodedCount(_ t: String) -> Int {
-        var n = 0
-        for ch in t { n += ch.isASCII ? 1 : (String(ch).data(using: .shiftJIS)?.count ?? 1) }
-        return n
+    /// WRITE print-record BEFORE PAGE
+    static func writeBeforePage(_ s: Session, _ line: String) {
+        var out = needsNL(s) ? [UInt8(0x0a)] : []
+        out += record(line) + [0x0c]
+        s.store.appendRaw(path(s), out)
+        setNeedsNL(s, false)
     }
+    /// WRITE print-record (ADVANCING 指定なし)
+    static func writePlain(_ s: Session, _ line: String) { write(s, line, before: 1) }
 }
 
 /// common/maps99.cbl: エラー表示 (error.txt)。エラー番号は `s.shared["error-code"]` で受け取る。
