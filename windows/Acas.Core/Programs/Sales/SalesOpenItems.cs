@@ -15,11 +15,11 @@ public sealed partial class SalesLedger
     public const string OpenItemFile = Prefix + "openitm3.dat";
     private const string ValueFile = Prefix + "value.dat";
     private static readonly Layout OpenItemLayout = new Layout()
-        .X("customer", 7).BLong("number").BLong("date").Comp("batch", 8).N9("type", 1).X("description", 25)
+        .X("customer", 7).BLong("number").BLong("date").Comp("batchNumber", 5).Comp("batchItem", 3).N9("type", 1).X("description", 25)
         .X("held", 1).X("unapplied", 1).C3("pc", 7, 2).C3("net", 7, 2).C3("extra", 7, 2)
         .C3("carriage", 7, 2).C3("vat", 7, 2).C3("discount", 7, 2).C3("extraVat", 7, 2).C3("carriageVat", 7, 2)
         .C3("paid", 7, 2).N9("closed", 1).BChar("deductDays").Comp("deductAmount", 3, 2, true)
-        .Comp("deductVat", 3, 2, true).BChar("days").BLong("creditFor").X("applied", 1).BLong("closedDate").Fill(2);
+        .Comp("deductVat", 3, 2, true).BChar("days").BLong("creditFor").X("applied", 1).BLong("closedDate");
     private static readonly Layout AnalysisValueLayout = new Layout().X("code", 3).N9("account", 6)
         .X("description", 24).X("print", 3).Comp("countCurrent", 5).Comp("countLast", 5).Comp("countYear", 5)
         .C3("valueCurrent", 8, 2).C3("valueLast", 8, 2).C3("valueYear", 8, 2);
