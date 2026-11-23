@@ -60,14 +60,6 @@ public class Gl051 extends GlProgram {
         }
     }
 
-    /**
-     * レガシーの暴走（未 OPEN ファイルへの READ NEXT が AT END にならず無限ループ）に相当。
-     * 画面はそのまま応答しなくなるため、キー入力を読み捨て続ける。
-     */
-    private void runaway() {
-        while (true) accept(24, 80, 1);
-    }
-
     private void getBatch() {
         while (true) {
             bat.set("ledger", "1");

@@ -55,6 +55,20 @@ abstract class GlProgram extends Program {
                 + pad(sys.str("print-spool-name"), 48) + "prt-1";
     }
 
+    /** print-spool-command-p.cob の Print-Report（縦置き）。 */
+    protected String printReportP() {
+        return pad("lpr -r -o 'orientation-requested=3 page-left=36 page-top=24 page-right=24 sides=two-sided-long-edge cpi=12 lpi=8' -P ", 117)
+                + pad(sys.str("print-spool-name"), 48) + "prt-1";
+    }
+
+    /**
+     * レガシーの暴走（未 OPEN ファイルへの READ NEXT が AT END にならず無限ループ）に相当。
+     * 画面はそのまま応答しなくなるため、キー入力を読み捨て続ける。
+     */
+    protected void runaway() {
+        while (true) accept(24, 80, 1);
+    }
+
     /** 印刷ファイル（WRITE ... AFTER n / AFTER PAGE）。レガシーは改行 n 個の後に 132 桁の行を書く。 */
     protected final class Printer {
         private final CobFile f; private final int width;
