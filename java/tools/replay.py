@@ -57,7 +57,7 @@ def snap_diff(before, after):
         for k in sorted(set(b) | set(a)):
             if k not in b: out.append((f, "追加", None, a[k]))
             elif k not in a: out.append((f, "削除", b[k], None))
-            elif a[k] != b[k]: out.append((f, "更新", b[k], a[k]))
+            elif a[k] != b[k]: out.append((f, "変更", b[k], a[k]))
     return out
 
 
