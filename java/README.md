@@ -37,6 +37,8 @@ java -jar target/acas-web-1.0.0.jar      # http://localhost:8080/
 2. 固定文言は **英語原文のまま** `display(line, col, "原文")` に渡す（英語面に原文、日本語面に対応表の訳が出る）。
    データ（レコード値・数値・日付）は `show(line, col, 値)` で表示する（翻訳しない）。
    文言＋データを連結した 1 つの DISPLAY は、文言部分と値部分に分けて同じ桁位置へ出す。
+   SCREEN SECTION の画面は、固定文言を `display`、項目値を `show` で描画し、入力項目（USING / TO）を
+   `acceptScreen(List.of(field(line, col, size, 値), ...))` で受ける（TAB で次項目、ENTER で確定。結果は各 `Field.value`）。
 3. 訳語は `resources/i18n/<pkg>.tsv`（`英語<TAB>日本語`）へ追加。日本語の表示幅（全角 = 2 桁）は原文の桁数以下にする。
    `GET /api/test/untranslated` が空になること。エラーコード（`SL003` 等）は訳文でも保持する。
 4. レコードは `Layout.of("copybooks/fdsl.cob", "sales-record").newRec()` のようにコピー句から生成し、

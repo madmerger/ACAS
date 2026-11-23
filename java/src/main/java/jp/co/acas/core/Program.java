@@ -29,6 +29,9 @@ public abstract class Program {
     /** ACCEPT ... WITH UPDATE。 */
     protected String acceptUpdate(int line, int col, int size, String current) { return ctx.term.accept(line, col, size, current, 0, 3); }
     protected String acceptUpdate(int line, int col, int size, String current, int flags) { return ctx.term.accept(line, col, size, current, flags, 3); }
+    /** ACCEPT screen-name（SCREEN SECTION の複数項目入力）。 */
+    protected int acceptScreen(java.util.List<Terminal.Field> fields) { return ctx.term.acceptScreen(fields, 3); }
+    protected static Terminal.Field field(int line, int col, int size, String value) { return new Terminal.Field(line, col, size, value); }
     protected int crtStatus() { return ctx.term.crtStatus; }
     /** CALL。未実装プログラムは false。 */
     protected boolean call(String name, Object... args) { return ctx.call(name, args); }

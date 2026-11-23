@@ -118,6 +118,72 @@ public final class Terminal {
         return res;
     }
 
+    /** SCREEN SECTION の入力項目（USING / TO）。value は size 桁の表示内容で、acceptScreen が更新する。 */
+    public static final class Field {
+        public final int line, col, size, flags;
+        public String value;
+        public Field(int line, int col, int size, String value, int flags) {
+            this.line = line; this.col = col; this.size = size; this.flags = flags;
+            this.value = fit(value == null ? "" : value, size);
+        }
+        public Field(int line, int col, int size, String value) { this(line, col, size, value, 0); }
+        static String fit(String v, int size) { return v.length() >= size ? v.substring(0, size) : v + " ".repeat(size - v.length()); }
+    }
+
+    /**
+     * ACCEPT screen-name（SCREEN SECTION の複数項目入力）。GnuCOBOL と同じく TAB / 下矢印で次項目、
+     * BACKTAB / 上矢印で前項目、項目末尾まで入力すると次項目へ進み、ENTER で確定する。終了キーは crtStatus。
+     */
+    public int acceptScreen(List<Field> fields, int fg) {
+        if (fields.isEmpty()) { crtStatus = 0; return 0; }
+        int f = 0, idx = 0;
+        for (Field x : fields) if ((x.flags & SECURE) == 0) displayData(x.line, x.col, x.value, fg);
+        while (true) {
+            Field cur = fields.get(f);
+            String k = take(cur.line - 1, cur.col - 1 + idx);
+            if (k == null) throw new StopRun("セッションが終了しました");
+            char[] buf = cur.value.toCharArray();
+            if (k.length() == 1) {
+                char ch = k.charAt(0);
+                if (ch < ' ' || ch > '~') continue;
+                if ((cur.flags & UPPER) != 0) ch = Character.toUpperCase(ch);
+                buf[idx] = ch;
+                cur.value = new String(buf);
+                if ((cur.flags & SECURE) == 0) displayData(cur.line, cur.col, cur.value, fg);
+                if (idx < cur.size - 1) idx++;
+                else if (f < fields.size() - 1) { f++; idx = 0; }
+                continue;
+            }
+            Integer st = switch (k) {
+                case "ENTER" -> 0; case "PGUP" -> 2001; case "PGDN" -> 2002;
+                case "ESC" -> escEnabled ? 2005 : null;
+                default -> k.matches("F\\d{1,2}") && exceptionsEnabled ? 1000 + Integer.parseInt(k.substring(1)) : null;
+            };
+            if (st != null) { crtStatus = st; return st; }
+            switch (k) {
+                case "TAB", "DOWN" -> { f = (f + 1) % fields.size(); idx = 0; }
+                case "BACKTAB", "UP" -> { f = (f + fields.size() - 1) % fields.size(); idx = 0; }
+                case "HOME" -> { f = 0; idx = 0; }
+                case "END" -> { f = fields.size() - 1; idx = 0; }
+                case "LEFT" -> { if (idx > 0) idx--; else if (f > 0) { f--; idx = fields.get(f).size - 1; } }
+                case "RIGHT" -> { if (idx < cur.size - 1) idx++; else if (f < fields.size() - 1) { f++; idx = 0; } }
+                case "BACKSPACE" -> {
+                    if (idx > 0) {
+                        idx--; System.arraycopy(buf, idx + 1, buf, idx, cur.size - idx - 1); buf[cur.size - 1] = ' ';
+                        cur.value = new String(buf);
+                        if ((cur.flags & SECURE) == 0) displayData(cur.line, cur.col, cur.value, fg);
+                    }
+                }
+                case "DELETE" -> {
+                    System.arraycopy(buf, idx + 1, buf, idx, cur.size - idx - 1); buf[cur.size - 1] = ' ';
+                    cur.value = new String(buf);
+                    if ((cur.flags & SECURE) == 0) displayData(cur.line, cur.col, cur.value, fg);
+                }
+                default -> { }
+            }
+        }
+    }
+
     /** 入力キーを 1 つ取り出す（無ければ入力待ち状態を通知して待機）。 */
     private String take(int r, int c) {
         lock.lock();
