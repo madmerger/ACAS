@@ -1,7 +1,7 @@
 import XCTest
 
 final class SalesCustomersFlows: XCTestCase {
-    private let fixtureIDs = ["SL-400", "SL-401", "SL-402", "SL-403"]
+    private let fixtureIDs = ["SL-206", "SL-400", "SL-401", "SL-402", "SL-403"]
 
     @MainActor
     func testEmptyCreditDaysRejectsSave() throws {
@@ -26,6 +26,27 @@ final class SalesCustomersFlows: XCTestCase {
         XCTAssertTrue(save.waitForNonExistence(timeout: 5))
         XCTAssertEqual(app.state, .runningForeground)
         XCTAssertEqual(code.value as? String, input["code"].map { String($0.dropLast()) })
+    }
+
+    @MainActor
+    func testSL206() throws {
+        let (app, _) = try launch("SL-206", operation: "report")
+        XCTAssertTrue(app.staticTexts["case.verdict.match"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["抽出条件"].exists)
+        let criteria = XCTAttachment(screenshot: app.screenshot())
+        criteria.name = "SL-206-抽出条件"
+        criteria.lifetime = .keepAlways
+        add(criteria)
+
+        tap("sales.customer.report.generate", in: app)
+        let preview = XCTAttachment(screenshot: app.screenshot())
+        preview.name = "SL-206-帳票プレビュー"
+        preview.lifetime = .keepAlways
+        add(preview)
+        let first = app.descendants(matching: .any)["sales.customer.report.row.CUST011"]
+        XCTAssertTrue(first.waitForExistence(timeout: 5), app.debugDescription)
+        XCTAssertTrue(app.descendants(matching: .any)["sales.customer.report.row.CUST020"].exists)
+        XCTAssertTrue(app.buttons["sales.customer.report.export"].isHittable)
     }
 
     @MainActor

@@ -44,6 +44,10 @@ struct SalesCustomersMenu: View {
     var body: some View {
         List {
             ForEach(SalesCustomerView.Mode.allCases) { mode in
+                if mode == .view {
+                    NavigationLink(slText("sales.customer.report.title")) { SalesCustomerReportView(workspace: workspace) }
+                        .accessibilityIdentifier("sales.customer.report")
+                }
                 NavigationLink(mode.title) { SalesCustomerView(workspace: workspace, mode: mode) }
                     .accessibilityIdentifier("sales.customer." + mode.rawValue)
             }
