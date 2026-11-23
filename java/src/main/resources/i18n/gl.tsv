@@ -1,0 +1,29 @@
+# 総勘定元帳（GL）: レガシー英語文言⇥日本語文言。日本語の表示幅（全角=2）は原文の長さ以下にすること。
+Client -	顧客 -
+General Ledger  Start Of Day	総勘定元帳  日次開始
+Enter todays date as dd/mm/yyyy - [          ]	本日の日付を入力 dd/mm/yyyy     - [          ]
+Enter todays date as mm/dd/yyyy - [          ]	本日の日付を入力 mm/dd/yyyy     - [          ]
+Enter todays date as yyyy/mm/dd - [          ]	本日の日付を入力 yyyy/mm/dd     - [          ]
+GL009 Invalid Date	GL009 日付不正
+General Ledger System Menu	総勘定元帳システムメニュー
+(A)  Date Entry	(A)  処理日入力
+(B)  Chart Of Accounts	(B)  勘定科目管理
+(C)  Default Account Maintenance	(C)  既定勘定の管理
+(D)* Final Accounts Set-Up	(D)* 決算書設定
+(E)  Enter Transactions	(E)  仕訳入力
+(F)  Proof/Modify Transactions	(F)  仕訳の検証・修正
+(G)  Batch Status Report	(G)  バッチ状態確認
+(H)  Transaction Posting	(H)  仕訳転記
+(I)  End Of Cycle Processing	(I)  期間締め
+(J)  Print Trial Balance	(J)  試算表印刷
+(K)  Print P&L and Balance Sheet	(K)  損益計算書・貸借対照表
+(L)  Print Ledgers	(L)  元帳印刷
+(M)* Print Final Accounts	(M)* 決算書印刷
+(X)  Exit to	(X)  終了
+(Z)  System Set Up	(Z)  システム設定
+Sorry not yet available	未提供の機能です
+Problem with opening system file. Hit return to clear	システムファイルを開けません。Enterで続行
+GL001 System 1 read err =	GL001 システム1読込エラー=
+GL002 System 2 read err =	GL002 システム2読込エラー=
+GL003 System 4 read err =	GL003 システム4読込エラー=
+hit return	Enterを押下
