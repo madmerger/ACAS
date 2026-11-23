@@ -358,6 +358,41 @@
 "report.sl060.late_deductions" = "           延滞控除額 合計";
 "report.sl060.unapplied_cf" = "未消込赤伝 繰越";
 "report.sl060.cr_note7" = "赤伝";
+
+/* sl080 */
+"sl080.title" = "入金データ入力";
+"sl080.box1" = "*日付    [  /  /    ]*得意先  [       ]*";
+"sl080.box2" = "***                                  ***";
+"sl080.box3" = "*金額    {          }*ﾊﾞｯﾁ  [     /   ]*";
+"sl080.batch_full" = "バッチ満杯のため締切       ";
+"sl080.current_balance" = "現在残高        - ";
+"sl080.unapplied_balance" = "未消込残高        - ";
+"sl080.allocate" = "未消込残高をこの得意先に充当しますか?                           [Y]";
+"sl080.batch_total" = "バッチ合計  - ";
+"sl080.further" = "続けて入金を入力 (Y/N) ?       [Y]";
+"sl080.head1" = "請求番号 --日付--  ---金額---";
+"sl080.head2" = "控除可能額  --入金額---";
+"sl080.head3" = "控除適用";
+"sl080.fully_paid" = "....全額入金済  ";
+"sl080.no_change" = "....変更なし   ";
+"sl080.too_high" = "入金額超過";
+
+/* sl085 */
+"sl085.title" = "入金データ訂正";
+"sl085.box1" = "*日付    [  /  /    ]                  *";
+"sl085.box2" = "*得意先     [       ]                ***";
+"sl085.box3" = "*金額    {          }*ﾊﾞｯﾁ  [     /   ]*";
+"sl085.warning_unapplied" = "警告 未消込残高の振替";
+"sl085.current_balance" = "現在残高        - ";
+"sl085.confirm" = "何もせず取消しますか?                    (Y/N)..[ ]";
+"sl085.further" = "続けて訂正しますか (Y/N) ?       [Y]";
+"sl085.reversing" = "取消中 お待ち下さい";
+"sl085.for_invoice" = "請求書番号      ";
+"sl085.enter_deduct" = "控除額を入力        - [      ]";
+"sl085.available" = "利用可能額       = ";
+"sl085.sl003" = "SL003 Return で続行";
+"sl085.sl140" = "SL140 訂正は未対応";
+"sl085.sl141" = "SL141 消込額または控除額が 0 でない";
 /* ---- sys.ja.strings ---- */
 /* ACAS.cbl — システムメニュー (日本語) */
 "sys.sy006" = "SY006 プログラム引数は2個までです。指定された数: ";

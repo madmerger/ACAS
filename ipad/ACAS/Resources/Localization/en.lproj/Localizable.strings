@@ -358,6 +358,41 @@
 "report.sl060.late_deductions" = "           Total  Amount Late Deductions";
 "report.sl060.unapplied_cf" = "Un-Applied Credits C/F ";
 "report.sl060.cr_note7" = "Cr. Note";
+
+/* sl080 */
+"sl080.title" = "Payment Data Entry";
+"sl080.box1" = "*Date    [  /  /    ]*A/C Nos [       ]*";
+"sl080.box2" = "***                                  ***";
+"sl080.box3" = "*Value   {          }*Batch [     /   ]*";
+"sl080.batch_full" = "Batch Closed..It is Full!  ";
+"sl080.current_balance" = "Current Balance - ";
+"sl080.unapplied_balance" = "Unapplied Balance - ";
+"sl080.allocate" = "Do you wish to allocate the Unapplied Balance to this account?  [Y]";
+"sl080.batch_total" = "Batch Total - ";
+"sl080.further" = "Enter further payments (Y/N) ? [Y]";
+"sl080.head1" = "Inv.Nos  --Date--  --Amount--";
+"sl080.head2" = "Deductable  ---Paid----";
+"sl080.head3" = "Deduction Taken";
+"sl080.fully_paid" = "....Fully Paid  ";
+"sl080.no_change" = "....No Change  ";
+"sl080.too_high" = "Payment Too High";
+
+/* sl085 */
+"sl085.title" = "Payment Data Amend";
+"sl085.box1" = "*Date    [  /  /    ]                  *";
+"sl085.box2" = "*A/C Nos    [       ]                ***";
+"sl085.box3" = "*Value   {          }*Batch [     /   ]*";
+"sl085.warning_unapplied" = "Warning Unapplied Balance Journal";
+"sl085.current_balance" = "Current Balance - ";
+"sl085.confirm" = "Confirm No Action? i.e. Request Cancelled (Y/N)..[ ]";
+"sl085.further" = "Make Further Corrections (Y/N) ? [Y]";
+"sl085.reversing" = "Reversing Please Wait";
+"sl085.for_invoice" = "For Invoice No. ";
+"sl085.enter_deduct" = "Enter Deduct Amount - [      ]";
+"sl085.available" = "Amount Available = ";
+"sl085.sl003" = "SL003 Hit Return To Continue";
+"sl085.sl140" = "SL140 Not Yet Supporting Corrections";
+"sl085.sl141" = "SL141 Amount Approp Or Deduct Amt Not Zero";
 /* ---- sys.en.strings ---- */
 /* ACAS.cbl — システムメニュー (英語 = レガシー原文) */
 "sys.sy006" = "SY006 Program Arguments limited to two and you have specified ";
