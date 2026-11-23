@@ -7,7 +7,7 @@ struct PurchaseAnalysisPosting {
 
     init(_ ledger: PurchaseLedger) { self.ledger = ledger }
 
-    func accumulate(headers: [Record]) {
+    func accumulate(headers: [Record]) throws {
         guard !headers.isEmpty else { return }
         let compatible = !ledger.hasIncompatibleAnalysis
         var specials = [(Int64, Int64)](repeating: (0, 0), count: 4)
@@ -34,42 +34,45 @@ struct PurchaseAnalysisPosting {
                 let offset = row.layout.offset("il-pa") + 1
                 let key = [UInt8(0x50)] + Array(row.bytes[offset..<(offset + 2)])
                 let amount = row.int("il-net") * (row.str("il-type") == "3" ? -1 : 1)
-                if accumulate(key, count: 1, net: amount, compatible: compatible) {
+                if try accumulate(key, count: 1, net: amount, compatible: compatible) {
                     row["il-update"] = "z"
-                    store.rewrite(ledger.invoicePath, key: invoiceKey, data: row.bytes)
+                    try requirePostingWrite(store.rewrite(ledger.invoicePath, key: invoiceKey, data: row.bytes),
+                                            path: ledger.invoicePath)
                 }
             }
         }
         for (code, totals) in zip(["Pvi", "Pvj", "Pza", "Pzb"], specials) {
-            accumulate(Array(code.utf8), count: totals.0, net: totals.1, compatible: compatible)
+            try accumulate(Array(code.utf8), count: totals.0, net: totals.1, compatible: compatible)
         }
     }
 
     @discardableResult
-    private func accumulate(_ key: [UInt8], count: Int64, net: Int64, compatible: Bool) -> Bool {
+    private func accumulate(_ key: [UInt8], count: Int64, net: Int64, compatible: Bool) throws -> Bool {
         let parent = [key[0], key[1], 0x20]
         if store.read(path, key: key) == nil, compatible {
             let missing = store.read(ledger.analysisPath, key: key) == nil
             if missing {
-                createEmergencyAnalysis(key)
-                if key != parent { createEmergencyAnalysis(parent) }
+                try createEmergencyAnalysis(key)
+                if key != parent { try createEmergencyAnalysis(parent) }
             }
-            if key != parent, let source = store.read(ledger.analysisPath, key: parent) {
-                store.write(path, key: parent, data: initialValue(parent, analysis: source).bytes)
+            if key != parent, store.read(path, key: parent) == nil,
+               let source = store.read(ledger.analysisPath, key: parent) {
+                try requirePostingWrite(store.write(path, key: parent, data: initialValue(parent, analysis: source).bytes), path: path)
             }
         }
         let analysis = compatible ? store.read(ledger.analysisPath, key: key) : nil
-        update(key, count: count, net: net, initial: initialValue(key, analysis: analysis))
+        try update(key, count: count, net: net, initial: initialValue(key, analysis: analysis))
         guard key != parent, store.read(path, key: parent) != nil else { return false }
-        update(parent, count: count, net: net)
+        try update(parent, count: count, net: net)
         return true
     }
 
-    private func createEmergencyAnalysis(_ key: [UInt8]) {
+    private func createEmergencyAnalysis(_ key: [UInt8]) throws {
+        guard store.read(ledger.analysisPath, key: key) == nil else { return }
         var record = Record(PurchaseLedger.analysisLayout)
         record.bytes.replaceSubrange(0..<3, with: key)
         record["description"] = "Emergency Name"
-        store.write(ledger.analysisPath, key: key, data: record.bytes)
+        try requirePostingWrite(store.write(ledger.analysisPath, key: key, data: record.bytes), path: ledger.analysisPath)
     }
 
     private func initialValue(_ key: [UInt8], analysis: [UInt8]?) -> Record {
@@ -79,7 +82,7 @@ struct PurchaseAnalysisPosting {
         return record
     }
 
-    private func update(_ key: [UInt8], count: Int64, net: Int64, initial: Record? = nil) {
+    private func update(_ key: [UInt8], count: Int64, net: Int64, initial: Record? = nil) throws {
         let data = store.read(path, key: key)
         guard var record = data.map({ Record(PurchaseRecords.valueLayout, bytes: $0) }) ?? initial else { return }
         for period in ["this", "year"] {
@@ -88,7 +91,7 @@ struct PurchaseAnalysisPosting {
             let amount = period + "-net"
             record.setInt(amount, Cobol.truncate(record.int(amount) + net, digits: 10))
         }
-        if data == nil { store.write(path, key: key, data: record.bytes) }
-        else { store.rewrite(path, key: key, data: record.bytes) }
+        let succeeded = data == nil ? store.write(path, key: key, data: record.bytes) : store.rewrite(path, key: key, data: record.bytes)
+        try requirePostingWrite(succeeded, path: path)
     }
 }
