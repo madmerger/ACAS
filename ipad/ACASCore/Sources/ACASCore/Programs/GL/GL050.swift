@@ -198,7 +198,11 @@ enum GL050 {
                 // get-description (a ではなく w を使う段落)
                 ws.weError = 0
                 ws.ledger.setInt("ledger-nos", acs); ws.ledger.set("ledger-pc", "00")
-                if let r = ws.ledgerFile.read(key: ws.ledger.raw("ledger-key")) { ws.ledger = r } else { ws.weError = 255 }
+                switch ws.ledgerFile.glRead(key: ws.ledger.raw("ledger-key")) {
+        case .ok(let r): ws.ledger = r
+        case .miss: ws.weError = 255
+        case .error: break
+        }
                 if ws.weError != 255 {
                     ws.setCurs2(ws.curs + 12)
                     ws.d(ws.ledger.str("ledger-name"), ws.curs2, 3)
@@ -221,7 +225,11 @@ enum GL050 {
         ws.weError = 0
         ws.ledger.setInt("ledger-nos", GL.defAcs(ws.s, ws.a))
         ws.ledger.setInt("ledger-pc", ws.truth == 0 ? 0 : ws.batch.int("batch-def-pc"))
-        if let r = ws.ledgerFile.read(key: ws.ledger.raw("ledger-key")) { ws.ledger = r } else { ws.weError = 255 }
+        switch ws.ledgerFile.glRead(key: ws.ledger.raw("ledger-key")) {
+        case .ok(let r): ws.ledger = r
+        case .miss: ws.weError = 255
+        case .error: break
+        }
         ws.truth = ws.weError == 255 ? 0 : 1
     }
 
@@ -238,7 +246,10 @@ enum GL050 {
         ws.ledgerFile.open()
         if ws.pcOn {
             ws.ledger.setInt("ledger-nos", 999999); ws.ledger.set("ledger-pc", "00")
-            guard let r = ws.ledgerFile.read(key: ws.ledger.raw("ledger-key")) else {
+            switch ws.ledgerFile.glRead(key: ws.ledger.raw("ledger-key")) {
+            case .ok(let r): ws.ledger = r
+            case .error: break
+            case .miss:
                 c.display(ws.t("gl107"), at: 101, color: 4, eraseEOS: true)
                 c.display(ws.t("gl010"), at: 211)
                 _ = try c.accept(at: 234, size: 1)
@@ -246,8 +257,7 @@ enum GL050 {
                 ws.exitProgram = true
                 return
             }
-            ws.ledger = r
-            ws.codes = Array(SJIS.decode(r.bytes[8..<107]))
+            ws.codes = Array(SJIS.decode(ws.ledger.bytes[8..<107]))
             while ws.codes.count < 99 { ws.codes.append(" ") }
         }
         enum St { case initDone, defIn, postIn, defaultPc, defDate, cycleIn, itemsIn, grossIn, vatIn, descIn }
@@ -377,7 +387,7 @@ enum GL050 {
                 c.display(Cobol.x("", 20), at: 1824)
                 st = .itemsIn
             case .itemsIn:
-                ws.batch.setInt("items", try nAccept(ws, 1920, 2, ws.batch.int("items")))
+                try GL.acceptRaw(s, &ws.batch, "items", at: 1920, numeric: true, color: 3)
                 if ws.status == esc { st = .cycleIn; continue }
                 if ws.batch.int("items") == 0 { ws.d(ws.t("gl110"), 1924) }
                 st = .grossIn
@@ -396,7 +406,7 @@ enum GL050 {
                 }
                 st = .descIn
             case .descIn:
-                ws.batch.set("description", try c.accept(at: 2220, size: 24, initial: ws.batch.str("description"), options: [.update], color: 3))
+                try GL.acceptRaw(s, &ws.batch, "description", at: 2220, numeric: false, color: 3)
                 if ws.status != esc { break loop }
                 st = ws.autoVat ? .vatIn : .grossIn
             }
@@ -558,7 +568,11 @@ enum GL050 {
                 ws.weError = 0
                 ws.ledger.setInt("ledger-nos", ws.accountIn)
                 ws.ledger.setInt("ledger-pc", ws.arrayPc)
-                if let r = ws.ledgerFile.read(key: ws.ledger.raw("ledger-key")) { ws.ledger = r } else { ws.weError = 255 }
+                switch ws.ledgerFile.glRead(key: ws.ledger.raw("ledger-key")) {
+        case .ok(let r): ws.ledger = r
+        case .miss: ws.weError = 255
+        case .error: break
+        }
                 if ws.weError == 0 { ws.d(ws.ledger.str("ledger-name"), 826, 3) }
                 else { ws.d(ws.t("b_invalid_ac"), 826, 4); continue }
                 ws.vatFlag2 = (ws.vatFlag == 1 || ws.accountIn == GL.defAcs(s, 31) || ws.accountIn == GL.defAcs(s, 32)) ? 1 : 0

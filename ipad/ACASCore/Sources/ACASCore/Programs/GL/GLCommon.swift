@@ -264,3 +264,105 @@ enum GLMaps99 {
         _ = try c.accept(at: GL.lines, 79, size: 1)
     }
 }
+
+/// wsmaps03 (u-date / u-bin) と ws-date を持ち、maps04・zz050/zz060/zz070 を再現する (各プログラムの WS に 1 つ)。
+final class GLDates {
+    let s: Session
+    var uDate = Cobol.x("", 10)
+    var uBin = 0
+    var wsDate = Cobol.x("", 10)
+    init(_ s: Session) { self.s = s }
+
+    private func form() -> Int {
+        if s.sys.int("date-form") == 0 { s.sys.setInt("date-form", 1) }
+        return Int(s.sys.int("date-form"))
+    }
+    /// call "maps04": u-bin > 0 なら日付へ展開、そうでなければ u-date を検査してバイナリへ
+    func maps04() {
+        if uBin > 0 { uDate = Maps04.toDate(uBin); return }
+        uDate = Maps04.normalized(uDate)
+        let b = GL.toBinary(uDate)
+        if b != 0 { uBin = b }
+    }
+    /// zz050-validate-date: 区切りを正規化した入力値を返す。u-bin = 0 なら不正。
+    func zz050(_ test: String) -> String {
+        let t = Maps04.normalized(test)
+        _ = form()
+        wsDate = Common.toUK(s, t)
+        uDate = wsDate
+        uBin = 0
+        maps04()
+        return t
+    }
+    /// zz060-convert-date: u-bin → ws-date (Date-Form 形式)
+    func zz060() {
+        maps04()
+        if uDate.allSatisfy({ $0 == " " }) { wsDate = Cobol.x("", 10); return }
+        wsDate = Maps04.format(uDate, dateForm: form())
+    }
+    /// zz070-convert-date: to-day → ws-date
+    func zz070() { wsDate = Maps04.format(s.toDay, dateForm: form()) }
+}
+
+extension GL {
+    /// レガシーが無限ループに入る箇所 (未オープンのファイルを READ し続ける等) の再現。
+    /// 画面はそのまま、キー入力は捨て続け、プログラムからは戻らない (セッション終了でのみ抜ける)。
+    static func hang(_ s: Session) throws -> Never {
+        while true { _ = try s.console.waitKey() }
+    }
+
+    /// DISPLAY 時の表示文字列。制御文字 (レコード域が low-values のまま等) は curses と同じく ^@ 形式になる。
+    static func shown(_ raw: [UInt8]) -> String {
+        if !raw.contains(where: { $0 < 0x20 }) { return SJIS.decode(raw[...]) }
+        var out = ""
+        for b in raw { out += b < 0x20 ? "^" + String(UnicodeScalar(b + 0x40)) : String(UnicodeScalar(b)) }
+        return out
+    }
+    static func shown(_ rec: Record, _ name: String) -> String { shown(rec.raw(name)) }
+
+    /// レコード項目への ACCEPT ... UPDATE。項目が low-values を含む場合は ^@ 表示のまま入力させ、触れなかった桁は元のバイトを保つ。
+    static func acceptRaw(_ s: Session, _ rec: inout Record, _ name: String, at: Int, numeric: Bool, color: UInt8) throws {
+        let raw = rec.raw(name)
+        let c = s.console
+        guard raw.contains(where: { $0 < 0x20 }) else {
+            if numeric {
+                let v = try c.accept(at: at, size: raw.count, kind: .numeric, initial: SJIS.decode(raw[...]), options: [.update], color: color)
+                rec.setInt(name, Cobol.moveNumeric(v, digits: raw.count, scale: 0))
+            } else {
+                rec.set(name, try c.accept(at: at, size: raw.count, initial: rec.str(name), options: [.update], color: color))
+            }
+            return
+        }
+        let all = shown(raw)
+        c.display(all, at: at, color: color)
+        let ini = Array(all.prefix(raw.count))
+        let r = Array(try c.accept(at: at, size: raw.count, initial: String(ini), options: [.update], color: color))
+        var out = raw
+        for i in 0..<raw.count where !(r[i] == ini[i] && raw[i] < 0x20) {
+            var b = SJIS.encode(String(r[i]), size: 1)[0]
+            if numeric && !(0x30...0x39).contains(b) { b = 0x30 }
+            out[i] = b
+        }
+        rec.setRaw(name, out)
+    }
+}
+
+/// 未オープンのファイルへの READ (状態 47) は invalid key / at end のどちらにもならず、次の文へ進む。
+enum GLRead {
+    case ok(Record)
+    case miss       // invalid key / at end
+    case error      // 未オープン: レコード域は変わらない
+}
+
+extension IndexedFile {
+    func glRead(key: [UInt8]) -> GLRead {
+        guard isOpen else { return .error }
+        if let r = read(key: key) { return .ok(r) }
+        return .miss
+    }
+    func glNext() -> GLRead {
+        guard isOpen else { return .error }
+        if let r = readNext() { return .ok(r) }
+        return .miss
+    }
+}
