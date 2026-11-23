@@ -14,3 +14,320 @@ Select one of the following by letter	次の機能を英字で選択してくだ
 Sorry, not yet available	未提供の機能です
 Sorry, not available	利用できない機能です
 SY009 Environment variables not yet set up : ABORTING	SY009 環境が未設定のため中止します
+# sys002 / mapser
+ACAS (3.00.05)	ACAS (3.00.05)
+SYS002 (3.01.39)	SYS002 (3.01.39)
+ACAS System Setup Routine	ACAS システム初期設定
+Level 1	レベル 1
+Enter the Company Name	会社名を入力してください
+Please verify that name is correct (Y/N)	会社名が正しいことを確認してください (Y/N)
+Problem with opening system file. Hit return to clear	システムファイルを開けません。Enter で続行
+Using General	総勘定元帳を使用
+Using Sales	売掛元帳を使用
+Ledger (Y/N) ?	(Y/N) ?
+Using Purchase Ledger (Y/N) ?	買掛元帳を使用 (Y/N) ?
+Using Invoicing	請求機能を使用
+Using Stock Control	在庫管理を使用
+Using Order Entry	受注入力を使用
+(Y/N) ?	(Y/N) ?
+Please confirm (Y/N)	確認してください (Y/N)
+General	総勘定
+Purchase	買掛
+Sales	売掛
+Invoicing	請求
+Stock	在庫
+Order Entry	受注入力
+System Parameters	システムパラメータ
+S y s t e m   S e t - U p	システム設定
+S y s t e m S e t - U p	システム設定
++Screen	+画面
+User Data	利用者情報
+OPS	運用
+Data	設定
+Data 1	設定 1
+Data 2	設定 2
+OPS Data 1	運用設定 1
+OPS Data 2	運用設定 2
+G-L Data	GL 設定
+S-L Data 1	SL 設定 1
+S-L Data 2	SL 設定 2
+P-L Data	PL 設定
+G-L	GL
+S-L	SL
+P-L	PL
+Stock Data	在庫設定
+Name	名称
+Address	住所
+(Address lines)	(住所行)
+Post Code	郵便番号
+Country	国
+Date Format	日付形式
+(1 = UK, 2 = USA, 3 = Intl)	(1=英国, 2=米国, 3=国際)
+Period :	会計期間:
+Start Date	開始日
+End	終了
+End Date	終了日
+Date	日
+System Print Lines	印刷行数
+(for Laser = 048)	(レーザー=048)
+Vat Rates : (1)	VAT 率 : (1)
+Local Tax : (4)	地方税 : (4)
+Local Tax : (5)	地方税 : (5)
+Next 2, See Manual First	次の 2 項目は手引書参照
+VAT Reg no	VAT 登録番号
+Printed	印字
+(Y=Yes or N=No)	(Y=はい, N=いいえ)
+Pass-Word	パスワード
+Current Quarter	当四半期
+Current Cycle	当サイクル
+Cycle Period	サイクル期間
+Data File Handling	データファイル方式
+Dual file type Flag	二重ファイルフラグ
+(Range 0 / 1)	(0 / 1)
+(Range 0/1)	(0/1)
+Weekly	週次
+Fortnightly	隔週
+Monthly	月次
+Quarterly	四半期
+Yearly	年次
+Using UK format dd/mm/ccyy	英国形式 dd/mm/ccyy を使用
+Using USA format mm/dd/ccyy	米国形式 mm/dd/ccyy を使用
+Using Intl format ccyy/mm/dd	国際形式 ccyy/mm/dd を使用
+Incorectly Set. You MUST set this	設定誤り。必ず設定してください
+SY005 Invalid Date	SY005 日付が不正です
+SY105 Lines > 28	SY105 行数は 28 超
+Range 0 thru 1 only	0 または 1 のみ
+Cobol data files used	COBOL データファイル使用
+Rdbms is used	RDBMS 使用
+Duplicate file processing used	二重ファイル処理 使用
+Duplicate file processing NOT used	二重ファイル処理 不使用
+User Data Complete	利用者情報 完了
+OPS Data 1 Complete	運用設定 1 完了
+OPS Data 2 Complete	運用設定 2 完了
+G-L Data Complete	GL 設定 完了
+S-L Data Complete	SL 設定 完了
+S-L Data 2 Complete	SL 設定 2 完了
+P-L Data Complete	PL 設定 完了
+Stock Data Complete	在庫設定 完了
+* OK to file (Y/N)	* 保存してよいですか (Y/N)
+OK to file (Y/N)	保存してよいですか (Y/N)
+Single/Multi-User	単独/複数利用者
+(0=Single, 1=Multi)	(0=単独, 1=複数)
+Operating System	OS
+(1=Dos, 2=Windows, 3=Mac, 4=OS/2, 5=Unix, 6=Linux)	(1=Dos, 2=Windows, 3=Mac, 4=OS/2, 5=Unix, 6=Linux)
+Data capture System	入力方式
+0=Std, 1=GUI, 2=Widget	0=標準, 1=GUI, 2=Widget
+Cups Print Spooler name 1	CUPS 印刷スプーラ名 1
+Cups Print Spooler name 2	CUPS 印刷スプーラ名 2
+Cups Print Spooler name 3	CUPS 印刷スプーラ名 3
+Print Spool Name must be defined	印刷スプーラ名は必須です
+Multi-user system assumed	複数利用者と見なします
+Single-user system	単独利用者システム
+Multi-user system	複数利用者システム
+MSDOS assumed	MSDOS と見なします
+Linux assumed	Linux と見なします
+Linux	Linux
+Windows	Windows
+Mac OSX	Mac OSX
+Unix	Unix
+Cobol Standard Display	COBOL 標準表示
+Gui Display	GUI 表示
+Widget Display	Widget 表示
+Invalid - Std selected	不正 - 標準を選択
+Using (Free) Open Source Version of ACAS	ACAS オープンソース版(無償)を使用
+Using Commercial Version of ACAS	ACAS 商用版を使用
+DB name, set as requested	DB 名を設定しました
+DB User, set as requested	DB 利用者を設定しました
+DB User pwd, set as requested	DB パスワードを設定しました
+Profit Centres/Branches	利益センター/支店
+(P, B, space)	(P, B, 空白)
+P.C./Branches Level	PC/支店レベル
+(R=Revenue, Space)	(R=収益, 空白)
+P.C./Branches Grouped ?	PC/支店グループ化 ?
+(Y=Grouped or Space)	(Y=する, 空白)
+Comparatives ?	前期比較 ?
+(Y=Yes or Space)	(Y=はい, 空白)
+Ledger Name Index ?	元帳名索引 ?
+Minimum Validation ?	最小検証 ?
+Archiving ?	アーカイブ ?
+Automatic VAT Posting ?	VAT 自動転記 ?
+Use IRS instead of GL ?	GL の代わりに IRS ?
+Next Batch Number	次バッチ番号
+Sales Range	売上範囲
+Purchase Range	仕入範囲
+Profit centres selected	利益センターを選択
+Branches selected	支店を選択
+Not selected	未選択
+Selected	選択
+Revenue A/cs only	収益勘定のみ
+All A/cs	全勘定
+1st digit of P.C./Branch	PC/支店の 1 桁目は
+is the group identifier	グループ識別子
+is not significant	意味を持たない
+Late Letters	督促状
+Late Charges	遅延損害金
+(1 = Yes or 0)	(1=はい, 0)
+Late letters selected	督促状 選択
+Late letters not selected	督促状 未選択
+Late charges selected	遅延損害金 選択
+Late charges not selected	遅延損害金 未選択
+Credit Period	与信期間
+Credit Limit	与信限度
+Discount	値引
+Min Late Bal	遅延最低残高
+Max Late Charge	遅延損害金上限
+Late Charge %	遅延損害金率 %
+Delimiter	区切り文字
+Delimiter <\> assumed	区切り文字 <\> と見なします
+Own Inv. Nos	手動請求番号
+Sales/Stock Link	売掛/在庫連携
+Purch/Stock Link	買掛/在庫連携
+Pay Account	支払勘定
+Ledger Account	元帳勘定
+Debtors Account	売掛金勘定
+Creditor Account	買掛金勘定
+Selected & Set	選択・設定済
+Unset	未設定
+UnSet	未設定
+Unset and/or No Stock	未設定/在庫なし
+Select what report types, company details will be printed to	会社情報を印字する帳票種別を選択
+Invoices	請求書
+Statements	取引明細書
+Delivery Notes	納品書
+Error, set to N	誤り。N に設定
+Debugging	デバッグ
+(0 = No or 1) leave as 0	(0=いいえ, 1) 通常 0
+Bomp/Wip used	BOMP/WIP 使用
+Audit Used	監査 使用
+Audit Movement	移動監査
+Current Period	当期間
+(W=Weekly, M=Monthly, Q=Quarterly)	(W=週次, M=月次, Q=四半期)
+To Date Period	累計期間
+(M=Monthly, Q=Quarterly, Y=Yearly)	(M=月次, Q=四半期, Y=年次)
+Ave Valuation	平均法評価
+Activity Rep	活動報告
+Audit Number	監査番号
+(if 1st time = 0, else leave as is)	(初回=0, 以外は変更しない)
+Set	設定
+Set to Monthly	月次に設定
+Set to Quarterly	四半期に設定
+Set to Weekly	週次に設定
+Set to Yearly	年次に設定
+Unset: Has been set to Monthly	未設定: 月次に設定しました
+Unset: Has been set to Yearly	未設定: 年次に設定しました
+Set to zero	ゼロに設定
+Do you want printed copy (Y/N)	印刷しますか (Y/N)
+SY101 Open I-O Err =	SY101 入出力オープンエラー =
+SY102 Read Err 1 =	SY102 読込エラー 1 =
+SY103 Rewrite Err 1 =	SY103 更新エラー 1 =
+SY104 Fix and Press Enter	SY104 修正して Enter
+RDBMS DB Name	RDBMS DB 名
+RDBMS User	RDBMS 利用者
+RDBMS Password	RDBMS パスワード
+RDBMS Port	RDBMS ポート
+RDBMS Host	RDBMS ホスト
+RDBMS Socket	RDBMS ソケット
+S Y S T E M   P A R A M E T E R S	システムパラメータ一覧
+S Y S T E M P A R A M E T E R S	システムパラメータ一覧
+Page	頁
+User Parameters	利用者パラメータ
+G/L Parameters	GL パラメータ
+ACAS Parameters	ACAS パラメータ
+P/L Parameters	PL パラメータ
+Inv. Parameters	請求パラメータ
+S/L Parameters	SL パラメータ
+Stock Parameters	在庫パラメータ
+O/E Parameters	受注パラメータ
+Payroll Parameters	給与パラメータ
+RDMBS Parameters	RDBMS パラメータ
+System Paramters	システムパラメータ
+Profit-Centres Selected	利益センター 選択
+Branches Selected	支店 選択
+Neither P/C or Branches Selected	利益センター/支店とも未選択
+Only for Revenue Accounts	収益勘定のみ
+For all Accounts	全勘定対象
+P-C / Branches Grouped on 1st Digit	PC/支店は 1 桁目でグループ化
+P-C / Branches not Grouped	PC/支店はグループ化なし
+Comparative Figures Required	前期比較 必要
+Comparative Figures not Required	前期比較 不要
+Alphabetic Ledger Index Selected	元帳名索引 選択
+Alphabetic Ledger Index not Selected	元帳名索引 未選択
+UK Format	英国形式
+USA Format	米国形式
+Intl Format	国際形式
+Period Start	期間 開始
+Min. Validation During Data Entry	入力時 最小検証
+Full Validation During Data Entry	入力時 完全検証
+Transaction Archiving Selected	取引アーカイブ 選択
+Transactions Deleted at End of Cycle	サイクル末に取引を削除
+VAT Rate 1/4.	VAT 率 1/4
+Rate 2/5.	率 2/5
+Rate 3.	率 3
+VAT Reg:	VAT 登録:
+No Reserved Sales Range	売上範囲の予約なし
+Sales Range most Significant Digit is	売上範囲の最上位桁
+No Reserved Purchase Range	仕入範囲の予約なし
+Purchase Range Most Signif. Digit is	仕入範囲の最上位桁
+Auto VAT Posting Selected	VAT 自動転記 選択
+Manual VAT Posting Selected	VAT 手動転記 選択
+Cycles per Quarter	四半期サイクル数
+Using IRS instead of GL	GL の代わりに IRS
+Print Lines	印刷行数
+Address Delimiter	住所区切り文字
+Environment	環境
+Multi-User	複数利用者
+Single User	単独利用者
+Op. System	OS
+System version	版
+Next Folio Number	次伝票番号
+Path to IRS	IRS パス
+Path to Ledgers	元帳パス
+Prt Spool Name 1	スプーラ名 1
+Prt Spool Name 2	スプーラ名 2
+Prt Spool Name 3	スプーラ名 3
+Not Used	不使用
+Stock Control Link	在庫連携
+Dunning Letters not Selected	督促状 未選択
+Dunning Letters Selected	督促状 選択
+Late Charges not Selected	遅延損害金 未選択
+Late Charges Selected	遅延損害金 選択
+Ext. Charge Desc	追加料金 名称
+Extra Disc. Desc	追加値引 名称
+Ext. Charge Rate	追加料金 率
+Ext. Disc. Rate	追加値引 率
+Computer Generated Invoice Numbers Selected	請求番号 自動採番
+Manually Entered Invoice Numbers Selected	請求番号 手動入力
+Next Inv. Number	次請求番号
+Inv. Data Level	請求レベル
+Standard Credit Limit	標準与信限度
+Extra Charge A/C	追加料金 勘定
+Extra Disc. A/C	追加値引 勘定
+Standard Discount is	標準値引率
+VAT Account	VAT 勘定
+Min. Late Balance	遅延最低残高
+Print VAT Nunber	VAT 番号印字
+Max. Late Charge	遅延損害金上限
+Late Charge Rate	遅延損害金率
+Proforma Retent.	見積保持日数
+Company Heads Pri	会社名印字
+nt on Delivery notes:	納品書:
+nt on Invoices :	請求書:
+nt on Statements :	取引明細書:
+nt on Late Letters :	督促状:
+Debug Mode	デバッグ
+O/Entry in Use	受注入力 使用
+Manufacturing	製造
+Audit in Use	監査 使用
+Movement Audits	移動監査
+Stock Averaging	在庫平均法
+Current Audit No	現監査番号
+NOT SET	未設定
+Payroll in Use	給与 使用
+RDBMS DB Schema	RDBMS スキーマ
+RDB User Name	RDB 利用者名
+RDB User Passwd	RDB パスワード
+It's SECRET	非公開
+File Statuses	ファイル状態
+End of System Parameter Report	システムパラメータ一覧 終了
+Credit Period nn Days	与信期間 nn 日
+Yes	はい
