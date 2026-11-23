@@ -205,6 +205,7 @@ public sealed class StockService
     {
         if (!AuditUsed) return;
         System.SetN("Stk-Activity-Rep-Run", 0);
+        SaveSystem();
         if (!_db.Exists(AuditFile)) _db.Create(AuditFile);
         System.SetN("File-Status-10", 1);
         var a = Layouts.StockAudit.New();
@@ -301,12 +302,18 @@ public sealed class StockService
         newAbrev = newAbrev.Trim().ToUpperInvariant();
         if (item.N("Stock-On-Order") != 0 || item.N("Stock-Back-Ordered") != 0) return StockMessages.ST109;
         if (newKey.Length == 0) return StockMessages.ST114;
-        if (newKey != item.St("Stock-Key") && ReadKey(newKey) != null) return StockMessages.ST116;
-        if (newAbrev.Length > 0 && newAbrev != item.St("Stock-Abrev-Key") && ReadAbrev(newAbrev) != null) return StockMessages.ST113;
-        _db.Delete(StockFile, item.S("Stock-Key"));
-        item.Set("Stock-Key", newKey);
-        if (newAbrev.Length > 0) item.Set("Stock-Abrev-Key", newAbrev);
-        _db.Write(StockFile, item.S("Stock-Key"), item.B);
+        if ((newKey + newAbrev).Any(c => c > 'ÿ')) return StockMessages.SingleByteOnly;
+        var moved = Layouts.Stock.New();
+        Array.Copy(item.B, moved.B, item.B.Length);
+        moved.Set("Stock-Key", newKey);
+        if (newAbrev.Length > 0) moved.Set("Stock-Abrev-Key", newAbrev);
+        string oldKey = item.S("Stock-Key");
+        if (moved.S("Stock-Key") != oldKey && ReadKey(moved.St("Stock-Key")) != null) return StockMessages.ST116;
+        if (newAbrev.Length > 0 && moved.St("Stock-Abrev-Key") != item.St("Stock-Abrev-Key") && ReadAbrev(moved.St("Stock-Abrev-Key")) != null) return StockMessages.ST113;
+        if (moved.S("Stock-Key") == oldKey) { Rewrite(moved); Array.Copy(moved.B, item.B, item.B.Length); return null; }
+        if (!_db.Write(StockFile, moved.S("Stock-Key"), moved.B)) return StockMessages.ST116;
+        _db.Delete(StockFile, oldKey);
+        Array.Copy(moved.B, item.B, item.B.Length);
         return null;
     }
 
