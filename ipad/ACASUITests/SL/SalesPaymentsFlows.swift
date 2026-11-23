@@ -4,7 +4,8 @@ final class SalesPaymentsFlows: XCTestCase {
     @MainActor
     func testSavesPaymentBatch() throws {
         continueAfterFailure = false
-        var system = [UInt8](repeating: 0x20, count: 1024)
+        var system = [UInt8](repeating: 0, count: 1024)
+        system[14] = 60
         system[275 + 18] = 0x31
         let key = Array("CUST011".utf8)
         let customer = key + [UInt8](repeating: 0x20, count: 300 - key.count)
@@ -42,6 +43,22 @@ final class SalesPaymentsFlows: XCTestCase {
         proof.name = "入金組の保存"
         proof.lifetime = .keepAlways
         add(proof)
+
+        app.navigationBars.buttons.firstMatch.tap()
+        tap("sales.payment.proof", in: app)
+        tap("sales.payment.proof.generate", in: app)
+        XCTAssertTrue(app.descendants(matching: .any)["sales.payment.proof.CUST011/1/1"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["sales.payment.proof.export"].exists)
+        let report = XCTAttachment(screenshot: app.screenshot())
+        report.name = "入金検証帳票"
+        report.lifetime = .keepAlways
+        add(report)
+
+        app.navigationBars.buttons.firstMatch.tap()
+        tap("sales.payment.amend", in: app)
+        tap("sales.payment.amend.CUST011/1/1", in: app)
+        tap("sales.payment.reverse", in: app)
+        XCTAssertTrue(app.staticTexts["sales.payment.cancelled"].waitForExistence(timeout: 5))
     }
 
     private func hex(_ bytes: [UInt8]) -> String {

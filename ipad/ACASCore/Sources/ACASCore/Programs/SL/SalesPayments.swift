@@ -23,6 +23,16 @@ public struct SalesPayments {
         public init(date: Date) { self.date = date }
     }
 
+    public struct Pending: Identifiable {
+        public var id: String { "\(customer)/\(batch)/\(item)" }
+        public let customer: String
+        public let batch: Int64
+        public let item: Int64
+        public let amount: Int64
+        public let journal: Bool
+        public let deduction: Int64
+    }
+
     private let context: BusinessContext
     public init(_ context: BusinessContext) { self.context = context }
 
@@ -62,6 +72,69 @@ public struct SalesPayments {
             try RelativeFile(store, path: "ledgers/acas/system.dat", recordSize: 1024).write(1, system.bytes)
         }
         return batch
+    }
+
+    public func pending() throws -> [Pending] {
+        guard try SalesLedger(context).systemRecord().int("s-flag-p") != 0 else { return [] }
+        return SalesOpenItems.file(context.store).allRecords().compactMap { record in
+            let type = record.int("type")
+            guard type == 5 || type == 6, record.int("batch") != 0, record.int("item") != 0,
+                  record.int("status") != 1 else { return nil }
+            return Pending(customer: record.str("customer"), batch: record.int("batch"), item: record.int("item"),
+                           amount: record.int("paid"), journal: type == 6, deduction: record.int("deduction"))
+        }
+    }
+
+    public func restorableInvoices(_ payment: Pending) -> [Int64] {
+        allocatedInvoices(payment).filter { $0.int("deduction") == 0 }.map { $0.int("invoice") }
+    }
+
+    public func cancel(_ payment: Pending, restoring deductions: [Int64: Int64] = [:]) throws {
+        let store = context.store
+        try store.withTransaction {
+            guard try pending().contains(where: { $0.id == payment.id && $0.amount == payment.amount }) else {
+                throw Error.invalidInput
+            }
+            let openItems = SalesOpenItems.file(store)
+            let key = SalesOpenItems.key(customer: payment.customer, invoice: payment.batch * 1000 + payment.item)
+            guard let stored = openItems.read(key: key) else { throw Error.invalidInput }
+            var unappliedDeduction = stored.int("deduction")
+            var appropriated = stored.int("net")
+            var remaining = deductions.filter { $0.value != 0 }
+            if appropriated != 0 {
+                for var invoice in allocatedInvoices(payment) {
+                    let value = invoice.int("credit") / 100
+                    invoice.setInt("paid", invoice.int("paid") - value)
+                    invoice.setInt("paid-current", invoice.int("paid-current") - value)
+                    for field in ["batch", "item", "credit", "status"] { invoice.setInt(field, 0) }
+                    appropriated -= value
+                    if let deduction = remaining.removeValue(forKey: invoice.int("invoice")) {
+                        guard invoice.int("deduction") == 0, deduction >= 0, deduction <= unappliedDeduction else {
+                            throw Error.invalidAllocation
+                        }
+                        unappliedDeduction -= deduction
+                        invoice.setInt("deduction", deduction)
+                    }
+                    guard openItems.rewrite(invoice) == "00" else { throw Error.writeFailed }
+                    if appropriated == 0, unappliedDeduction == 0 { break }
+                }
+            }
+            guard remaining.isEmpty, appropriated == 0, unappliedDeduction == 0 else { throw Error.invalidAllocation }
+            if stored.int("type") == 6 {
+                let customers = SalesProofRecords.salesFile(store)
+                guard var row = customers.read(key: payment.customer) else { throw Error.invalidInput }
+                row.setInt("sales-unapplied", row.int("sales-unapplied") + stored.int("paid"))
+                guard customers.rewrite(row) == "00" else { throw Error.writeFailed }
+            }
+            guard openItems.delete(key: key) == "00" else { throw Error.writeFailed }
+            var system = try SalesLedger(context).systemRecord()
+            system["oi-3-flag"] = "Y"
+            try RelativeFile(store, path: "ledgers/acas/system.dat", recordSize: 1024).write(1, system.bytes)
+        }
+    }
+
+    private func allocatedInvoices(_ payment: Pending) -> [Record] {
+        customerInvoices(payment.customer).filter { $0.int("batch") == payment.batch && $0.int("item") == payment.item }
     }
 
     private func write(_ draft: Draft, batch: Int64, item: Int64) throws {
@@ -131,11 +204,15 @@ public struct SalesPayments {
     }
 
     private func eligibleInvoices(_ customer: String) -> [Record] {
+        customerInvoices(customer).filter { $0.int("batch") == 0 }
+    }
+
+    private func customerInvoices(_ customer: String) -> [Record] {
         let file = SalesOpenItems.file(context.store)
         guard file.start(notLessThan: SalesOpenItems.key(customer: customer, invoice: 0)) else { return [] }
         var result: [Record] = []
         while let record = file.readNext(), record.str("customer") == customer {
-            if record.int("type") == 2, record.int("batch") == 0 { result.append(record) }
+            if record.int("type") == 2 { result.append(record) }
         }
         return result
     }

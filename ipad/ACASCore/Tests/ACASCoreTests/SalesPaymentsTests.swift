@@ -2,6 +2,32 @@ import XCTest
 @testable import ACASCore
 
 final class SalesPaymentsTests: XCTestCase {
+    func testPaymentProofAlignsShiftJISNamesWithoutShiftingDateOrAmounts() throws {
+        let (store, context, date) = try setup()
+        var settings = try SalesLedger(context).systemRecord()
+        settings["usera"] = "α株式会社"
+        settings.setInt("run-date", Int64(Maps04.integerOfDate(year: 2026, month: 11, day: 23)))
+        try RelativeFile(store, path: "ledgers/acas/system.dat", recordSize: 1024).write(1, settings.bytes)
+        let customers = SalesProofRecords.salesFile(store)
+        var customer = try XCTUnwrap(customers.read(key: SJIS.encode("CUST011", size: 7)))
+        customer["sales-name"] = "α支店"
+        XCTAssertEqual(customers.rewrite(customer), "00")
+        var draft = SalesPayments.Draft(date: date)
+        draft.customer = "CUST011"
+        draft.amount = 1_200
+        try SalesPayments(context).saveBatch([draft])
+
+        _ = try SalesPaymentProof(context).generate()
+        let report = try XCTUnwrap(store.readRaw(SalesPaymentProof.exportPath))
+        XCTAssertEqual(Array(report[255..<265]), Array("23/11/2026".utf8))
+        let row = try XCTUnwrap(report.split(separator: 0x0a).map(Array.init).first {
+            $0.count == 132 && Array($0[23..<30]) == Array("CUST011".utf8)
+        })
+        XCTAssertEqual(Array(row[12..<23]), Array("23/11/2026 ".utf8))
+        XCTAssertEqual(Array(row[31..<60]), Array(customer.raw("sales-name").prefix(29)))
+        XCTAssertEqual(Array(row[60..<71]), Array("    12.00  ".utf8))
+    }
+
     func testUsingOnlyUnappliedBalancePreservesPaymentFlag() throws {
         let (store, context, date) = try setup()
         var draft = SalesPayments.Draft(date: date)
@@ -67,6 +93,39 @@ final class SalesPaymentsTests: XCTestCase {
         XCTAssertEqual(EvidenceComparison.snapshot(store), before)
     }
 
+    func testProofSortsPaymentBeforeInvoiceAndAmendmentRestoresJournal() throws {
+        let (store, context, date) = try setup()
+        var settings = try SalesLedger(context).systemRecord()
+        settings.setInt("s-flag-p", 1)
+        try RelativeFile(store, path: "ledgers/acas/system.dat", recordSize: 1024).write(1, settings.bytes)
+        let service = SalesPayments(context)
+        var draft = SalesPayments.Draft(date: date)
+        draft.customer = "CUST011"
+        draft.amount = 500
+        draft.useUnappliedBalance = true
+        draft.allocations = [10: 500]
+        try service.saveBatch([draft])
+
+        let proof = try SalesPaymentProof(context).generate()
+        let payment = try XCTUnwrap(proof.first)
+        XCTAssertEqual(payment.amount, 500)
+        XCTAssertTrue(payment.journal)
+        let sorted = try XCTUnwrap(store.readRaw(SalesPaymentProof.sortedPath))
+        XCTAssertEqual(sorted.count, 228)
+        XCTAssertEqual(Record(SalesOpenItems.layout, bytes: Array(sorted.prefix(114))).int("type"), 6)
+        XCTAssertEqual(Record(SalesOpenItems.layout, bytes: Array(sorted.suffix(114))).int("type"), 2)
+        let report = try XCTUnwrap(store.readRaw(SalesPaymentProof.exportPath))
+        XCTAssertEqual(String(decoding: report[48..<80], as: UTF8.self), "Payment And Journal Proof Report")
+        XCTAssertEqual(try SalesLedger(context).systemRecord().int("s-flag-p"), 2)
+
+        try service.cancel(payment)
+        XCTAssertTrue(try service.pending().isEmpty)
+        let remaining = try XCTUnwrap(SalesOpenItems.file(store).allRecords().first)
+        XCTAssertEqual(remaining.int("paid"), 0)
+        XCTAssertEqual(remaining.int("batch"), 0)
+        XCTAssertEqual(try SalesLedger(context).customer(code: draft.customer).unapplied, 500)
+    }
+
     private func setup() throws -> (FileStore, BusinessContext, Date) {
         let store = try FileStore()
         let context = BusinessContext(store: store, timeZone: .gmt)
@@ -74,6 +133,7 @@ final class SalesPaymentsTests: XCTestCase {
         var settings = Record(SystemLayout.layout)
         settings["file-statuses"] = String(repeating: "0", count: 18) + "1"
         settings.setInt("first-sl-batch", 3)
+        settings.setInt("page-lines", 60)
         try RelativeFile(store, path: "ledgers/acas/system.dat", recordSize: 1024).write(1, settings.bytes)
         var customer = Record(SalesProofRecords.salesLayout)
         customer["sales-key"] = "CUST011"
