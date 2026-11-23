@@ -72,7 +72,12 @@ public static class CaseRunner
         var legacy = c.GetProperty("legacy_result");
         string? runDir = null;
         if (legacy.TryGetProperty("evidence", out var ev) && ev.GetArrayLength() > 0)
-            runDir = Path.Combine(evidenceRoot, ev[0].GetString()!.Replace('/', Path.DirectorySeparatorChar));
+        {
+            // 台帳の証跡パスは証跡ルート配下に限定する
+            string root = Path.GetFullPath(evidenceRoot).TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
+            string full = Path.GetFullPath(Path.Combine(root, ev[0].GetString()!.Replace('/', Path.DirectorySeparatorChar)));
+            if (full.StartsWith(root, StringComparison.OrdinalIgnoreCase)) runDir = full;
+        }
         var runner = c.GetProperty("runner");
         var app = runner.GetProperty("app").GetString();
         ctx ??= new Ctx(new Db());
