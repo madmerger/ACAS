@@ -13,20 +13,6 @@ abstract class GlProgram extends Program {
     protected Rec sys;
     protected int weError;
 
-    /**
-     * 同一実行内の 2 回目以降の CALL では WORKING-STORAGE が保持される（CANCEL されない）。
-     * 初回のインスタンスを保持し、以降はそれへ委譲する。true を返したら呼出し側は return する。
-     */
-    protected boolean resumed(Object... args) {
-        String key = "ws:" + getClass().getSimpleName();
-        Object first = ctx.shared.get(key);
-        if (first == null || first == this) { ctx.shared.put(key, this); return false; }
-        GlProgram p = (GlProgram) first;
-        p.ctx = ctx;
-        p.run(args);
-        return true;
-    }
-
     protected void init() {
         term().exceptionsEnabled = true; term().escEnabled = true;
         sys = GlCommon.sys(ctx);

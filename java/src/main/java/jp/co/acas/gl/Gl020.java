@@ -9,7 +9,6 @@ import java.math.BigDecimal;
 /** gl020.cbl: 既定勘定（Default Accounts）の登録・修正・照会。 */
 public class Gl020 extends GlProgram {
     static final String PROG_NAME = "GL020 (3.00.02)";
-    private static final String ALPHA = "CKQUAELSMWYIZJRPBXFVGNODTH";
 
     private Rec dflt, led; private CobFile ledger;
     private int w, lin, cole;
@@ -167,21 +166,8 @@ public class Gl020 extends GlProgram {
         display(5, 51, "Enter Password  - [    ]");
         String pw = pad(accept(5, 70, 4), 4);
         display(5, 70, "****");
-        if (!encodePass(pw).equals(sys.str("pass-word"))) { wsReply = "Z"; return; }
+        if (!jp.co.acas.sys.Maps01.password(ctx, pw).equals(sys.str("pass-word"))) { wsReply = "Z"; return; }
         dflt.initialize();
-    }
-
-    /** maps01（encode = "P"）のパスワード符号化。 */
-    static String encodePass(String in) {
-        char[] out = "    ".toCharArray();
-        for (int y = 1; y <= 4; y++) {
-            int a = ALPHA.indexOf(Character.toUpperCase(in.charAt(y - 1))) + 1;
-            if (a == 0) continue;
-            int z = a + y * y + 3 - 26;
-            if (z < 1) z = -z;
-            out[4 - y] = z != 0 ? ALPHA.charAt(z - 1) : ' ';
-        }
-        return new String(out);
     }
 
     private void inputHeadings() {

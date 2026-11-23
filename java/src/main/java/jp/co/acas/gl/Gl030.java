@@ -23,7 +23,6 @@ public class Gl030 extends GlProgram {
 
     @Override
     public void run(Object... args) {
-        if (resumed(args)) return;
         init();
         led = GlCommon.ledgerRec(); ledger = GlCommon.ledgerFile(ctx, led);
         print = new Printer("prt-1", 132);
