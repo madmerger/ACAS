@@ -156,6 +156,12 @@ public final class Terminal {
                 if ((cur.flags & UPPER) != 0) ch = Character.toUpperCase(ch);
                 buf[idx] = ch; shown[f][idx] = ch; edit = true;
                 if (idx < cur.size - 1) idx++;
+                else if ((cur.flags & AUTO) != 0) {   // AUTO 項目は末尾まで入力すると次項目へ、最終項目なら確定
+                    cur.value = new String(buf);
+                    if ((cur.flags & SECURE) == 0) displayData(cur.line, cur.col, new String(shown[f]), fg);
+                    if (f < fields.size() - 1) { f++; idx = 0; continue; }
+                    crtStatus = 0; return 0;
+                }
             } else {
                 Integer st = switch (k) {
                     case "ENTER" -> 0; case "PGUP" -> 2001; case "PGDN" -> 2002;
