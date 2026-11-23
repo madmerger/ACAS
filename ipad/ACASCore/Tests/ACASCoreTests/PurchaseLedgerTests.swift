@@ -4,6 +4,39 @@ import XCTest
 @testable import ACASCore
 
 final class PurchaseLedgerTests: XCTestCase {
+    func testPurchaseMenuUsesLegacyFileAndProcessingFlags() throws {
+        let ledger = try makeLedger()
+        var settings = ledger.system
+        settings.setRaw("file-statuses", Array(repeating: 0x30, count: 32))
+        settings.setInt("p-flag-i", 0)
+        settings.setInt("p-flag-p", 0)
+        try ledger.systemFile.write(1, settings.bytes)
+        let checks: [(PurchaseLedger.MenuAction, PurchaseLedger.MenuRejection)] = [
+            (.enquiry, .purchasePostingRequired), (.agedReport, .purchasePostingRequired),
+            (.invoiceDelete, .invoiceFileMissing), (.invoiceProof, .noInvoices), (.invoicePost, .noInvoices),
+            (.paymentAdd, .purchasePostingRequired), (.paymentEdit, .noPayments), (.paymentProof, .noPayments),
+            (.paymentPost, .paymentProofRequired),
+        ]
+        for (action, rejection) in checks { XCTAssertEqual(ledger.menuRejection(for: action), rejection) }
+
+        ledger.setFileFlag(26, in: &settings)
+        ledger.setFileFlag(29, in: &settings)
+        settings.setInt("p-flag-i", 1)
+        settings.setInt("p-flag-p", 1)
+        try ledger.systemFile.write(1, settings.bytes)
+        XCTAssertEqual(ledger.menuRejection(for: .paymentAdd), .pendingInvoices)
+        XCTAssertEqual(ledger.menuRejection(for: .paymentPost), .paymentProofRequired)
+        for (action, _) in checks where action != .paymentAdd && action != .paymentPost {
+            XCTAssertNil(ledger.menuRejection(for: action))
+        }
+        settings.setInt("p-flag-i", 2)
+        settings.setInt("p-flag-p", 2)
+        try ledger.systemFile.write(1, settings.bytes)
+        XCTAssertNil(ledger.menuRejection(for: .paymentAdd))
+        XCTAssertNil(ledger.menuRejection(for: .paymentPost))
+        XCTAssertEqual(ledger.menuRejection(for: .invoiceProof), .noInvoices)
+    }
+
     func testAgedCreditorsCountsBypassedPaymentsBeforeButNotAfterSelectedSupplier() throws {
         let ledger = try makeLedger()
         let date = ledger.processingDate
@@ -148,6 +181,48 @@ final class PurchaseLedgerTests: XCTestCase {
         XCTAssertFalse(file.contains("ZEBRA"))
         filter.supplier = key1
         XCTAssertNil(try ledger.supplierReport(.file, filter: filter))
+    }
+
+    func testSupplierListingUsesPL010RegistrationDateAndLayout() throws {
+        let ledger = try makeLedger()
+        var settings = ledger.system
+        settings.setInt("page-lines", 60)
+        try ledger.systemFile.write(1, settings.bytes)
+        let day = try ledger.legacyDate(ledger.processingDate)
+        for (index, name) in ["EARLIER", "SAME", "LATER"].enumerated() {
+            var supplier = ledger.newSupplier
+            supplier.code = "SUPP0\(index + 1)"
+            supplier.name = name
+            supplier.address1 = "1 MAIN ROAD\\CITY"
+            supplier.telephone = "12345"
+            supplier.extensionNumber = "123"
+            let key = try ledger.saveSupplier(supplier, creating: true)
+            var record = try XCTUnwrap(ledger.supplierRecord(key))
+            record.setInt("purch-create-date", day + Int64(index) - 1)
+            XCTAssertTrue(ledger.store.rewrite(ledger.suppliersPath, key: record.raw("purch-key"), data: record.bytes))
+        }
+        var filter = PurchaseLedger.SupplierReportFilter()
+        for (comparison, name): (PurchaseLedger.SupplierReportFilter.Comparison, String) in [
+            (.less, "EARLIER"), (.equal, "SAME"), (.greater, "LATER"),
+        ] {
+            filter.created.comparison = comparison
+            filter.creationDate = ledger.processingDate
+            let data = try XCTUnwrap(ledger.supplierReport(.listing, filter: filter))
+            let rows = data.split(separator: 10, omittingEmptySubsequences: true)
+            let lines = rows.map { String(decoding: $0, as: UTF8.self) }
+            XCTAssertTrue(lines[0].hasPrefix("PL010 (3.01.13)"))
+            XCTAssertTrue(lines[0].contains("Supplier Listing"))
+            XCTAssertTrue(lines[1].contains("Entry Date"))
+            XCTAssertEqual(lines.first { $0.hasPrefix("SUPP") }.map { String($0.dropFirst(20).prefix(name.count)) }, name)
+            XCTAssertEqual(lines.first { $0.hasPrefix("SUPP") }.map { String($0.dropFirst(71).prefix(8)) }, "1234x123")
+            XCTAssertEqual(lines.filter { $0.hasPrefix("SUPP") }.count, 1)
+            XCTAssertEqual(rows.map(\.count), Array(repeating: 132, count: 8))
+        }
+        filter.creationDate = nil
+        filter.created.comparison = .equal
+        XCTAssertNil(try ledger.supplierReport(.listing, filter: filter))
+        let dump = try XCTUnwrap(ledger.supplierReport(.file, filter: filter))
+        XCTAssertTrue(String(decoding: dump, as: UTF8.self).contains("Purchase Ledger Dump"))
     }
 
     func testAnalysisCodeReportDistinguishesPurchaseAndAllLedgers() throws {
@@ -630,6 +705,36 @@ final class PurchaseLedgerTests: XCTestCase {
         }
     }
 
+    func testEvidenceSnapshotDetectsUnexpectedPostingRecords() throws {
+        let ledger = try makeLedger()
+        let store = ledger.store
+        let path = ledger.base + "posting.dat"
+        let sizes = [path: PurchaseRecords.postLayout.size]
+        let before = EvidenceComparison.snapshot(store, relativeRecordSizes: sizes)
+        let file = RelativeFile(store, path: path, recordSize: PurchaseRecords.postLayout.size)
+        try file.write(2, [65])
+        let after = EvidenceComparison.snapshot(store, relativeRecordSizes: sizes)
+        let changes = EvidenceComparison.diff(before: before, after: after)
+        XCTAssertEqual(changes.map(\.file), [path])
+        XCTAssertEqual(changes.map(\.key), ["00000002"])
+        XCTAssertEqual(EvidenceComparison.diff(before: after, after: before).map(\.file), [path])
+        XCTAssertTrue(EvidenceComparison.diff(before: after,
+                                              after: EvidenceComparison.snapshot(store, relativeRecordSizes: sizes)).isEmpty)
+    }
+
+    func testEvidenceSnapshotDetectsAnUnchangedLegacyRawLedgerBeingWritten() throws {
+        let ledger = try makeLedger()
+        let path = ledger.base + "unmodified.dat"
+        let store = ledger.store
+        let before = EvidenceComparison.snapshot(store, includeRawLedgers: true)
+        try store.writeRaw(PurchaseLedger.reportPath, [65])
+        try store.writeRaw(path, [66])
+        let after = EvidenceComparison.snapshot(store, includeRawLedgers: true)
+        let changes = EvidenceComparison.diff(before: before, after: after)
+        XCTAssertEqual(changes.map(\.file), [path])
+        XCTAssertEqual(changes.first?.after, "42")
+    }
+
     func testPostingAccumulatesLegacyAnalysisKeysAndTotals() throws {
         let ledger = try makeLedger()
         var value = PurchaseLedger.Transaction(date: ledger.processingDate)
@@ -943,6 +1048,8 @@ final class PurchaseLedgerTests: XCTestCase {
         XCTAssertEqual(try ledger.postTransactions().map(\.id), [number])
         XCTAssertEqual(try ledger.supplier(code: code).currentBalance, 12_000)
         XCTAssertEqual(ledger.openItems(supplier: code).first?.balance, 12_000)
+        let archived = try XCTUnwrap(ledger.store.all(ledger.base + "openitm5.dat").first?.data)
+        XCTAssertEqual(Record(PurchaseRecords.oiLayout, bytes: archived).raw("oi-unapl"), [0])
         XCTAssertTrue(try ledger.postTransactions().isEmpty)
         XCTAssertThrowsError(try ledger.removeTransaction(number: number))
         XCTAssertThrowsError(try ledger.removeSupplier(code: code, deactivate: false))

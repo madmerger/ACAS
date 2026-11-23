@@ -3,7 +3,7 @@ import SwiftUI
 
 struct PurchaseReportView: View {
     enum Mode {
-        case aged, alphabetical, turnover, file, analysisCodes, allAnalysisCodes, analysis, dayBook
+        case aged, alphabetical, turnover, listing, file, analysisCodes, allAnalysisCodes, analysis, dayBook
 
         var title: String {
             switch self {
@@ -11,6 +11,7 @@ struct PurchaseReportView: View {
             case .alphabetical: plString("purchase.supplier.alphabetical")
             case .turnover: plString("purchase.report.turnover")
             case .file: plString("purchase.report.supplier_file")
+            case .listing: plString("purchase.report.supplier_listing")
             case .analysisCodes: plString("purchase.report.analysis_codes")
             case .allAnalysisCodes: plString("purchase.report.all_analysis_codes")
             case .analysis: plString("purchase.close.analysis")
@@ -23,6 +24,7 @@ struct PurchaseReportView: View {
             case .alphabetical: .alphabetical
             case .turnover: .turnover
             case .file: .file
+            case .listing: .listing
             default: nil
             }
         }
@@ -34,6 +36,7 @@ struct PurchaseReportView: View {
     @State private var date = Date()
     @State private var minimum: Decimal = 0
     @State private var alphabetical = false
+    @State private var useCreationDate = false
     @State private var output: Data?
     @State private var showingPreview = false
     @State private var empty = false
@@ -76,8 +79,15 @@ struct PurchaseReportView: View {
                         }
                         if mode != .file {
                             comparison("purchase.report.created", $filter.created.comparison)
+                                .accessibilityIdentifier("pl.report.created")
                             if filter.created.comparison != .any {
-                                DatePicker(plString("purchase.report.date"), selection: $date, displayedComponents: .date)
+                                if mode == .listing {
+                                    Toggle(plString("purchase.report.use_creation_date"), isOn: $useCreationDate)
+                                }
+                                if mode != .listing || useCreationDate {
+                                    DatePicker(plString("purchase.report.date"), selection: $date, displayedComponents: .date)
+                                        .accessibilityIdentifier("pl.report.created.date")
+                                }
                             }
                         }
                     }
@@ -137,9 +147,9 @@ struct PurchaseReportView: View {
                 guard minimum >= 0, minimum < 10_000_000 else { throw PurchaseLedger.PurchaseReportError.invalidMinimum }
                 let cents = NSDecimalNumber(decimal: minimum * 100).int64Value
                 output = try ledger.agedCreditorsReport(date: date, supplier: filter.supplier, minimum: cents, alphabetical: alphabetical)
-            case .alphabetical, .turnover, .file:
+            case .alphabetical, .turnover, .listing, .file:
                 if let kind = mode.supplierReport {
-                    filter.creationDate = filter.created.comparison == .any ? nil : date
+                    filter.creationDate = filter.created.comparison == .any || (mode == .listing && !useCreationDate) ? nil : date
                     output = try ledger.supplierReport(kind, filter: filter)
                 }
             case .analysisCodes, .allAnalysisCodes:

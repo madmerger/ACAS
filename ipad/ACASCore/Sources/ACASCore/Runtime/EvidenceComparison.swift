@@ -14,11 +14,13 @@ public struct RecordChange: Codable, Equatable, Comparable {
 public enum EvidenceComparison {
     public typealias Snapshot = [String: [String: String]]
 
-    public static func snapshot(_ store: FileStore) -> Snapshot {
+    public static func snapshot(_ store: FileStore, relativeRecordSizes: [String: Int] = [:],
+                                includeRawLedgers: Bool = false) -> Snapshot {
         var snapshot: Snapshot = [:]
         for file in store.fileNames() {
-            if file.hasSuffix("/system.dat") {
-                let relative = RelativeFile(store, path: file, recordSize: 1024)
+            let size = file.hasSuffix("/system.dat") ? 1024 : relativeRecordSizes[file]
+            if let size, (1...(Int.max - 8)).contains(size) {
+                let relative = RelativeFile(store, path: file, recordSize: size)
                 for index in 0..<relative.recordCount {
                     guard let bytes = relative.read(index + 1) else { continue }
                     snapshot[file, default: [:]][String(format: "%08d", index + 1)] = FileStore.hex(bytes)
@@ -27,6 +29,9 @@ public enum EvidenceComparison {
                 for (key, data) in store.all(file) {
                     snapshot[file, default: [:]][FileStore.hex(key)] = FileStore.hex(data)
                 }
+            } else if includeRawLedgers && file.hasPrefix("ledgers/") && file.hasSuffix(".dat"),
+                      let bytes = store.readRaw(file) {
+                snapshot[file] = ["raw": FileStore.hex(bytes)]
             }
         }
         return snapshot

@@ -20,6 +20,37 @@ public struct PurchaseLedger {
 
     public init(_ context: BusinessContext) { self.context = context }
 
+    public enum MenuAction: Hashable {
+        case enquiry, invoiceDelete, invoiceProof, invoicePost
+        case paymentAdd, paymentEdit, paymentProof, paymentPost, agedReport
+    }
+
+    public enum MenuRejection: String, Swift.Error {
+        case noInvoices = "T-014"
+        case invoiceFileMissing = "T-017"
+        case paymentProofRequired = "T-023"
+        case purchasePostingRequired = "T-025"
+        case pendingInvoices = "T-028"
+        case noPayments = "T-030"
+    }
+
+    public func menuRejection(for action: MenuAction) -> MenuRejection? {
+        let settings = system
+        let flags = settings.raw("file-statuses")
+        let invoices = settings.int("p-flag-i")
+        let payments = settings.int("p-flag-p")
+        switch action {
+        case .enquiry, .agedReport: return flags[28] == 0x31 ? nil : .purchasePostingRequired
+        case .invoiceDelete: return flags[25] == 0x31 ? nil : .invoiceFileMissing
+        case .invoiceProof, .invoicePost: return invoices == 1 && flags[25] != 0x30 ? nil : .noInvoices
+        case .paymentAdd:
+            if invoices == 1 { return .pendingInvoices }
+            return flags[28] == 0x30 ? .purchasePostingRequired : nil
+        case .paymentEdit, .paymentProof: return payments == 0 ? .noPayments : nil
+        case .paymentPost: return payments == 2 ? nil : .paymentProofRequired
+        }
+    }
+
     public var processingDate: Date {
         let days = Int(system.int("run-date"))
         guard days > 0 else { return context.now() }

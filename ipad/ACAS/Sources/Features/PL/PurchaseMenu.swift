@@ -8,6 +8,8 @@ func plString(_ key: String) -> String {
 struct PurchaseMenu: View {
     let workspace: Workspace
     @State private var opening = true
+    @State private var destination: PurchaseLedger.MenuAction?
+    @State private var notice: PurchaseNotice?
 
     private var ledger: PurchaseLedger { PurchaseLedger(workspace.context) }
 
@@ -17,28 +19,20 @@ struct PurchaseMenu: View {
                 .accessibilityIdentifier("pl.date")
             NavigationLink(plString("purchase.supplier.menu")) { PurchaseSupplierMenu(workspace: workspace) }
                 .accessibilityIdentifier("pl.suppliers")
-            NavigationLink(plString("purchase.enquiry")) { PurchaseSupplierLookup(workspace: workspace, mode: .enquiry) }
-                .accessibilityIdentifier("pl.enquiry")
+            gated("purchase.enquiry", "pl.enquiry", .enquiry)
             NavigationLink(plString("purchase.invoice.add")) {
                 PurchaseTransactionForm(workspace: workspace, transaction: .init(date: ledger.processingDate))
             }
             .accessibilityIdentifier("pl.transaction.add")
             NavigationLink(plString("purchase.invoice.edit")) { PurchaseTransactionsView(workspace: workspace, mode: .edit) }
                 .accessibilityIdentifier("pl.transaction.edit")
-            NavigationLink(plString("purchase.invoice.delete")) { PurchaseTransactionsView(workspace: workspace, mode: .delete) }
-                .accessibilityIdentifier("pl.transaction.delete")
-            NavigationLink(plString("purchase.invoice.proof")) { PurchaseTransactionsView(workspace: workspace, mode: .proof) }
-                .accessibilityIdentifier("pl.transaction.proof")
-            NavigationLink(plString("purchase.invoice.post")) { PurchaseTransactionsView(workspace: workspace, mode: .post) }
-                .accessibilityIdentifier("pl.transaction.post")
-            NavigationLink(plString("purchase.payment.add")) { PurchasePaymentForm(workspace: workspace) }
-                .accessibilityIdentifier("pl.payment.add")
-            NavigationLink(plString("purchase.payment.edit")) { PurchasePaymentsView(workspace: workspace, mode: .edit) }
-                .accessibilityIdentifier("pl.payment.edit")
-            NavigationLink(plString("purchase.payment.proof")) { PurchasePaymentsView(workspace: workspace, mode: .proof) }
-                .accessibilityIdentifier("pl.payment.proof")
-            NavigationLink(plString("purchase.payment.post")) { PurchasePaymentsView(workspace: workspace, mode: .post) }
-                .accessibilityIdentifier("pl.payment.post")
+            gated("purchase.invoice.delete", "pl.transaction.delete", .invoiceDelete)
+            gated("purchase.invoice.proof", "pl.transaction.proof", .invoiceProof)
+            gated("purchase.invoice.post", "pl.transaction.post", .invoicePost)
+            gated("purchase.payment.add", "pl.payment.add", .paymentAdd)
+            gated("purchase.payment.edit", "pl.payment.edit", .paymentEdit)
+            gated("purchase.payment.proof", "pl.payment.proof", .paymentProof)
+            gated("purchase.payment.post", "pl.payment.post", .paymentPost)
             NavigationLink(plString("purchase.cheques.menu")) { PurchaseChequeMenu(workspace: workspace) }
                 .accessibilityIdentifier("pl.cheques")
             NavigationLink(plString("purchase.analysis.menu")) { PurchaseAnalysisMenu(workspace: workspace) }
@@ -47,12 +41,13 @@ struct PurchaseMenu: View {
                 .accessibilityIdentifier("pl.report.analysis")
             NavigationLink(PurchaseReportView.Mode.dayBook.title) { PurchaseReportView(workspace: workspace, mode: .dayBook) }
                 .accessibilityIdentifier("pl.report.day_book")
-            NavigationLink(PurchaseReportView.Mode.aged.title) { PurchaseReportView(workspace: workspace, mode: .aged) }
-                .accessibilityIdentifier("pl.report.aged")
+            gated("purchase.report.aged", "pl.report.aged", .agedReport)
             NavigationLink(PurchaseReportView.Mode.alphabetical.title) { PurchaseReportView(workspace: workspace, mode: .alphabetical) }
                 .accessibilityIdentifier("pl.suppliers.alphabetical")
             NavigationLink(PurchaseReportView.Mode.turnover.title) { PurchaseReportView(workspace: workspace, mode: .turnover) }
                 .accessibilityIdentifier("pl.report.turnover")
+            NavigationLink(PurchaseReportView.Mode.listing.title) { PurchaseReportView(workspace: workspace, mode: .listing) }
+                .accessibilityIdentifier("pl.report.supplier_listing")
             NavigationLink(PurchaseReportView.Mode.file.title) { PurchaseReportView(workspace: workspace, mode: .file) }
                 .accessibilityIdentifier("pl.report.supplier_file")
             NavigationLink(plString("purchase.close.title")) { PurchasePeriodCloseView(workspace: workspace) }
@@ -66,6 +61,28 @@ struct PurchaseMenu: View {
             NavigationStack { PurchaseDateForm(workspace: workspace) }
         }
         .onAppear { if !opening { workspace.completed("pl.menu") } }
+        .purchaseAlert($notice)
+        .navigationDestination(item: $destination) { action in
+            switch action {
+            case .enquiry: PurchaseSupplierLookup(workspace: workspace, mode: .enquiry)
+            case .invoiceDelete: PurchaseTransactionsView(workspace: workspace, mode: .delete)
+            case .invoiceProof: PurchaseTransactionsView(workspace: workspace, mode: .proof)
+            case .invoicePost: PurchaseTransactionsView(workspace: workspace, mode: .post)
+            case .paymentAdd: PurchasePaymentForm(workspace: workspace)
+            case .paymentEdit: PurchasePaymentsView(workspace: workspace, mode: .edit)
+            case .paymentProof: PurchasePaymentsView(workspace: workspace, mode: .proof)
+            case .paymentPost: PurchasePaymentsView(workspace: workspace, mode: .post)
+            case .agedReport: PurchaseReportView(workspace: workspace, mode: .aged)
+            }
+        }
+    }
+
+    private func gated(_ title: String, _ identifier: String, _ action: PurchaseLedger.MenuAction) -> some View {
+        Button(plString(title)) {
+            if let rejection = ledger.menuRejection(for: action) { notice = PurchaseNotice(rejection) }
+            else { destination = action }
+        }
+        .accessibilityIdentifier(identifier)
     }
 }
 
@@ -100,6 +117,10 @@ struct PurchaseNotice: Identifiable {
     var id: String { message }
 
     init(_ error: Error) {
+        if let rejection = error as? PurchaseLedger.MenuRejection {
+            message = rejection.rawValue + "： " + plString("purchase.menu.error." + rejection.rawValue)
+            return
+        }
         if let error = error as? PurchaseLedger.PurchaseReportError {
             switch error {
             case .missingOpenItems: message = plString("purchase.report.error.open_items")

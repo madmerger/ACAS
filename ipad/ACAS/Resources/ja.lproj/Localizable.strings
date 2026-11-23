@@ -15,3 +15,5 @@
 "case.running" = "実施中";
 "case.match" = "一致";
 "case.mismatch" = "不一致";
+"case.out_of_scope" = "対象外";
+"case.compare" = "証跡を照合";
