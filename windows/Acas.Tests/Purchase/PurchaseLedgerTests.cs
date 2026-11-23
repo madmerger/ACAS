@@ -103,6 +103,19 @@ public sealed class PurchaseLedgerTests
     }
 
     [Fact]
+    public void 八桁の最大伝票番号は保存できるが次の九桁は保存しない()
+    {
+        using var db = Fixture("sl-ready");
+        var ledger = new PurchaseLedger(db);
+        Assert.True(ledger.SaveInvoiceSettings(99999999, null));
+        Assert.True(ledger.SaveInvoice(Sample(ledger), true));
+        Assert.Equal("99999999", Assert.Single(ledger.Invoices()).Folio);
+        Assert.Equal("100000000", ledger.NextFolio);
+        Assert.False(ledger.SaveInvoice(Sample(ledger), true));
+        Assert.Null(db.Read(PurchaseLedger.InvoiceFile, "100000000/00"));
+    }
+
+    [Fact]
     public void 投稿済みの掛仕入の未決済レコードは旧バイト列と一致する()
     {
         using var db = Fixture("pl-invoice");

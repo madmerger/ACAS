@@ -16,7 +16,9 @@ internal sealed partial class PurchaseScreens
         decimal.TryParse(values.Text("Purchase" + id), NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out result) &&
         decimal.Round(result, 2) == result;
 
-    private Screen InvoiceEntry() => InvoiceHeaderForm("仕入取引入力", null);
+    private Screen InvoiceEntry() => _ledger.NextFolio.Length == 8
+        ? InvoiceHeaderForm("仕入取引入力", null)
+        : Notice("仕入取引入力", "伝票番号の上限に達しました。仕入取引の設定で空き番号を指定してください。");
 
     private Screen InvoiceHeaderForm(string title, PurchaseInvoice? original)
     {

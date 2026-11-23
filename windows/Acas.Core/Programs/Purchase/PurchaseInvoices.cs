@@ -76,7 +76,8 @@ public sealed partial class PurchaseLedger
 
     public bool SaveInvoice(PurchaseInvoice invoice, bool create, bool acceptMissingCreditTarget = false)
     {
-        if (invoice.Type is < 1 or > 3 || invoice.Lines.Count is < 1 or > 40 || EncodeDate(invoice.Date) <= 0
+        if (invoice.Folio.Length != 8 || invoice.Folio.Any(character => character is < '0' or > '9')
+            || invoice.Type is < 1 or > 3 || invoice.Lines.Count is < 1 or > 40 || EncodeDate(invoice.Date) <= 0
             || !FitsRecord(invoice.Order, 10) || !FitsRecord(invoice.Reference, 10)
             || !AmountFits(invoice.Net, 9999999.99m) || !AmountFits(invoice.Tax, 9999999.99m)
             || !AmountFits(invoice.Carriage, 9999999.99m) || !AmountFits(invoice.CarriageTax, 999999.99m)
