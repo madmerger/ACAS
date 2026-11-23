@@ -18,6 +18,7 @@
 "bookkeeping.category.income" = "収益";
 "bookkeeping.category.liability" = "負債";
 "bookkeeping.category.other" = "その他";
+"bookkeeping.category.keepExisting" = "既存の分類を維持";
 "bookkeeping.defaults.create" = "既定勘定登録";
 "bookkeeping.defaults.edit" = "既定勘定変更";
 "bookkeeping.defaults.inputTax" = "仕入付加価値税";

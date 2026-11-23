@@ -86,7 +86,7 @@ struct BookkeepingAccountForm: View {
     @State private var code = ""
     @State private var child = ""
     @State private var name = ""
-    @State private var category = BookkeepingService.Category.assets
+    @State private var category: BookkeepingService.Category? = .assets
     @State private var selection: String?
     @State private var message = ""
 
@@ -107,7 +107,7 @@ struct BookkeepingAccountForm: View {
                     code = String(row.code)
                     child = row.child == 0 ? "" : String(row.child)
                     name = row.name
-                    category = row.category ?? .other
+                    category = row.category
                     message = ""
                 }
             } else {
@@ -116,7 +116,8 @@ struct BookkeepingAccountForm: View {
             }
             TextField(irsText("field.accountName"), text: $name).accessibilityIdentifier("irs.accountName")
             Picker(irsText("field.category"), selection: $category) {
-                ForEach(BookkeepingService.Category.allCases, id: \.self) { Text($0.title).tag($0) }
+                if editing { Text(irsText("category.keepExisting")).tag(BookkeepingService.Category?.none) }
+                ForEach(BookkeepingService.Category.allCases, id: \.self) { Text($0.title).tag(Optional($0)) }
             }
             .accessibilityIdentifier("irs.category")
             Button(irsText("action.save")) {

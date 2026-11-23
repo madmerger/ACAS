@@ -3,6 +3,16 @@ import XCTest
 @testable import ACASCore
 
 final class BookkeepingAccountArchiveTests: XCTestCase {
+    func testEditingAnImportedAccountCanKeepItsOriginalClassification() throws {
+        let service = BookkeepingService(BusinessContext(store: try FileStore()))
+        let line = "T1000200000O" + "Imported".padding(toLength: 24, withPad: " ", startingAt: 0) + "D\n"
+        XCTAssertEqual(try service.importAccountArchive(Data(line.utf8)), 1)
+        XCTAssertNil(service.accounts.first?.category)
+        try service.saveAccount(code: 10002, name: "変更後", category: nil, editing: true)
+        XCTAssertEqual(service.accounts.first?.name, "変更後")
+        XCTAssertEqual(try service.accountRecord(10002).str("ac"), "D")
+    }
+
     func testArchiveFileReadsOnlyWithinSizeLimit() throws {
         let url = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         defer { try? FileManager.default.removeItem(at: url) }
