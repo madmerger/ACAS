@@ -185,6 +185,8 @@ def main():
             source = BASE.evidence_path(evidence, run / "before-files" / path)
             before = BASE.read_json(BASE.evidence_path(evidence, run / "before.json"))[path]
             after = BASE.read_json(BASE.evidence_path(evidence, run / "result.json"))["after"][path]
+            if hashlib.sha256(source.read_bytes()).hexdigest() != before["sha256"]:
+                raise ValueError(f"分析ファイルの証跡バイトが一致しません: {run.name}: {path}")
             dump = subprocess.run(["db_dump", str(source)], check=True, capture_output=True, text=True).stdout
             rows = dump.split("HEADER=END\n", 1)[1].splitlines()
             if not rows or rows.pop() != "DATA=END" or len(rows) % 2:
