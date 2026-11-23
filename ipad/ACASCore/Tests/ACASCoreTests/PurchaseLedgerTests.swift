@@ -3,6 +3,24 @@ import XCTest
 @testable import ACASCore
 
 final class PurchaseLedgerTests: XCTestCase {
+    func testEnquiryAppliesLegacyOpenItemBalances() throws {
+        let ledger = try makeLedger()
+        let code = try addSupplier(ledger)
+        let path = ledger.base + "openitm5.dat"
+        for (number, type, net, paid) in [(1, 1, 2_000, 0), (2, 3, -2_000, 2_000), (3, 2, 4_000, 1_000)] {
+            var item = Record(PurchaseRecords.oiLayout)
+            item["oi-supplier"] = code
+            item.setInt("oi-invoice", Int64(number))
+            item.setInt("oi-type", Int64(type))
+            item.setInt("oi-net", Int64(net))
+            item.setInt("oi-paid", Int64(paid))
+            item.setInt("oi-date", ledger.system.int("run-date"))
+            if type == 2 { item.setInt("oi-deduct-amt", 200) }
+            ledger.store.write(path, key: Array(item.bytes.prefix(11)), data: item.bytes)
+        }
+        XCTAssertEqual(ledger.openItems(supplier: code).map(\.balance), [0, 0, 2_800])
+    }
+
     func testDeletedFolioIsReusedOnlyOnce() throws {
         let ledger = try makeLedger()
         var value = PurchaseLedger.Transaction(date: ledger.processingDate)

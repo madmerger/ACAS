@@ -188,12 +188,24 @@ public struct PurchaseLedger {
 
     public func openItems(supplier: String) -> [OpenItem] {
         let key = SJIS.encode(supplier, size: 7)
+        let runDate = system.int("run-date")
         return store.all(base + "openitm5.dat").compactMap { item in
             guard item.key.starts(with: key), item.data.count == PurchaseRecords.oiLayout.size else { return nil }
             let record = Record(PurchaseRecords.oiLayout, bytes: item.data)
+            let type = record.int("oi-type")
             let gross = ["oi-net", "oi-carriage", "oi-vat", "oi-c-vat"].reduce(Int64(0)) { $0 + record.int($1) }
+            let balance: Int64
+            switch type {
+            case 2:
+                let eligible = record.int("oi-date") + record.int("oi-deduct-days") >= runDate
+                balance = gross - record.int("oi-paid") - (eligible ? record.int("oi-deduct-amt") : 0)
+            case 3:
+                balance = gross + record.int("oi-paid")
+            default:
+                balance = 0
+            }
             return OpenItem(id: record.int("oi-invoice"), reference: Cobol.rtrim(record.str("oi-ref")),
-                            balance: gross - record.int("oi-paid"))
+                            balance: balance)
         }
     }
 }
