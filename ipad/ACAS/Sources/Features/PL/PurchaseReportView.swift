@@ -200,7 +200,9 @@ private struct PurchaseReportPreview: View {
             }
             .padding()
         }
+        .contentMargins(.top, 24, for: .scrollContent)
         .navigationTitle(title)
+        .navigationBarTitleDisplayMode(.inline)
         .accessibilityIdentifier("pl.report.preview.lines")
     }
 
