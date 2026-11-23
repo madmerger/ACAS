@@ -12,6 +12,28 @@ public class PaymentTransferTests
     private static readonly DateTime Date = new(2026, 11, 23);
     private static readonly int Day = (Date - new DateTime(1600, 12, 31)).Days;
 
+    [Fact]
+    public void 売掛貸方票の延滞加算免除を帳票と集計に反映する()
+    {
+        using var db = new Db();
+        db.LoadBaseline("sl-printed");
+        const string invoices = Directory + "invoice.dat";
+        var (key, invoice) = db.Scan(invoices).First(x => x.Key.EndsWith("/00", StringComparison.Ordinal));
+        var credit = (byte[])invoice.Clone();
+        invoice[125] = 100;
+        credit[7] = (byte)'1';
+        credit[31] = (byte)'3';
+        db.Put(invoices, key, invoice);
+        db.Put(invoices, "00000001/ /00", credit);
+        var balanceLayout = new Layout().Fill(30).C3("deductions", 8, 2);
+        var before = balanceLayout.From(db.Read(SystemFile, "00000004")!).N("deductions");
+
+        var report = new LedgerTransfer(db).TransferInvoices(TransferLedger.Sales, Date, TransferDestination.Dedicated);
+
+        Assert.Contains("延滞加算免除合計　1.00", report.Body);
+        Assert.Equal(before + 1, balanceLayout.From(db.Read(SystemFile, "00000004")!).N("deductions"));
+    }
+
     [Theory]
     [InlineData(true, false)]
     [InlineData(true, true)]
