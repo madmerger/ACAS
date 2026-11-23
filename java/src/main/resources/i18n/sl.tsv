@@ -446,3 +446,12 @@ Payments	入金額
 Appropriations	充当額
 Unapplied Cash	未充当入金
 Deductions Taken	控除適用額
+Cash Posting	入金転記
+OK to Post Payment Transactions (YES/NO) ? [   ]	入金取引を転記しますか (YES/NO) ?          [   ]
+Posting,  Please wait	転記中  お待ちください
+Cash Posting Report	入金転記帳票
+ Number   ---Date--  <------------Customer------------>  --Type--	 番号     ---日付--  <--------------顧客-------------->  --種別--
+ Old Balance    New Balance    Payment   Deduction   Apportioned	 旧残高         新残高         入金額    控除        充当額
+Cr Journal	貸方振替
+Payment Totals	入金 合計
+Journal Totals	振替 合計
