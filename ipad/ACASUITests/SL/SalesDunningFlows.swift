@@ -51,6 +51,8 @@ final class SalesDunningFlows: XCTestCase {
         dunning.tap()
         let next = app.buttons["sales.dunning.next"]
         XCTAssertTrue(next.waitForExistence(timeout: 5))
+        let verdict = app.staticTexts["case.verdict.match"]
+        XCTAssertFalse(verdict.exists)
         next.tap()
         let error = app.staticTexts["sales.dunning.error"]
         XCTAssertTrue(error.waitForExistence(timeout: 5))
