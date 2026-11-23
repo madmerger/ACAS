@@ -73,10 +73,14 @@ public abstract class IrsBase extends Program {
         return new Object[]{u, bin};
     }
 
-    /** 印刷ファイル prt-1（行順）。レガシーの AFTER n / AFTER PAGE は空行・改ページ文字として出力する。 */
+    /**
+     * 印刷ファイル prt-1（行順、IRS ディレクトリ）。GnuCOBOL の WRITE AFTER n は「改行 n 個 + 行」なので
+     * ファイル先頭に空行が 1 行入り、以後 AFTER n は空行 n-1 行 + 行となる（レガシー実測）。
+     */
     protected CobFile openPrint() {
-        CobFile f = CobFile.lineSequential(ctx.store, ctx.path("prt-1"));
+        CobFile f = CobFile.lineSequential(ctx.store, ctx.irsPath("prt-1"));
         f.open(CobFile.Mode.OUTPUT);
+        f.writeLine("");
         return f;
     }
     protected static void writeAfter(CobFile f, String line, int after) {
@@ -84,11 +88,21 @@ public abstract class IrsBase extends Program {
         f.writeLine(line);
     }
     protected static void writeAfterPage(CobFile f, String line) { f.writeLine("\f" + line); }
-    /** call "SYSTEM" using Print-Report（lpr による印刷指示）。 */
+    /** call "SYSTEM" using Print-Report（lpr による印刷指示）。IRS の prt-1 は IRS ディレクトリにあるため spool へ自前で複写する。 */
     protected void printReport(Rec sys, CobFile f) {
         f.close();
-        ctx.spool("prt-1", "lpr -r -o 'orientation-requested=3 page-left=48 page-top=24 page-right=24 sides=two-sided-long-edge cpi=12 lpi=8' -P "
-                + sys.str("print-spool-name").trim() + " prt-1");
+        String src = ctx.irsPath("prt-1");
+        if (!ctx.store.exists(src)) return;
+        int max = 0;
+        for (String n : ctx.store.fileNames())
+            if (n.startsWith("spool/")) try { max = Math.max(max, Integer.parseInt(n.split("/")[1])); } catch (NumberFormatException ignored) { }
+        String dir = "spool/" + String.format("%04d", max + 1);
+        ctx.store.create(dir + "/prt-1");
+        for (var e : ctx.store.all(src)) ctx.store.put(dir + "/prt-1", e.getKey(), e.getValue());
+        String command = "lpr -r -o 'orientation-requested=3 page-left=48 page-top=24 page-right=24 sides=two-sided-long-edge cpi=12 lpi=8' -P "
+                + sys.str("print-spool-name").trim() + " prt-1";
+        ctx.store.create(dir + "/command.txt");
+        ctx.store.put(dir + "/command.txt", new byte[8], command.getBytes(java.nio.charset.StandardCharsets.ISO_8859_1));
     }
     protected static final String[] NL_AMOUNTS = {"nl-dr", "nl-cr"};
     /** nl-dr / nl-cr / nl-dr-last(1-4) / nl-cr-last(1-4) をゼロにする。 */
