@@ -9,8 +9,17 @@ final class MasterSetupFlows: XCTestCase {
         app.launchArguments = ["-AppleLanguages", "(ja)", "-AppleLocale", "ja_JP"]
         XCUIDevice.shared.orientation = .landscapeLeft
         app.launch()
-        tap(app, "system.master")
+        try Self.registerMasters(app)
+        XCTAssertTrue(app.staticTexts["case.verdict.match"].waitForExistence(timeout: 5))
+        let screenshot = XCTAttachment(screenshot: app.screenshot())
+        screenshot.name = "初期マスタ登録"
+        screenshot.lifetime = .keepAlways
+        add(screenshot)
+    }
 
+    @MainActor
+    static func registerMasters(_ app: XCUIApplication) throws {
+        tap(app, "system.master")
         for (kind, records) in [
             ("customer", [
                 [("code", "CUST01"), ("name", "ALPHA CUSTOMER"), ("address", "1 TEST ROAD\\LONDON\\UK"),
@@ -45,11 +54,6 @@ final class MasterSetupFlows: XCTestCase {
                 app.navigationBars.buttons.firstMatch.tap()
             }
         }
-        XCTAssertTrue(app.staticTexts["case.verdict.match"].waitForExistence(timeout: 5))
-        let screenshot = XCTAttachment(screenshot: app.screenshot())
-        screenshot.name = "初期マスタ登録"
-        screenshot.lifetime = .keepAlways
-        add(screenshot)
     }
 
     private func masterFixture() throws -> String {
@@ -63,11 +67,11 @@ final class MasterSetupFlows: XCTestCase {
         XCTAssertEqual(system.count, 4)
         let rawSystem = try system.map { "0004000000000000" + (try XCTUnwrap($0["after"] as? String)) }.joined()
         let seed = ["files": [path: ["type": "relative", "hex": rawSystem]]]
-        let files = Set(["salesled.dat", "purchled.dat", "stockctl.dat"])
+        let files = Set(["salesled.dat", "purchled.dat", "stockctl.dat", "analysis.dat"])
         let masterChanges = changes.filter {
             files.contains(URL(fileURLWithPath: $0["file"] as? String ?? "").lastPathComponent)
         }
-        XCTAssertEqual(masterChanges.count, 6)
+        XCTAssertEqual(masterChanges.count, 22)
         fixture["title"] = "初期マスタ登録のみ（設定済み）"
         fixture["seed"] = try JSONSerialization.data(withJSONObject: seed).base64EncodedString()
         fixture["changes"] = masterChanges
@@ -76,7 +80,7 @@ final class MasterSetupFlows: XCTestCase {
     }
 
     @MainActor
-    private func tap(_ app: XCUIApplication, _ id: String) {
+    private static func tap(_ app: XCUIApplication, _ id: String) {
         let target = app.descendants(matching: .any).matching(identifier: id).firstMatch
         XCTAssertTrue(target.waitForExistence(timeout: 5), id)
         target.tap()

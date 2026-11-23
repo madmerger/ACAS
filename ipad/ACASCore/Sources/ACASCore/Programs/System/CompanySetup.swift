@@ -71,6 +71,15 @@ public struct CompanySetup {
 
     public static let reportPath = "ledgers/acas/prt-1"
     private static let archivePathsKey = "system/report-path-labels"
+
+    func markFiles(_ positions: [Int], module: String) throws {
+        guard let bytes = file.read(1) else { return }
+        var record = Record(SystemLayout.layout, bytes: bytes)
+        let start = record.layout.offset("file-statuses")
+        for position in positions { record.bytes[start + position - 1] = 0x31 }
+        record[module] = "Y"
+        if record.bytes != bytes { try file.write(1, record.bytes) }
+    }
 }
 
 private enum LegacyCompanyCode {

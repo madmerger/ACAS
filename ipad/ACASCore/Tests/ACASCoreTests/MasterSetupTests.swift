@@ -46,7 +46,8 @@ final class MasterSetupTests: XCTestCase {
         var settings = setup.settings
         try settings.setText("TEST BUSINESS", for: "usera")
         try settings.setNumber(1, for: "stk-averaging")
-        try setup.save(settings)
+        try setup.save(settings, printReport: true)
+        let report = try XCTUnwrap(store.readRaw(CompanySetup.reportPath))
         let service = MasterSetup(context)
         var item = MasterStockItem()
         item.code = "item001"
@@ -64,6 +65,10 @@ final class MasterSetupTests: XCTestCase {
         XCTAssertEqual(Array(bytes[128..<136]), [0, 0, 0, 2, 0, 0, 0, 5])
         XCTAssertEqual(Array(bytes[144..<148]), [0, 0, 0, 10])
         XCTAssertEqual(Array(bytes[152..<169]), [0, 0, 1, 0x20, 0x0F, 0, 0, 0, 0x50, 0, 0x0F, 0, 0, 0, 5, 0, 0x0F])
+        XCTAssertEqual(setup.settings.text("stock-control"), "Y")
+        XCTAssertEqual(setup.settings.text("file-statuses"), "00000000001010100000000000000000")
+        XCTAssertEqual(store.all("ledgers/acas/analysis.dat").count, 16)
+        XCTAssertEqual(store.readRaw(CompanySetup.reportPath), report)
         item.code = "ITEM002"
         XCTAssertThrowsError(try service.add(item))
     }

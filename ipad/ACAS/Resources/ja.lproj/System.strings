@@ -45,6 +45,7 @@
 "system.settings.enabled" = "有効";
 "system.settings.disabled" = "無効";
 "system.settings.not-set" = "未設定";
+"system.settings.date-format" = "年／月／日";
 "system.settings.level-1" = "総勘定元帳を使用";
 "system.settings.level-2" = "買掛元帳を使用";
 "system.settings.level-3" = "売掛元帳を使用";

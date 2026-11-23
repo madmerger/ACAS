@@ -69,6 +69,13 @@ public struct MasterSetup {
             record.setInt("purch-credit", company.number("age-to-pay"))
         }
         try write(record, to: file)
+        let delivery = "ledgers/acas/delivery.dat"
+        if !context.store.exists(delivery) { context.store.createIndexed(delivery) }
+        guard context.store.exists(delivery) else { throw Error.storage }
+        switch kind {
+        case .customer: try CompanySetup(context).markFiles([12, 14], module: "sales-ledger")
+        case .supplier: try CompanySetup(context).markFiles([14, 22], module: "purchase-ledger")
+        }
     }
 
     public func add(_ item: MasterStockItem) throws {
@@ -92,7 +99,9 @@ public struct MasterSetup {
         if company.number("stk-averaging") == 1 && item.value == 0 {
             record.setInt("value", item.held * item.cost / 100 % Cobol.pow10(11))
         }
+        try MasterAnalysisSetup.prepare(context.store)
         try write(record, to: file)
+        try CompanySetup(context).markFiles([11, 13, 15], module: "stock-control")
     }
 
     private func companySettings() throws -> CompanySettings {

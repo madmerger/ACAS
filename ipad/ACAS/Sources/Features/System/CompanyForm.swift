@@ -5,6 +5,7 @@ struct CompanyForm: View {
     let workspace: Workspace
     @State private var settings: CompanySettings
     @State private var textDraft: [String: String] = [:]
+    @State private var dateDraft: [String: String] = [:]
     @State private var saved = false
     @State private var invalid = false
     @State private var storageFailed = false
@@ -17,7 +18,13 @@ struct CompanyForm: View {
     init(workspace: Workspace) {
         self.workspace = workspace
         let setup = CompanySetup(workspace.context)
-        _settings = State(initialValue: setup.settings)
+        let current = setup.settings
+        _settings = State(initialValue: current)
+        _dateDraft = State(initialValue: Dictionary(uniqueKeysWithValues: ["start-date", "end-date"].map { key in
+            let value = current.number(key)
+            let date = Maps04.dateOfInteger(Int(value))
+            return (key, value == 0 ? "" : "\(date.year)/\(date.month)/\(date.day)")
+        }))
         let archivePaths = setup.archivePaths
         _incompletePath = State(initialValue: archivePaths.incompleteRecords)
         _ledgersPath = State(initialValue: archivePaths.ledgers)
@@ -106,9 +113,11 @@ struct CompanyForm: View {
                     Toggle(isOn: letterFlag(field.id)) { Text(systemSetting(field.id)) }
                         .accessibilityIdentifier("system.settings." + field.id)
                 case .date:
-                    DatePicker(selection: dateBinding(field.id), displayedComponents: .date) {
-                        Text(systemSetting(field.id))
-                    }
+                    TextField(systemSetting(field.id), text: Binding(
+                        get: { dateDraft[field.id, default: ""] },
+                        set: { dateDraft[field.id] = $0 }
+                    ), prompt: Text(systemSetting("date-format")))
+                    .keyboardType(.numbersAndPunctuation)
                     .accessibilityIdentifier("system.settings." + field.id)
                 case .number, .rate:
                     SystemNumberField(field: field, value: settings.number(field.id)) { number in
@@ -121,8 +130,10 @@ struct CompanyForm: View {
                 Section {
                     TextField(systemSetting("archive-incomplete"), text: $incompletePath)
                         .textInputAutocapitalization(.never)
+                        .accessibilityIdentifier("system.settings.archive-incomplete")
                     TextField(systemSetting("archive-ledgers"), text: $ledgersPath)
                         .textInputAutocapitalization(.never)
+                        .accessibilityIdentifier("system.settings.archive-ledgers")
                 } header: {
                     Text(systemSetting("archive"))
                 } footer: {
@@ -162,6 +173,16 @@ struct CompanyForm: View {
         do {
             var draft = settings
             for (key, value) in textDraft { try draft.setText(value, for: key) }
+            for (key, value) in dateDraft {
+                if value.isEmpty {
+                    try draft.setNumber(0, for: key)
+                    continue
+                }
+                let parts = value.split(separator: "/", omittingEmptySubsequences: false)
+                guard parts.count == 3, let year = Int(parts[0]), let month = Int(parts[1]), let day = Int(parts[2])
+                else { throw CompanySetup.Error.invalidDate }
+                try draft.setDate(year: year, month: month, day: day, for: key)
+            }
             try CompanySetup(workspace.context).save(draft, printReport: printReport,
                 archivePaths: SystemReportPaths(incompleteRecords: incompletePath, ledgers: ledgersPath))
             settings = CompanySetup(workspace.context).settings
@@ -196,19 +217,6 @@ struct CompanyForm: View {
         }
     }
 
-    private func dateBinding(_ id: String) -> Binding<Date> {
-        Binding {
-            let raw = settings.number(id)
-            guard raw > 0 else { return workspace.context.now() }
-            let date = Maps04.dateOfInteger(Int(raw))
-            return workspace.context.calendar.date(from: DateComponents(year: date.year, month: date.month, day: date.day))
-                ?? workspace.context.now()
-        } set: { value in
-            let date = workspace.context.calendar.dateComponents([.year, .month, .day], from: value)
-            guard let year = date.year, let month = date.month, let day = date.day else { return }
-            update { try settings.setDate(year: year, month: month, day: day, for: id) }
-        }
-    }
 }
 
 private struct SystemNumberField: View {
