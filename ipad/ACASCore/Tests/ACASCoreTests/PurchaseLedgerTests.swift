@@ -4,6 +4,46 @@ import XCTest
 @testable import ACASCore
 
 final class PurchaseLedgerTests: XCTestCase {
+    func testInvoiceSettingsWriteOnlyConfiguredFieldsAndSetNextTransactionFolio() throws {
+        let ledger = try makeLedger()
+        var configuration = ledger.system
+        configuration.setInt("vat-ac", 123456)
+        try ledger.systemFile.write(1, configuration.bytes)
+        var settings = ledger.invoiceSettings()
+        XCTAssertNil(settings.vatAccount)
+        settings.nextFolio = 240
+        settings.vatAccount = 654321
+        try ledger.saveInvoiceSettings(settings)
+        configuration.setInt("next-folio", 240)
+        XCTAssertEqual(ledger.systemFile.read(1), configuration.bytes)
+
+        var transaction = PurchaseLedger.Transaction(date: ledger.processingDate)
+        transaction.supplier = try addSupplier(ledger)
+        transaction.lines[0].code = "a1"
+        transaction.lines[0].net = 10_000
+        XCTAssertEqual(try ledger.saveTransaction(transaction), 240)
+        XCTAssertEqual(ledger.invoiceSettings().nextFolio, 241)
+
+        configuration = ledger.system
+        configuration.setInt("level-1", 1)
+        try ledger.systemFile.write(1, configuration.bytes)
+        settings = ledger.invoiceSettings()
+        XCTAssertEqual(settings.vatAccount, 123456)
+        settings.nextFolio = 0
+        XCTAssertThrowsError(try ledger.saveInvoiceSettings(settings))
+        XCTAssertEqual(ledger.systemFile.read(1), configuration.bytes)
+        settings.nextFolio = 500
+        settings.vatAccount = 1_000_000
+        XCTAssertThrowsError(try ledger.saveInvoiceSettings(settings))
+        XCTAssertEqual(ledger.systemFile.read(1), configuration.bytes)
+
+        settings.vatAccount = 654321
+        try ledger.saveInvoiceSettings(settings)
+        configuration.setInt("next-folio", 500)
+        configuration.setInt("vat-ac", 654321)
+        XCTAssertEqual(ledger.systemFile.read(1), configuration.bytes)
+    }
+
     func testPostingRollsBackGLPostingIfBatchWriteFails() throws {
         try withDiskLedger { ledger, db in
             var system = ledger.system

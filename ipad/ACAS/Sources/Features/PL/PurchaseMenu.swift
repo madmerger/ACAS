@@ -43,6 +43,8 @@ struct PurchaseMenu: View {
                 .accessibilityIdentifier("pl.analysis")
             NavigationLink(plString("purchase.supplier.alphabetical")) { PurchaseSuppliersView(workspace: workspace, byName: true) }
                 .accessibilityIdentifier("pl.suppliers.alphabetical")
+            NavigationLink(plString("purchase.invoice.settings.menu")) { PurchaseInvoiceMenu(workspace: workspace) }
+                .accessibilityIdentifier("pl.invoice.settings.menu")
             NavigationLink(plString("purchase.settings")) { SystemMenu(workspace: workspace) }
                 .accessibilityIdentifier("pl.settings")
         }
@@ -109,6 +111,7 @@ struct PurchaseNotice: Identifiable {
         case .duplicateTransaction: message = plString("purchase.error.invoice.duplicate")
         case .analysisCodeNotFound: message = plString("purchase.error.analysis.missing")
         case .analysisFileIncompatible: message = plString("purchase.error.analysis.format")
+        case .invalidInvoiceSettings: message = plString("purchase.error.invoice.settings")
         case nil: message = plString("purchase.error.generic")
         }
     }

@@ -79,6 +79,11 @@
 "purchase.invoice.posted" = "転記済み";
 "purchase.invoice.proof" = "仕入の検証帳票";
 "purchase.invoice.proof.description" = "帳票を作成すると未転記の仕入取引を確認できます。";
+"purchase.invoice.settings" = "仕入伝票の固定設定";
+"purchase.invoice.settings.menu" = "仕入伝票設定・処理";
+"purchase.invoice.settings.nextFolio" = "次の伝票番号";
+"purchase.invoice.settings.vatAccount" = "消費税勘定科目コード";
+"purchase.error.invoice.settings" = "次の伝票番号は1から8桁の正の整数、消費税勘定科目コードは6桁以内の整数で入力してください。";
 "purchase.invoice.reference" = "参照番号";
 "purchase.invoice.state" = "処理状態";
 "purchase.invoice.tax" = "税額";
