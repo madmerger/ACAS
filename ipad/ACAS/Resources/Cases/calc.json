@@ -1,0 +1,777 @@
+{
+ "CALC-200": {
+  "program": "drv09",
+  "input": {
+   "code": "K9P34Y"
+  }
+ },
+ "CALC-201": {
+  "program": "drv09",
+  "input": {
+   "code": "6N3WD2"
+  }
+ },
+ "CALC-202": {
+  "program": "drv09",
+  "input": {
+   "code": "5RQ4F5"
+  }
+ },
+ "CALC-203": {
+  "program": "drv09",
+  "input": {
+   "code": "ZR3-7E"
+  }
+ },
+ "CALC-204": {
+  "program": "drv09",
+  "input": {
+   "code": "3-P3E2"
+  }
+ },
+ "CALC-205": {
+  "program": "drv09",
+  "input": {
+   "code": "Z8IQ9Y"
+  }
+ },
+ "CALC-206": {
+  "program": "drv09",
+  "input": {
+   "code": "7-JZB6"
+  }
+ },
+ "CALC-207": {
+  "program": "drv09",
+  "input": {
+   "code": "-CN6Z4"
+  }
+ },
+ "CALC-208": {
+  "program": "drv09",
+  "input": {
+   "code": "-3DVYR"
+  }
+ },
+ "CALC-209": {
+  "program": "drv09",
+  "input": {
+   "code": "KTTNJF"
+  }
+ },
+ "CALC-210": {
+  "program": "drv09",
+  "input": {
+   "code": "BF5-JX"
+  }
+ },
+ "CALC-211": {
+  "program": "drv09",
+  "input": {
+   "code": "VLSI47"
+  }
+ },
+ "CALC-212": {
+  "program": "drv09",
+  "input": {
+   "code": "WQAL9V"
+  }
+ },
+ "CALC-213": {
+  "program": "drv09",
+  "input": {
+   "code": "Q24Z-K"
+  }
+ },
+ "CALC-214": {
+  "program": "drv09",
+  "input": {
+   "code": "LMVT45"
+  }
+ },
+ "CALC-215": {
+  "program": "drv09",
+  "input": {
+   "code": "HU43J-"
+  }
+ },
+ "CALC-216": {
+  "program": "drv09",
+  "input": {
+   "code": "SIOM1T"
+  }
+ },
+ "CALC-217": {
+  "program": "drv09",
+  "input": {
+   "code": "MA7V3D"
+  }
+ },
+ "CALC-218": {
+  "program": "drv09",
+  "input": {
+   "code": "I8FPPV"
+  }
+ },
+ "CALC-219": {
+  "program": "drv09",
+  "input": {
+   "code": "5ASPZH"
+  }
+ },
+ "CALC-220": {
+  "program": "drv09",
+  "input": {
+   "code": "8RZHQM"
+  }
+ },
+ "CALC-221": {
+  "program": "drv09",
+  "input": {
+   "code": "OE95B9"
+  }
+ },
+ "CALC-222": {
+  "program": "drv09",
+  "input": {
+   "code": "EE0VBG"
+  }
+ },
+ "CALC-223": {
+  "program": "drv09",
+  "input": {
+   "code": "I09QYN"
+  }
+ },
+ "CALC-224": {
+  "program": "drv09",
+  "input": {
+   "code": "-K8W3T"
+  }
+ },
+ "CALC-225": {
+  "program": "drv09",
+  "input": {
+   "code": "ZPPPP6"
+  }
+ },
+ "CALC-226": {
+  "program": "drv09",
+  "input": {
+   "code": "UP3C4D"
+  }
+ },
+ "CALC-227": {
+  "program": "drv09",
+  "input": {
+   "code": "SA7L36"
+  }
+ },
+ "CALC-228": {
+  "program": "drv09",
+  "input": {
+   "code": "0-9Y6N"
+  }
+ },
+ "CALC-229": {
+  "program": "drv09",
+  "input": {
+   "code": "14DO9G"
+  }
+ },
+ "CALC-230": {
+  "program": "drv09",
+  "input": {
+   "code": "MNU77V"
+  }
+ },
+ "CALC-231": {
+  "program": "drv09",
+  "input": {
+   "code": "TUUJ59"
+  }
+ },
+ "CALC-232": {
+  "program": "drv09",
+  "input": {
+   "code": "6LGUAX"
+  }
+ },
+ "CALC-233": {
+  "program": "drv09",
+  "input": {
+   "code": "1DXN9Y"
+  }
+ },
+ "CALC-234": {
+  "program": "drv09",
+  "input": {
+   "code": "1XJ5GX"
+  }
+ },
+ "CALC-235": {
+  "program": "drv09",
+  "input": {
+   "code": "NAMEYY"
+  }
+ },
+ "CALC-236": {
+  "program": "drv09",
+  "input": {
+   "code": "WLECFP"
+  }
+ },
+ "CALC-237": {
+  "program": "drv09",
+  "input": {
+   "code": "ECXVM1"
+  }
+ },
+ "CALC-238": {
+  "program": "drv09",
+  "input": {
+   "code": "1HUGCM"
+  }
+ },
+ "CALC-239": {
+  "program": "drv09",
+  "input": {
+   "code": "SMN5E6"
+  }
+ },
+ "CALC-240": {
+  "program": "drv09",
+  "input": {
+   "code": "000003"
+  }
+ },
+ "CALC-241": {
+  "program": "drv09",
+  "input": {
+   "code": "000009"
+  }
+ },
+ "CALC-242": {
+  "program": "drv09",
+  "input": {
+   "code": "000000"
+  }
+ },
+ "CALC-243": {
+  "program": "drv09",
+  "input": {
+   "code": "AAAAAA"
+  }
+ },
+ "CALC-244": {
+  "program": "drv09",
+  "input": {
+   "code": "------"
+  }
+ },
+ "CALC-245": {
+  "program": "drv04",
+  "input": {
+   "date": "01/01/2024"
+  }
+ },
+ "CALC-246": {
+  "program": "drv04",
+  "input": {
+   "date": "29/02/2024"
+  }
+ },
+ "CALC-247": {
+  "program": "drv04",
+  "input": {
+   "date": "29/02/2023"
+  }
+ },
+ "CALC-248": {
+  "program": "drv04",
+  "input": {
+   "date": "28/02/2023"
+  }
+ },
+ "CALC-249": {
+  "program": "drv04",
+  "input": {
+   "date": "31/04/2024"
+  }
+ },
+ "CALC-250": {
+  "program": "drv04",
+  "input": {
+   "date": "30/04/2024"
+  }
+ },
+ "CALC-251": {
+  "program": "drv04",
+  "input": {
+   "date": "15.06.2025"
+  }
+ },
+ "CALC-252": {
+  "program": "drv04",
+  "input": {
+   "date": "15-06-2025"
+  }
+ },
+ "CALC-253": {
+  "program": "drv04",
+  "input": {
+   "date": "15,06,2025"
+  }
+ },
+ "CALC-254": {
+  "program": "drv04",
+  "input": {
+   "date": "00/01/2024"
+  }
+ },
+ "CALC-255": {
+  "program": "drv04",
+  "input": {
+   "date": "32/01/2024"
+  }
+ },
+ "CALC-256": {
+  "program": "drv04",
+  "input": {
+   "date": "01/13/2024"
+  }
+ },
+ "CALC-257": {
+  "program": "drv04",
+  "input": {
+   "date": "01/00/2024"
+  }
+ },
+ "CALC-258": {
+  "program": "drv04",
+  "input": {
+   "date": "1/1/2024"
+  }
+ },
+ "CALC-259": {
+  "program": "drv04",
+  "input": {
+   "date": "01/01/24"
+  }
+ },
+ "CALC-260": {
+  "program": "drv04",
+  "input": {
+   "date": "AB/01/2024"
+  }
+ },
+ "CALC-261": {
+  "program": "drv04",
+  "input": {
+   "date": "31/12/1999"
+  }
+ },
+ "CALC-262": {
+  "program": "drv04",
+  "input": {
+   "date": "01/01/2000"
+  }
+ },
+ "CALC-263": {
+  "program": "drv04",
+  "input": {
+   "date": "29/02/2000"
+  }
+ },
+ "CALC-264": {
+  "program": "drv04",
+  "input": {
+   "date": "29/02/1900"
+  }
+ },
+ "CALC-265": {
+  "program": "drv04",
+  "input": {
+   "date": "31/12/2099"
+  }
+ },
+ "CALC-266": {
+  "program": "drv04",
+  "input": {
+   "date": "01/01/1601"
+  }
+ },
+ "CALC-267": {
+  "program": "drv04",
+  "input": {
+   "date": "25/12/2026"
+  }
+ },
+ "CALC-268": {
+  "program": "drv04",
+  "input": {
+   "date": "01/01/2024/"
+  }
+ },
+ "CALC-269": {
+  "program": "drvvat",
+  "input": {
+   "net": "100.00",
+   "rate": "20.00"
+  }
+ },
+ "CALC-270": {
+  "program": "drvvat",
+  "input": {
+   "net": "100.00",
+   "rate": "17.50"
+  }
+ },
+ "CALC-271": {
+  "program": "drvvat",
+  "input": {
+   "net": "0.01",
+   "rate": "20.00"
+  }
+ },
+ "CALC-272": {
+  "program": "drvvat",
+  "input": {
+   "net": "0.03",
+   "rate": "17.50"
+  }
+ },
+ "CALC-273": {
+  "program": "drvvat",
+  "input": {
+   "net": "1.25",
+   "rate": "20.00"
+  }
+ },
+ "CALC-274": {
+  "program": "drvvat",
+  "input": {
+   "net": "1.23",
+   "rate": "5.00"
+  }
+ },
+ "CALC-275": {
+  "program": "drvvat",
+  "input": {
+   "net": "99.99",
+   "rate": "20.00"
+  }
+ },
+ "CALC-276": {
+  "program": "drvvat",
+  "input": {
+   "net": "12.34",
+   "rate": "17.50"
+  }
+ },
+ "CALC-277": {
+  "program": "drvvat",
+  "input": {
+   "net": "-100.00",
+   "rate": "20.00"
+  }
+ },
+ "CALC-278": {
+  "program": "drvvat",
+  "input": {
+   "net": "-0.03",
+   "rate": "17.50"
+  }
+ },
+ "CALC-279": {
+  "program": "drvvat",
+  "input": {
+   "net": "1234567.89",
+   "rate": "20.00"
+  }
+ },
+ "CALC-280": {
+  "program": "drvvat",
+  "input": {
+   "net": "0.15",
+   "rate": "5.00"
+  }
+ },
+ "CALC-281": {
+  "program": "drvvat",
+  "input": {
+   "net": "0.35",
+   "rate": "5.00"
+  }
+ },
+ "CALC-282": {
+  "program": "drvvat",
+  "input": {
+   "net": "1.05",
+   "rate": "5.00"
+  }
+ },
+ "CALC-283": {
+  "program": "drvvat",
+  "input": {
+   "net": "0.05",
+   "rate": "5.00"
+  }
+ },
+ "CALC-284": {
+  "program": "drvvat",
+  "input": {
+   "net": "0.25",
+   "rate": "1.00"
+  }
+ },
+ "CALC-285": {
+  "program": "drvvat",
+  "input": {
+   "net": "0.07",
+   "rate": "5.00"
+  }
+ },
+ "CALC-286": {
+  "program": "drvvat",
+  "input": {
+   "net": "0.09",
+   "rate": "5.00"
+  }
+ },
+ "CALC-287": {
+  "program": "drvvat",
+  "input": {
+   "net": "0.45",
+   "rate": "5.00"
+  }
+ },
+ "CALC-288": {
+  "program": "drvvat",
+  "input": {
+   "net": "2.50",
+   "rate": "0.10"
+  }
+ },
+ "CALC-289": {
+  "program": "drvvat",
+  "input": {
+   "net": "0.10",
+   "rate": "5.00"
+  }
+ },
+ "CALC-290": {
+  "program": "drvvat",
+  "input": {
+   "net": "0.30",
+   "rate": "5.00"
+  }
+ },
+ "CALC-291": {
+  "program": "drvvat",
+  "input": {
+   "net": "0.50",
+   "rate": "1.00"
+  }
+ },
+ "CALC-292": {
+  "program": "drvvat",
+  "input": {
+   "net": "0.70",
+   "rate": "5.00"
+  }
+ },
+ "CALC-293": {
+  "program": "drvvat",
+  "input": {
+   "net": "-0.10",
+   "rate": "5.00"
+  }
+ },
+ "CALC-294": {
+  "program": "drvvat",
+  "input": {
+   "net": "12.35",
+   "rate": "10.00"
+  }
+ },
+ "CALC-295": {
+  "program": "drvvat",
+  "input": {
+   "net": "0.05",
+   "rate": "10.00"
+  }
+ },
+ "CALC-296": {
+  "program": "drvage",
+  "input": {
+   "days": 0
+  }
+ },
+ "CALC-297": {
+  "program": "drvage",
+  "input": {
+   "days": 29
+  }
+ },
+ "CALC-298": {
+  "program": "drvage",
+  "input": {
+   "days": 30
+  }
+ },
+ "CALC-299": {
+  "program": "drvage",
+  "input": {
+   "days": 59
+  }
+ },
+ "CALC-300": {
+  "program": "drvage",
+  "input": {
+   "days": 60
+  }
+ },
+ "CALC-301": {
+  "program": "drvage",
+  "input": {
+   "days": 89
+  }
+ },
+ "CALC-302": {
+  "program": "drvage",
+  "input": {
+   "days": 90
+  }
+ },
+ "CALC-303": {
+  "program": "drvage",
+  "input": {
+   "days": 365
+  }
+ },
+ "CALC-304": {
+  "program": "drvavg",
+  "input": {
+   "value": "1000.00",
+   "qty": 3
+  }
+ },
+ "CALC-305": {
+  "program": "drvavg",
+  "input": {
+   "value": "100.00",
+   "qty": 7
+  }
+ },
+ "CALC-306": {
+  "program": "drvavg",
+  "input": {
+   "value": "1234.56",
+   "qty": 100
+  }
+ },
+ "CALC-307": {
+  "program": "drvavg",
+  "input": {
+   "value": "0.10",
+   "qty": 3
+  }
+ },
+ "CALC-308": {
+  "program": "drvavg",
+  "input": {
+   "value": "99999.99",
+   "qty": 1
+  }
+ },
+ "CALC-309": {
+  "program": "",
+  "input": {
+   "action": "setup",
+   "password": "TEST"
+  }
+ },
+ "CALC-310": {
+  "program": "",
+  "input": {
+   "action": "save",
+   "user_name": "テスト社"
+  }
+ },
+ "CALC-311": {
+  "program": "",
+  "input": {
+   "action": "login",
+   "password": "XXXX"
+  }
+ },
+ "CALC-312": {
+  "program": "",
+  "input": {
+   "action": "login",
+   "password": "TEST"
+  }
+ },
+ "CALC-313": {
+  "program": "",
+  "input": {
+   "action": "login_x6",
+   "password": "XXXX"
+  }
+ },
+ "CALC-314": {
+  "program": "",
+  "input": {
+   "action": "change_password"
+  }
+ },
+ "CALC-315": {
+  "program": "",
+  "input": {
+   "action": "get_uninit"
+  }
+ },
+ "CALC-316": {
+  "program": "",
+  "input": {
+   "action": "backend_down"
+  }
+ },
+ "CALC-317": {
+  "program": "",
+  "input": {
+   "route": "/"
+  }
+ },
+ "CALC-318": {
+  "program": "",
+  "input": {
+   "route": "/sales"
+  }
+ },
+ "CALC-319": {
+  "program": "",
+  "input": {
+   "route": "/purchase"
+  }
+ },
+ "CALC-320": {
+  "program": "",
+  "input": {
+   "route": "/general"
+  }
+ },
+ "CALC-321": {
+  "program": "",
+  "input": {
+   "route": "/stock"
+  }
+ },
+ "CALC-322": {
+  "program": "",
+  "input": {
+   "route": "/irs"
+  }
+ }
+}
