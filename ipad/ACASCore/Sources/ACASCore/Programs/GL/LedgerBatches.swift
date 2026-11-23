@@ -12,13 +12,16 @@ public struct JournalLine: Identifiable {
     public let branch: String
     public let amount: Int64
     public let memo: String
+    public let tax: Int64
 
-    public init(date: DateComponents, account: String, branch: String = "00", amount: Int64, memo: String) {
+    public init(date: DateComponents, account: String, branch: String = "00", amount: Int64, memo: String,
+                tax: Int64 = 0) {
         self.date = date
         self.account = account
         self.branch = branch
         self.amount = amount
         self.memo = memo
+        self.tax = tax
     }
 }
 
@@ -63,7 +66,7 @@ public struct LedgerBatch: Identifiable {
 
 public struct LedgerBatches {
     public enum Error: Swift.Error {
-        case missingCompany, cycle, missingDefault, date, items, amount, account, text, capacity, storage
+        case missingCompany, cycle, missingDefault, missingTaxAccount, date, items, amount, account, text, capacity, storage
     }
 
     private static let batchPath = "ledgers/acas/batch.dat"
@@ -128,11 +131,23 @@ public struct LedgerBatches {
         let chart = ChartOfAccounts(context)
         let branchEnabled = ["P", "B"].contains(settings.str("p-c"))
         let defaultBranch = branchEnabled ? draft.defaultBranch : "00"
+        let defaults = GeneralLedgerSetup(context).defaults
         guard (1...32).contains(draft.defaultNumber),
-              let template = GeneralLedgerSetup(context).defaults.first(where: { $0.id == draft.defaultNumber }),
+              let template = defaults.first(where: { $0.id == draft.defaultNumber }),
               chart.account(code: template.account, branch: defaultBranch) != nil else { throw Error.missingDefault }
         guard (0...99).contains(draft.expectedItems), (1...99).contains(lines.count) else { throw Error.items }
         guard (0..<100_000_000_000).contains(draft.gross), (0...draft.gross).contains(draft.tax) else { throw Error.amount }
+        let vatNumber: Int?
+        switch template.tax {
+        case .input: vatNumber = 31
+        case .output: vatNumber = 32
+        default: vatNumber = nil
+        }
+        let vatAccount = vatNumber.flatMap { number in defaults.first(where: { $0.id == number })?.account }
+        if draft.tax != 0 || lines.contains(where: { $0.tax != 0 }) {
+            guard let vatAccount, chart.account(code: vatAccount, branch: defaultBranch) != nil
+            else { throw Error.missingTaxAccount }
+        }
         let entered = try Self.date(draft.date)
         let number = Int(settings.int("next-batch"))
         let start = Int(settings.int("postings")) + 1
@@ -155,7 +170,9 @@ public struct LedgerBatches {
         let records = try lines.enumerated().map { index, line -> Record in
             let branch = branchEnabled ? line.branch : "00"
             guard chart.account(code: line.account, branch: branch) != nil else { throw Error.account }
-            guard line.amount != 0, (-9_999_999_999...9_999_999_999).contains(line.amount) else { throw Error.amount }
+            let amountRange: ClosedRange<Int64> = -9_999_999_999...9_999_999_999
+            guard line.amount != 0 || line.tax != 0,
+                  amountRange.contains(line.amount), amountRange.contains(line.tax) else { throw Error.amount }
             let date = Maps04.toDate(try Self.date(line.date))
             var posting = Record(Self.postingLayout)
             posting.setInt("batch", Int64(number))
@@ -170,6 +187,9 @@ public struct LedgerBatches {
             posting.setInt("amount", line.amount)
             posting["memo"] = try Self.checked(line.memo, width: 32)
             posting["vat-side"] = draft.direction.rawValue
+            posting["vat-account"] = vatAccount ?? "000000"
+            posting["vat-branch"] = defaultBranch
+            posting.setInt("vat-amount", line.tax)
             return posting
         }
         guard batches.read(key: batches.key(of: batch)) == nil else { throw Error.storage }

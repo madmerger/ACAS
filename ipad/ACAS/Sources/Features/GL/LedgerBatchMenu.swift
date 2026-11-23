@@ -46,6 +46,7 @@ private struct LedgerBatchEditor: View {
         var account = ""
         var branch = "00"
         var amount = ""
+        var tax = ""
         var memo = ""
     }
 
@@ -59,6 +60,7 @@ private struct LedgerBatchEditor: View {
     @State private var description = ""
     @State private var count = ""
     @State private var gross = ""
+    @State private var tax = ""
     @State private var date = Date()
     @State private var error: String?
 
@@ -70,6 +72,11 @@ private struct LedgerBatchEditor: View {
 
     private var usesBranches: Bool {
         ["P", "B"].contains(CompanySetup(workspace.context).settings.text("p-c"))
+    }
+
+    private var usesTax: Bool {
+        let selected = defaults.first(where: { $0.id == selectedDefault })?.tax
+        return selected == .input || selected == .output
     }
 
     var body: some View {
@@ -90,6 +97,7 @@ private struct LedgerBatchEditor: View {
                 field("batch-description", $description)
                 field("batch-count", $count, type: .numberPad)
                 field("batch-gross", $gross, type: .numbersAndPunctuation)
+                if usesTax { field("batch-tax", $tax, type: .numbersAndPunctuation) }
             }
             ForEach($entries) { $entry in
                 Section(ledgerText("batch-line")) {
@@ -97,6 +105,7 @@ private struct LedgerBatchEditor: View {
                     field("account-code", $entry.account, type: .numberPad)
                     if usesBranches { field("batch-line-branch", $entry.branch, type: .numberPad) }
                     field("batch-amount", $entry.amount, type: .numbersAndPunctuation)
+                    if usesTax { field("batch-line-tax", $entry.tax, type: .numbersAndPunctuation) }
                     field("batch-memo", $entry.memo)
                     Button(ledgerText("batch-remove-line"), role: .destructive) { entries.removeAll { $0.id == entry.id } }
                 }
@@ -141,10 +150,11 @@ private struct LedgerBatchEditor: View {
             draft.description = description
             draft.expectedItems = Int(count.isEmpty ? "0" : count) ?? -1
             draft.gross = try money(gross)
+            draft.tax = usesTax ? try money(tax) : 0
             draft.defaultBranch = defaultBranch
             let lines = try entries.map {
                 JournalLine(date: parts($0.date), account: $0.account, branch: $0.branch,
-                            amount: try money($0.amount), memo: $0.memo)
+                            amount: try money($0.amount), memo: $0.memo, tax: usesTax ? try money($0.tax) : 0)
             }
             _ = try LedgerBatches(workspace.context).add(draft, lines: lines)
             workspace.completed("gl-batch")

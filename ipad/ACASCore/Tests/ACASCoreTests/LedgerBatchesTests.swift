@@ -3,6 +3,34 @@ import SQLite3
 import XCTest
 
 final class LedgerBatchesTests: XCTestCase {
+    func testTaxAmountsAndAccountAreWrittenToTheBatchAndPosting() throws {
+        let store = try FileStore()
+        let context = BusinessContext(store: store)
+        let setup = CompanySetup(context)
+        var settings = setup.settings
+        try settings.setText("TEST", for: "usera")
+        try settings.setNumber(1, for: "scycle")
+        try setup.save(settings)
+        let chart = ChartOfAccounts(context)
+        try chart.add(code: "300000", name: "CONTROL", type: 0, placement: "S", level: 1)
+        try chart.add(code: "300001", name: "BANK", type: 1, placement: "", level: 0)
+        try GeneralLedgerSetup(context).saveDefault(number: 1, account: "300001", transactionCode: "GL", tax: .input)
+        let date = DateComponents(year: 2026, month: 11, day: 23)
+        var draft = LedgerBatchDraft(cycle: 1, defaultNumber: 1, direction: .debit, date: date)
+        draft.gross = 120
+        draft.tax = 20
+        let line = JournalLine(date: date, account: "300001", amount: 100, memo: "", tax: 20)
+        let batches = LedgerBatches(context)
+        XCTAssertThrowsError(try batches.add(draft, lines: [line]))
+        try GeneralLedgerSetup(context).saveDefault(number: 31, account: "300000", transactionCode: "", tax: .noTax)
+        XCTAssertEqual(try batches.add(draft, lines: [line]), 1)
+        let batch = try XCTUnwrap(store.read("ledgers/acas/batch.dat", key: Array("100001".utf8)))
+        XCTAssertEqual(Array(batch[34..<40]), [0, 0, 0, 0, 0x02, 0x0F])
+        let posting = try XCTUnwrap(RelativeFile(store, path: "ledgers/acas/posting.dat", recordSize: 98).read(2))
+        XCTAssertEqual(String(decoding: posting[78..<88], as: UTF8.self), "30000000DR")
+        XCTAssertEqual(String(decoding: posting[88..<98], as: UTF8.self), "0000000020")
+    }
+
     func testDefaultAndLineKeepTheirOwnBranches() throws {
         let store = try FileStore()
         let context = BusinessContext(store: store)
