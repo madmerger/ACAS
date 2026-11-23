@@ -1,6 +1,7 @@
 param(
     [string] $Dotnet = 'dotnet',
-    [string] $Screenshot
+    [string] $Screenshot,
+    [string] $WorkDirectory = [IO.Path]::GetTempPath()
 )
 
 $ErrorActionPreference = 'Stop'
@@ -16,7 +17,7 @@ public static class AcasSmokeMouse {
 $ae = [System.Windows.Automation.AutomationElement]
 $scope = [System.Windows.Automation.TreeScope]::Descendants
 $windows = Split-Path (Split-Path $PSScriptRoot)
-$run = Join-Path $HOME "acas-menu-smoke-$([guid]::NewGuid())"
+$run = Join-Path $WorkDirectory "acas-menu-smoke-$([guid]::NewGuid())"
 New-Item -ItemType Directory -Path $run | Out-Null
 $process = $null
 
