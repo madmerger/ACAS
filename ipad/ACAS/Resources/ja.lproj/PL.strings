@@ -134,6 +134,10 @@
 "purchase.invoice.type.receipt" = "領収書";
 "purchase.report.generate" = "帳票を作成";
 "purchase.report.share" = "帳票を共有";
+"purchase.report.preview" = "帳票を表示";
+"purchase.report.preview.page" = "ページ";
+"purchase.report.preview.line" = "行";
+"purchase.report.preview.content" = "原本の内容";
 "purchase.report.empty" = "出力対象のデータがありません。";
 "purchase.report.filters" = "抽出条件";
 "purchase.report.aged" = "買掛金年齢表";
@@ -155,6 +159,7 @@
 "purchase.report.activity" = "取引件数";
 "purchase.report.average" = "平均取引額";
 "purchase.report.overdue" = "最終仕入からの日数";
+"purchase.report.overdue.help" = "この条件は現在残高が正の仕入先にのみ適用します。";
 "purchase.report.created" = "登録日";
 "purchase.report.threshold" = "比較値";
 "purchase.report.error.open_items" = "未決済明細が初期化されていません。";

@@ -35,6 +35,7 @@ struct PurchaseReportView: View {
     @State private var minimum: Decimal = 0
     @State private var alphabetical = false
     @State private var output: Data?
+    @State private var showingPreview = false
     @State private var empty = false
     @State private var notice: PurchaseNotice?
 
@@ -68,6 +69,11 @@ struct PurchaseReportView: View {
                         criterion("purchase.report.activity", $filter.activity)
                         criterion("purchase.report.average", $filter.average)
                         criterion("purchase.report.overdue", $filter.overdue)
+                        if filter.overdue.comparison != .any {
+                            Text(plString("purchase.report.overdue.help"))
+                                .font(.footnote)
+                                .foregroundStyle(.secondary)
+                        }
                         if mode != .file {
                             comparison("purchase.report.created", $filter.created.comparison)
                             if filter.created.comparison != .any {
@@ -81,6 +87,10 @@ struct PurchaseReportView: View {
                 Button(plString("purchase.report.generate"), action: generate)
                     .accessibilityIdentifier("pl.report.generate")
                 if let output {
+                    Button(plString("purchase.report.preview")) {
+                        showingPreview = true
+                    }
+                    .accessibilityIdentifier("pl.report.preview")
                     ShareLink(item: output, preview: SharePreview(mode.title)) {
                         Label(plString("purchase.report.share"), systemImage: "square.and.arrow.up")
                     }
@@ -90,6 +100,11 @@ struct PurchaseReportView: View {
             }
         }
         .navigationTitle(mode.title)
+        .sheet(isPresented: $showingPreview) {
+            if let output {
+                PurchaseReportPreview(title: mode.title, bytes: output) { showingPreview = false }
+            }
+        }
         .onAppear { date = ledger.processingDate }
         .purchaseAlert($notice)
     }
@@ -134,5 +149,70 @@ struct PurchaseReportView: View {
             }
             empty = output == nil
         } catch { notice = PurchaseNotice(error) }
+    }
+}
+
+private struct PurchaseReportPreview: View {
+    private struct Line: Identifiable {
+        let id: Int
+        let page: Int
+        let text: String
+    }
+
+    let title: String
+    private let lines: [Line]
+    let close: () -> Void
+
+    init(title: String, bytes: Data, close: @escaping () -> Void) {
+        self.title = title
+        self.close = close
+        var lines: [Line] = []
+        var page = 1
+        var start = bytes.startIndex
+        let raw = Array(bytes)
+        for (index, byte) in raw.enumerated() where byte == 10 || byte == 12 {
+            lines.append(Line(id: lines.count + 1, page: page, text: SJIS.decode(raw[start..<index])))
+            if byte == 12 { page += 1 }
+            start = index + 1
+        }
+        if start < raw.count {
+            lines.append(Line(id: lines.count + 1, page: page, text: SJIS.decode(raw[start...])))
+        }
+        self.lines = lines
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            HStack {
+                Text(title).font(.headline).accessibilityAddTraits(.isHeader)
+                Spacer()
+                Button("action.close", action: close)
+                    .accessibilityIdentifier("pl.report.preview.close")
+            }
+            .padding()
+            ScrollView([.horizontal, .vertical]) {
+                LazyVStack(alignment: .leading, spacing: 8) {
+                    row(plString("purchase.report.preview.page"), plString("purchase.report.preview.line"),
+                        plString("purchase.report.preview.content"))
+                        .fontWeight(.semibold)
+                        .accessibilityAddTraits(.isHeader)
+                    ForEach(lines) { line in
+                        row(String(line.page), String(line.id), line.text, numbered: true)
+                    }
+                }
+                .padding()
+            }
+            .defaultScrollAnchor(.topLeading)
+            .accessibilityIdentifier("pl.report.preview.lines")
+        }
+    }
+
+    private func row(_ page: String, _ line: String, _ content: String, numbered: Bool = false) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: 16) {
+            Text(page).frame(minWidth: 60, alignment: .leading)
+                .accessibilityIdentifier(numbered ? "pl.report.preview.page" : "pl.report.preview.page.heading")
+            Text(line).frame(minWidth: 60, alignment: .leading)
+            Text(content).font(.system(.body, design: .monospaced)).fixedSize()
+        }
     }
 }
