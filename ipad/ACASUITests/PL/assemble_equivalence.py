@@ -64,10 +64,11 @@ def main():
             raise ValueError(f"テスト終了時刻が録画範囲外です: {run}")
         rotation = fallback_rotation(stream)
         subprocess.run([
-            "ffmpeg", "-v", "error", "-y", "-ss", f"{trim:.6f}", "-i", str(source),
+            "ffmpeg", "-v", "error", "-y", "-i", str(source),
             "-t", f"{stop - trim:.6f}",
             "-an", "-vf", rotation + "scale=1440:1080:force_original_aspect_ratio=decrease,"
-            "pad=1440:1080:(ow-iw)/2:(oh-ih)/2,setsar=1,fps=24",
+            f"pad=1440:1080:(ow-iw)/2:(oh-ih)/2,setsar=1,fps=24:start_time=0,"
+            f"trim=start={trim:.6f},setpts=PTS-STARTPTS",
             "-c:v", "libx264", "-preset", "ultrafast", "-crf", "19", "-threads", "2", str(part),
         ], check=True)
         videos.append(part.resolve())
