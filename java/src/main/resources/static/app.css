@@ -1,0 +1,21 @@
+body { margin: 0; background: #10151c; color: #dfe6ee; font-family: "Noto Sans JP", "Meiryo", sans-serif; }
+header { display: flex; align-items: center; gap: 24px; padding: 8px 20px; background: #1b2530; border-bottom: 1px solid #33414f; }
+header h1 { font-size: 18px; margin: 0; } header small { font-weight: normal; color: #8fa3b8; margin-left: 8px; }
+nav { display: flex; gap: 12px; align-items: center; }
+nav button { background: #2d6cdf; color: #fff; border: 0; border-radius: 4px; padding: 6px 14px; font-size: 14px; cursor: pointer; }
+nav a { color: #8fc1ff; font-size: 14px; }
+#case-banner { background: #f5c542; color: #1a1a1a; font-weight: bold; font-size: 18px; padding: 6px 20px; }
+main { display: flex; flex-direction: column; align-items: center; padding: 14px; }
+#screen { background: #000; border: 2px solid #3d4c5c; border-radius: 6px; padding: 10px 12px; outline: none; }
+#screen:focus { border-color: #2d6cdf; }
+.row { display: flex; height: 25px; }
+.cell { display: inline-block; width: 13px; height: 25px; line-height: 25px; font-size: 20px; text-align: center; white-space: pre; overflow: visible;
+  font-family: "Noto Sans Mono CJK JP", "MS Gothic", "Osaka-Mono", "DejaVu Sans Mono", monospace; }
+.cell.w { width: 26px; }
+.cell.cur { background: #e8e8e8; color: #000 !important; }
+.c0 { color: #777 } .c1 { color: #5c8dff } .c2 { color: #46d369 } .c3 { color: #4fd8e8 } .c4 { color: #ff6b6b } .c5 { color: #e685ff } .c6 { color: #ffd84d } .c7 { color: #f0f0f0 }
+#status { margin-top: 10px; min-height: 22px; color: #ffd84d; }
+#keys { margin-top: 6px; color: #8fa3b8; font-size: 13px; }
+table { border-collapse: collapse; } td, th { border: 1px solid #44525f; padding: 3px 8px; font-size: 13px; }
+pre.report { background: #fff; color: #000; padding: 12px; font-family: "Noto Sans Mono CJK JP", "MS Gothic", monospace; font-size: 13px; overflow: auto; }
+.page { padding: 16px 24px; } .page a { color: #8fc1ff; }
