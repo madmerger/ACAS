@@ -2,6 +2,21 @@ import XCTest
 @testable import ACASCore
 
 final class SalesCustomerReportTests: XCTestCase {
+    func testUnconfiguredPageLengthUsesLegacyDefault() throws {
+        let store = try FileStore()
+        let service = SalesCustomerReport(BusinessContext(store: store))
+        let system = Record(SystemLayout.layout)
+        try RelativeFile(store, path: "ledgers/acas/system.dat", recordSize: 1024).write(1, system.bytes)
+        for index in 10..<20 {
+            var customer = Record(SalesProofRecords.salesLayout)
+            customer["sales-key"] = "CUST0\(index)"
+            XCTAssertEqual(SalesProofRecords.salesFile(store).write(customer), "00")
+        }
+
+        XCTAssertEqual(try service.generate(.init()).count, 10)
+        XCTAssertFalse(try XCTUnwrap(store.readRaw(SalesCustomerReport.exportPath)).contains(0x0c))
+    }
+
     func testFiltersAndPrintsInKeyOrderWithLegacyColumns() throws {
         let store = try FileStore()
         let context = BusinessContext(store: store, timeZone: .gmt)
