@@ -129,6 +129,25 @@ public sealed class PurchaseLedgerTests
     }
 
     [Fact]
+    public void 仕入転記は明細の当期と年累計を分析帳票に追加する()
+    {
+        using var db = Fixture("pl-invoice");
+        var ledger = new PurchaseLedger(db);
+        db.Remove(PurchaseLedger.AnalysisFile);
+        var group = ledger.NewAnalysis("a");
+        group.Set("description", "GROUP");
+        Assert.True(ledger.SaveAnalysis(group, true));
+        var detail = ledger.NewAnalysis("a1");
+        detail.Set("description", "DETAIL");
+        Assert.True(ledger.SaveAnalysis(detail, true));
+        Assert.Single(ledger.PostInvoices()!);
+        var totals = ledger.PurchaseAnalysisTotals()!;
+        Assert.Contains(new PurchaseAnalysisTotal("a1", "DETAIL", false, 1, 0, 1, 100m, 0m, 100m), totals);
+        Assert.Contains(new PurchaseAnalysisTotal("a", "GROUP", true, 1, 0, 1, 100m, 0m, 100m), totals);
+        Assert.Contains(totals, row => row is { Code: "vi", Current: 20m });
+    }
+
+    [Fact]
     public void 投稿済みの掛仕入の未決済レコードは旧バイト列と一致する()
     {
         using var db = Fixture("pl-invoice");

@@ -31,6 +31,7 @@ public sealed partial class PurchaseLedger
             int nextBatch = system.I("Next-Batch");
             int nextPosting = system.I("Postings") + 1;
 
+            if (!HasInvalidAnalysisLength && !AccumulatePurchaseAnalysis(pending)) return false;
             foreach (var batch in pending.Chunk(99))
             {
                 var general = GeneralLedgerEnabled;
