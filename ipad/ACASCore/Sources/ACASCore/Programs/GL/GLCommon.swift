@@ -404,5 +404,10 @@ enum GLTrans {
         }
         return out
     }
-    static func append(_ s: Session, _ path: String, _ r: Record) { s.store.appendRaw(path, r.bytes + [0x0a]) }
+    /// line sequential の WRITE は末尾の空白を落とす
+    static func append(_ s: Session, _ path: String, _ r: Record) {
+        var b = r.bytes
+        while b.last == 0x20 { b.removeLast() }
+        s.store.appendRaw(path, b + [0x0a])
+    }
 }
