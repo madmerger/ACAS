@@ -42,7 +42,7 @@ public class Pl060 extends PlBase {
         sys.setNum("file-status", 0, 28);
         sys.set("oi-5-flag", "Y");
         purch = purchRec();
-        oi = oiRec(); si = oiRec();
+        oi = oiRec(); si = Layout.of("purchase/wssoi.cob", "si-header").newRec();
         purchaseFile = purchaseFile(purch);
         oi4 = CobFile.sequential(ctx.store, ctx.path("openitm4.dat"));
         oi5 = oi5File();
