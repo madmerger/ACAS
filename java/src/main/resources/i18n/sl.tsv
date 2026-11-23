@@ -597,3 +597,10 @@ Less: Credit Notes Posted	減算: 転記済貸方票
       CN Late Chgs Taken	      貸方票の延滞料
 Balance Carried Forward	次期繰越残高
 Out Of Balance	不一致
+Letter Production	督促状作成
+*A/C Nos   [       ]                 ***	*顧客番号  [       ]                 ***
+ (1) - <A/C>   :  A/Cs To Match For Printing	 (1) - <顧客>  :  印刷対象とする顧客番号
+ (2) - <Value> :  Minimum O/S To Print	 (2) - <金額>  :  印刷する最小未決済額
+Low Date    - [  ]	低 日数     - [  ]
+Medium Date - [  ]	中 日数     - [  ]
+High Date   - [  ]	高 日数     - [  ]
