@@ -1,6 +1,10 @@
 package jp.co.acas.pl;
 
+import jp.co.acas.core.CobFile;
+import jp.co.acas.core.Layout;
 import jp.co.acas.core.Num;
+import jp.co.acas.core.Terminal;
+import jp.co.acas.sys.Maps04;
 import jp.co.acas.core.Program;
 import jp.co.acas.core.Rec;
 import jp.co.acas.sys.SystemFile;
@@ -40,6 +44,87 @@ abstract class PlBase extends Program {
         return d;
     }
 
+    /** zz050-Validate-Date: 入力日付（設定形式）→ 通算日。不正は 0。 */
+    protected long validateDate(String d) {
+        d = pad(d, 10).replace('.', '/').replace(',', '/').replace('-', '/');
+        return Maps04.toBin(toUk(d));
+    }
+
+    /** zz060-Convert-Date: 通算日 → 設定形式の日付文字列。 */
+    protected String binToDate(long bin) { return fromUk(Maps04.toDate(bin)); }
+
+    /** SCREEN SECTION の英数字入力項目は空白をプロンプト文字 '_' で表示する。 */
+    protected static Terminal.Field afield(int line, int col, int size, String value) {
+        return new Terminal.Field(line, col, size, pad(value, size).replace(' ', '_'));
+    }
+    protected static String aval(Terminal.Field f) { return f.value.replace('_', ' '); }
+
+    protected CobFile purchaseFile(Rec r) { return CobFile.indexed(ctx.store, ctx.path("purchled.dat"), r, "purch-key"); }
+    protected CobFile deliveryFile(Rec r) { return CobFile.indexed(ctx.store, ctx.path("delivery.dat"), r, "deliv-key"); }
+    protected static Rec purchRec() { return fdRec(Layout.of("copybooks/fdpl.cob", "Purch-Record")); }
+    protected static Rec delivRec() { return fdRec(Layout.of("copybooks/fddel.cob", "delivery-record")); }
+
+    /** FD レコード領域: FILLER は初期状態（LOW-VALUE）のまま残る。 */
+    protected static Rec fdRec(Layout l) {
+        Rec r = l.newRec();
+        fillers(l.root, 0, r.bytes(), null);
+        return r;
+    }
+
+    /** INITIALIZE: FILLER は変更しない（COBOL の規則）。 */
+    protected static void initialize(Rec r) {
+        byte[] save = r.copyBytes();
+        r.initialize();
+        fillers(r.layout.root, 0, r.bytes(), save);
+    }
+
+    private static void fillers(Layout.Field f, int delta, byte[] data, byte[] from) {
+        for (int i = 0; i < f.occurs; i++) {
+            int d = delta + i * (f.occurs > 1 ? f.size : 0);
+            if (f.kind == Layout.Kind.GROUP && !"filler".equals(f.name)) {
+                for (Layout.Field c : f.children) if (c.redefines == null) fillers(c, d, data, from);
+            } else if ("filler".equals(f.name) && f.redefines == null) {
+                for (int j = 0; j < f.size; j++) data[f.offset + d + j] = from == null ? 0 : from[f.offset + d + j];
+            }
+        }
+    }
+
+    /** 印刷ファイル（WRITE ... AFTER/BEFORE ADVANCING の再現）。close で行順ファイルへ書き出す。 */
+    protected final class Printer {
+        private final String name;
+        private final StringBuilder sb = new StringBuilder();
+        Printer(String name) { this.name = name; }
+        void after(String line, int n) { sb.append("\n".repeat(n)).append(rtrim(line)); }
+        void before(String line, int n) { sb.append(rtrim(line)).append("\n".repeat(n)); }
+        void afterPage(String line) { sb.append("\f").append(rtrim(line)); }
+        void close() {
+            CobFile f = CobFile.lineSequential(ctx.store, ctx.path(name));
+            f.open(CobFile.Mode.OUTPUT);
+            String t = sb.toString();
+            String[] lines = t.split("\n", -1);
+            int n = lines.length;
+            if (n > 0 && lines[n - 1].isEmpty()) n--;
+            for (int i = 0; i < n; i++) f.writeLine(lines[i]);
+            f.close();
+        }
+    }
+
+    /** call "SYSTEM" using Print-Report（prt-1 の印刷指示）。 */
+    protected void spoolPrt1() {
+        ctx.spool("prt-1", "lpr -r -o 'orientation-requested=4 page-left=21 page-top=48 page-right=10 "
+                + "sides=two-sided-long-edge cpi=12 lpi=8' -P " + sys.str("print-spool-name").trim() + " prt-1");
+    }
+
+    protected static String rtrim(String s) { return s.replaceAll("\\s+$", ""); }
+
+    /** 帳票行の組立て（桁位置は 1 始まり）。 */
+    protected static String at(String line, int col, String text) {
+        StringBuilder b = new StringBuilder(line);
+        while (b.length() < col - 1 + text.length()) b.append(' ');
+        b.replace(col - 1, col - 1 + text.length(), text);
+        return b.toString();
+    }
+
     protected static String pad(String s, int n) {
         if (s == null) s = "";
         if (s.length() >= n) return s.substring(0, n);
@@ -51,8 +136,10 @@ abstract class PlBase extends Program {
         if (call("maps99", code)) return;
         termCode(0);
         display(23, 1, "T-", 4);
+        show(23, 6, " ", 4);
         show(23, 3, Num.z9(code, 3), 4);
         display(23, 7, "Error not in error.txt. Hit return to close", 4);
+        show(23, 50, "       ", 4);
         accept(24, 79, 1);
     }
 }
