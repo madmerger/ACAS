@@ -4,7 +4,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from unittest.mock import Mock, patch
 from urllib.error import HTTPError
-from urllib.request import HTTPHandler, ProxyHandler, build_opener
+from urllib.request import HTTPCookieProcessor, HTTPHandler, ProxyHandler, build_opener
 from urllib.response import addinfourl
 
 import replay
@@ -24,9 +24,10 @@ class ReplayTest(unittest.TestCase):
         with patch("replay.urllib.request.build_opener") as build:
             for host in ["127.0.0.1", "[::1]", "localhost"]:
                 replay.Api(f"http://{host}:18080")
-                proxy, redirect = build.call_args.args
+                proxy, redirect, cookies = build.call_args.args
                 self.assertEqual(proxy.proxies, {})
                 self.assertIsInstance(redirect, replay.NoRedirect)
+                self.assertIsInstance(cookies, HTTPCookieProcessor)
 
     def test_api_sends_token_to_all_paths_and_does_not_follow_redirect(self):
         seen = []
