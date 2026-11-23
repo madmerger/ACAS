@@ -146,8 +146,7 @@ private struct SalesCustomerView: View {
         Section(slText("sales.customer.terms")) {
             termField("sales.customer.creditDays", text: $terms.creditDays)
             termField("sales.customer.creditLimit", text: $terms.creditLimit)
-            TextField(slText("sales.customer.discount"), value: discount(customer.discount), format: .number.grouping(.never))
-                .keyboardType(.decimalPad)
+            termField("sales.customer.discount", text: $terms.discount, keyboard: .decimalPad)
             Toggle(slText("sales.customer.lateCharge"), isOn: customer.lateCharges)
             termField("sales.customer.lateChargeMinimumBalance", text: $terms.lateChargeMinimumBalance)
             termField("sales.customer.lateChargeMaximum", text: $terms.lateChargeMaximum)
@@ -200,19 +199,12 @@ private struct SalesCustomerView: View {
         (Decimal(value) / 100).formatted(.number.precision(.fractionLength(2)))
     }
 
-    private func termField(_ key: String, text: Binding<String>) -> some View {
+    private func termField(_ key: String, text: Binding<String>, keyboard: UIKeyboardType = .numberPad) -> some View {
         LabeledContent(slText(String.LocalizationValue(key))) {
             TextField(slText(String.LocalizationValue(key)), text: text)
-                .keyboardType(.numberPad)
+                .keyboardType(keyboard)
                 .accessibilityIdentifier(key)
         }
-    }
-
-    private func discount(_ hundredths: Binding<Int64>) -> Binding<Decimal> {
-        Binding(get: { Decimal(hundredths.wrappedValue) / 100 }, set: {
-            let scaled = $0 * 100
-            hundredths.wrappedValue = (scaled >= 0 && scaled <= 9_999) ? NSDecimalNumber(decimal: scaled).int64Value : -1
-        })
     }
 
     private func lookup() {
@@ -273,6 +265,7 @@ private struct TermsInput {
 
     var creditDays = ""
     var creditLimit = ""
+    var discount = ""
     var lateChargeMinimumBalance = ""
     var lateChargeMaximum = ""
 
@@ -281,6 +274,7 @@ private struct TermsInput {
     init(_ customer: SalesLedger.Customer) {
         creditDays = String(customer.creditDays)
         creditLimit = String(customer.creditLimit)
+        discount = (Decimal(customer.discount) / 100).formatted(.number.locale(Locale(identifier: "ja_JP")).grouping(.never))
         lateChargeMinimumBalance = String(customer.lateChargeMinimumBalance)
         lateChargeMaximum = String(customer.lateChargeMaximum)
     }
@@ -288,6 +282,16 @@ private struct TermsInput {
     func apply(to customer: inout SalesLedger.Customer) throws {
         customer.creditDays = try integer(creditDays, maximum: 99)
         customer.creditLimit = try integer(creditLimit, maximum: 9_999_999)
+        let parts = discount.split(separator: ".", omittingEmptySubsequences: false)
+        guard (1...2).contains(parts.count), parts[0].count <= 2 else { throw Invalid() }
+        let whole = try integer(String(parts[0]), maximum: 99)
+        if parts.count == 2 {
+            let fraction = String(parts[1])
+            guard (1...2).contains(fraction.count) else { throw Invalid() }
+            customer.discount = try whole * 100 + integer(fraction, maximum: 99) * (fraction.count == 1 ? 10 : 1)
+        } else {
+            customer.discount = whole * 100
+        }
         customer.lateChargeMinimumBalance = try integer(lateChargeMinimumBalance, maximum: 9_999)
         customer.lateChargeMaximum = try integer(lateChargeMaximum, maximum: 9_999)
     }

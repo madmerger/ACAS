@@ -9,6 +9,11 @@ final class SalesCustomersFlows: XCTestCase {
     }
 
     @MainActor
+    func testDiscountWithThirdDecimalRejectsSave() throws {
+        try assertInvalidTerms(fieldID: "sales.customer.discount", replacement: "5.129")
+    }
+
+    @MainActor
     func testChangingLookupCodeDiscardsEditSelection() throws {
         let (app, input) = try launch("SL-400", operation: "edit")
         let code = app.textFields["sales.customer.code"]
