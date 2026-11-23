@@ -24,7 +24,7 @@ public static class SlPost
         t.V(Common.ToForm(c, toDay), 0171);
         t.D("Working...........Please Wait", 1201);
         // レガシー実測 (SL-007): Open Item 2 ファイルが無く書込エラーで停止する
-        t.D("SL121 Error writing to Open Item 2 File", 2301); t.V("35 File Not Found", 2341);
+        t.D("SL121 Error writing to Open Item 2 File", 2301); t.D("35 File Not Found", 2341);
         t.D("SL002 Note error and hit return", 2401);
         await t.A(2433, 1);
         throw new StopRun { KeepScreen = true };
