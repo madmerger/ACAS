@@ -121,10 +121,15 @@ final class SalesCustomersFlows: XCTestCase {
         let old = try XCTUnwrap(field.value as? String)
         field.tap()
         field.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: old.count) + replacement)
-        tap("sales.customer.save", in: app)
-        let result = app.staticTexts["sales.customer.result"]
-        XCTAssertTrue(result.waitForExistence(timeout: 5))
-        XCTAssertEqual(result.label, "取引条件の数値を指定の桁数で入力してください")
+        let save = app.buttons["sales.customer.save"]
+        XCTAssertTrue(save.waitForExistence(timeout: 5))
+        save.tap()
+        let alert = app.alerts["取引条件の数値を指定の桁数で入力してください"]
+        XCTAssertTrue(alert.waitForExistence(timeout: 5))
+        let proof = XCTAttachment(screenshot: app.screenshot())
+        proof.name = fieldID
+        proof.lifetime = .keepAlways
+        add(proof)
     }
 
     @MainActor

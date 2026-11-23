@@ -66,6 +66,7 @@ private struct SalesCustomerView: View {
     @State private var code = ""
     @State private var draft: SalesLedger.Customer?
     @State private var terms = TermsInput()
+    @State private var showsInvalidTerms = false
     @State private var result: String?
     @State private var confirmDelete = false
     @FocusState private var focused: Field?
@@ -127,6 +128,9 @@ private struct SalesCustomerView: View {
             Button(slText("sales.customer.confirmDelete"), role: .destructive) { close(permanently: true) }
                 .accessibilityIdentifier("sales.customer.confirmDelete")
             Button(slText("sales.action.cancel"), role: .cancel) {}
+        }
+        .alert(slText("sales.customer.error.invalidTerms"), isPresented: $showsInvalidTerms) {
+            Button(slText("sales.action.dismiss"), role: .cancel) {}
         }
     }
 
@@ -235,7 +239,9 @@ private struct SalesCustomerView: View {
                 result = slText("sales.customer.updated")
             }
         } catch is TermsInput.Invalid {
-            result = slText("sales.customer.error.invalidTerms")
+            result = nil
+            showsInvalidTerms = true
+            return
         } catch {
             result = SalesMessage.text(for: error)
         }
