@@ -419,3 +419,16 @@ Deduction Taken	控除適用
 ....Fully Paid	....全額入金済
 ....No Change	....変更なし
 Payment Too High	入金額超過
+Payment Data Amend	入金データ修正
+*Date    [  /  /    ]                  *	*日付    [  /  /    ]                  *
+*A/C Nos    [       ]                ***	*顧客       [       ]                ***
+Warning Unapplied Balance Journal	警告: 未充当残高の振替です
+Confirm No Action? i.e. Request Cancelled (Y/N)..[ ]	処理なし（依頼取消）でよいですか (Y/N)..........[ ]
+Make Further Corrections (Y/N) ? [Y]	続けて修正しますか (Y/N) ?       [Y]
+Reversing Please Wait	戻し処理中 お待ちください
+For Invoice No.	請求番号
+Enter Deduct Amount - [      ]	控除額を入力        - [      ]
+Amount Available =	利用可能額 =
+SL003 Hit Return To Continue	SL003 Enter で続行
+SL140 Not Yet Supporting Corrections	SL140 金額の修正には未対応です
+SL141 Amount Approp Or Deduct Amt Not Zero	SL141 充当額または控除額がゼロではありません
