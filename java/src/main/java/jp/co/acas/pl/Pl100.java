@@ -12,12 +12,12 @@ import java.math.BigDecimal;
 public class Pl100 extends PlBase {
     static final String PROG_NAME = "PL100 (3.01.04)";
     private static final String CR = "z(6)9.99cr", AMT = "z(6)9.99";
-    private Rec purch, oi, batch, post;
-    private CobFile purchaseFile, oi5, batchFile, postFile, irsFile;
-    private boolean gl, irs;
-    private Printer prt;
+    Rec purch, oi, batch, post;
+    CobFile purchaseFile, oi5, batchFile, postFile, irsFile;
+    boolean gl, irs;
+    Printer prt;
     private int page, lineCnt;
-    private String uDate = "";
+    String uDate = "";
 
     @Override
     public void run(Object... args) {
@@ -120,7 +120,7 @@ public class Pl100 extends PlBase {
         if (workA > purch.longv("purch-pay-worst")) purch.setNum("purch-pay-worst", workA);
     }
 
-    private void analiseDeductions(long n, BigDecimal tDeduct) {
+    void analiseDeductions(long n, BigDecimal tDeduct) {
         Rec val = fdRec(Layout.of("copybooks/fdval.cob", "value-record"));
         CobFile vf = CobFile.indexed(ctx.store, ctx.path("value.dat"), val, "va-code");
         vf.open(Mode.IO);
@@ -155,7 +155,7 @@ public class Pl100 extends PlBase {
         lineCnt = 5;
     }
 
-    private void blOpen() {
+    void blOpen() {
         batch = fdRec(Layout.of("copybooks/fdbatch.cob", "batch-record"));
         post = fdRec(Layout.of("copybooks/fdpost.cob", "posting-record"));
         batchFile = CobFile.indexed(ctx.store, ctx.path("batch.dat"), batch, "batch-key");
@@ -183,7 +183,7 @@ public class Pl100 extends PlBase {
         }
     }
 
-    private void blWrite() {
+    void blWrite() {
         post.set("post-date", uDate.substring(0, 6) + uDate.substring(8, 10));
         batch.setNum("items", batch.intv("items") + 1);
         post.setNum("post-number", batch.intv("items"));
@@ -219,7 +219,7 @@ public class Pl100 extends PlBase {
         if (batch.intv("items") == 99) { blClose(); blOpen(); }
     }
 
-    private void blClose() {
+    void blClose() {
         String st = batchFile.write(batch);
         if (!st.equals("00")) {
             display(23, 1, "PL132 Err on Batch file write : ");
