@@ -139,7 +139,53 @@ enum GL {
         let t = Maps04.normalized(test)
         if s.sys.int("date-form") == 0 { s.sys.setInt("date-form", 1) }
         let uk = Common.toUK(s, t)
-        return (uk, Maps04.toBinary(uk))
+        return (uk, toBinary(uk))
+    }
+
+    /// maps04 (日付 → バイナリ)。a-year は数字検査をしないため、数字以外 (空白等) は下位 4 ビットを数字として扱う
+    /// (例: 8 桁項目から渡された "23/11/20  " は 2000 年になる)。
+    static func toBinary(_ date: String) -> Int {
+        let a = Array(SJIS.encode(Maps04.normalized(date), size: 10))
+        func isNum(_ r: Range<Int>) -> Bool { a[r].allSatisfy { (0x30...0x39).contains($0) } }
+        func val(_ r: Range<Int>) -> Int { a[r].reduce(0) { $0 * 10 + Int($1 & 0x0f) } }
+        guard a.filter({ $0 == 0x2f }).count == 2, isNum(0..<2), isNum(3..<5), isNum(6..<8),
+              (1...31).contains(val(0..<2)), (1...12).contains(val(3..<5)) else { return 0 }
+        guard a[8..<10].allSatisfy({ ($0 & 0x0f) <= 9 }) else { return 0 }
+        let y = val(6..<8) * 100 + val(8..<10)
+        guard Maps04.validYMD(y, val(3..<5), val(0..<2)) else { return 0 }
+        return Maps04.integerOfDate(year: y, month: val(3..<5), day: val(0..<2))
+    }
+
+    // 相対編成 posting.dat の補助 (レコード長 8 バイト + 本体)
+    static func relRead(_ s: Session, _ rrn: Int) -> [UInt8]? { rrn >= 1 ? postingFile(s).read(rrn) : nil }
+    /// WRITE (既にあれば invalid key で false)
+    @discardableResult
+    static func relWrite(_ s: Session, _ rrn: Int, _ data: [UInt8]) -> Bool {
+        guard rrn >= 1 else { return false }
+        let f = postingFile(s)
+        if f.read(rrn) != nil { return false }
+        f.write(rrn, data)
+        return true
+    }
+    static func relRewrite(_ s: Session, _ rrn: Int, _ data: [UInt8]) { if rrn >= 1 { postingFile(s).write(rrn, data) } }
+    static func relDelete(_ s: Session, _ rrn: Int) {
+        let path = s.ledgers + "posting.dat"
+        guard rrn >= 1, var d = s.store.readRaw(path) else { return }
+        let slot = postingLayout.size + 8, off = (rrn - 1) * slot
+        guard off + slot <= d.count else { return }
+        d.replaceSubrange(off..<(off + slot), with: [UInt8](repeating: 0, count: slot))
+        s.store.writeRaw(path, d)
+    }
+    static func relCount(_ s: Session) -> Int { postingFile(s).recordCount }
+    /// READ NEXT: rrn より後で最初に存在するレコード
+    static func relNext(_ s: Session, after rrn: Int) -> (rrn: Int, data: [UInt8])? {
+        let n = relCount(s)
+        var r = max(rrn, 0) + 1
+        while r <= n {
+            if let d = relRead(s, r) { return (r, d) }
+            r += 1
+        }
+        return nil
     }
 
     /// accept from lines (端末は 24 行固定)
