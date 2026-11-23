@@ -1,0 +1,35 @@
+/* sales.cbl — 売掛元帳メニュー */
+"sl.menu_title" = "Sales Ledger System Menu";
+"sl.item_a" = "(A)  Date Entry";
+"sl.item_b" = "(B)  Customer File Maintenance";
+"sl.item_c" = "(C)  Sales Ledger Enquiry";
+"sl.item_d" = "(D)  Sales Transactions Input";
+"sl.item_e" = "(E)  Sales Transactions Amend";
+"sl.item_f" = "(F)  Sales Transactions Proof";
+"sl.item_g" = "(G)  Sales Transactions Post";
+"sl.item_h" = "(H)  Payment Input";
+"sl.item_i" = "(I)  Payment Amend";
+"sl.item_j" = "(J)  Payment Proof";
+"sl.item_k" = "(K)  Payment Post";
+"sl.item_l" = "(L)  Set-Up Sales Analysis Codes";
+"sl.item_m" = "(M)  Sales Analysis Report";
+"sl.item_n" = "(N)  Sales Day Book";
+"sl.item_o" = "(O)  Statement Production";
+"sl.item_p" = "(P)  Dunning Letters Generation";
+"sl.item_q" = "(Q)  Aged Debtors Analysis";
+"sl.item_r" = "(R)  Alphabetical Customer List";
+"sl.item_s" = "(S)  Customer Turnover Report";
+"sl.item_t" = "(T)  Invoice Sub-System";
+"sl.item_u" = "(U)  End of Cycle Processing";
+"sl.item_v" = "(V)  Customer File Dump";
+"sl.item_x" = "(X)  Exit To ";
+"sl.item_z" = "(Z)  System Setup";
+"sl.using" = "Using ";
+"sl.no_backup_script" = "No BackUp Script in Bin/Data";
+"sl.client" = "Client -";
+/* sl000.cbl — Start Of Day */
+"sl000.title" = "Sales Ledger  Start Of Day";
+"sl000.enter_date_uk" = "Enter todays date as dd/mm/yyyy - [          ]";
+"sl000.enter_date_usa" = "Enter todays date as mm/dd/yyyy - [          ]";
+"sl000.enter_date_intl" = "Enter todays date as yyyy/mm/dd - [          ]";
+"sl000.sl005" = "SL005 Invalid Date";

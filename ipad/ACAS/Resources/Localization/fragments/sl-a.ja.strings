@@ -1,0 +1,35 @@
+/* sales.cbl — 売掛元帳メニュー */
+"sl.menu_title" = "売掛元帳 メニュー";
+"sl.item_a" = "(A)  日付入力";
+"sl.item_b" = "(B)  得意先マスタ保守";
+"sl.item_c" = "(C)  売掛元帳照会";
+"sl.item_d" = "(D)  売上取引入力";
+"sl.item_e" = "(E)  売上取引修正";
+"sl.item_f" = "(F)  売上取引プルーフ";
+"sl.item_g" = "(G)  売上取引転記";
+"sl.item_h" = "(H)  入金入力";
+"sl.item_i" = "(I)  入金修正";
+"sl.item_j" = "(J)  入金プルーフ";
+"sl.item_k" = "(K)  入金転記";
+"sl.item_l" = "(L)  売上分析コード設定";
+"sl.item_m" = "(M)  売上分析表";
+"sl.item_n" = "(N)  売上日計帳";
+"sl.item_o" = "(O)  請求明細書発行";
+"sl.item_p" = "(P)  督促状作成";
+"sl.item_q" = "(Q)  売掛金年齢調べ";
+"sl.item_r" = "(R)  得意先名順一覧";
+"sl.item_s" = "(S)  得意先別売上高表";
+"sl.item_t" = "(T)  請求書サブシステム";
+"sl.item_u" = "(U)  期末処理";
+"sl.item_v" = "(V)  得意先ファイル出力";
+"sl.item_x" = "(X)  終了    ";
+"sl.item_z" = "(Z)  システム設定";
+"sl.using" = "使用: ";
+"sl.no_backup_script" = "バックアップ手順なし";
+"sl.client" = "会社 -";
+/* sl000.cbl — Start Of Day */
+"sl000.title" = "売掛元帳  業務開始";
+"sl000.enter_date_uk" = "本日の日付を入力 dd/mm/yyyy     - [          ]";
+"sl000.enter_date_usa" = "本日の日付を入力 mm/dd/yyyy     - [          ]";
+"sl000.enter_date_intl" = "本日の日付を入力 yyyy/mm/dd     - [          ]";
+"sl000.sl005" = "SL005 日付が不正";
