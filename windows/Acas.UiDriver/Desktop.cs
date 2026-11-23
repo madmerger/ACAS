@@ -25,17 +25,7 @@ internal sealed class Desktop : IDisposable
             string path = LocalDatabasePath.Resolve(Path.Combine(_folder, "ui.db"));
             if (audit)
             {
-                using (var db = new Db(path))
-                {
-                    db.LoadBaseline("biz");
-                    foreach (var (key, data) in db.Scan(GeneralLedger.LedgerFile))
-                    {
-                        var record = Layouts.Ledger.From(data);
-                        record.Set("name", "監査用勘定");
-                        db.Put(GeneralLedger.LedgerFile, key, record.B);
-                    }
-                    db.AddSpool("検証帳票", "日本語表示を確認する検証帳票");
-                }
+                using (var db = new Db(path)) SeedAudit(db);
                 SqliteConnection.ClearAllPools();
             }
             var start = new ProcessStartInfo(Path.GetFullPath(executable)) { UseShellExecute = false };
@@ -54,6 +44,33 @@ internal sealed class Desktop : IDisposable
             Dispose();
             throw;
         }
+    }
+
+    private static void SeedAudit(Db db)
+    {
+        db.LoadBaseline("biz");
+        var settings = new SystemSettings(db);
+        var system = settings.Read()!;
+        foreach (string field in new[] { "Usera", "Address-1", "Address-2", "Address-3", "Address-4",
+            "Post-Code", "Country", "VAT-Reg-Number", "Print-Spool-Name", "Print-Spool-Name2", "Print-Spool-Name3" })
+            system.Set(field, "123");
+        system.Set("Arch", "Y");
+        db.Rewrite(SystemSettings.SystemFile, "00000001", system.B);
+        foreach (var (key, data) in db.Scan(GeneralLedger.LedgerFile))
+        {
+            var record = Layouts.Ledger.From(data);
+            record.Set("name", key);
+            db.Put(GeneralLedger.LedgerFile, key, record.B);
+        }
+        var journal = new JournalEntry(db);
+        journal.Open();
+        var date = SystemSettings.Date(system, "Run-Date") ?? new DateTime(2025, 4, 1);
+        var header = new JournalHeader(system.I("Next-Batch"), new(33, 3000m, "", "N"),
+            0, true, date, system.I("Cyclea"), 1, 100m, 0m, "1");
+        var status = journal.Save(header, [new(date, new(4000, 0), 100m, "2")]);
+        if (status != JournalError.None)
+            throw new InvalidOperationException($"監査用の仕訳を作成できません（{(int)status}）。");
+        db.AddSpool("検証帳票", "日本語表示を確認する検証帳票");
     }
 
     public string Calculate(string id, string first, string second)
@@ -97,7 +114,7 @@ internal sealed class Desktop : IDisposable
         item.Select();
     }
 
-    private static T Wait<T>(Func<T?> find, string name) where T : class
+    internal static T Wait<T>(Func<T?> find, string name) where T : class
     {
         var timer = Stopwatch.StartNew();
         do

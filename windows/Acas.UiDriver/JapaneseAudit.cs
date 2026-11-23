@@ -100,22 +100,35 @@ internal static partial class JapaneseAudit
             if (desktop.Confirmation() is { } dialog)
             {
                 Inspect(route, dialog.AsWindow());
-                bool opensReport = actions.LastOrDefault() == "CreateSettingsReport";
-                string buttonId = opensReport ? "ConfirmationConfirm" : "ConfirmationCancel";
-                (dialog.FindFirstDescendant(c => c.ByAutomationId(buttonId)) ??
-                    throw new InvalidOperationException("確認画面の操作が見つかりません。")).AsButton().Invoke();
-                for (int attempt = 0; attempt < 12 && desktop.Confirmation() is not null; attempt++) Thread.Sleep(50);
-                if (opensReport)
+                string? action = actions.LastOrDefault();
+                switch (action)
                 {
-                    var document = desktop.Find("ReportDocument");
-                    if (!document.Patterns.Text.IsSupported ||
-                        string.IsNullOrWhiteSpace(document.Patterns.Text.Pattern.DocumentRange.GetText(-1)))
-                        gaps.Add($"{route}：確認後の帳票本文を取得できません。");
-                    else
-                        Inspect(route + " / 確認後の帳票", desktop.Window);
+                    case "CreateSettingsReport" or "ProofAllBatches" or "JournalPostConfirm":
+                        ClickDialog(dialog, "ConfirmationConfirm");
+                        InspectReport(route);
+                        break;
+                    case "JournalCloseBackup":
+                        ClickDialog(dialog, "ConfirmationConfirm");
+                        var archive = Desktop.Wait(() => desktop.Confirmation() is { } next && !next.Equals(dialog) ? next : null,
+                            "仕訳の保管確認");
+                        Inspect(route + " / 仕訳の保管確認", archive);
+                        ClickDialog(archive, "ConfirmationConfirm");
+                        desktop.Find("ScreenMessage");
+                        Inspect(route + " / 締め処理結果", desktop.Window);
+                        break;
+                    case "SortArchivedLedger":
+                        ClickDialog(dialog, "ConfirmationConfirm");
+                        desktop.Find("ArchiveAccount");
+                        Inspect(route + " / 元帳印刷の指定", desktop.Window);
+                        desktop.Find("FormSubmit").AsButton().Invoke();
+                        InspectReport(route);
+                        break;
+                    default:
+                        ClickDialog(dialog, "ConfirmationCancel");
+                        for (int attempt = 0; attempt < 12 && desktop.Confirmation() is not null; attempt++) Thread.Sleep(50);
+                        gaps.Add($"{route}：確認後の画面は未監査です（取消）。");
+                        break;
                 }
-                else
-                    gaps.Add($"{route}：確認後の画面は未監査です（取消）。");
                 return;
             }
             Inspect(route, desktop.Window);
@@ -143,6 +156,20 @@ internal static partial class JapaneseAudit
                     catch (Exception e) { gaps.Add($"{route} / {item}：{e.Message}"); }
                 }
         }
+
+        void InspectReport(string route)
+        {
+            var document = desktop.Find("ReportDocument");
+            if (!document.Patterns.Text.IsSupported ||
+                string.IsNullOrWhiteSpace(document.Patterns.Text.Pattern.DocumentRange.GetText(-1)))
+                gaps.Add($"{route}：確認後の帳票本文を取得できません。");
+            else
+                Inspect(route + " / 確認後の帳票", desktop.Window);
+        }
+
+        static void ClickDialog(Window dialog, string buttonId) =>
+            (dialog.FindFirstDescendant(c => c.ByAutomationId(buttonId)) ??
+                throw new InvalidOperationException("確認画面の操作が見つかりません。")).AsButton().Invoke();
 
         void Inspect(string screen, Window window)
         {
