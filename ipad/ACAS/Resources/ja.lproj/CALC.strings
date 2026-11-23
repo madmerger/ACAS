@@ -1,0 +1,5 @@
+"calculation.title" = "チェックディジットの計算";
+"calculation.code" = "６桁のコード";
+"calculation.valid" = "有効なコードです";
+"calculation.invalid" = "入力したコードは無効です";
+"calculation.action.calculate" = "計算";

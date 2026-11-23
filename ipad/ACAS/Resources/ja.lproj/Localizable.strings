@@ -1,0 +1,17 @@
+"app.title" = "会計管理";
+"database.failed" = "データベースを開けません";
+"menu.select" = "メニューを選んでください";
+"menu.pending" = "この機能はまだ利用できません";
+"section.general" = "総勘定元帳";
+"section.sales" = "売掛元帳";
+"section.purchases" = "買掛元帳";
+"section.stock" = "在庫管理";
+"section.orders" = "受注管理";
+"section.payroll" = "給与管理";
+"section.retail" = "店頭販売";
+"section.incomplete" = "簡易記帳";
+"section.system" = "システム設定";
+"action.close" = "閉じる";
+"case.running" = "実施中";
+"case.match" = "一致";
+"case.mismatch" = "不一致";
