@@ -16,13 +16,13 @@ final class WebScreen {
     private static final Pattern OPTIONS = Pattern.compile("(?i)[Yy]/[Nn]|[Nn]/[Yy]");
 
     private record Output(String original, String label, int width, boolean data, int color) { }
-    record Input(int row, int col, int size, String value, boolean secure, boolean numeric) { }
+    record Input(int row, int col, int size, String value, boolean secure, boolean numeric, boolean autoAdvance) { }
     record Field(int id, String label, int length, String value, boolean secure, boolean numeric) { }
     record Choice(String key, String label) { }
     record Line(List<String> cells, boolean error, boolean data) { }
     record View(String title, List<Field> fields, List<Choice> choices, List<Line> lines,
                 int activeField, int caret, boolean confirm, boolean cancel, List<Choice> actions,
-                boolean multiple, boolean yesNo) { }
+                boolean multiple, boolean yesNo, boolean autoAdvance) { }
 
     private final List<NavigableMap<Integer, Output>> rows = new ArrayList<>();
 
@@ -96,7 +96,8 @@ final class WebScreen {
         choices.sort(java.util.Comparator.comparing(Choice::key));
         return new View(title, fields, choices, lines, active, caret, !fields.isEmpty(), cancel,
                 actions.entrySet().stream().map(e -> new Choice(e.getKey(), e.getValue())).toList(),
-                multiple, yesNo && inputs.size() == 1 && inputs.getFirst().size() == 1);
+                multiple, yesNo && inputs.size() == 1 && inputs.getFirst().size() == 1,
+                inputs.size() == 1 && inputs.getFirst().autoAdvance());
     }
 
     private static boolean covered(List<Input> inputs, int row, int col) {

@@ -27,11 +27,11 @@ function element(tag, text, className) {
   return node;
 }
 
-function action(key, label, style) {
+function action(key, label, style, keys = [key]) {
   const button = element('button', label, style);
   button.type = key === 'ENTER' ? 'submit' : 'button';
   button.dataset.key = key;
-  if (key !== 'ENTER') button.addEventListener('click', () => send([key]));
+  if (key !== 'ENTER') button.addEventListener('click', () => send(keys));
   return button;
 }
 
@@ -110,7 +110,8 @@ function render(result, refocus = true) {
     fields.append(wrapper);
   });
   if (yesNo) {
-    buttons.append(action('Y', 'はい', 'primary'), action('N', 'いいえ'));
+    const vote = key => view.autoAdvance ? [key] : [key, 'ENTER'];
+    buttons.append(action('Y', 'はい', 'primary', vote('Y')), action('N', 'いいえ', null, vote('N')));
   } else if (confirm && !options.length) {
     buttons.append(action('ENTER', '確定', 'primary'));
   }
@@ -223,6 +224,16 @@ form.addEventListener('submit', event => {
 for (const name of ['acas', 'irs']) {
   byId('btn-' + name).addEventListener('click', () => start(name));
 }
+
+window.addEventListener('pagehide', () => {
+  if (!sessionId) return;
+  void fetch('api/sessions/' + sessionId, { method: 'DELETE', keepalive: true }).catch(() => {});
+  sessionId = null;
+});
+
+window.addEventListener('pageshow', event => {
+  if (event.persisted && app) void start(app);
+});
 
 window.acasSetCase = (id, title) => {
   const banner = byId('case-banner');

@@ -205,7 +205,7 @@ public final class Terminal {
         boolean secure = (flags & SECURE) != 0;
         String shown = value.stripTrailing();
         if (secure) shown = "•".repeat(shown.length());
-        return new WebScreen.Input(line - 1, col - 1, size, shown, secure, (flags & NUMERIC) != 0);
+        return new WebScreen.Input(line - 1, col - 1, size, shown, secure, (flags & NUMERIC) != 0, (flags & AUTO) != 0);
     }
 
     private String take(int r, int c, List<WebScreen.Input> fields, int active, int position, boolean multi) {
