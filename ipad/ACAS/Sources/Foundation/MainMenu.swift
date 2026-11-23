@@ -63,7 +63,10 @@ struct MainMenu: View {
                 workspace.completed("stock.close")
             }
         case .incomplete:
-            BookkeepingMenu(workspace: workspace)
+            BookkeepingMenu(workspace: workspace) {
+                self.section = nil
+                workspace.completed("irs.close")
+            }
         default:
             ContentUnavailableView("menu.pending", systemImage: section.symbol)
         }

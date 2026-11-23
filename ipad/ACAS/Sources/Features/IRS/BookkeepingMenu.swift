@@ -4,6 +4,7 @@ import UniformTypeIdentifiers
 
 struct BookkeepingMenu: View {
     let workspace: Workspace
+    let closeBookkeeping: () -> Void
 
     private var service: BookkeepingService { BookkeepingService(workspace.context) }
 
@@ -19,6 +20,8 @@ struct BookkeepingMenu: View {
             link(irsText("menu.amendment"), "amendment") { journal(irsText("menu.amendment")) }
             link(irsText("menu.analysis"), "analysis") { journal(irsText("menu.analysis")) }
             link(irsText("menu.recalculate"), "recalculate") { BookkeepingRecalculate(service: service) }
+            Button(irsText("action.close"), action: closeBookkeeping)
+                .accessibilityIdentifier("irs.close")
         }
         .onAppear { workspace.completed("irs.menu.open") }
     }
