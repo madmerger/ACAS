@@ -3,6 +3,7 @@ import argparse
 import csv
 import json
 import re
+import string
 from collections import Counter, defaultdict
 from pathlib import Path
 from generate_fixtures import evidence_path, validate_case_id
@@ -148,6 +149,11 @@ def csv_cell(value):
     return "'" + value if value.lstrip().startswith(("=", "+", "-", "@")) else value
 
 
+def markdown_text(value):
+    return "".join("\\" + char if char in string.punctuation else char
+                   for char in " ".join(value.splitlines()))
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("evidence", type=Path)
@@ -196,16 +202,18 @@ def main():
             writer.writerow(map(csv_cell, [case_id, summary, verdict, VIDEO if seconds is not None else "",
                                            f"{seconds:.2f}" if seconds is not None else "", " / ".join(details)]))
             if case_id == "PL-090" and len(attempts) > 1 and seconds is not None:
-                supplier_rerun = ["## PL-090 再実行", f"- {summary}。{diagnosis}\n"
+                supplier_rerun = ["## PL-090 再実行", f"- {markdown_text(summary)}。{markdown_text(diagnosis)}\n"
                                   f"- 動画 `{VIDEO}` の最終再実行開始は **{seconds:.2f}秒**。各試行の履歴はCSVに記録。"]
             if verdict == "不一致":
-                mismatches.append(f"- **{case_id}** {case['title']}：{' / '.join(details)}")
+                mismatches.append(f"- **{case_id}** {markdown_text(case['title'])}："
+                                  + " / ".join(map(markdown_text, details)))
             if verdict in ("未判定", "未実行"):
-                unverified.append(f"- **{case_id}** {case['title']}：{' / '.join(details) or verdict}")
+                unverified.append(f"- **{case_id}** {markdown_text(case['title'])}："
+                                  + (" / ".join(map(markdown_text, details)) or verdict))
             if verdict == "対象外":
-                excluded.append(f"- {case_id}：{case['legacy_result']['reason']}")
+                excluded.append(f"- {case_id}：{markdown_text(case['legacy_result']['reason'])}")
             if reports:
-                byte_checks.append(f"- {case_id}：{'、'.join(detail for _, detail, _ in reports)}")
+                byte_checks.append(f"- {case_id}：{'、'.join(markdown_text(detail) for _, detail, _ in reports)}")
     sections = [
         "# 買掛元帳（PL）移行同一性確認",
         "・".join(f"{label} {verdict_counts[label]} 件" for label in ("一致", "不一致", "対象外", "未判定", "未実行")),

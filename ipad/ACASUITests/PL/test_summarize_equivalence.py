@@ -3,10 +3,18 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from summarize_equivalence import compare_attempt, comparison_note, csv_cell, observed_summary, original_reports, read_run
+from summarize_equivalence import (
+    compare_attempt, comparison_note, csv_cell, markdown_text, observed_summary, original_reports, read_run,
+)
 
 
 class RunHistoryTests(unittest.TestCase):
+    def test_markdown_evidence_is_rendered_as_literal_inline_text(self):
+        self.assertEqual(
+            markdown_text("![記録](画像)\n# <記録> & `原本` **確認**"),
+            r"\!\[記録\]\(画像\) \# \<記録\> \& \`原本\` \*\*確認\*\*",
+        )
+
     def test_csv_cells_escape_formula_prefixes(self):
         for cell in ("=文字列", "+1", "-1", "@例", "\t =例"):
             self.assertEqual(csv_cell(cell), "'" + cell)
