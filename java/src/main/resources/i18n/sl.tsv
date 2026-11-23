@@ -292,3 +292,21 @@ Invoice ie, not a receipt	（請求書のみ可）
 Amount O/S on Invoice is 	請求書の未収額は
 of which	うち
 is Late Charges	が延滞料
+SL192 Err on Invoice file rewrite : 	SL192 請求書ファイル更新エラー :
+SL193 Invoice To Credit Does Not Exist On Invoice File	SL193 対象請求書が請求書ファイルにありません
+SL194 Invoice Not Found!!!!	SL194 請求書が見つかりません
+SL195 Invoice Details Already Passed To Sales Ledger!	SL195 この請求書は売掛元帳へ転記済みです
+SL196 You Can Only Credit An Invoice With The Same Account Number	SL196 赤伝対象は同一顧客の請求書のみです
+Amend Further Invoices? (Y/N)  [Y]	続けて修正しますか (Y/N)       [Y]
+<          >	<          >
+Invoice Ok To Store?	この内容で保存
+(Y/N)  [Y]	(Y/N)  [Y]
+Invoicing Data Amend	請求情報修正
+*Date   [  /  /    ]*                  *	*日付   [  /  /    ]*                  *
+*A/C Nos   [       ]*Ref   [          ]*	*顧客番号  [       ]*参照  [          ]*
+*Invoice [         ]*Order [          ]*	*請求書  [         ]*注文  [          ]*
+F8 = Only Show delivery details on 'A/C nos' entry	F8 = 顧客番号入力時に納品先のみ表示
+Invoice To Credit - [         ]	赤伝対象請求書    - [         ]
+Do You Wish To Use This Invoice No.? {N}	この請求書番号を使いますか          ? {N}
+..If So, You must ensure that it Belongs to the same Customer and that it is a 	..使う場合、同一顧客の請求書（領収ではない）であることを確認してください
+Invoice ie, not a Receipt	（請求書のみ可）
