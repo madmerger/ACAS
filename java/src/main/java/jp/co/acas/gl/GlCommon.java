@@ -24,7 +24,14 @@ final class GlCommon {
     static int termCode(Ctx ctx) { return (int) ctx.shared.getOrDefault("ws-term-code", 0); }
     static void termCode(Ctx ctx, int v) { ctx.shared.put("ws-term-code", v); }
 
-    static Rec ledgerRec() { return Layout.of("general/fdledger.cob", "ledger-record").newRec(); }
+    static Rec ledgerRec() {
+        // FD のレコード領域は初期値 low-values。FILLER は一度も設定されないので x"00" のまま書かれる
+        Rec r = Layout.of("general/fdledger.cob", "ledger-record").newRec();
+        byte[] b = r.bytes();
+        java.util.Arrays.fill(b, 11, 16, (byte) 0);
+        java.util.Arrays.fill(b, b.length - 50, b.length, (byte) 0);
+        return r;
+    }
     static CobFile ledgerFile(Ctx ctx, Rec r) { return CobFile.indexed(ctx.store, ctx.path("ledger.dat"), r, "ledger-key"); }
     static Rec batchRec() { return Layout.of("copybooks/fdbatch.cob", "batch-record").newRec(); }
     static CobFile batchFile(Ctx ctx, Rec r) { return CobFile.indexed(ctx.store, ctx.path("batch.dat"), r, "batch-key"); }
