@@ -70,7 +70,7 @@ def read_run(directory):
 
 def original_reports(case, root, actual_root, verdict):
     case_id = validate_case_id(case["id"])
-    if case_id == "PL-090" or verdict == "対象外":
+    if case_id == "PL-090" or verdict in ("対象外", "未実行"):
         return []
     targets = case["legacy_result"]["comparison_targets"]["report_files"]
     results = []
@@ -83,21 +83,30 @@ def original_reports(case, root, actual_root, verdict):
         if not actual_path.exists():
             if verdict == "一致":
                 results.append((f"帳票 {len(expected):,} B をアプリ内で原本照合",
-                                f"{name}：アプリ内で原本 {len(expected):,} B と照合"))
+                                f"{name}：アプリ内で原本 {len(expected):,} B と照合、直接照合用の出力なし", False))
             else:
-                results.append(("", f"{name}：移行版の書き出しがなく原本 {len(expected):,} B と直接照合できず"))
+                results.append(("", f"{name}：移行版の書き出しがなく原本 {len(expected):,} B と直接照合できず", False))
             continue
         actual = actual_path.read_bytes()
         if actual == expected:
             summary = f"帳票 {len(actual):,} B を生成、原本と一致"
             if not actual:
                 summary = "帳票は 0 B、原本と一致"
-            results.append((summary, f"{name}：原本と全 {len(expected):,} B 一致"))
+            results.append((summary, f"{name}：原本と全 {len(expected):,} B 一致", False))
         else:
             offset = next((i for i, (a, b) in enumerate(zip(actual, expected)) if a != b), min(len(actual), len(expected)))
             results.append((f"帳票 {len(actual):,} B を生成、原本 {len(expected):,} B",
-                            f"{name}：原本 {len(expected):,} B、実測 {len(actual):,} B、最初の差分位置 {offset:,}"))
+                            f"{name}：原本 {len(expected):,} B、実測 {len(actual):,} B、最初の差分位置 {offset:,}", True))
     return results
+
+
+def compare_attempt(case, root, attempt):
+    reports = original_reports(case, root, attempt["run"] / "reports", attempt["verdict"])
+    differences = [detail for _, detail, differs in reports if differs]
+    if differences:
+        attempt = {**attempt, "verdict": "不一致",
+                   "reason": "、".join(filter(None, [attempt["reason"], *differences]))}
+    return attempt, reports
 
 
 def observed_summary(case, current, reports):
@@ -120,7 +129,7 @@ def observed_summary(case, current, reports):
         if reason == "帳票出力が生成されていない":
             return "仕入先ファイル帳票画面に到達、旧証跡に帳票出力なし"
         return "移行版の画面に到達、旧証跡との照合は対象外"
-    summaries = [summary for summary, _ in reports if summary]
+    summaries = [summary for summary, _, _ in reports if summary]
     if verdict == "不一致" and reason.startswith("ledgers/") and ": 期待 " not in reason:
         summaries.append("保存データの照合で差分あり")
     if summaries:
@@ -142,7 +151,6 @@ def csv_cell(value):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("evidence", type=Path)
-    parser.add_argument("actual_reports", type=Path)
     parser.add_argument("deliverables", type=Path)
     parser.add_argument("timeline", type=Path, help="run ディレクトリごとの trim と動画内 offset を記録した JSON")
     parser.add_argument("--diagnoses", type=Path, help="ケース ID ごとの原因・対処（JSON）")
@@ -155,10 +163,11 @@ def main():
     diagnoses = json.loads(args.diagnoses.read_text()) if args.diagnoses else {}
     history = defaultdict(list)
     for part in json.loads(args.timeline.read_text()):
-        for case, result in read_run(Path(part["run"])).items():
+        run = Path(part["run"])
+        for case, result in read_run(run).items():
             if result["start"] is not None:
                 result["start"] += part["offset"] - part["trim"]
-            history[case].append(result)
+            history[case].append({**result, "run": run})
 
     fields = ["ケースID", "移行後結果", "一致判定", "動画ファイル名", "動画開始時刻(秒)", "不一致原因・対処履歴"]
     verdict_counts = Counter()
@@ -172,14 +181,13 @@ def main():
         writer.writerow(fields)
         for case in cases:
             case_id = case["id"]
-            attempts = history[case_id]
-            current = attempts[-1] if attempts else dict(verdict="未実行", reason="", start=None)
+            attempts = [compare_attempt(case, args.evidence, attempt) for attempt in history[case_id]]
+            current, reports = attempts[-1] if attempts else (dict(verdict="未実行", reason="", start=None), [])
             verdict = current["verdict"]
             verdict_counts[verdict] += 1
             details = [f"第{i}回：{item['verdict']}" + (f" — {comparison_note(item['reason'])}" if item["reason"] else "")
                        + (f"（{item['start']:.2f}秒）" if item["start"] is not None else "")
-                       for i, item in enumerate(attempts, 1)]
-            reports = original_reports(case, args.evidence, args.actual_reports, verdict)
+                       for i, (item, _) in enumerate(attempts, 1)]
             diagnosis = diagnoses.get(case_id, "")
             if diagnosis:
                 details.append(diagnosis)
@@ -197,7 +205,7 @@ def main():
             if verdict == "対象外":
                 excluded.append(f"- {case_id}：{case['legacy_result']['reason']}")
             if reports:
-                byte_checks.append(f"- {case_id}：{'、'.join(detail for _, detail in reports)}")
+                byte_checks.append(f"- {case_id}：{'、'.join(detail for _, detail, _ in reports)}")
     sections = [
         "# 買掛元帳（PL）移行同一性確認",
         "・".join(f"{label} {verdict_counts[label]} 件" for label in ("一致", "不一致", "対象外", "未判定", "未実行")),

@@ -40,12 +40,18 @@ final class Workspace: ObservableObject {
                 for: .cachesDirectory, in: .userDomainMask, appropriateFor: nil, create: true
             )
             if let evidence, evidence.equivalence != nil {
-                guard evidence.id.wholeMatch(of: /PL-[0-9]{3}/) != nil else {
+                guard evidence.id.range(of: #"\APL-[0-9]{3}\z"#, options: .regularExpression) != nil else {
                     throw CocoaError(.fileReadCorruptFile)
                 }
                 let exports = root.resolvingSymlinksInPath().appendingPathComponent("pl-evidence")
-                let export = exports.appendingPathComponent(evidence.id)
+                var run = exports
+                if let token = ProcessInfo.processInfo.environment["ACAS_PL_RUN_ID"] {
+                    guard let id = UUID(uuidString: token) else { throw CocoaError(.fileReadCorruptFile) }
+                    run = exports.appendingPathComponent(id.uuidString)
+                }
+                let export = run.appendingPathComponent(evidence.id)
                 guard exports.resolvingSymlinksInPath().path == exports.path,
+                      run.resolvingSymlinksInPath().path == run.path,
                       export.resolvingSymlinksInPath().path == export.path else {
                     throw CocoaError(.fileReadCorruptFile)
                 }

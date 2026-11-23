@@ -350,6 +350,7 @@ final class PurchaseFlows: XCTestCase {
         }
         let app = XCUIApplication()
         app.launchEnvironment["ACAS_FIXTURE"] = data.base64EncodedString()
+        app.launchEnvironment["ACAS_PL_RUN_ID"] = ProcessInfo.processInfo.environment["ACAS_PL_RUN_ID"]
         app.launchArguments += ["-AppleLanguages", "(ja)", "-AppleLocale", "ja_JP"]
         XCUIDevice.shared.orientation = .landscapeLeft
         app.launch()

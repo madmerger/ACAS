@@ -3,7 +3,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from summarize_equivalence import comparison_note, csv_cell, observed_summary, original_reports, read_run
+from summarize_equivalence import compare_attempt, comparison_note, csv_cell, observed_summary, original_reports, read_run
 
 
 class RunHistoryTests(unittest.TestCase):
@@ -61,6 +61,27 @@ class RunHistoryTests(unittest.TestCase):
             reports = original_reports(case, root, root / "actual", result["verdict"])
         self.assertEqual(observed_summary(case, result, reports), "帳票 3 B を生成、原本 1,200 B")
         self.assertIn("最初の差分位置 1", reports[0][1])
+
+    def test_direct_difference_applies_only_to_its_attempt(self):
+        target = "run/files/ledgers/acas/prt-1"
+        case = {"id": "PL-222", "legacy_result": {"comparison_targets": {"report_files": [target]}}}
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            expected = root / target
+            expected.parent.mkdir(parents=True)
+            expected.write_bytes(b"a")
+            for name, report, verdict in (
+                    ("first", b"b", "不一致"), ("last", b"a", "一致"), ("missing", None, "一致")):
+                run = root / name
+                if report is not None:
+                    actual = run / "reports/PL-222/prt-1"
+                    actual.parent.mkdir(parents=True)
+                    actual.write_bytes(report)
+                result, reports = compare_attempt(case, root, {"run": run, "verdict": "一致", "reason": ""})
+                self.assertEqual(result["verdict"], verdict)
+                self.assertEqual(bool(result["reason"]), verdict == "不一致")
+                if report is None:
+                    self.assertIn("直接照合用の出力なし", reports[0][1])
 
     def test_summary_distinguishes_screen_reached_from_legacy_not_executed(self):
         case = {"id": "PL-003", "title": "Purchase Ledger Enquiry — 画面表示"}
