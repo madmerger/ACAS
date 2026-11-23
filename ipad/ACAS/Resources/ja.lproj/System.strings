@@ -5,6 +5,8 @@
 "system.company.invalid" = "会社名は記録できる文字で、全角１６文字または半角３２文字以内で入力してください";
 "system.company.storageFailed" = "会社設定を保存できませんでした";
 "system.action.save" = "保存";
+"system.session.end" = "作業を終了";
+"system.session.ended" = "作業が終了しました";
 "system.settings.master.title" = "初期マスタ登録";
 "system.settings.master.customer" = "得意先の登録";
 "system.settings.master.supplier" = "仕入先の登録";

@@ -10,6 +10,14 @@ struct SystemMenu: View {
                 .accessibilityIdentifier("system.company")
             NavigationLink(systemSetting("master.title")) { MasterSetupMenu(workspace: workspace) }
                 .accessibilityIdentifier("system.master")
+            NavigationLink(String(localized: "system.session.end", table: "System")) {
+                ContentUnavailableView {
+                    Label(String(localized: "system.session.ended", table: "System"), systemImage: "checkmark.circle")
+                        .accessibilityIdentifier("system.session.ended")
+                }
+                .onAppear { workspace.completed("system-session-end") }
+            }
+            .accessibilityIdentifier("system.session.end")
             #if DEBUG
             if workspace.evidence != nil {
                 NavigationLink(String(localized: "calculation.title", table: "CALC")) { CheckDigitForm(workspace: workspace) }

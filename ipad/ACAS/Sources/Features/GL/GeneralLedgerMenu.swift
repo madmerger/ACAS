@@ -216,9 +216,9 @@ private struct LedgerAccountEditor: View {
     @State private var code = ""
     @State private var branch = ""
     @State private var name = ""
-    @State private var type = 0
+    @State private var type = "0"
     @State private var placement = ""
-    @State private var level = 1
+    @State private var level = "1"
     @State private var status: String?
     @State private var deleteConfirm = false
 
@@ -237,17 +237,16 @@ private struct LedgerAccountEditor: View {
             TextField(ledgerText("account-name"), text: $name)
                 .accessibilityIdentifier("gl.account.name")
             if code.count != 6 || code.hasSuffix("00") {
-                Picker(ledgerText("account-type"), selection: $type) {
-                    Text(ledgerText("type-header")).tag(0)
-                    Text(ledgerText("type-detail")).tag(1)
-                    Text(ledgerText("type-control")).tag(9)
-                }
-                .accessibilityIdentifier("gl.account.type")
-                if type == 0 {
+                TextField(ledgerText("account-type"), text: $type)
+                    .keyboardType(.numberPad)
+                    .accessibilityIdentifier("gl.account.type")
+                if type == "0" {
                     TextField(ledgerText("account-placement"), text: $placement)
                         .textInputAutocapitalization(.characters)
                         .accessibilityIdentifier("gl.account.placement")
-                    Stepper("\(ledgerText("account-level"))：\(level)", value: $level, in: 1...4)
+                    TextField(ledgerText("account-level"), text: $level)
+                        .keyboardType(.numberPad)
+                        .accessibilityIdentifier("gl.account.level")
                 }
             }
             Button(ledgerText("action.save"), action: save)
@@ -267,9 +266,9 @@ private struct LedgerAccountEditor: View {
             code = initial?.code ?? ""
             branch = initial?.branch ?? "00"
             name = initial?.name ?? ""
-            type = initial?.type ?? 0
+            type = String(initial?.type ?? 0)
             placement = initial?.placement ?? ""
-            level = max(1, initial?.level ?? 1)
+            level = String(max(1, initial?.level ?? 1))
             if initial == nil { workspace.completed("gl-account-add-menu") }
         }
     }
@@ -277,6 +276,7 @@ private struct LedgerAccountEditor: View {
     private func save() {
         perform {
             let chart = ChartOfAccounts(workspace.context)
+            let type = Int(type) ?? -1, level = Int(level) ?? -1
             if initial == nil {
                 try chart.add(code: code, branch: branch, name: name, type: type, placement: placement,
                               level: level, amendScreenVisited: amendScreenVisited)
@@ -300,6 +300,8 @@ private struct LedgerAccountEditor: View {
 
     private func perform(_ operation: () throws -> Void) {
         do { try operation() } catch let error as ChartOfAccounts.Error {
+            if error == .invalidType { type = "0" }
+            if error == .invalidLevel { level = "0" }
             let code = String(describing: error)
             status = ledgerText("error." + code)
             if initial == nil { workspace.completed("gl-account-error-" + code) }
