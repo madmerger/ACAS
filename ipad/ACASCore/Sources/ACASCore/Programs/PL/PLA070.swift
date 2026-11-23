@@ -318,7 +318,7 @@ final class PLA070 {
 
     // MARK: p-a-setup section
 
-    /// 初期の分析コードを作成する。名称はファイルへ書き込むデータであり、レガシーと同じバイト列にする。
+    /// 初期の分析コードを作成する。名称は文言キー (英語ではレガシーと同じバイト列。24 バイトを超える分は切り捨て)。
     func paSetup() {
         let value = PLA.valueFile(s)
         if value.open() != "00" {
@@ -337,6 +337,7 @@ final class PLA070 {
             }
             analysis.write(anal)
         }
+        func d(_ key: String) -> String { s.l10n.raw(key) }
         func put(_ system: String? = nil, _ group: String? = nil, _ desc: String? = nil, print: String? = nil) {
             if let v = system { anal.set("pa-system", v) }
             if let v = group { anal.set("pa-group", v) }
@@ -345,22 +346,22 @@ final class PLA070 {
             createValue()
         }
         anal.setInt("pa-gl", 0)
-        put("S", "v ", "VAT Control", print: "")
+        put("S", "v ", d("pl070.setup_vat_control"), print: "")
         put("P")
-        put(nil, "vi", "VAT Input Invoices/CN's")
-        put(nil, "vj", "VAT Input Receipts")
-        put("S", "z ", "Computer Control")
+        put(nil, "vi", d("pl070.setup_vat_input_inv"))
+        put(nil, "vj", d("pl070.setup_vat_input_rec"))
+        put("S", "z ", d("pl070.setup_computer_control"))
         put("P")
-        put(nil, "za", "Purchase Carriage Charges", print: "P&P")
-        put(nil, "zb", "Purchase Late Charges", print: "LCG")
-        put("S", "zc", "Sales Carriage Charges", print: "P&P")
-        put(nil, "zd", "Sales Late Charges", print: "LCG")
-        put(nil, "vo", "VAT Output Invoices/CN's", print: "")
-        put(nil, "vp", "VAT Output Receipts")
-        put("P", "a ", "Default Group")
-        put(nil, "a1", "Default Purchases")
-        put("S", "a ", "Default Group")
-        put(nil, "a1", "Default Sales")
+        put(nil, "za", d("pl070.setup_purch_carriage"), print: "P&P")
+        put(nil, "zb", d("pl070.setup_purch_late"), print: "LCG")
+        put("S", "zc", d("pl070.setup_sales_carriage"), print: "P&P")
+        put(nil, "zd", d("pl070.setup_sales_late"), print: "LCG")
+        put(nil, "vo", d("pl070.setup_vat_output_inv"), print: "")
+        put(nil, "vp", d("pl070.setup_vat_output_rec"))
+        put("P", "a ", d("pl070.setup_default_group"))
+        put(nil, "a1", d("pl070.setup_default_purchases"))
+        put("S", "a ", d("pl070.setup_default_group"))
+        put(nil, "a1", d("pl070.setup_default_sales"))
         analysis.close(); value.close()
         PLA.setFileStatus(s, 15, 1)
         if s.processFunc != 1 { c.display(" ", at: 23, 1, eraseEOL: true) }

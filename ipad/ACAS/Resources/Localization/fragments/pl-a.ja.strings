@@ -420,3 +420,17 @@
 "pl095.appropriations" = "充当額";
 "pl095.unapplied_cash" = "未充当額";
 "pl095.deductions_taken" = "割引適用額";
+/* pl070.cbl — p-a-setup default analysis records (written to analysis.dat / value.dat) */
+"pl070.setup_vat_control" = "消費税管理";
+"pl070.setup_vat_input_inv" = "仕入税 請求書・赤伝";
+"pl070.setup_vat_input_rec" = "仕入税 入金";
+"pl070.setup_computer_control" = "システム管理";
+"pl070.setup_purch_carriage" = "仕入運賃";
+"pl070.setup_purch_late" = "仕入延滞料";
+"pl070.setup_sales_carriage" = "売上運賃";
+"pl070.setup_sales_late" = "売上延滞料";
+"pl070.setup_vat_output_inv" = "売上税 請求書・赤伝";
+"pl070.setup_vat_output_rec" = "売上税 入金";
+"pl070.setup_default_group" = "既定分類";
+"pl070.setup_default_purchases" = "既定仕入";
+"pl070.setup_default_sales" = "既定売上";

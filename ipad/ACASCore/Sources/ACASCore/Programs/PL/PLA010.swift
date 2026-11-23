@@ -132,9 +132,9 @@ final class PLA010 {
     // MARK: display-02 (screen section)
 
     func setCheckDigitChar(_ ch: String) {
-        // d24-digit は d24-check の 14 桁目
+        // d24-digit は d24-check の 14 桁目 (末尾から 2 文字目。訳文は全角文字を含み文字数が異なる)
         var a = Array(d24check)
-        a[13] = ch.first ?? " "
+        a[a.count - 2] = ch.first ?? " "
         d24check = String(a)
     }
 

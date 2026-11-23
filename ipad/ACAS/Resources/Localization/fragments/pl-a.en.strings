@@ -420,3 +420,17 @@
 "pl095.appropriations" = "Appropriations";
 "pl095.unapplied_cash" = "Unapplied Cash";
 "pl095.deductions_taken" = "Deductions Taken";
+/* pl070.cbl — p-a-setup default analysis records (written to analysis.dat / value.dat) */
+"pl070.setup_vat_control" = "VAT Control";
+"pl070.setup_vat_input_inv" = "VAT Input Invoices/CN's";
+"pl070.setup_vat_input_rec" = "VAT Input Receipts";
+"pl070.setup_computer_control" = "Computer Control";
+"pl070.setup_purch_carriage" = "Purchase Carriage Charges";
+"pl070.setup_purch_late" = "Purchase Late Charges";
+"pl070.setup_sales_carriage" = "Sales Carriage Charges";
+"pl070.setup_sales_late" = "Sales Late Charges";
+"pl070.setup_vat_output_inv" = "VAT Output Invoices/CN's";
+"pl070.setup_vat_output_rec" = "VAT Output Receipts";
+"pl070.setup_default_group" = "Default Group";
+"pl070.setup_default_purchases" = "Default Purchases";
+"pl070.setup_default_sales" = "Default Sales";
