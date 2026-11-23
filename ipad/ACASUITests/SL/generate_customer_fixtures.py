@@ -12,11 +12,20 @@ BASE = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(BASE)
 
 CASES = {
+    "SL-018": ("alphabetical", "得意先名称順一覧の抽出条件"),
+    "SL-019": ("turnover", "得意先別売上高表の抽出条件"),
     "SL-206": ("report", "得意先一覧印刷の抽出条件"),
+    "SL-228": ("alphabetical", "得意先名称順一覧の抽出条件"),
+    "SL-229": ("turnover", "得意先別売上高表の抽出条件"),
     "SL-400": ("edit", "得意先名称の変更"),
     "SL-401": ("remove", "残高がない得意先の削除"),
     "SL-402": ("view", "存在しない得意先の照会"),
     "SL-403": ("register", "新規得意先の登録"),
+}
+REPORT_WORKFLOWS = {
+    "report": "sales-customer-report-view",
+    "alphabetical": "sales-customer-alphabetical-view",
+    "turnover": "sales-customer-turnover-view",
 }
 DELIVERY_PATH = "ledgers/acas/delivery.dat"
 
@@ -59,17 +68,21 @@ def main():
         with BASE.evidence_path(evidence, run / "terminal.cast").open(encoding="utf-8") as recording:
             date = json.loads(recording.readline())["timestamp"]
         inputs = case["input_data"]["text_inputs"]
-        values = {} if operation == "report" else {"code": inputs[4].strip()}
+        values = {} if operation in REPORT_WORKFLOWS else {"code": inputs[4].strip()}
         if operation == "edit":
             values["name"] = inputs[5].strip()
         if operation == "register":
             values["name"], values["address"] = inputs[5].strip().split("\t", maxsplit=1)
+        reports = {}
+        if operation == "turnover":
+            path = "ledgers/acas/prt-1"
+            reports[path] = BASE.evidence_path(evidence, run / "files" / path).read_bytes().hex()
         BASE.save(fixtures / (case_id + ".json"), {
             "id": case_id, "title": title,
-            "workflow": "sales-customer-report-view" if operation == "report" else "sales-customer-" + operation,
+            "workflow": REPORT_WORKFLOWS.get(operation, "sales-customer-" + operation),
             "dateSeconds": date, "seed": customer_seed(evidence, run),
             "changes": BASE.expected_changes(evidence, legacy["comparison_targets"]["keyed_record_diff"]),
-            "reports": {}, "input": values,
+            "reports": reports, "input": values,
         })
     print(f"得意先の実 UI 用データ {len(CASES)} 件")
     if args.simulator:

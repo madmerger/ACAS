@@ -3,6 +3,7 @@ import SwiftUI
 
 struct SalesCustomerReportView: View {
     let workspace: Workspace
+    var kind: SalesCustomerReport.Kind = .listing
     @State private var code = ""
     @State private var status = SalesCustomerReport.Status.all
     @State private var creditDays = Criterion()
@@ -13,6 +14,14 @@ struct SalesCustomerReportView: View {
     @State private var creationDate = Date()
     @State private var preview: Preview?
     @State private var showsError = false
+
+    private var title: String.LocalizationValue {
+        switch kind {
+        case .listing: "sales.customer.report.title"
+        case .alphabetical: "sales.customer.report.alphabetical"
+        case .turnover: "sales.customer.report.turnover"
+        }
+    }
 
     var body: some View {
         Form {
@@ -38,7 +47,7 @@ struct SalesCustomerReportView: View {
                 }
             }
         }
-        .navigationTitle(slText("sales.customer.report.title"))
+        .navigationTitle(slText(title))
         .alert(slText("sales.customer.report.failed"), isPresented: $showsError) {
             Button(slText("sales.action.cancel"), role: .cancel) {}
         }
@@ -54,7 +63,7 @@ struct SalesCustomerReportView: View {
                     }
                 }
                 .accessibilityIdentifier("sales.customer.report.preview")
-                .navigationTitle(slText("sales.customer.report.title"))
+                .navigationTitle(slText(title))
                 .toolbar {
                     ToolbarItem(placement: .cancellationAction) {
                         Button(slText("sales.action.cancel")) { self.preview = nil }
@@ -62,13 +71,25 @@ struct SalesCustomerReportView: View {
                     if let document = preview.document {
                         ToolbarItem(placement: .primaryAction) {
                             SalesReportExport(report: document, identifier: "sales.customer.report.export",
-                                              filename: slText("sales.customer.report.title"))
+                                              filename: slText(title))
                         }
                     }
                 }
             }
         }
-        .onAppear { workspace.completed("sales-customer-report-view") }
+        .task {
+            switch kind {
+            case .listing: workspace.completed("sales-customer-report-view")
+            case .alphabetical: workspace.completed("sales-customer-alphabetical-view")
+            case .turnover:
+                do {
+                    try SalesCustomerReport(workspace.context).prepareTurnover()
+                    workspace.completed("sales-customer-turnover-view")
+                } catch {
+                    showsError = true
+                }
+            }
+        }
     }
 
     private struct Preview: Identifiable {
@@ -116,7 +137,7 @@ struct SalesCustomerReportView: View {
             filter.averageValue = try averageValue.read()
             filter.overdueDays = try overdueDays.read()
             filter.creationDate = dateRelation.map { ($0, creationDate) }
-            let entries = try SalesCustomerReport(workspace.context).generate(filter)
+            let entries = try SalesCustomerReport(workspace.context).generate(filter, kind: kind)
             let document = workspace.context.store.readRaw(SalesCustomerReport.exportPath).map(SalesReportDocument.init)
             preview = Preview(entries: entries, document: document)
         } catch {

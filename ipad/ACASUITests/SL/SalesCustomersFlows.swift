@@ -4,6 +4,18 @@ final class SalesCustomersFlows: XCTestCase {
     private let fixtureIDs = ["SL-206", "SL-400", "SL-401", "SL-402", "SL-403"]
 
     @MainActor
+    func testSL018() throws { try reportConditions("SL-018", operation: "alphabetical", title: "得意先名称順一覧") }
+
+    @MainActor
+    func testSL019() throws { try reportConditions("SL-019", operation: "turnover", title: "得意先別売上高表") }
+
+    @MainActor
+    func testSL228() throws { try reportConditions("SL-228", operation: "alphabetical", title: "得意先名称順一覧") }
+
+    @MainActor
+    func testSL229() throws { try reportConditions("SL-229", operation: "turnover", title: "得意先別売上高表") }
+
+    @MainActor
     func testEmptyCreditDaysRejectsSave() throws {
         try assertInvalidTerms(fieldID: "sales.customer.creditDays", replacement: "")
     }
@@ -95,6 +107,26 @@ final class SalesCustomersFlows: XCTestCase {
     }
 
     @MainActor
+    private func reportConditions(_ id: String, operation: String, title: String) throws {
+        let app = try launchCase(id)
+        let report = app.descendants(matching: .any)["sales.customer." + operation].firstMatch
+        if !report.isHittable {
+            let start = app.coordinate(withNormalizedOffset: CGVector(dx: 0.80, dy: 0.80))
+            let end = app.coordinate(withNormalizedOffset: CGVector(dx: 0.80, dy: 0.34))
+            start.press(forDuration: 0.05, thenDragTo: end)
+        }
+        try XCTUnwrap(report.exists && report.isHittable ? report : nil).tap()
+        XCTAssertTrue(app.navigationBars[title].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["抽出条件"].exists)
+        XCTAssertTrue(app.buttons["sales.customer.report.generate"].exists)
+        XCTAssertTrue(app.staticTexts["case.verdict.match"].waitForExistence(timeout: 5))
+        let screenshot = XCTAttachment(screenshot: app.screenshot())
+        screenshot.name = id
+        screenshot.lifetime = .keepAlways
+        add(screenshot)
+    }
+
+    @MainActor
     private func launch(_ id: String, operation: String) throws -> (XCUIApplication, [String: String]) {
         continueAfterFailure = false
         let bundle = Bundle(for: Self.self)
@@ -104,6 +136,22 @@ final class SalesCustomersFlows: XCTestCase {
         let data = try Data(contentsOf: url)
         let fixture = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
         let input = try XCTUnwrap(fixture["input"] as? [String: String])
+        let app = launchCase(id, data: data)
+        tap("sales.customers", in: app)
+        tap("sales.customer." + operation, in: app)
+        return (app, input)
+    }
+
+    @MainActor
+    private func launchCase(_ id: String) throws -> XCUIApplication {
+        let bundle = Bundle(for: Self.self)
+        let url = bundle.url(forResource: id, withExtension: "json", subdirectory: "fixtures")
+        try XCTSkipIf(url == nil, "得意先の証跡テストは generate_customer_fixtures.py で準備してください")
+        return try launchCase(id, data: Data(contentsOf: XCTUnwrap(url)))
+    }
+
+    @MainActor
+    private func launchCase(_ id: String, data: Data) -> XCUIApplication {
         let app = XCUIApplication()
         app.launchEnvironment["ACAS_FIXTURE"] = data.base64EncodedString()
         app.launchArguments += ["-AppleLanguages", "(ja)", "-AppleLocale", "ja_JP"]
@@ -112,9 +160,7 @@ final class SalesCustomersFlows: XCTestCase {
         XCTAssertTrue(app.staticTexts[id].waitForExistence(timeout: 10))
         tap("section.sales", in: app)
         tap("sales.date.save", in: app)
-        tap("sales.customers", in: app)
-        tap("sales.customer." + operation, in: app)
-        return (app, input)
+        return app
     }
 
     @MainActor

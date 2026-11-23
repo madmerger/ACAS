@@ -2,6 +2,33 @@ import XCTest
 @testable import ACASCore
 
 final class SalesCustomerReportTests: XCTestCase {
+    func testAlphabeticalAndTurnoverUseDistinctOrderAndReportHeaders() throws {
+        let store = try FileStore()
+        let service = SalesCustomerReport(BusinessContext(store: store))
+        var system = Record(SystemLayout.layout)
+        system.setInt("page-lines", 60)
+        try RelativeFile(store, path: "ledgers/acas/system.dat", recordSize: 1024).write(1, system.bytes)
+        for (code, name) in [("CUST011", "ZULU"), ("CUST022", "ALPHA")] {
+            var row = Record(SalesProofRecords.salesLayout)
+            row["sales-key"] = code
+            row["sales-name"] = name
+            row.setInt("turnover-q1", 123_456)
+            XCTAssertEqual(SalesProofRecords.salesFile(store).write(row), "00")
+        }
+        let filter = SalesCustomerReport.Filter()
+        XCTAssertEqual(try service.generate(filter, kind: .alphabetical).map(\.code), ["CUST022", "CUST011"])
+        let alpha = try XCTUnwrap(store.readRaw(SalesCustomerReport.exportPath))
+        XCTAssertEqual(String(decoding: alpha[51..<80], as: UTF8.self), "Customer Alphabetical Listing")
+        XCTAssertEqual(store.readRaw("custsort.tmp"), [])
+        try service.prepareTurnover()
+        XCTAssertEqual(store.readRaw(SalesCustomerReport.exportPath), [])
+        XCTAssertEqual(try service.generate(filter, kind: .turnover).map(\.code), ["CUST011", "CUST022"])
+        let turnover = try XCTUnwrap(store.readRaw(SalesCustomerReport.exportPath))
+        XCTAssertEqual(String(decoding: turnover[51..<79], as: UTF8.self), "Sales Ledger Turnover Report")
+        let row = try XCTUnwrap(turnover.split(separator: 0x0a).first { $0.starts(with: "CUST011".utf8) })
+        XCTAssertEqual(String(decoding: row.dropFirst(64).prefix(8), as: UTF8.self), "    1234")
+    }
+
     func testFiltersAndPrintsInKeyOrderWithLegacyColumns() throws {
         let store = try FileStore()
         let context = BusinessContext(store: store, timeZone: .gmt)

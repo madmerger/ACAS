@@ -58,6 +58,14 @@ struct SalesMenu: View {
                     .accessibilityIdentifier("sales.statement")
                 NavigationLink(slText("sales.dunning.title")) { SalesDunningView(workspace: workspace) }
                     .accessibilityIdentifier("sales.dunning")
+                NavigationLink(slText("sales.customer.report.alphabetical")) {
+                    SalesCustomerReportView(workspace: workspace, kind: .alphabetical)
+                }
+                .accessibilityIdentifier("sales.customer.alphabetical")
+                NavigationLink(slText("sales.customer.report.turnover")) {
+                    SalesCustomerReportView(workspace: workspace, kind: .turnover)
+                }
+                .accessibilityIdentifier("sales.customer.turnover")
             }
             NavigationLink(String(localized: "sales.proof", table: "SL")) {
                 #if DEBUG
