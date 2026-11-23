@@ -14,7 +14,7 @@ public enum LedgerDefaultTax: String, CaseIterable {
 }
 
 public struct GeneralLedgerSetup {
-    public enum Error: Swift.Error { case missingCompany, invalidDate, invalidDefault }
+    public enum Error: Swift.Error { case missingCompany, invalidDate, invalidDefault, invalidPassword }
 
     private let context: BusinessContext
     private var system: RelativeFile {
@@ -46,6 +46,25 @@ public struct GeneralLedgerSetup {
                           account: Cobol.z(record.int("account\(number)"), 6),
                           transactionCode: Cobol.rtrim(record.str("code\(number)")),
                           tax: LedgerDefaultTax(rawValue: record.str("tax\(number)")))
+        }
+    }
+
+    public func resetDefaults(password: String) throws {
+        let alphabet = Array("CKQUAELSMWYIZJRPBXFVGNODTH".utf8)
+        let input = Array(password.uppercased().utf8)
+        guard input.count == 4 else { throw Error.invalidPassword }
+        var encoded = Array(repeating: UInt8(32), count: 4)
+        for (index, byte) in input.enumerated() {
+            guard let letter = alphabet.firstIndex(of: byte) else { throw Error.invalidPassword }
+            let position = abs(letter + 1 + (index + 1) * (index + 1) + 3 - 26)
+            if position != 0 { encoded[3 - index] = alphabet[position - 1] }
+        }
+        try context.store.transaction {
+            guard let setup = system.read(1), var defaults = system.read(2) else { throw Error.missingCompany }
+            guard Record(SystemLayout.layout, bytes: setup).raw("pass-word") == encoded
+            else { throw Error.invalidPassword }
+            defaults.replaceSubrange(0..<231, with: SystemAuxRecords.initialDefault().prefix(231))
+            try system.write(2, defaults)
         }
     }
 

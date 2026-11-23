@@ -122,6 +122,14 @@
 "gl.error.other" = "勘定科目を変更できませんでした";
 "gl.defaults" = "既定勘定の管理";
 "gl.defaults-add" = "既定勘定登録";
+"gl.defaults-setup.prompt" = "現在の既定勘定に追加しますか？";
+"gl.defaults-setup.keep" = "現在の既定勘定を保持して追加";
+"gl.defaults-setup.reset" = "既定勘定を初期化";
+"gl.defaults-setup.warning" = "初めて設定する場合は初期化を選択してください。初期化すると既存の既定勘定が消去されます。";
+"gl.defaults-setup.password" = "会社設定のパスワード";
+"gl.defaults-setup.cancel" = "取り消す";
+"gl.defaults-setup.invalid-password" = "パスワードが一致しません";
+"gl.defaults-setup.failed" = "既定勘定を初期化できませんでした";
 "gl.defaults-edit" = "既定勘定修正";
 "gl.defaults-list" = "既定勘定表示";
 "gl.not-set" = "未設定";
