@@ -1,0 +1,61 @@
+package jp.co.acas.pl;
+
+import jp.co.acas.core.Layout;
+import jp.co.acas.core.Rec;
+import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+/** 請求入力（pl020）・修正（pl030）で明細 39 行／40 行（occurs 40 の上限）を保存する。 */
+class Pl020LinesTest {
+    private static final String HEADER = "\rSUPP018\rPL-ORDER\rPL-REF\r2\r";
+    private static final String TOTALS = "\r\r\r\rY\rY\rN\r";
+
+    /** n 行目は税抜 n.00・VAT コード 1（税額は既定の計算値）。1 行目だけ分析コード a1 を入力し、以降は前行の値を引き継ぐ。 */
+    static String line(int n) {
+        return (n == 1 ? "a1" : "") + "\r" + String.format("%07d.00", n) + "\r1\r\r";
+    }
+
+    static String newLines(int count) {
+        StringBuilder sb = new StringBuilder();
+        for (int n = 1; n <= count; n++) sb.append(line(n));
+        if (count < 40) sb.append("  \r");
+        return sb.toString();
+    }
+
+    static PlSession entered(String db, int count) throws Exception {
+        PlSession s = new PlSession(db, "sl-ready");
+        s.keys("D").keys(HEADER).keys(newLines(count)).keys(TOTALS);
+        s.assertMenu();
+        return s;
+    }
+
+    static void assertSaved(PlSession s, int count) {
+        List<Rec> heads = s.records("pinvoice.dat", PlBase::invHeaderRec).stream().filter(r -> r.intv("ih-test") == 0).toList();
+        assertEquals(1, heads.size());
+        assertEquals(count, heads.get(0).intv("ih-lines"));
+        assertEquals(new BigDecimal(count * (count + 1) / 2 + ".00"), heads.get(0).num("ih-net"));
+        // 明細レコードは wspinv の invoice-line 形式で書かれる（pl020.cbl: move invoice-line (j) to invoice-record）
+        List<Rec> lines = s.records("pinvoice.dat", () -> Layout.of("purchase/wspinv.cob", "Pinvoice-lines").newRec())
+                .stream().filter(r -> r.intv("il-line", 1) != 0).toList();
+        assertEquals(count, lines.size());
+        Rec last = lines.get(lines.size() - 1);
+        assertEquals(count, last.intv("il-line", 1));
+        assertEquals("a1", last.str("il-pa", 1));
+        assertEquals(new BigDecimal(count + ".00"), last.num("il-net", 1));
+        assertEquals(new BigDecimal(count).multiply(new BigDecimal("0.20")).setScale(2), last.num("il-vat", 1));
+    }
+
+    @Test
+    void 登録で39行を保存する() throws Exception {
+        assertSaved(entered("pl020e39", 39), 39);
+    }
+
+    @Test
+    void 登録で40行を保存する() throws Exception {
+        assertSaved(entered("pl020e40", 40), 40);
+    }
+}
