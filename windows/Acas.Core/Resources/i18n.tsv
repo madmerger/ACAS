@@ -235,3 +235,27 @@ End Of Cycle Processing	サイクル締め処理
 GL115 Ensure Archive USB Memory Stick is in path	GL115 保管用USBメモリが接続されているか確認
 GL116 Ensure you have done a file backup prior to running!!!	GL116 実行前に必ずファイルをバックアップすること!!!
 GL117 Hit Escape or press A to abort	GL117 Esc または A で中止
+Trial Balance	試算表
+Select Option By Number :- [ ]	番号で選択してください  :- [ ]
+(1)  Detailed Trial Balance	(1)  詳細試算表
+(2)  Profit Centre Trial Balance	(2)  部門別試算表
+(2)  Branch Trial Balance	(2)  拠点別試算表
+Detailed Trial Balance	詳細試算表
+Working.......Please wait	処理中.......お待ちください
+Structured Trial Balance	構造化試算表
+Detail Trial Balance	詳細試算表
+Profit Centre Trial Balance	部門別試算表
+Condensed Report	要約帳票
+Page 	頁 
+Account   	勘定      
+  P/C     	  部門    
+Branch    	拠点      
+<---------Name--------->      <---Current Balance--->    <--Last Year Balance->     	<---------名称--------->      <------当期残高------->    <------前期残高------>     
+<-Quarter 	<-四半期  
+Debit      Credit          Debit     Credit	借方       貸方            借方      貸方
+T o t a l	合    計
+t o t a l	合    計
+Account      <----Detail   Level----><-------Level  4-------><-------Level  3-------><-------Level  2-------><-------Level  1------>	勘定         <----明細   レベル-----><------レベル  4-------><------レベル  3-------><------レベル  2-------><------レベル  1------>
+               Debit        Credit      Debit       CRedit      Debit       Credit      Debit       Credit      Debit       Credit  	               借方         貸方        借方        貸方        借方        貸方        借方        貸方        借方        貸方    
+GL106 Ledger File Does Not Exist	GL106 元帳ファイルが存在しません
+GL012 Hit return to continue	GL012 Enterで続行

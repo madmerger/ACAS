@@ -11,8 +11,8 @@ public static partial class Gl030
     private static readonly string[] Places = { "Direct Income", "Direct Costs ", "Sundry Income", "Indirect Cost", "Fixed Assets ", "Current Asset", "Current Liab.", "Capital A/Cs " };
 
     private sealed class St { public string PcCode = "  "; }
-    private static bool Pcs(Ctx c) => c.Sys.S("P-C") == "P";
-    private static bool Branches(Ctx c) => c.Sys.S("P-C") == "B";
+    public static bool Pcs(Ctx c) => c.Sys.S("P-C") == "P";
+    public static bool Branches(Ctx c) => c.Sys.S("P-C") == "B";
     private static bool Index2(Ctx c) => c.Sys.S("Ledger-2nd-Index") == "Y";
     public static string Key(decimal nos, decimal pc) => Cob.P9(nos, 6) + Cob.P9(pc, 2);
 
