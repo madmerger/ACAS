@@ -6,10 +6,10 @@ struct SalesMenu: View {
 
     var body: some View {
         List {
-            Section("処理と得意先") {
-                NavigationLink("処理日入力") { SalesDateView(workspace: workspace) }
+            Section(slText("sales.customer.section")) {
+                NavigationLink(slText("sales.date.title")) { SalesDateView(workspace: workspace) }
                     .accessibilityIdentifier("sales.date")
-                NavigationLink("得意先マスター管理") { SalesCustomersMenu(workspace: workspace) }
+                NavigationLink(slText("sales.customer.menu")) { SalesCustomersMenu(workspace: workspace) }
                     .accessibilityIdentifier("sales.customers")
             }
             NavigationLink(String(localized: "sales.proof", table: "SL")) {
