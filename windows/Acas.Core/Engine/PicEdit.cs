@@ -73,8 +73,10 @@ public static class PicEdit
             if (c == '9' || outc[i] != '0') { firstSig = i; break; }
         }
         if (firstSig < 0) firstSig = ip.Length;
+        bool allZeroSuppressed = firstSig == ip.Length && !fp.Contains('9') && dd.All(digit => digit == '0');
         char fill = ip.Contains('*') ? '*' : ' ';
-        for (int i = 0; i < firstSig; i++) outc[i] = fill;
+        for (int i = 0; i < firstSig; i++)
+            if (allZeroSuppressed || ip[i] is not ('0' or '/')) outc[i] = fill;
         var sb = new StringBuilder(new string(outc));
         if (floatCh != '\0')
         {
@@ -82,13 +84,12 @@ public static class PicEdit
             int p = Math.Max(0, firstSig - 1);
             if (p < sb.Length) sb[p] = sign;
         }
-        bool allZeroSuppressed = firstSig >= ip.Length && fp.Length > 0 && !fp.Contains('9') && a == 0;
         if (showPoint) sb.Append(allZeroSuppressed ? ' ' : '.');
         int k = 0;
         foreach (var c in fp)
         {
             if (c is '9' or 'Z' or '*') { sb.Append(allZeroSuppressed ? fill : dd[k]); k++; }
-            else sb.Append(c);
+            else sb.Append(allZeroSuppressed ? fill : c);
         }
         string res = sb.ToString();
         if (lead != '\0') res = (lead == '-' ? (neg ? "-" : " ") : lead == '+' ? (neg ? "-" : "+") : lead.ToString()) + res;
