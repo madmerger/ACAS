@@ -1,16 +1,16 @@
 import Foundation
 
 /// common/maps99.cbl: エラーメッセージ表示。error.txt (行順) を検索し、無ければ既定文言を出して入力を待つ。
-/// 呼び出し側は `Sys002Maps99.call(s, code)` を使う (error-pass は `s.shared["maps99-error"]` で渡す)。
+/// 呼び出し側は `Sys002Maps99.call(s, code)` を使う (error-pass は `s.shared["error-code"]` で渡す)。
 enum Sys002Maps99 {
     static func call(_ s: Session, _ code: Int) throws {
-        s.shared["maps99-error"] = code
+        s.shared["error-code"] = code
         try s.call("maps99")
     }
 
     static func run(_ s: Session) throws {
         let c = s.console
-        let errorPass = (s.shared["maps99-error"] as? Int) ?? 0
+        let errorPass = (s.shared["error-code"] as? Int) ?? 0
         var lin = 23
         s.termCode = 0
         var serv = "T", errno = errorPass, mess = s.l10n.raw("maps99.not_in_file")

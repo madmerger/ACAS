@@ -120,7 +120,7 @@ public final class ProgramRunner: @unchecked Sendable {
                 if try !session.call(name) { code = 127 }
             } catch let s as StopRun { code = s.code } catch { code = 1 }
             // GnuCOBOL (COB_EXIT_WAIT): 画面モードの実行単位が終了すると 2 行目に終了メッセージを出す
-            if code >= 0 { session.console.display(session.t("runtime.end_of_program"), at: 201) }
+            if code >= 0, session.console.pendingAccept { session.console.display(session.t("runtime.end_of_program"), at: 201) }
             lock.lock(); _finished = true; _exitCode = code; lock.unlock()
             session.term.notify()
             onFinish?(code)

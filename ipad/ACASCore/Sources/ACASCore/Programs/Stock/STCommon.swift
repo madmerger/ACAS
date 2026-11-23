@@ -115,7 +115,7 @@ enum ST {
     }
 
     static func maps99(_ s: Session, _ code: Int) throws {
-        s.shared["maps99-error"] = code
+        s.shared["error-code"] = code
         try s.call("maps99")
     }
 

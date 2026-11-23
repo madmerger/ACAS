@@ -131,6 +131,10 @@ public final class Console: @unchecked Sendable {
 
     func beep() { onBeep?() }
 
+    /// GnuCOBOL screenio の pending_accept: 最後の画面操作が DISPLAY (まだ ACCEPT していない) なら true。
+    /// 実行単位の終了時、true のときだけ終了メッセージを表示する。
+    public var pendingAccept = false
+
     // MARK: DISPLAY
 
     public func display(_ text: String, at line: Int, _ col: Int, color: UInt8 = 0, highlight: Bool = false,
@@ -138,6 +142,7 @@ public final class Console: @unchecked Sendable {
         if eraseEOS { term.eraseEOS(line: line, col: col) }
         if eraseEOL { term.eraseEOL(line: line, col: col) }
         term.put(text, line: line, col: col, color: color, highlight: highlight, reverse: reverse)
+        pendingAccept = true
         term.notify()
     }
 
@@ -180,6 +185,7 @@ public final class Console: @unchecked Sendable {
     /// 単項目 ACCEPT。戻り値は項目サイズ (セル数) に揃えた文字列。`crtStatus` を設定する。
     public func accept(at line: Int, _ col: Int, size: Int, kind: FieldKind = .alpha, initial: String = "",
                        options: AcceptOptions = [], color: UInt8 = 0) throws -> String {
+        pendingAccept = false
         var buf = [Character](repeating: " ", count: size)
         if options.contains(.update) { buf = cells(of: initial, size: size) }
         // 初期表示
@@ -296,7 +302,7 @@ public final class Console: @unchecked Sendable {
     }
 
     /// 任意キー待ち (accept omitted / 1 文字応答)
-    public func waitKey() throws -> Key { term.notify(); return try keys.next() }
+    public func waitKey() throws -> Key { pendingAccept = false; term.notify(); return try keys.next() }
 
     // MARK: ACCEPT (SCREEN SECTION)
 
@@ -317,6 +323,7 @@ public final class Console: @unchecked Sendable {
 
     /// SCREEN SECTION の ACCEPT 相当。Tab/上下で項目移動、Enter で確定、Esc 等は `crtStatus` に設定。
     public func acceptScreen(_ fields: [ScreenField]) throws {
+        pendingAccept = false
         guard !fields.isEmpty else { return }
         for f in fields { redraw(f, accepting: true) }
         var idx = 0
