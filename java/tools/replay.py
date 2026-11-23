@@ -50,6 +50,7 @@ def norm_screen(s):
     return lines
 
 
+RESIDUE = None
 OS_OUTPUT = "nohup: appending output to 'nohup.out'"
 
 
@@ -117,6 +118,9 @@ def run_case(api, evid, case, verbose=False):
         api.call("POST", f"/api/sessions/{sid}/keys", {"keys": keys})
         scr = api.call("GET", f"/api/test/sessions/{sid}/screen?lang=en")
         got = norm_screen(scr["text"])
+        if RESIDUE is not None:   # 日本語面に残った英語文言の収集（--residue）
+            for l in api.call("GET", f"/api/test/sessions/{sid}/screen?lang=ja")["text"].split("\n"):
+                if re.search(r"[A-Za-z]*[a-z]{3,}", l): RESIDUE.setdefault(l.strip(), cid)
         if step.get("expect") and step["expect"] not in "\n".join(scr["text"].split("\n")):
             missing_expect.append({"step": i, "expect": step["expect"]})
         if i < len(screens):
@@ -182,24 +186,29 @@ def run_case(api, evid, case, verbose=False):
     return res
 
 
-def main():
+def main(make_api=Api):
     ap = argparse.ArgumentParser()
     ap.add_argument("evidence", type=Path)
     ap.add_argument("cases", nargs="+")
     ap.add_argument("--url", default="http://localhost:18080")
     ap.add_argument("--out", type=Path)
     ap.add_argument("-v", action="store_true")
+    ap.add_argument("--residue", type=Path, help="日本語面に英小文字語が残った行を JSON で出力する")
     a = ap.parse_args()
     catalog = json.loads((a.evidence / "scenarios/catalog.json").read_text())["cases"]
     sel = [c for c in catalog if any(c["id"] == x or (x.endswith("-") and c["id"].startswith(x)) for x in a.cases)]
-    api, results = Api(a.url), []
+    global RESIDUE
+    if a.residue: RESIDUE = {}
+    api, results = make_api(a.url), []
     for c in sel:
+        if getattr(api, "before_case", None): api.before_case(c)
         try:
             r = run_case(api, a.evidence, c, a.v)
         except Exception as e:  # noqa
             r = {"id": c["id"], "title": c["title"], "verdict": "不一致", "reason": f"実行エラー: {e}"}
         results.append(r)
         print(r["id"], r["verdict"], r["reason"][:150], flush=True)
+        if getattr(api, "after_case", None): api.after_case(r)
         if a.v and r.get("detail"):
             for d in r["detail"]:
                 print("  ", {k: v for k, v in d.items() if k != "diff"}); print("\n".join("     " + l for l in d["diff"]))
@@ -208,6 +217,8 @@ def main():
         a.out.write_text(json.dumps(results, ensure_ascii=False, indent=1))
     from collections import Counter
     print(dict(Counter(r["verdict"] for r in results)))
+    if a.residue: a.residue.write_text(json.dumps(RESIDUE, ensure_ascii=False, indent=1))
+    if getattr(api, "close", None): api.close()
 
 
 if __name__ == "__main__":

@@ -28,8 +28,8 @@
     } else statusEl.textContent = '';
   }
 
-  async function start(app) {
-    const res = await fetch('api/sessions?app=' + app, { method: 'POST' });
+  async function start(app, irsPath) {
+    const res = await fetch('api/sessions?app=' + app + (irsPath ? '&irsPath=' + encodeURIComponent(irsPath) : ''), { method: 'POST' });
     const s = await res.json();
     sessionId = s.id; queue = [];
     render(s);
@@ -74,5 +74,6 @@
   window.acasSetCase = (id, title) => { const b = document.getElementById('case-banner'); b.hidden = false; b.textContent = 'ケース ' + id + '： ' + title; };
   window.acasStart = start;
   window.acasSessionId = () => sessionId;
+  window.acasIdle = () => !busy && queue.length === 0;
   if (q.get('app')) start(q.get('app'));
 })();

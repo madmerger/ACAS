@@ -55,7 +55,7 @@ public class Gl060 extends GlProgram {
         display(3, 1, "cycle - ");
         show(3, 9, cycle, 2);
         if (a == 2) { print.open(); headings(); }
-        else { show(5, 1, LINE4, 2); show(6, 1, LINE5, 2); }
+        else { display(5, 1, LINE4, 2); display(6, 1, LINE5, 2); }
         lin = 7;
         batchFile.open(CobFile.Mode.INPUT);
         loop:

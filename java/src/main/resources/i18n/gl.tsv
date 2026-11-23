@@ -334,3 +334,11 @@ Br/P C	拠/PC
 Account P.C.	勘定    P.C.
 Archiving.	保管中。
 Deleting.	削除中。
+Ledger  Batch  Status       Last	元帳    ﾊﾞｯﾁ   状態         最終
+---------Batch Controls---------	----------バッチ統制------------
+------  -----  ------     Activity	------  -----  ------     処理日
+Items  ---Gross---- -----VAT----	件数   ----総額---- ----税額----
+---Gross----	----総額----
+-----VAT----	----税額----
+Activity	処理日
+Items	件数

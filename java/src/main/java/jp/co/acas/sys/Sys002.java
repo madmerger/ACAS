@@ -53,6 +53,7 @@ public class Sys002 extends Program implements ScreenDef.Binder {
     private boolean redo(String message, int fg) {
         ws.put("verify-message", message);
         displayScreen("verify-screen");
+        display(13, 55, String.format("%-24s", message), 2);   // 文言（日本語面で訳す）。桁・内容は verify-message と同じ
         show(15, 76, "Y", fg);
         String r = ctx.term.accept(15, 76, 1, "Y", 0, 6);
         return r.equalsIgnoreCase("N");

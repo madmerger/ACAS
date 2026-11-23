@@ -83,8 +83,8 @@ public class Gl070 extends GlProgram {
         show(3, 1, sp(31) + pad("Batch Status Report", 41) + " Page " + "  ", 2);
         display(3, 1, "Cycle - ");
         show(3, 9, Num.edit(sys.intv("scycle"), "z9"), 2);
-        show(5, 1, pad("Ledger  Batch  Status       Last", 48) + "---------Batch Controls---------", 2);
-        show(6, 1, pad("------  -----  ------     Activity", 48) + "Items  ---Gross---- -----VAT----", 2);
+        display(5, 1, pad("Ledger  Batch  Status       Last", 48) + "---------Batch Controls---------", 2);
+        display(6, 1, pad("------  -----  ------     Activity", 48) + "Items  ---Gross---- -----VAT----", 2);
         lin = 7;
         batchFile.open(CobFile.Mode.INPUT);
         while (nextBatch()) {
