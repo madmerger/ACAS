@@ -4,6 +4,8 @@
 "gl.financial-statements.confirm" = "この基準日で帳票を出力しますか？";
 "gl.financial-statements.print" = "帳票を出力";
 "gl.financial-statements.ready" = "損益計算書・貸借対照表の帳票を出力しました";
+"gl.final-setup" = "決算書の設定";
+"gl.final-print" = "設定済み決算書を印刷（利用不可）";
 "gl.posting" = "仕訳転記";
 "gl.posting.check" = "バッチの確認";
 "gl.posting.run" = "転記を実行";

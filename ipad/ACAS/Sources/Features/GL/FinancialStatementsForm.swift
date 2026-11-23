@@ -10,10 +10,12 @@ struct FinancialStatementsForm: View {
 
     var body: some View {
         Form {
-            LabeledContent(ledgerText("financial-statements.date")) {
+            HStack {
+                Text(ledgerText("financial-statements.date"))
+                Spacer()
                 Text(GeneralLedgerSetup(workspace.context).processingDate,
-                     format: Date.FormatStyle(date: .long, locale: locale, calendar: workspace.context.calendar,
-                                              timeZone: workspace.context.timeZone))
+                     format: Date.FormatStyle(date: .long, time: .omitted, locale: locale,
+                                              calendar: workspace.context.calendar, timeZone: workspace.context.timeZone))
                     .accessibilityIdentifier("gl.financial-statements.date")
             }
             Button(ledgerText("financial-statements.prepare")) { confirming = true }
@@ -21,6 +23,8 @@ struct FinancialStatementsForm: View {
             if let status { Text(status).accessibilityIdentifier("gl.financial-statements.status") }
             if let report { LedgerReportShare(bytes: report) }
         }
+        .environment(\.timeZone, workspace.context.timeZone)
+        .environment(\.calendar, workspace.context.calendar)
         .navigationTitle(ledgerText("financial-statements"))
         .onAppear { workspace.completed("gl-financial-statements-date") }
         .confirmationDialog(ledgerText("financial-statements.confirm"), isPresented: $confirming, titleVisibility: .visible) {
