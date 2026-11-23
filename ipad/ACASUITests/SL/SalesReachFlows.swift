@@ -210,8 +210,7 @@ final class SalesReachFlows: XCTestCase {
     }
 
     private func missingOpenItems(_ id: String, screen: String, title: String) throws {
-        try reach(id, through: ["sales." + screen], title: title,
-                  verdict: screen == "dunning" ? "mismatch" : "match") { app in
+        try reach(id, through: ["sales." + screen], title: title) { app in
             let failure = app.staticTexts["sales." + screen + ".error"]
             XCTAssertTrue(failure.waitForExistence(timeout: 5))
             XCTAssertEqual(failure.label, "売掛明細のファイルがありません")
