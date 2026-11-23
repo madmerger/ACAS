@@ -1,0 +1,56 @@
+<Window x:Class="Acas.App.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="会計管理" Width="1240" Height="760" MinWidth="900" MinHeight="580"
+        WindowStartupLocation="CenterScreen" Language="ja-JP" FontFamily="Yu Gothic UI"
+        FontSize="15" Foreground="{StaticResource Ink}" Background="{StaticResource Surface}"
+        AutomationProperties.AutomationId="AcasWindow">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="76"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <Border Background="#172B45" Padding="28,14" Grid.Row="0">
+            <StackPanel VerticalAlignment="Center">
+                <TextBlock Text="会計管理" FontSize="26" FontWeight="SemiBold" Foreground="White"
+                           AutomationProperties.AutomationId="ApplicationTitle"/>
+                <TextBlock Text="業務メニューと帳票" Foreground="#CBD9EC" FontSize="13"
+                           AutomationProperties.AutomationId="ApplicationSubtitle"/>
+            </StackPanel>
+        </Border>
+        <Grid Grid.Row="1" Margin="24">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="236"/>
+                <ColumnDefinition Width="20"/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <Border Background="White" BorderBrush="{StaticResource Edge}" BorderThickness="1"
+                    CornerRadius="12" Padding="16">
+                <DockPanel>
+                    <TextBlock DockPanel.Dock="Top" Text="ナビゲーション" FontWeight="SemiBold" Margin="2,0,0,12"
+                               AutomationProperties.AutomationId="NavigationTitle"/>
+                    <TreeView x:Name="Navigation" BorderThickness="0"
+                              AutomationProperties.AutomationId="Navigation"
+                              SelectedItemChanged="OpenNavigation"/>
+                </DockPanel>
+            </Border>
+            <Border Grid.Column="2" Background="White" BorderBrush="{StaticResource Edge}" BorderThickness="1"
+                    CornerRadius="12" Padding="24">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock x:Name="ScreenTitle" FontSize="26" FontWeight="SemiBold" Margin="0,0,0,18"
+                               AutomationProperties.AutomationId="ScreenTitle"/>
+                    <ContentControl x:Name="ScreenContent" Grid.Row="1"
+                                    HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"
+                                    AutomationProperties.AutomationId="ScreenContent"/>
+                    <TextBlock x:Name="Status" Grid.Row="2" Margin="0,12,0,0"
+                               AutomationProperties.AutomationId="Status"/>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
+</Window>
