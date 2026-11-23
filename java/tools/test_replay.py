@@ -8,6 +8,27 @@ import ui_replay
 
 
 class ReplayTest(unittest.TestCase):
+    def test_wrapped_nohup_notice_is_masked_before_screen_normalization(self):
+        col = 79 - replay.OS_OUTPUT.index(" ")
+        prefix = "L" * col
+        def wrap(text):
+            return text[:80] + "\n" + text[80:] + "\n"
+
+        case = {"id": "GL-test", "title": "画面比較", "baseline": "biz",
+                "runner": {"app": "gl", "steps": [{"key": "ENTER"}]},
+                "legacy_result": {"verdict": "合格", "comparison_targets": {"screen_text": ["screen.txt"]}}}
+        with TemporaryDirectory() as tmp:
+            evid = Path(tmp)
+            (evid / "screen.txt").write_text(wrap(prefix + replay.OS_OUTPUT + "right"))
+            for suffix, verdict in [("right", "一致"), ("wrong", "不一致")]:
+                with self.subTest(suffix=suffix):
+                    screen = wrap(prefix + "X" * len(replay.OS_OUTPUT) + suffix)
+                    api = Mock(spec=replay.Api)
+                    api.call.side_effect = [None, {}, {"id": 1}, None, {"text": screen}, {"text": ""}, {}, None]
+                    result = replay.run_case(api, evid, case)
+                    self.assertEqual(result["verdict"], verdict)
+                    self.assertIn("OS 出力行は比較対象外: 1 箇所", result["reason"])
+
     def test_nohup_mask_preserves_application_text(self):
         for notice, col in [(replay.OS_OUTPUT, 2), (replay.OS_OUTPUT, 73), (replay.OS_ERROR, 1)]:
             with self.subTest(notice=notice, col=col):
