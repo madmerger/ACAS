@@ -1,0 +1,37 @@
+/* purchase.cbl — Purchase Ledger menu */
+"purchase.menu_title" = "Purchase Ledger System Menu";
+"purchase.item_a" = "(A)  Date Entry";
+"purchase.item_b" = "(B)  Supplier File Maintenance";
+"purchase.item_c" = "(C)  Purchase Ledger Enquiry";
+"purchase.item_d" = "(D)  Purchase Transactions Input";
+"purchase.item_e" = "(E)  Purchase Transactions Amend";
+"purchase.item_f" = "(F)  Purchase Transactions Delete";
+"purchase.item_g" = "(G)  Purchase Transactions Proof";
+"purchase.item_h" = "(H)  Purchase Transactions Post";
+"purchase.item_i" = "(I)  Payment Input";
+"purchase.item_j" = "(J)  Payment Amend";
+"purchase.item_k" = "(K)  Payment Proof";
+"purchase.item_l" = "(L)  Payment Post";
+"purchase.item_m" = "(M)  Set-Up Purchase Analysis Codes";
+"purchase.item_n" = "(N)  Purchase Analysis Report";
+"purchase.item_o" = "(O)  Purchase Day Book";
+"purchase.item_p" = "(P)  Aged Creditors Report";
+"purchase.item_q" = "(Q)  Alphabetical Supplier List";
+"purchase.item_r" = "(R)  Supplier Turnover Report";
+"purchase.item_s" = "(S)  Cheque  Sub-System";
+"purchase.item_t" = "(T)  End Of Cycle Processing";
+"purchase.item_u" = "(U)  Invoice Parameter Amend";
+"purchase.item_v" = "(V)  Supplier File Dump";
+"purchase.item_x" = "(X)  Exit to ";
+"purchase.item_z" = "(Z)  System Set Up";
+"purchase.using" = "Using ";
+"purchase.no_backup" = "No BackUp Script in Bin/Data";
+"purchase.not_yet_available" = "Sorry not yet available";
+"pl.client" = "Client -";
+/* pl000.cbl — Start Of Day */
+"pl000.title" = "Purchase Ledger  Start Of Day";
+"pl000.enter_date_uk" = "Enter todays date as dd/mm/yyyy - [          ]";
+"pl000.enter_date_usa" = "Enter todays date as mm/dd/yyyy - [          ]";
+"pl000.enter_date_intl" = "Enter todays date as yyyy/mm/dd - [          ]";
+"pl000.pl005" = "PL005 Invalid Date";
+"pl.maps99_not_found" = "Error not in error.txt. Hit return to close";

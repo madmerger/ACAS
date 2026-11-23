@@ -28,6 +28,44 @@
 "gl000.enter_date_usa" = "本日の日付を入力 mm/dd/yyyy     - [          ]";
 "gl000.enter_date_intl" = "本日の日付を入力 yyyy/mm/dd     - [          ]";
 "gl000.gl009" = "GL009 日付が不正";
+/* ---- pl-a.ja.strings ---- */
+/* purchase.cbl — 買掛元帳メニュー */
+"purchase.menu_title" = "買掛元帳 メニュー";
+"purchase.item_a" = "(A)  日付入力";
+"purchase.item_b" = "(B)  仕入先マスタ保守";
+"purchase.item_c" = "(C)  買掛元帳照会";
+"purchase.item_d" = "(D)  仕入取引入力";
+"purchase.item_e" = "(E)  仕入取引修正";
+"purchase.item_f" = "(F)  仕入取引削除";
+"purchase.item_g" = "(G)  仕入取引プルーフ";
+"purchase.item_h" = "(H)  仕入取引転記";
+"purchase.item_i" = "(I)  支払入力";
+"purchase.item_j" = "(J)  支払修正";
+"purchase.item_k" = "(K)  支払プルーフ";
+"purchase.item_l" = "(L)  支払転記";
+"purchase.item_m" = "(M)  仕入分析コード設定";
+"purchase.item_n" = "(N)  仕入分析表";
+"purchase.item_o" = "(O)  仕入日記帳";
+"purchase.item_p" = "(P)  買掛金年齢表";
+"purchase.item_q" = "(Q)  仕入先一覧 (名称順)";
+"purchase.item_r" = "(R)  仕入先別取引高表";
+"purchase.item_s" = "(S)  小切手サブシステム";
+"purchase.item_t" = "(T)  期末処理";
+"purchase.item_u" = "(U)  請求書パラメータ修正";
+"purchase.item_v" = "(V)  仕入先マスタダンプ";
+"purchase.item_x" = "(X)  終了    ";
+"purchase.item_z" = "(Z)  システム設定";
+"purchase.using" = "使用: ";
+"purchase.no_backup" = "バックアップ用スクリプトなし";
+"purchase.not_yet_available" = "まだ利用できません";
+"pl.client" = "会社 -";
+/* pl000.cbl — Start Of Day */
+"pl000.title" = "買掛元帳  業務開始";
+"pl000.enter_date_uk" = "本日の日付を入力 dd/mm/yyyy     - [          ]";
+"pl000.enter_date_usa" = "本日の日付を入力 mm/dd/yyyy     - [          ]";
+"pl000.enter_date_intl" = "本日の日付を入力 yyyy/mm/dd     - [          ]";
+"pl000.pl005" = "PL005 日付が不正";
+"pl.maps99_not_found" = "error.txtに未登録のエラー。Returnで閉じる";
 /* ---- sys.ja.strings ---- */
 /* ACAS.cbl — システムメニュー (日本語) */
 "sys.sy006" = "SY006 プログラム引数は2個までです。指定された数: ";
