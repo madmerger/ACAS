@@ -1,0 +1,34 @@
+# レガシー英語文言⇥日本語文言（SL 売掛）。日本語の表示幅（全角=2）は原文の長さ以下にすること。
+Sales Ledger System Menu	売掛元帳メニュー
+(A)  Date Entry	(A)  処理日入力
+(B)  Customer File Maintenance	(B)  顧客マスター管理
+(C)  Sales Ledger Enquiry	(C)  売掛残高・明細照会
+(D)  Sales Transactions Input	(D)  売上取引入力
+(E)  Sales Transactions Amend	(E)  売上取引修正
+(F)  Sales Transactions Proof	(F)  売上の検証帳票
+(G)  Sales Transactions Post	(G)  売上転記
+(H)  Payment Input	(H)  入金入力
+(I)  Payment Amend	(I)  入金修正
+(J)  Payment Proof	(J)  入金の検証帳票
+(K)  Payment Post	(K)  入金転記
+(L)  Set-Up Sales Analysis Codes	(L)  売上分析コード設定
+(M)  Sales Analysis Report	(M)  売上分析帳票
+(N)  Sales Day Book	(N)  売上日計帳
+(O)  Statement Production	(O)  顧客明細書発行
+(P)  Dunning Letters Generation	(P)  督促状出力
+(Q)  Aged Debtors Analysis	(Q)  売掛金年齢表
+(R)  Alphabetical Customer List	(R)  顧客名順一覧
+(S)  Customer Turnover Report	(S)  顧客別売上帳票
+(T)  Invoice Sub-System	(T)  請求書サブシステム
+(U)  End of Cycle Processing	(U)  期間締め処理
+(V)  Customer File Dump	(V)  顧客ファイル帳票
+(X)  Exit To	(X)  終了
+Using	使用:
+Sorry not available	利用できません
+SL009 Environment variables not yet set up : ABORTING	SL009 環境が未設定のため中止します
+Client -	会社 -
+Sales Ledger  Start Of Day	売掛元帳  業務開始
+Enter todays date as dd/mm/yyyy - [          ]	本日の日付 (dd/mm/yyyy)   - [          ]
+Enter todays date as mm/dd/yyyy - [          ]	本日の日付 (mm/dd/yyyy)   - [          ]
+Enter todays date as yyyy/mm/dd - [          ]	本日の日付 (yyyy/mm/dd)   - [          ]
+SL005 Invalid Date	SL005 日付不正
