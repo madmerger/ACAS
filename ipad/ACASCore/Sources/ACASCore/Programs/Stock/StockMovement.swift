@@ -27,16 +27,14 @@ extension StockService {
 
     public func move(_ direction: Direction, code: String, quantity: Int64, price: Int64 = 0,
                      valueOverride: Int64? = nil, date: Date, codeOnly: Bool = false) throws -> Item {
-        let result = try store.transaction {
+        try store.transaction {
             try applyMovement(direction, code: code, quantity: quantity, price: price,
                               valueOverride: valueOverride, date: date, codeOnly: codeOnly)
         }
-        guard let result else { throw Failure.missing }
-        return result
     }
 
     private func applyMovement(_ direction: Direction, code: String, quantity: Int64, price: Int64,
-                               valueOverride: Int64?, date: Date, codeOnly: Bool) throws -> Item? {
+                               valueOverride: Int64?, date: Date, codeOnly: Bool) throws -> Item {
         guard quantity != 0, (-999_998...999_998).contains(quantity), (0...99_999_999).contains(price),
               valueOverride.map({ (0...9_999_999_999).contains($0) }) ?? true else { throw Failure.invalidInput }
         var system = settings.read(1).map { Record(SystemLayout.layout, bytes: $0) } ?? Record(SystemLayout.layout)
@@ -48,13 +46,7 @@ extension StockService {
             throw Failure.invalidInput
         }
         let receiving = direction == .receipt
-        if store.exists(path) { try store.writeRaw(movementReportPath, []) }
-        var row: Record
-        do {
-            row = try codeOnly ? record(code) : movementRecord(code)
-        } catch Failure.missing {
-            return nil
-        }
+        var row = try codeOnly ? record(code) : movementRecord(code)
         let held = row.int("stock-held")
         let work = row.int("stock-work-in-progress")
         let cost = row.int("stock-cost")

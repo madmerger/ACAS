@@ -119,7 +119,7 @@ final class StockServiceTests: XCTestCase {
         XCTAssertEqual(EvidenceComparison.snapshot(store), original)
     }
 
-    func testMissingMovementItemClearsReportWithoutChangingStock() throws {
+    func testMissingMovementItemPreservesCurrentReportWithoutChangingStock() throws {
         let store = try FileStore()
         let service = StockService(BusinessContext(store: store))
         var item = StockService.Item()
@@ -129,11 +129,14 @@ final class StockServiceTests: XCTestCase {
         try service.save(item)
         let original = EvidenceComparison.snapshot(store)
         for direction in [StockService.Direction.receipt, .issue] {
-            try store.writeRaw("ledgers/acas/prt-1", [0x20])
+            try service.prepareMovementEntry()
+            let reportPath = "ledgers/acas/prt-1"
+            XCTAssertEqual(store.readRaw(reportPath), [])
+            try store.writeRaw(reportPath, [0x20])
             XCTAssertThrowsError(try service.move(direction, code: "MISSING", quantity: 1, date: service.today)) {
                 guard case StockService.Failure.missing = $0 else { return XCTFail("\($0)") }
             }
-            XCTAssertEqual(store.readRaw("ledgers/acas/prt-1"), [])
+            XCTAssertEqual(store.readRaw(reportPath), [0x20])
             XCTAssertEqual(EvidenceComparison.snapshot(store), original)
         }
     }
