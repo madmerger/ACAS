@@ -1,5 +1,6 @@
 using Acas.Core;
 using Acas.Core.Engine;
+using Acas.Core.Programs.Sales;
 using Acas.Core.Programs.Stock;
 
 namespace Acas.Tests.Stock;
@@ -48,6 +49,27 @@ public class StockServiceTests
             Assert.Equal(2m, record.N("Stock-ReOrder-Pnt"));
             Assert.Equal(5m, record.N("Stock-Std-ReOrder"));
         }
+    }
+
+    [Fact]
+    public void 初回品目登録で分析コードと値を作成し再登録で初期化しない()
+    {
+        using var db = new Db();
+        var settings = new SystemSettings(db);
+        Assert.True(settings.Initialize(new("TEST", "ABCD", true, true, true, true, true, false), Today));
+        var model = new StockScreenModel(db, () => Today);
+        const string values = "ledgers/acas/value.dat";
+        Assert.False(db.Exists(values));
+        Assert.IsType<ConfirmationScreen>(Submit(model.CreateForm(), ("StockKey", "ITEM001"), ("StockAbrev", "ITM001")));
+        Assert.Equal(1, settings.Read()!.I("File-Status-13"));
+        Assert.Equal(1, settings.Read()!.I("File-Status-15"));
+        var analysis = new SalesLedger(db);
+        Assert.Equal(16, analysis.AnalysisCodes(all: true).Count);
+        Assert.Equal(16, db.Count(values));
+        Assert.All(db.Scan(values), row => Assert.Equal(66, row.Data.Length));
+        analysis.SaveAnalysis("A1", "000001", "Changed", "", replace: false);
+        Assert.IsType<ConfirmationScreen>(Submit(model.CreateForm(), ("StockKey", "ITEM002"), ("StockAbrev", "ITM002")));
+        Assert.Contains(analysis.AnalysisCodes(), row => row.Code == "A1" && row.Description == "Changed");
     }
 
     [Fact]

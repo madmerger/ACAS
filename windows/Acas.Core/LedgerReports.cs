@@ -131,16 +131,37 @@ public sealed class LedgerReports(Db database)
             });
 
             var report = new StringBuilder();
-            void Header(string label)
+            string date = LegacyDate(system, SystemSettings.Date(system, "Run-Date"), raw: true);
+            void Row(params (int Column, string Value)[] cells) => report.AppendLine(FixedReportLine.Format(cells));
+            void Blank() => report.AppendLine();
+            void Rule(int column) => Row((column, "==========="), (column + 40, "==========="));
+            void Header(bool balanceSheet)
             {
-                report.AppendLine($"{label}　{Date(system)}　{system.St("Usera")}");
-                report.AppendLine("科目　当期　前期");
+                Row((0, system.St("Usera")));
+                Blank();
+                if (balanceSheet)
+                {
+                    Row((42, "貸借対照表"), (64, date));
+                    Row((44, new string('*', 30)));
+                }
+                else
+                {
+                    Row((32, "損益計算書　対象期間末日"), (75, date));
+                    Row((33, new string('*', 52)));
+                }
+                Blank();
+                Blank();
+                Row((50, "<--------当期-------->"), (90, "<--------前期-------->"));
             }
-            void Line(string name, decimal current, decimal last) =>
-                report.AppendLine($"{name}　{Money(current)}　{Money(last)}");
+            static string Amount(decimal amount, bool blank = false) =>
+                blank && amount == 0 ? "" : Money(Math.Abs(amount)).PadLeft(11) + (amount < 0 ? "CR" : "  ");
+            void Detail(string name, decimal current, decimal last) =>
+                Row((20, name), (50, Amount(current)), (90, Amount(last, true)));
+            void Summary(string name, decimal current, decimal last) =>
+                Row((0, name), (66, Amount(current)), (106, Amount(last, true)));
 
-            Header("損益計算書");
-            string? place = null;
+            Blank();
+            Header(false);
             string totalName = "";
             int category = 0;
             decimal currentTotal = 0, lastTotal = 0, currentRun = 0, lastRun = 0;
@@ -148,51 +169,70 @@ public sealed class LedgerReports(Db database)
             foreach (var (_, data) in database.Scan(FinalFile))
             {
                 var row = Final.From(data);
-                string nextPlace = row.S("place");
-                if (nextPlace != place)
+                int index = row.S("place")[0] - 'A';
+                int next = index >= 0 && index < Places.Length ? Places[index] - '0' : 0;
+                if (next != category)
                 {
-                    int i = nextPlace[0] - 'A';
-                    int next = i >= 0 && i < Places.Length ? Places[i] - '0' : 0;
-                    if (next != category)
+                    if (category != 0)
                     {
-                        if (category != 0)
+                        Blank();
+                        Rule(50);
+                        Row((50, Amount(currentTotal)), (66, Amount(currentTotal)),
+                            (90, Amount(lastTotal, true)), (106, Amount(lastTotal, true)));
+                        Rule(50);
+                        int direction = category is 1 or 3 or 5 ? 1 : -1;
+                        currentRun += direction * currentTotal;
+                        lastRun += direction * lastTotal;
+                        if (next is 3 or 5 or 8)
                         {
-                            Line("小計", currentTotal, lastTotal);
-                            int direction = category is 1 or 3 or 5 ? 1 : -1;
-                            currentRun += direction * currentTotal;
-                            lastRun += direction * lastTotal;
+                            decimal current = currentRun, last = lastRun;
                             switch (next)
                             {
                                 case 3:
                                     totalName = "売上総利益";
-                                    Line(totalName, currentGross = currentRun, lastGross = lastRun);
+                                    currentGross = current;
+                                    lastGross = last;
                                     break;
                                 case 5:
                                     totalName = "当期純利益";
-                                    Line(totalName, currentProfit = currentRun + currentGross, lastProfit = lastRun + lastGross);
-                                    Header("貸借対照表");
+                                    current = currentProfit = currentRun + currentGross;
+                                    last = lastProfit = lastRun + lastGross;
                                     break;
                                 case 8:
                                     totalName = "正味流動資産";
-                                    Line(totalName, currentRun, lastRun);
                                     break;
                             }
-                            if (next is 3 or 5 or 8) currentRun = lastRun = 0;
+                            Blank();
+                            Rule(66);
+                            Summary(totalName, current, last);
+                            if (next == 5)
+                            {
+                                Rule(66);
+                                Header(true);
+                            }
+                            else
+                            {
+                                Blank();
+                                Blank();
+                            }
+                            currentRun = lastRun = 0;
                         }
-                        if (next > 0) report.AppendLine(Categories[next - 1]);
-                        category = next;
-                        currentTotal = lastTotal = 0;
                     }
-                    place = nextPlace;
+                    if (next > 0) Row((0, Categories[next - 1]));
+                    category = next;
+                    currentTotal = lastTotal = 0;
                 }
                 int sign = category is 1 or 3 or 5 ? -1 : 1;
-                decimal current = sign * row.N("balance"), last = sign * row.N("last");
-                Line(row.St("name"), current, last);
-                currentTotal += current;
-                lastTotal += last;
+                decimal currentBalance = sign * row.N("balance"), lastBalance = sign * row.N("last");
+                Detail(row.St("name"), currentBalance, lastBalance);
+                currentTotal += currentBalance;
+                lastTotal += lastBalance;
             }
-            Line("当期純利益", currentProfit, lastProfit);
-            Line(totalName, currentRun + currentProfit, lastRun + lastProfit);
+            Detail("当期純利益", currentProfit, lastProfit);
+            Blank();
+            Rule(66);
+            Summary(totalName, currentRun + currentProfit, lastRun + lastProfit);
+            Rule(66);
             body = Save(title, report.ToString());
         });
         return body;

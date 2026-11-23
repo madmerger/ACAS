@@ -85,10 +85,10 @@ public class LedgerReportTests
 
         var body = new LedgerReports(db).FinancialStatements();
         Assert.NotNull(body);
-        Assert.Contains("損益計算書　2025年4月1日", body);
-        Assert.Contains("Revenue　300.00　0.00", body);
-        Assert.Contains("売上総利益　255.00　0.00", body);
-        Assert.Contains("当期純利益　260.00　0.00", body);
+        Assert.Matches(@"(?m)^ {32}損益計算書　対象期間末日 +01/04/2025\r?$", body);
+        Assert.Matches(@"(?m)^ {20}Revenue {28}300\.00\r?$", body);
+        Assert.Matches(@"(?m)^売上総利益 {61}255\.00\r?$", body);
+        Assert.Matches(@"(?m)^当期純利益 {61}260\.00\r?$", body);
         Assert.Contains("貸借対照表", body);
         Assert.Equal(new[] { "A30000000", "E40000000", "I50000000", "O60000000" },
             db.Scan(LedgerReports.FinalFile).Select(row => row.Key));

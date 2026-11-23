@@ -11,6 +11,42 @@ public sealed partial class SalesLedger
         .X("ledger", 1).X("code", 2).N9("account", 6).X("description", 24).X("print", 3);
     private const string AnalysisDefinition = "レコード定義/売上分析";
 
+    internal void InitializeAnalysis(Rec system)
+    {
+        if (system.I("File-Status-15") == 1) return;
+        if (!db.Exists(ValueFile))
+        {
+            db.Create(ValueFile);
+            system.SetN("File-Status-13", 1);
+        }
+        db.Recreate(AnalysisFile);
+        db.Delete(AnalysisDefinition, "1");
+        (string Key, string Name, string Print)[] defaults =
+        [
+            ("Sv ", "VAT Control", ""), ("Pv ", "VAT Control", ""),
+            ("Pvi", "VAT Input Invoices/CN's", ""), ("Pvj", "VAT Input Receipts", ""),
+            ("Sz ", "Computer Control", ""), ("Pz ", "Computer Control", ""),
+            ("Pza", "Purchase Carriage Charge", "P&P"), ("Pzb", "Purchase Late Charges", "LCG"),
+            ("Szc", "Sales Carriage Charges", "P&P"), ("Szd", "Sales Late Charges", "LCG"),
+            ("Svo", "VAT Output Invoices/CN's", ""), ("Svp", "VAT Output Receipts", ""),
+            ("Pa ", "Default Group", ""), ("Pa1", "Default Purchases", ""),
+            ("Sa ", "Default Group", ""), ("Sa1", "Default Sales", "")
+        ];
+        foreach (var (key, name, print) in defaults)
+        {
+            var analysis = AnalysisLayout.New();
+            analysis.Set("ledger", key[..1]);
+            analysis.Set("code", key[1..]);
+            analysis.Set("description", name);
+            analysis.Set("print", print);
+            var value = AnalysisValueLayout.New();
+            analysis.B.CopyTo(value.B, 0);
+            db.Write(ValueFile, key, value.B);
+            db.Write(AnalysisFile, key, analysis.B);
+        }
+        system.SetN("File-Status-15", 1);
+    }
+
     public void ImportAnalysisRecordLength(int bytes)
     {
         if (bytes <= 0) throw new ArgumentOutOfRangeException(nameof(bytes));

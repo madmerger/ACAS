@@ -1,4 +1,3 @@
-using System.Text;
 using Acas.Core.Engine;
 
 namespace Acas.Core;
@@ -165,176 +164,124 @@ public sealed class SystemSettings(Db database)
     {
         if (Read() is not { } system) return null;
         const string title = "システム設定帳票";
-        var output = new StringBuilder();
-        var fields = new Dictionary<string, string>(StringComparer.Ordinal);
-        string Used(bool enabled) => enabled ? "使用する" : "使用しない";
-        void Line(string name, object? value) => fields.Add(name, $"{name}　{value}");
-        string Field(string key) => fields.GetValueOrDefault(key, "");
-        void Pair(string left, string right = "") =>
-            output.AppendLine(right.Length == 0 ? left : left + new string(' ', Math.Max(1, 70 - Width(left))) + right);
-        static int Width(string text) => text.Sum(ch => ch <= 'ÿ' ? 1 : 2);
-        void Section(string left, string right)
+        var lines = new List<string>();
+        string S(string field) => system.St(field);
+        int I(string field) => system.I(field);
+        string N(string field, int width = 1, bool zeros = false) =>
+            I(field).ToString(zeros ? new string('0', width) : "0", System.Globalization.CultureInfo.InvariantCulture).PadLeft(width);
+        string Rate(string field) => LedgerReports.Money(system.N(field)).PadLeft(5);
+        string DateValue(string field) => LedgerReports.LegacyDate(system, Date(system, field));
+        string Yes(bool enabled) => enabled ? "はい" : "いいえ";
+        string Flag(string field) => Yes(I(field) == 1);
+        string On(string field) => Yes(S(field) == "Y");
+        string StockLink(string field) => Yes(S(field) == "Y" && I("Level-4") == 1);
+        string StockPeriod(string field) => S(field) switch
         {
-            Pair("");
-            Pair(left, right);
-            Pair(new string('*', Width(left)), new string('*', Width(right)));
-            Pair("");
-        }
-        string ReportDate(DateTime? date) => LedgerReports.LegacyDate(system, date);
-        void Page(int page)
-        {
-            Pair($"{title}　{page}ページ", ReportDate(Date(system, "Run-Date")));
-        }
-        void Number(string label, string field, string format = "0") =>
-            Line(label, system.I(field).ToString(format, System.Globalization.CultureInfo.InvariantCulture));
-        void Flag(string label, string field) => Line(label, Used(system.I(field) == 1));
-        string PeriodName(string field) => system.S(field) switch
-        {
-            "M" => "月次", "Q" => "四半期", "W" => "週次", "Y" => "年次", _ => "未設定"
+            "M" => "月次", "Q" => "四半期", "Y" => "年次", _ => "未設定"
         };
-        Line("会社名", system.St("Usera"));
-        Line("住所1", system.St("Address-1"));
-        Line("日付順", system.I("Date-Form") switch { 2 => "月・日・年", 3 => "年・月・日", _ => "日・月・年" });
-        Line("期首日", ReportDate(Date(system, "Start-Date")));
-        Line("期末日", ReportDate(Date(system, "End-Date")));
-        Line("会計期間", system.I("Cyclea"));
-        Line("周期区分", system.I("Period"));
-        Line("四半期", system.I("Current-Quarter"));
-        string Rate(int i) => LedgerReports.Money(system.N($"Vat-Rate-{i}"));
-        Line("帳票の１ページあたりの行数", system.I("Page-Lines"));
-        Line("利用形態", system.I("Host") == 1 ? "複数利用" : "単独利用");
-        Line("旧環境の区分", system.I("Op-System"));
-        Line("旧環境の入力方式", system.I("Data-Capture-Used"));
-        bool single = system.I("Op-System") is 1 or 2 or 4;
-        Line("共通の印刷先", single ? "使用しない" : system.St("Print-Spool-Name"));
-        Line("総勘定元帳の印刷先", single ? "使用しない" : system.St("Print-Spool-Name2"));
-        Line("買掛元帳の印刷先", single ? "使用しない" : system.St("Print-Spool-Name3"));
-        if (system.I("Level-1") == 1)
+        void Row(params (int Column, string Value)[] cells) => lines.Add(FixedReportLine.Format(cells));
+        void Blank() => lines.Add("");
+        void Data(string label = "", string value = "", string right = "", int rightValueColumn = 120, string rightValue = "") =>
+            Row((10, label), (27, value), (70, right), (rightValueColumn, rightValue));
+        void Section(string left, string right, int leftColumn = 24)
         {
-            Line("部門・拠点", system.S("P-C") switch { "P" => "部門", "B" => "拠点", _ => "使用しない" });
-            Line("収益勘定のみに適用", Used(system.S("P-C-Level") == "R"));
-            Line("部門・拠点のグループ化", Used(system.S("P-C-Grouped") == "Y"));
-            Line("比較情報", Used(system.S("Comps") == "Y"));
-            Line("二次索引", Used(system.S("Ledger-2nd-Index") == "Y"));
-            Line("最小限の検証", Used(system.S("M-V") == "Y"));
-            Line("締め処理時の仕訳保管", Used(system.S("Arch") == "Y"));
-            Number("売掛勘定番号の先頭桁", "Sales-Range");
-            Number("買掛勘定番号の先頭桁", "Purchase-Range");
-            Line("消費税の自動計算", Used(system.S("Vat") == "Y"));
-            Line("簡易記帳との連携", Used(system.S("Irs-Instead") == "Y"));
-            Line("次回バッチ番号", system.I("Next-Batch"));
+            Blank();
+            Row((leftColumn, left), (80, right));
+            Row((leftColumn, new string('*', 40 - leftColumn)), (80, new string('*', 16)));
+            Blank();
         }
-        Line("買掛住所区切り", system.St("PL-Delim"));
-        Number("買掛次回バッチ番号", "BL-Next-Batch", "00000");
-        Number("買掛次回伝票番号", "Next-Folio", "00000000");
-        Number("買掛支払勘定", "BL-Pay-Ac", "000000");
-        Number("仕入元帳勘定", "BL-Purch-Ac", "000000");
-        Number("買掛金勘定", "P-Creditors", "000000");
-        Line("買掛と在庫の連携", Used(system.S("PL-Stock-Link") == "Y" && system.I("Level-4") == 1));
-        Line("売掛請求書番号", system.S("SL-Own-Nos") == "N" ? "自動採番" : "手入力");
-        Number("次回請求書番号", "Next-Invoice", "00000000");
-        Flag("督促状", "SL-Dunning");
-        Flag("延滞料", "SL-Charges");
-        Number("売掛支払期限（日）", "SL-Credit");
-        Number("請求書入力レベル", "Invoicer");
-        Number("標準与信限度額", "SL-Limit");
-        Line("標準値引率", LedgerReports.Money(system.N("SL-Disc")) + "％");
-        Number("消費税勘定", "Vat-Ac", "000000");
-        Line("税登録番号の印刷", Used(system.S("SL-VAT-Printed") == "Y"));
-        Number("延滞対象最低残高", "SL-Min");
-        Number("延滞料上限", "SL-Max");
-        Line("延滞料率", LedgerReports.Money(system.N("SL-Late-Per")) + "％");
-        if (system.S("Extra-Type") is "C" or "D")
-        {
-            var label = system.S("Extra-Type") == "C" ? "追加料金" : "追加値引";
-            Line(label + "の説明", system.St("Extra-Desc"));
-            Line(label + "率", LedgerReports.Money(system.N("Extra-Rate")) + "％");
-            Number(label + "勘定", "Extra-Charge-Ac", "000000");
-        }
-        Line("売掛住所区切り", system.St("SL-Delim"));
-        Number("売掛次回バッチ番号", "First-Sl-Batch", "00000");
-        Number("仮請求書保管期間", "PF-Retention");
-        Line("売掛と在庫の連携", Used(system.S("SL-Stock-Link") == "Y" && system.I("Level-4") == 1));
-        foreach (var (label, field) in new[] { ("納品書", "Pick"), ("請求書", "Inv"), ("取引明細書", "Stat"), ("督促状", "Lets") })
-            Line(label + "の社名印刷", Used(system.S("SL-Comp-Head-" + field) == "Y"));
-        Number("売掛入金勘定", "SL-Pay-Ac", "000000");
-        Number("売上元帳勘定", "SL-Sales-Ac", "000000");
-        Number("売掛金勘定", "S-Debtors", "000000");
-        Flag("在庫デバッグ", "Stk-Debug");
-        Flag("製造管理", "Stk-Manu-Used");
-        Flag("在庫監査", "Stk-Audit-Used");
-        Flag("在庫移動監査", "Stk-Mov-Audit");
-        Line("在庫当期区分", PeriodName("Stk-Period-Cur"));
-        Line("在庫累計区分", PeriodName("Stk-Period-dat"));
-        Flag("在庫平均原価", "Stk-Averaging");
-        Number("在庫監査番号", "Stk-Audit-No", "00000000");
-        Flag("受注管理", "Stk-OE-Used");
-        Line("給与計算", Used(false));
-        Line("ファイル状態", string.Concat(Enumerable.Range(1, 32).Select(i => system.S($"File-Status-{i}"))));
+        void Page(int page) => Row((0, "設定"), (50, title), (110, DateValue("Run-Date")), (126, "頁"), (131, page.ToString()));
+        string PathValue(string key) => Environment.GetEnvironmentVariable(key) is { Length: > 0 } path ? path : "環境変数未設定";
+        string Abbreviate(string field) => S(field).Split("  ", StringSplitOptions.None)[0];
+        bool divided = S("P-C") is "P" or "B";
+        bool relational = I("File-System-Used") == 1;
+        bool single = I("Op-System") is 1 or 2 or 4;
+        string extra = S("Extra-Type") switch { "C" => "追加料金", "D" => "追加値引", _ => "" };
+
         Page(1);
         Section("利用者設定", "総勘定元帳設定");
-        Pair(Field("会社名"), Field("部門・拠点"));
-        bool divisions = system.S("P-C") is "P" or "B";
-        Pair(Field("住所1"), divisions ? Field("収益勘定のみに適用") : "");
-        Pair(system.St("Address-2"), divisions ? Field("部門・拠点のグループ化") : "");
-        Pair(system.St("Address-3"), Field("比較情報"));
-        Pair(string.Join(',', system.St("Address-4"), system.St("Post-Code"), system.St("Country")), Field("二次索引"));
-        Pair(Field("日付順"));
-        Pair(Field("期首日"), Field("最小限の検証"));
-        Pair(Field("期末日"), Field("締め処理時の仕訳保管"));
-        Pair($"税率1　{Rate(1)}／{Rate(4)}　税登録番号　{system.St("VAT-Reg-Number")}", Field("売掛勘定番号の先頭桁"));
-        Pair($"税率2　{Rate(2)}／{Rate(5)}", Field("買掛勘定番号の先頭桁"));
-        Pair($"税率3　{Rate(3)}", Field("消費税の自動計算"));
-        Pair(Field("四半期"), Field("周期区分"));
-        Pair(Field("会計期間"), Field("次回バッチ番号"));
-        Pair(Field("帳票の１ページあたりの行数"), Field("簡易記帳との連携"));
+        Data("会社名", S("Usera"), S("P-C") switch { "P" => "部門を使用", "B" => "拠点を使用", _ => "部門・拠点なし" });
+        Data("住所1", S("Address-1"), divided ? S("P-C-Level") == "R" ? "収益勘定のみ" : "全勘定" : "");
+        Data(value: S("Address-2"), right: divided ? S("P-C-Grouped") == "Y" ? "先頭桁で区分" : "先頭桁で区分しない" : "");
+        Data(value: S("Address-3"), right: "比較情報 " + On("Comps"));
+        Data(value: string.Join(',', Abbreviate("Address-4"), Abbreviate("Post-Code"), Abbreviate("Country")),
+            right: "二次索引 " + On("Ledger-2nd-Index"));
+        Data("日付順", I("Date-Form") switch { 2 => "月・日・年", 0 or 1 => "日・月・年", _ => "年・月・日" });
+        Data("期首日", DateValue("Start-Date"), S("M-V") == "Y" ? "最小限の入力検証" : "完全な入力検証");
+        Data("期末日", DateValue("End-Date"), S("Arch") == "Y" ? "締め時に仕訳を保管" : "締め時に仕訳を削除");
+        Row((10, "税率1/4"), (27, Rate("Vat-Rate-1") + " / " + Rate("Vat-Rate-4")), (42, "税番号"), (51, S("VAT-Reg-Number")),
+            (70, I("Sales-Range") == 0 ? "売掛勘定番号の先頭桁なし" : "売掛勘定番号の先頭桁"), (110, I("Sales-Range") == 0 ? "" : N("Sales-Range")));
+        Data("税率2/5", Rate("Vat-Rate-2") + " / " + Rate("Vat-Rate-5"),
+            I("Purchase-Range") == 0 ? "買掛勘定番号の先頭桁なし" : "買掛勘定番号の先頭桁", 110, I("Purchase-Range") == 0 ? "" : N("Purchase-Range"));
+        Data("税率3", Rate("Vat-Rate-3"), S("Vat") == "Y" ? "消費税を自動計算" : "消費税を手計算");
+        Data("四半期", N("Current-Quarter", 2), "四半期内の会計期間数", 91, N("Period", 5));
+        Data("会計期間", N("Cyclea", 2), "次回バッチ番号", 91, N("Next-Batch", 5));
+        Data("印刷行数", N("Page-Lines", 3), "簡易記帳との連携", 96, On("Irs-Instead"));
+
         Section("運用環境設定", "買掛元帳設定");
-        Pair(Field("利用形態"), Field("買掛住所区切り"));
-        Pair(Field("旧環境の区分") + "　" + Field("旧環境の入力方式"), Field("買掛次回バッチ番号"));
-        Pair(system.S("Maps-Ser-xx") == "mp" && system.I("Maps-Ser-nn") == 9999 ? "公開版" : "商用版", Field("買掛次回伝票番号"));
-        bool relational = system.I("File-System-Used") == 1;
-        Pair((relational ? "リレーショナルデータベース" : "旧データファイル") +
-            "・重複ファイル処理：" + Used(system.I("File-Duplicates-In-Use") == 1), Field("買掛支払勘定"));
-        Pair($"簡易記帳のパス　{Environment.GetEnvironmentVariable("ACAS_IRS") ?? "未設定"}", Field("仕入元帳勘定"));
-        Pair($"台帳のパス　{Environment.GetEnvironmentVariable("ACAS_LEDGERS") ?? "未設定"}", Field("買掛金勘定"));
-        Pair(Field("共通の印刷先"), Field("買掛と在庫の連携"));
-        Pair(Field("総勘定元帳の印刷先"));
-        Pair(Field("買掛元帳の印刷先"));
+        Data("利用形態", I("Host") == 1 ? "複数利用" : "単独利用", "住所区切り", 98, S("PL-Delim"));
+        string operating = I("Op-System") switch { 1 => "DOS", 2 => "Windows", 4 => "OS/2", 5 => "Unix", 6 => "Linux", _ => "" };
+        operating += I("Data-Capture-Used") switch { 1 => "・画面表示", 2 => "・部品表示", _ => "" };
+        Data("旧環境の区分", operating, "次回バッチ番号", 94, N("BL-Next-Batch", 5, true));
+        Data("版", S("Maps-Ser-xx") == "mp" && I("Maps-Ser-nn") == 9999 ? "公開版" : "商用版",
+            "次回伝票番号", 91, N("Next-Folio", 8, true));
+        Data(value: (relational ? "データベース" : "旧データファイル") + "／重複処理 " + Flag("File-Duplicates-In-Use"),
+            right: "支払勘定", rightValueColumn: 93, rightValue: N("BL-Pay-Ac", 6, true));
+        Data("簡易記帳のパス", PathValue("ACAS_IRS"), "仕入元帳勘定", 93, N("BL-Purch-Ac", 6, true));
+        Data("台帳のパス", PathValue("ACAS_LEDGERS"), "買掛金勘定", 93, N("P-Creditors", 6, true));
+        Data("共通の印刷先", single ? "使用しない" : S("Print-Spool-Name"), "在庫連携", 96, StockLink("PL-Stock-Link"));
+        Data("総勘定元帳印刷先", single ? "使用しない" : S("Print-Spool-Name2"));
+        Data("買掛元帳の印刷先", single ? "使用しない" : S("Print-Spool-Name3"));
+
         Section("請求書設定", "売掛元帳設定");
-        string extra = system.S("Extra-Type") == "C" ? "追加料金" : "追加値引";
-        Pair(Field("次回請求書番号"), Field("売掛請求書番号"));
-        Pair(Field(extra + "の説明"), Field("督促状"));
-        Pair(Field(extra + "率"), Field("延滞料"));
-        Pair(Field("請求書入力レベル"), Field("売掛支払期限（日）"));
-        Pair(Field(extra + "勘定"), Field("標準与信限度額"));
-        Pair(Field("消費税勘定"), Field("標準値引率"));
-        Pair(Field("税登録番号の印刷"), Field("延滞対象最低残高"));
-        Pair("", Field("延滞料上限"));
-        Pair("", Field("延滞料率"));
-        Pair("", Field("売掛住所区切り"));
-        Pair(Field("仮請求書保管期間"), Field("売掛次回バッチ番号"));
-        Pair(Field("納品書の社名印刷"), Field("売掛と在庫の連携"));
-        Pair(Field("請求書の社名印刷"), Field("売掛入金勘定"));
-        Pair(Field("取引明細書の社名印刷"), Field("売上元帳勘定"));
-        Pair(Field("督促状の社名印刷"), Field("売掛金勘定"));
-        output.Append('\f');
+        Data("次回請求書番号", N("Next-Invoice", 8, true), S("SL-Own-Nos") == "N" ? "請求書番号を自動採番" : "請求書番号を手入力");
+        Data(extra.Length == 0 ? "" : extra + "説明", extra.Length == 0 ? "" : S("Extra-Desc"), "督促状 " + Flag("SL-Dunning"));
+        Data(extra.Length == 0 ? "" : extra + "率", extra.Length == 0 ? "" : Rate("Extra-Rate"), "延滞料 " + Flag("SL-Charges"));
+        Data("請求書入力段階", N("Invoicer"), "支払期限", 84, N("SL-Credit", 2) + " 日");
+        Data(extra.Length == 0 ? "" : extra + "勘定", extra.Length == 0 ? "" : N("Extra-Charge-Ac", 6, true),
+            "標準与信限度額", 92, N("SL-Limit", 7));
+        Data("消費税勘定", N("Vat-Ac", 6, true), "標準値引率", 93, Rate("SL-Disc") + "%");
+        Data("税登録番号印刷", On("SL-VAT-Printed"), "延滞対象最低残高", 94, N("SL-Min", 5));
+        Data(right: "延滞料上限", rightValueColumn: 94, rightValue: N("SL-Max", 5));
+        Data(right: "延滞料率", rightValueColumn: 93, rightValue: Rate("SL-Late-Per") + "%");
+        Data(right: "住所区切り", rightValueColumn: 98, rightValue: S("SL-Delim"));
+        Data("仮請求書保管期間", N("PF-Retention", 3), "次回バッチ番号", 94, N("First-Sl-Batch", 5, true));
+        Row((10, "納品書の社名印刷"), (49, S("SL-Comp-Head-Pick")), (70, "在庫連携"), (96, StockLink("SL-Stock-Link")));
+        Row((10, "請求書の社名印刷"), (49, S("SL-Comp-Head-Inv")), (70, "入金勘定"), (93, N("SL-Pay-Ac", 6, true)));
+        Row((10, "取引明細書の社名印刷"), (49, S("SL-Comp-Head-Stat")), (70, "売上元帳勘定"), (93, N("SL-Sales-Ac", 6, true)));
+        Row((10, "督促状の社名印刷"), (49, S("SL-Comp-Head-Lets")), (70, "売掛金勘定"), (93, N("S-Debtors", 6, true)));
+
+        lines[^1] += "\f";
         Page(2);
         Section("在庫管理設定", "受注管理設定");
-        Pair(Field("在庫デバッグ"), Field("受注管理"));
-        foreach (var key in new[] { "製造管理", "在庫監査", "在庫移動監査", "在庫当期区分", "在庫累計区分", "在庫平均原価", "在庫監査番号" })
-            Pair(Field(key));
-        Section("給与設定", "データベース設定");
-        Pair(Field("給与計算"), relational ? "スキーマ　" + system.St("RDBMS-DB-Name") : "");
+        Data("デバッグ", Flag("Stk-Debug"), "受注管理", 94, Flag("Stk-OE-Used"));
+        Data("製造管理", Flag("Stk-Manu-Used"));
+        Data("在庫監査", Flag("Stk-Audit-Used"));
+        Data("移動監査", Flag("Stk-Mov-Audit"));
+        Data("在庫当期区分", StockPeriod("Stk-Period-Cur"));
+        Data("在庫累計区分", StockPeriod("Stk-Period-dat"));
+        Data("平均原価", Flag("Stk-Averaging"));
+        Data("在庫監査番号", N("Stk-Audit-No", 8, true));
+        Section("給与設定", "データベース設定", 22);
+        Data("給与計算", Yes(false), relational ? "スキーマ" : "", 90, relational ? S("RDBMS-DB-Name") : "");
         if (relational)
         {
-            Pair("", "利用者名　" + system.St("RDBMS-User"));
-            Pair("", "パスワード　非表示");
+            Data(right: "利用者名", rightValueColumn: 90, rightValue: S("RDBMS-User"));
+            Row((24, "システム状態"), (70, "パスワード"), (90, "非表示"));
         }
-        Section("システム状態", "");
-        Pair(Field("ファイル状態"));
-        Pair("");
-        Pair("システム設定帳票 終わり");
-        string body = output.ToString();
+        else
+        {
+            Blank();
+            Row((24, "システム状態"));
+        }
+        Row((24, new string('*', 16)));
+        Blank();
+        Data("ファイル状態", string.Concat(Enumerable.Range(1, 32).Select(i => system.S($"File-Status-{i}"))));
+        Blank();
+        Row((51, "システム設定帳票 終わり"));
+        Row((51, new string('=', 30)));
+
+        string body = string.Join("\n", lines).Replace("\f\n", "\f", StringComparison.Ordinal) + "\n";
         database.AddSpool(title, body);
         return body;
     }
