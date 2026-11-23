@@ -1,6 +1,18 @@
 import Foundation
 
 extension BookkeepingService {
+    public func prepareStatementAccounts() throws {
+        let records = store.all(accountsPath).filter {
+            Record(BookkeepingRecords.nlLayout, bytes: $0.data).str("type") != "S"
+        }
+        let sorted = records.sorted {
+            let lhs = $0.data.last ?? 0
+            let rhs = $1.data.last ?? 0
+            return lhs == rhs ? $0.key.lexicographicallyPrecedes($1.key) : lhs < rhs
+        }
+        try store.writeRaw(directory + "worksort.tmp", sorted.flatMap(\.data))
+    }
+
     public struct StatementSettings {
         public var headings: [String]
         public var signs: [String]

@@ -101,6 +101,7 @@ struct BookkeepingAccountForm: View {
                         Text(row.name).tag(Optional(row.id))
                     }
                 }
+                .accessibilityIdentifier("irs.chooseAccount")
                 .onChange(of: selection) { _, next in
                     guard let next, let row = service.accounts.first(where: { $0.id == next }) else { return }
                     code = String(row.code)

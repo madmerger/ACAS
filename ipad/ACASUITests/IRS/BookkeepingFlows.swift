@@ -22,6 +22,91 @@ final class BookkeepingFlows: XCTestCase {
     func testReachIRS003() throws { try verifyDefaults("IRS-003") }
 
     @MainActor
+    func testReachIRS004() throws { try verifyPostingMenu("IRS-004") }
+
+    @MainActor
+    func testReachIRS215() throws { try verifyPostingMenu("IRS-215") }
+
+    @MainActor
+    private func verifyPostingMenu(_ id: String) throws {
+        try verifyReach(id, path: ["post"]) { app in
+            for field in ["postDefaults", "postAppend", "postClear", "postImport"] { expectLink(app, field) }
+            XCTAssertFalse(app.buttons["irs.postClear"].exists)
+            XCTAssertFalse(app.buttons["irs.postImport"].exists)
+        }
+    }
+
+    @MainActor
+    func testReachIRS006() throws { try verifyAuditOptions("IRS-006") }
+
+    @MainActor
+    func testReachIRS217() throws { try verifyAuditOptions("IRS-217") }
+
+    @MainActor
+    private func verifyAuditOptions(_ id: String) throws {
+        try verifyReach(id, path: ["audit"]) { app in
+            for field in ["auditKind", "auditOutput", "auditSort"] {
+                expectLink(app, field)
+                XCTAssertEqual(app.buttons["irs." + field].value as? String, "選択してください")
+            }
+            if id == "IRS-217" {
+                for (field, choice) in [("auditKind", "監査帳票"), ("auditOutput", "印刷"), ("auditSort", "転記番号順")] {
+                    tap(app, "irs." + field)
+                    tap(app, choice)
+                    XCTAssertEqual(app.buttons["irs." + field].value as? String, choice)
+                }
+            }
+        }
+    }
+
+    @MainActor
+    func testReachIRS005() throws {
+        try verifyReach("IRS-005", path: ["trialBalance"]) { app in
+            for field in ["irs.trialBalanceScope", "irs.trialBalanceZero", "irs.trialBalanceOutput"] {
+                let picker = app.buttons[field]
+                XCTAssertTrue(picker.waitForExistence(timeout: 5))
+                XCTAssertEqual(picker.value as? String, "選択してください")
+            }
+        }
+    }
+
+    @MainActor
+    func testPrintIRS216() throws {
+        guard Bundle(for: Self.self).url(forResource: "IRS-216", withExtension: "json", subdirectory: "fixtures") != nil
+        else { throw XCTSkip("試算表原本のレガシー実測が必要です。") }
+        try verifyReach("IRS-216", path: ["trialBalance"]) { app in
+            tap(app, "irs.trialBalanceScope")
+            tap(app, "集計")
+            tap(app, "irs.trialBalanceZero")
+            tap(app, "除外する")
+            tap(app, "irs.trialBalanceOutput")
+            tap(app, "印刷")
+            tap(app, "irs.generateReport")
+            XCTAssertEqual(app.staticTexts["irs.reportResult"].label, "帳票を作成しました。")
+        }
+    }
+
+    @MainActor
+    func testReachIRS007() throws { try verifyStatementEntry("IRS-007") }
+
+    @MainActor
+    func testReachIRS218() throws { try verifyStatementEntry("IRS-218") }
+
+    @MainActor
+    private func verifyStatementEntry(_ id: String) throws {
+        try verifyReach(id, path: ["statements"]) { app in
+            let selection = app.buttons["irs.statementComparison"]
+            XCTAssertTrue(selection.waitForExistence(timeout: 5))
+            XCTAssertEqual(selection.value as? String, "比較なし")
+            if id == "IRS-218" {
+                selection.tap()
+                tap(app, "比較なし")
+                XCTAssertFalse(app.textFields["損益計算書の表題"].exists)
+            }
+        }
+    }
+
+    @MainActor
     func testMissingPostingIRS008() throws { try verifyMissingPosting("IRS-008", destination: "amendment") }
 
     @MainActor
@@ -80,6 +165,116 @@ final class BookkeepingFlows: XCTestCase {
     func testReachIRS212() throws {
         try verifyReach("IRS-212", path: ["defaults", "defaultList"]) { app in
             XCTAssertTrue(app.staticTexts["30001"].waitForExistence(timeout: 5))
+        }
+    }
+
+    @MainActor
+    func testSaveIRS203() throws { try verifyAccountSave("IRS-203", editing: false) }
+
+    @MainActor
+    func testSaveIRS204() throws { try verifyAccountSave("IRS-204", editing: true) }
+
+    @MainActor
+    private func verifyAccountSave(_ id: String, editing: Bool) throws {
+        guard let url = Bundle(for: Self.self).url(forResource: id, withExtension: "json", subdirectory: "fixtures")
+        else { throw XCTSkip("勘定科目保存後のレガシー実測証跡が必要です。") }
+        struct Fixture: Decodable {
+            struct Input: Decodable { let code: String; let name: String; let category: String; let original: String }
+            let input: Input
+        }
+        let input = try JSONDecoder().decode(Fixture.self, from: Data(contentsOf: url)).input
+        let categories = ["R": "資産", "U": "負債", "A": "収益", "E": "費用", "C": "その他"]
+        let category = try XCTUnwrap(categories[input.category])
+        try verifyReach(id, path: ["accounts", editing ? "accountEdit" : "accountCreate"]) { app in
+            if editing {
+                tap(app, "irs.chooseAccount")
+                tap(app, input.original)
+            } else {
+                enter(app, "irs.accountCode", input.code)
+            }
+            let erase = String(repeating: XCUIKeyboardKey.delete.rawValue, count: input.original.count)
+            enter(app, "irs.accountName", erase + input.name)
+            tap(app, "irs.category")
+            tap(app, category)
+            tap(app, "irs.saveAccount")
+            XCTAssertEqual(app.staticTexts["irs.result"].label, "勘定科目を保存しました。")
+        }
+    }
+
+    @MainActor
+    func testExportIRS207() throws { try verifyArchive("IRS-207", importing: false) }
+
+    @MainActor
+    func testImportIRS208() throws { try verifyArchive("IRS-208", importing: true) }
+
+    @MainActor
+    private func verifyArchive(_ id: String, importing: Bool) throws {
+        guard let url = Bundle(for: Self.self).url(forResource: id, withExtension: "json", subdirectory: "fixtures")
+        else { throw XCTSkip("科目表の確定後のレガシー実測証跡が必要です。") }
+        struct Fixture: Decodable {
+            struct Input: Decodable { let contents: String; let count: Int }
+            let input: Input
+        }
+        let input = try JSONDecoder().decode(Fixture.self, from: Data(contentsOf: url)).input
+        try verifyReach(id, path: ["accounts", importing ? "accountImport" : "accountExport"]) { app in
+            if importing {
+                let editor = app.textViews["irs.archiveContents"]
+                XCTAssertTrue(editor.waitForExistence(timeout: 5))
+                editor.tap()
+                editor.typeText(input.contents)
+            }
+            tap(app, "irs.runArchive")
+            if importing { tap(app, "irs.confirmArchiveImport") }
+            let result = app.staticTexts["irs.archiveResult"]
+            XCTAssertTrue(result.waitForExistence(timeout: 5))
+            XCTAssertEqual(result.label, "科目を\(input.count)件\(importing ? "取り込み" : "書き出し")ました。")
+            if !importing { XCTAssertTrue(app.buttons["irs.saveArchive"].exists) }
+        }
+    }
+
+    @MainActor
+    func testSaveIRS210() throws {
+        let id = "IRS-210"
+        guard let url = Bundle(for: Self.self).url(forResource: id, withExtension: "json", subdirectory: "fixtures")
+        else { throw XCTSkip("既定勘定登録後のレガシー実測証跡が必要です。") }
+        struct Fixture: Decodable {
+            struct Row: Decodable {
+                let slot: Int
+                let code: String
+                let originalCode: String
+                let originalLabel: String
+                let label: String
+                let tax: String
+            }
+            struct Input: Decodable { let rows: [Row] }
+            let input: Input
+        }
+        let rows = try JSONDecoder().decode(Fixture.self, from: Data(contentsOf: url)).input.rows
+        let reserved = [30: "期首残高", 31: "仕入付加価値税", 32: "売上付加価値税"]
+        let taxes = ["N": "対象外", "I": "仕入付加価値税", "O": "売上付加価値税"]
+        try verifyReach(id, path: ["defaults", "defaultCreate"]) { app in
+            for row in rows {
+                if row.slot != 1 {
+                    tap(app, "irs.defaultSlot")
+                    let option = app.descendants(matching: .any)[reserved[row.slot] ?? String(row.slot)].firstMatch
+                    let list = app.collectionViews.firstMatch
+                    for _ in 0..<4 where !option.isHittable { list.swipeUp() }
+                    option.tap()
+                }
+                if row.code != row.originalCode {
+                    enter(app, "irs.defaultAccount", String(repeating: XCUIKeyboardKey.delete.rawValue,
+                                                            count: row.originalCode.count) + row.code)
+                }
+                if row.slot < 30 {
+                    enter(app, "irs.defaultLabel", String(repeating: XCUIKeyboardKey.delete.rawValue,
+                                                          count: row.originalLabel.count) + row.label)
+                    tap(app, "irs.defaultTax")
+                    guard let tax = taxes[row.tax] else { return XCTFail(id) }
+                    tap(app, tax)
+                }
+                tap(app, "irs.saveDefault")
+                XCTAssertEqual(app.staticTexts["irs.result"].label, "既定勘定を保存しました。")
+            }
         }
     }
 
@@ -320,6 +515,7 @@ final class BookkeepingFlows: XCTestCase {
 
         tap(app, "section.incomplete")
         tap(app, "irs.post")
+        tap(app, "irs.postAppend")
         let side = app.buttons["irs.postSide"]
         XCTAssertTrue(side.waitForExistence(timeout: 5))
         side.tap()

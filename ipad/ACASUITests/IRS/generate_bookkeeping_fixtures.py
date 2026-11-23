@@ -14,6 +14,9 @@ REACH_CASES = {
     "IRS-001": ("settings", "簡易記帳設定の認証画面"),
     "IRS-002": ("accounts", "勘定科目管理"),
     "IRS-003": ("defaults", "既定勘定管理"),
+    "IRS-004": ("post", "転記の実行方法"),
+    "IRS-005": ("trialBalance", "試算表"),
+    "IRS-006": ("audit", "転記帳票の出力条件"),
     "IRS-010": ("recalculate", "元帳再計算の認証"),
     "IRS-200": ("menu", "簡易記帳メニュー"),
     "IRS-201": ("settings", "簡易記帳設定の認証画面"),
@@ -22,6 +25,8 @@ REACH_CASES = {
     "IRS-209": ("defaults", "既定勘定管理"),
     "IRS-211": ("defaultEdit", "既定勘定変更"),
     "IRS-212": ("defaultList", "既定勘定表示"),
+    "IRS-215": ("post", "転記の実行方法"),
+    "IRS-217": ("audit", "転記帳票の出力条件"),
     "IRS-221": ("recalculate", "元帳再計算の認証"),
     "IRS-223": ("settings", "簡易記帳設定の認証画面"),
 }
@@ -212,12 +217,15 @@ def reach_fixture(evidence, case):
         timestamp = json.loads(recording.readline())["timestamp"]
     seed = json.loads(base64.b64decode(snapshot_seed(evidence, run)))
     reports = {}
-    if destination in {"accountList", "settings"}:
+    if destination in {"accountList", "settings", "post", "trialBalance", "audit"}:
         seed["files"]["ledgers/irs/acnts.dat"] = seeded_accounts(evidence, run)
     raw_names = {
         "settings": ("system.dat", "dflt.dat"),
         "defaultEdit": ("dflt.dat",),
         "defaultList": ("dflt.dat",),
+        "post": ("system.dat", "dflt.dat"),
+        "trialBalance": ("system.dat", "dflt.dat"),
+        "audit": ("system.dat", "dflt.dat"),
     }
     for name in raw_names.get(destination, ()):
         path = "ledgers/irs/" + name
@@ -255,6 +263,148 @@ def statement_settings_fixture(evidence):
         "id": "IRS-214", "title": "決算書の見出しを保存する", "workflow": "irs.statementSettings",
         "dateSeconds": timestamp, "seed": base64.b64encode(json.dumps(before, separators=(",", ":")).encode()).decode(),
         "changes": [], "reports": {**raw, path: data.hex()}, "input": {"heading": heading},
+    }
+
+
+def archive_fixture(evidence, case_id):
+    exporting = case_id == "IRS-207"
+    run = Path("linux-x64/confirm-archive") / case_id
+    path = "ledgers/irs/coa-archived.txt"
+    result = read_json(evidence_path(evidence, run / "result.json"))
+    if result["error"] or set(result["changed"]) != {path if exporting else "ledgers/irs/acnts.dat"}:
+        raise ValueError(f"{case_id}: 科目表の確定後の実測が必要です")
+    data = evidence_path(evidence, run / ("files" if exporting else "before-files") / path).read_bytes()
+    with evidence_path(evidence, run / "terminal.cast").open(encoding="utf-8") as recording:
+        timestamp = json.loads(recording.readline())["timestamp"]
+    seed = json.loads(base64.b64decode(snapshot_seed(evidence, run)))
+    seed["files"]["ledgers/irs/acnts.dat"] = seeded_accounts(evidence, run)
+    reports = {path: data.hex()} if exporting else {}
+    for name in ("system.dat", "dflt.dat"):
+        key = "ledgers/irs/" + name
+        contents = evidence_path(evidence, run / "before-files" / key).read_bytes().hex()
+        seed["files"][key] = {"type": "raw", "hex": contents}
+        reports[key] = contents
+    return {
+        "id": case_id, "title": "科目表書き出し" if exporting else "科目表取込",
+        "workflow": "irs.accountExport" if exporting else "irs.accountImport",
+        "dateSeconds": timestamp, "seed": base64.b64encode(json.dumps(seed, separators=(",", ":")).encode()).decode(),
+        "changes": expected_changes(evidence, run / "record-diff.json"),
+        "reports": reports, "input": {"contents": data.decode("shift_jis"), "count": len(data.splitlines())},
+    }
+
+
+def account_edit_fixture(evidence, case_id):
+    editing = case_id == "IRS-204"
+    run = Path("linux-x64/confirm-account-edit") / case_id
+    path = "ledgers/irs/acnts.dat"
+    result = read_json(evidence_path(evidence, run / "result.json"))
+    changes = expected_changes(evidence, run / "record-diff.json")
+    if (result["error"] or set(result["changed"]) != {path} or len(changes) != 1
+            or changes[0]["file"] != path or bool(changes[0]["before"]) != editing):
+        raise ValueError(f"{case_id}: 主勘定の保存実測が必要です")
+    row = bytes.fromhex(changes[0]["after"])
+    original = bytes.fromhex(changes[0]["before"]) if editing else b""
+    if len(row) != 116 or row[5:11] != b"00000O":
+        raise ValueError(f"{case_id}: 主勘定の固定長レコードが必要です")
+    changes[0]["key"] = row[:10].hex()
+    with evidence_path(evidence, run / "terminal.cast").open(encoding="utf-8") as recording:
+        timestamp = json.loads(recording.readline())["timestamp"]
+    seed = json.loads(base64.b64decode(snapshot_seed(evidence, run)))
+    seed["files"][path] = seeded_accounts(evidence, run)
+    raw = {}
+    for name in ("system.dat", "dflt.dat"):
+        key = "ledgers/irs/" + name
+        raw[key] = evidence_path(evidence, run / "before-files" / key).read_bytes().hex()
+        seed["files"][key] = {"type": "raw", "hex": raw[key]}
+    return {
+        "id": case_id, "title": "勘定科目の変更" if editing else "勘定科目の登録",
+        "workflow": "irs.accounts", "dateSeconds": timestamp,
+        "seed": base64.b64encode(json.dumps(seed, separators=(",", ":")).encode()).decode(),
+        "changes": changes, "reports": raw,
+        "input": {"code": row[:5].decode("ascii"), "name": row[11:35].decode("shift_jis").rstrip(),
+                  "category": chr(row[-1]), "original": original[11:35].decode("shift_jis").rstrip()},
+    }
+
+
+def default_registration_fixture(evidence):
+    run = Path("linux-x64/confirm-entry/IRS-210")
+    path = "ledgers/irs/dflt.dat"
+    result = read_json(evidence_path(evidence, run / "result.json"))
+    if result["error"] or set(result["changed"]) != {path}:
+        raise ValueError("IRS-210: 既定勘定登録後の実測が必要です")
+    before = evidence_path(evidence, run / "before-files" / path).read_bytes()
+    after = evidence_path(evidence, run / "files" / path).read_bytes()
+    if len(before) != 257 or len(after) != 257:
+        raise ValueError("IRS-210: 既定勘定ファイルのレコード長が不正です")
+    rows = []
+    for i in range(32):
+        c, n, t = slice(5 * i, 5 * i + 5), slice(160 + 2 * i, 162 + 2 * i), 224 + i
+        if (before[c], before[n], before[t]) != (after[c], after[n], after[t]):
+            rows.append({"slot": i + 1, "code": after[c].decode("ascii"), "originalCode": before[c].decode("ascii"),
+                         "originalLabel": before[n].decode("shift_jis").rstrip(), "label": after[n].decode("shift_jis").rstrip(),
+                         "tax": chr(after[t])})
+    with evidence_path(evidence, run / "terminal.cast").open(encoding="utf-8") as recording:
+        timestamp = json.loads(recording.readline())["timestamp"]
+    seed = json.loads(base64.b64decode(snapshot_seed(evidence, run)))
+    seed["files"]["ledgers/irs/acnts.dat"] = seeded_accounts(evidence, run)
+    system = "ledgers/irs/system.dat"
+    original_system = evidence_path(evidence, run / "before-files" / system).read_bytes().hex()
+    seed["files"][system] = {"type": "raw", "hex": original_system}
+    seed["files"][path] = {"type": "raw", "hex": before.hex()}
+    return {
+        "id": "IRS-210", "title": "既定勘定登録", "workflow": "irs.defaults", "dateSeconds": timestamp,
+        "seed": base64.b64encode(json.dumps(seed, separators=(",", ":")).encode()).decode(),
+        "changes": [], "reports": {system: original_system, path: after.hex()}, "input": {"rows": rows},
+    }
+
+
+def trial_balance_fixture(evidence):
+    run = Path("linux-x64/confirm-runs/IRS-216")
+    result = read_json(evidence_path(evidence, run / "result.json"))
+    report = "ledgers/irs/prt-1"
+    spool, = [path for path in result["changed"] if path.startswith("spool/") and path.endswith("/prt-1")]
+    expected = evidence_path(evidence, run / "files" / report).read_bytes()
+    if result["error"] or expected != evidence_path(evidence, run / "files" / spool).read_bytes():
+        raise ValueError("IRS-216: 試算表原本とスプールの実測が必要です")
+    with evidence_path(evidence, run / "terminal.cast").open(encoding="utf-8") as recording:
+        timestamp = json.loads(recording.readline())["timestamp"]
+    seed = json.loads(base64.b64decode(snapshot_seed(evidence, run)))
+    seed["files"]["ledgers/irs/acnts.dat"] = seeded_accounts(evidence, run)
+    reports = {report: expected.hex()}
+    for name in ("system.dat", "dflt.dat"):
+        path = "ledgers/irs/" + name
+        data = evidence_path(evidence, run / "before-files" / path).read_bytes().hex()
+        seed["files"][path] = {"type": "raw", "hex": data}
+        reports[path] = data
+    return {
+        "id": "IRS-216", "title": "試算表印刷", "workflow": "irs.trialBalance", "dateSeconds": timestamp,
+        "seed": base64.b64encode(json.dumps(seed, separators=(",", ":")).encode()).decode(),
+        "changes": [], "reports": reports,
+    }
+
+
+def statement_entry_fixture(evidence, case):
+    legacy = case["legacy_result"]
+    run = Path(legacy["evidence"][0])
+    result = read_json(evidence_path(evidence, run / "result.json"))
+    work = "ledgers/irs/worksort.tmp"
+    if result["error"] or set(result["changed"]) != {work}:
+        raise ValueError(f'{case["id"]}: 決算書の比較対象入力画面と並べ替えファイルの実測が必要です')
+    with evidence_path(evidence, run / "terminal.cast").open(encoding="utf-8") as recording:
+        timestamp = json.loads(recording.readline())["timestamp"]
+    seed = json.loads(base64.b64decode(snapshot_seed(evidence, run)))
+    seed["files"]["ledgers/irs/acnts.dat"] = seeded_accounts(evidence, run)
+    reports = {work: evidence_path(evidence, run / "files" / work).read_bytes().hex()}
+    for name in ("system.dat", "dflt.dat"):
+        path = "ledgers/irs/" + name
+        data = evidence_path(evidence, run / "before-files" / path).read_bytes().hex()
+        seed["files"][path] = {"type": "raw", "hex": data}
+        reports[path] = data
+    return {
+        "id": case["id"], "title": "決算書比較対象の入力画面", "workflow": "irs.statements.prepare",
+        "dateSeconds": timestamp, "seed": base64.b64encode(json.dumps(seed, separators=(",", ":")).encode()).decode(),
+        "changes": expected_changes(evidence, legacy["comparison_targets"]["keyed_record_diff"]),
+        "reports": reports,
     }
 
 
@@ -312,6 +462,18 @@ def main():
     save(args.output / "IRS-091.json", initial_accounts_fixture(evidence, cases["IRS-091"]))
     if (evidence / "runs/IRS-214-linux-confirmed").is_dir():
         save(args.output / "IRS-214.json", statement_settings_fixture(evidence))
+    for case_id in ("IRS-207", "IRS-208"):
+        if (evidence / "linux-x64" / "confirm-archive" / case_id).is_dir():
+            save(args.output / (case_id + ".json"), archive_fixture(evidence, case_id))
+    for case_id in ("IRS-203", "IRS-204"):
+        if (evidence / "linux-x64" / "confirm-account-edit" / case_id).is_dir():
+            save(args.output / (case_id + ".json"), account_edit_fixture(evidence, case_id))
+    if (evidence / "linux-x64" / "confirm-entry/IRS-210").is_dir():
+        save(args.output / "IRS-210.json", default_registration_fixture(evidence))
+    if (evidence / "linux-x64" / "confirm-runs/IRS-216").is_dir():
+        save(args.output / "IRS-216.json", trial_balance_fixture(evidence))
+    for case_id in ("IRS-007", "IRS-218"):
+        save(args.output / (case_id + ".json"), statement_entry_fixture(evidence, cases[case_id]))
     print(f"簡易記帳の実画面用データ {4 + len(REACH_CASES) + len(REPORT_CASES) + len(MISSING_POSTING_CASES)} 件")
 
 
