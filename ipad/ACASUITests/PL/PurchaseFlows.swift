@@ -113,6 +113,14 @@ final class PurchaseFlows: XCTestCase {
         add(proof)
     }
 
+    func testEmptyPaymentProofCannotGenerateReport() throws {
+        let app = try launch("PL-413", smokeID: "空の支払検証")
+        tap(app, "pl.payment.proof", scrolling: true)
+        let button = app.buttons["pl.payment.proof.generate"]
+        XCTAssertTrue(button.waitForExistence(timeout: 5))
+        XCTAssertFalse(button.isEnabled)
+    }
+
     private func launch(_ id: String, smokeID: String? = nil) throws -> XCUIApplication {
         continueAfterFailure = false
         let url = try XCTUnwrap(

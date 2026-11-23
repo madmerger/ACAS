@@ -109,6 +109,7 @@ struct PurchasePaymentsView: View {
             if mode != .edit {
                 if mode == .proof {
                     Button(plString("purchase.report.generate"), action: proof)
+                        .disabled(rows.isEmpty)
                         .accessibilityIdentifier("pl.payment.proof.generate")
                 } else {
                     Button(plString("purchase.action.post")) { confirmation = true }
@@ -156,7 +157,7 @@ struct PurchasePaymentsView: View {
     private func proof() {
         do {
             rows = try ledger.proofPayments()
-            generated = true
+            generated = !rows.isEmpty
             workspace.completed("pl.payment.proof")
         } catch { self.error = PurchaseNotice(error) }
     }
