@@ -1,6 +1,7 @@
 using System.IO;
 using System.Windows;
 using System.Windows.Automation;
+using System.Windows.Automation.Peers;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Data;
@@ -74,10 +75,23 @@ public partial class MainWindow : Window
     private static TreeViewItem CreateMenuItem(NavigationItem item)
     {
         var caption = Identify(new TextBlock { Text = item.Caption }, item.Id + "Caption");
-        var node = Identify(new TreeViewItem { Header = caption, Tag = item, IsExpanded = true }, item.Id, item.Caption);
+        var node = Identify(new NavigationTreeItem { Header = caption, Tag = item, IsExpanded = true }, item.Id, item.Caption);
+        node.SetResourceReference(StyleProperty, typeof(TreeViewItem));
         if (item.Children != null)
             foreach (var child in item.Children) node.Items.Add(CreateMenuItem(child));
         return node;
+    }
+
+    private sealed class NavigationTreeItem : TreeViewItem
+    {
+        protected override AutomationPeer OnCreateAutomationPeer() => new NavigationTreeItemPeer(this);
+
+        private sealed class NavigationTreeItemPeer(NavigationTreeItem owner) : TreeViewItemAutomationPeer(owner)
+        {
+            protected override Point GetClickablePointCore() =>
+                owner.Header is FrameworkElement header && CreatePeerForElement(header) is { } peer
+                    ? peer.GetClickablePoint() : base.GetClickablePointCore();
+        }
     }
 
     private void OpenNavigation(object sender, RoutedPropertyChangedEventArgs<object> e)
@@ -88,27 +102,20 @@ public partial class MainWindow : Window
 
     private void ReopenSelectedNavigation(object sender, MouseButtonEventArgs e)
     {
+        if (Navigation.SelectedItem is not TreeViewItem { Header: TextBlock header, Tag: NavigationItem { Open: not null } } node)
+            return;
+
         for (var element = e.OriginalSource as DependencyObject; element != null;)
         {
-            if (element is ToggleButton or ScrollBar) return;
-            if (element is TreeViewItem node)
+            if (element == header)
             {
-                Reopen(node);
+                e.Handled = true;
+                node.Focus();
+                OpenNavigationItem(node);
                 return;
             }
+            if (element is TreeViewItem) return;
             element = element is Visual ? VisualTreeHelper.GetParent(element) : LogicalTreeHelper.GetParent(element);
-        }
-
-        if (Navigation.SelectedItem is TreeViewItem { Header: FrameworkElement header } selected &&
-            e.GetPosition(header).Y is var y && y >= 0 && y < header.ActualHeight)
-            Reopen(selected);
-
-        void Reopen(TreeViewItem node)
-        {
-            if (!node.IsSelected || node.Tag is not NavigationItem { Open: not null }) return;
-            e.Handled = true;
-            node.Focus();
-            OpenNavigationItem(node);
         }
     }
 

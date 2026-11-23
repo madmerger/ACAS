@@ -182,6 +182,35 @@ function Save-Window($window, [string]$name) {
     }
 }
 
+function Test-InvoiceDraftNavigation($window, [string]$route) {
+    $item = Wait-Id $window $route
+    $item.GetCurrentPattern([Windows.Automation.ScrollItemPattern]::Pattern).ScrollIntoView()
+    $caption = Wait-Id $window ($route + 'Caption')
+    (Wait-Id $window 'PurchaseInvoiceSupplier').GetCurrentPattern([Windows.Automation.ValuePattern]::Pattern).SetValue('SUPP018')
+    (Wait-Id $window 'PurchaseInvoiceOrder').GetCurrentPattern([Windows.Automation.ValuePattern]::Pattern).SetValue('DRAFT')
+    Invoke-Button $window 'FormSubmit'
+    (Wait-Id $window 'PurchaseInvoiceAddLine').GetCurrentPattern([Windows.Automation.SelectionItemPattern]::Pattern).Select()
+    Invoke-Button $window 'ScreenMenuOpen'
+    $net = (Wait-Id $window 'PurchaseLineNet').GetCurrentPattern([Windows.Automation.ValuePattern]::Pattern)
+    $net.SetValue('123.45')
+
+    $label = $caption.Current.BoundingRectangle
+    $right = [Math]::Min($item.Current.BoundingRectangle.Right, (Wait-Id $window 'Navigation').Current.BoundingRectangle.Right - 20)
+    if ($right - $label.Right -lt 8) { throw 'No navigation row whitespace for invoice draft test.' }
+    [Acas.PurchaseAuditWindow]::Click([int](($right + $label.Right) / 2), [int]($label.Top + $label.Height / 2))
+    Start-Sleep -Milliseconds 200
+    $remaining = Find-Id $window 'PurchaseLineNet'
+    if (!$remaining -or $remaining.GetCurrentPattern([Windows.Automation.ValuePattern]::Pattern).Current.Value -ne '123.45') {
+        throw 'Navigation whitespace discarded the unsaved invoice line.'
+    }
+    Save-Window $window 'purchase-invoice-draft'
+
+    Click-Element $caption
+    $order = (Wait-Id $window 'PurchaseInvoiceOrder').GetCurrentPattern([Windows.Automation.ValuePattern]::Pattern)
+    if ($order.Current.Value -ne '') { throw 'Clicking the selected navigation caption did not reopen invoice entry.' }
+    Write-Output 'UIA PASS: navigation whitespace preserves the unsaved invoice line; clicking the caption reopens invoice entry'
+}
+
 try {
     $window = Wait-Id $root 'AcasWindow'
     if ($window.Current.ProcessId -ne $process.Id) { throw 'Close any other instance of ACAS before the audit.' }
@@ -208,6 +237,7 @@ try {
         } else {
             Select-Route $window $route
             Inspect-View $route $window (Wait-Id $window 'ScreenTitle').Current.Name
+            if ($route -eq 'PurchaseMenuDNavigation') { Test-InvoiceDraftNavigation $window $route }
             if ($route -eq 'PurchaseMenuANavigation') { Invoke-Button $window 'FormSubmit' }
             if ($route -eq 'PurchaseMenuRNavigation') {
                 Invoke-Button $window 'FormSubmit'
