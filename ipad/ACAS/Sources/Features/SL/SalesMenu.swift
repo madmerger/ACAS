@@ -12,6 +12,14 @@ struct SalesMenu: View {
                 NavigationLink(slText("sales.customer.menu")) { SalesCustomersMenu(workspace: workspace) }
                     .accessibilityIdentifier("sales.customers")
             }
+            Section(slText("sales.invoice.section")) {
+                NavigationLink(slText("sales.invoice.saleTitle")) { SalesInvoiceEditor(workspace: workspace, title: slText("sales.invoice.saleTitle")) }
+                    .accessibilityIdentifier("sales.invoice.sale")
+                NavigationLink(slText("sales.invoice.amendSaleTitle")) { SalesInvoiceList(workspace: workspace, action: .edit) }
+                    .accessibilityIdentifier("sales.invoice.amendSale")
+                NavigationLink(slText("sales.invoice.menuTitle")) { SalesInvoiceMenu(workspace: workspace) }
+                    .accessibilityIdentifier("sales.invoice.menu")
+            }
             NavigationLink(String(localized: "sales.proof", table: "SL")) {
                 #if DEBUG
                 if workspace.evidence != nil, ProcessInfo.processInfo.environment["ACAS_COMPACT_REPORT"] == "1" {
