@@ -706,7 +706,7 @@ final class PurchaseLedgerTests: XCTestCase {
         XCTAssertThrowsError(try ledger.registerScheduledPayments())
     }
 
-    func testScheduledPaymentContinuationDoesNotReuseInvoiceSlots() throws {
+    func testScheduledPaymentContinuationRetainsLegacySlotsAndCumulativeGross() throws {
         let ledger = try makeLedger()
         let code = try addSupplier(ledger)
         var invoice = PurchaseLedger.Transaction(date: ledger.processingDate)
@@ -717,9 +717,16 @@ final class PurchaseLedgerTests: XCTestCase {
         try ledger.postTransactions()
         try ledger.generatePaymentSchedule(age: 0)
         let schedules = ledger.paymentSchedule()
-        XCTAssertEqual(schedules.map { $0.lines.count }, [9, 1])
+        XCTAssertEqual(schedules.map { $0.lines.count }, [9, 9])
         XCTAssertEqual(Set(schedules.flatMap(\.lines).map(\.folio)).count, 10)
-        XCTAssertEqual(schedules.map(\.amount), [108_000, 12_000])
+        XCTAssertEqual(schedules.map(\.amount), [108_000, 120_000])
+        XCTAssertEqual(schedules.map { $0.lines.first?.folio }, [1, 10])
+        let records = ledger.scheduleRecords()
+        XCTAssertEqual(records.map { $0.str("continuation") }, ["C", "C"])
+        let first = try XCTUnwrap(records.first)
+        let second = try XCTUnwrap(records.dropFirst().first)
+        let secondSlot = PurchaseLedger.scheduleLayout.offset("folio-2")
+        XCTAssertEqual(first.bytes[secondSlot...], second.bytes[secondSlot...])
     }
 
     func testScheduledBankTransferProducesGLPosting() throws {

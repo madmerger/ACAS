@@ -95,7 +95,6 @@ extension PurchaseLedger {
                 if record.int("sort-code") != 0 { record.setInt("account", supplier.int("purch-accountno")) }
                 var i = 1
                 var total: Int64 = 0
-                var gross: Int64 = 0
                 var first = true
                 for invoice in items {
                     lastDate = invoice.int("oi-date")
@@ -111,8 +110,7 @@ extension PurchaseLedger {
                     record.setInt("discount-\(i)", discount)
                     record["reference-\(i)"] = invoice.str("oi-ref")
                     total = Cobol.truncate(total + value, digits: 9, signed: false)
-                    gross = Cobol.truncate(gross + value, digits: 9, signed: false)
-                    record.setInt("gross", gross)
+                    record.setInt("gross", total)
                     report.detail(supplier: first ? code : "", name: first ? supplier.str("purch-name") : "",
                                   record: record, line: i, date: lastDate, total: total)
                     first = false
@@ -121,16 +119,8 @@ extension PurchaseLedger {
                         try writeScheduleRecord(record)
                         let next = record.int("sequence") + 1
                         guard next <= 127 else { throw ScheduleError.invalidSchedule }
-                        let blank = Record(Self.scheduleLayout)
-                        for slot in 1...9 {
-                            for field in ["folio", "period", "value", "discount", "reference"] {
-                                let key = "\(field)-\(slot)"
-                                record.setRaw(key, blank.raw(key))
-                            }
-                        }
                         record.setInt("sequence", next)
                         record.setInt("gross", 0)
-                        gross = 0
                         i = 1
                     } else {
                         i += 1
