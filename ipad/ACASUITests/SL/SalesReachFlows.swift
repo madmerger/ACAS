@@ -36,6 +36,7 @@ final class SalesReachFlows: XCTestCase {
             let row = app.descendants(matching: .any)["sales.analysis.code.SA"].firstMatch
             XCTAssertTrue(row.waitForExistence(timeout: 5))
             XCTAssertTrue(row.label.contains("SALES"))
+            XCTAssertTrue(row.label.contains("印字コード　A"))
             XCTAssertEqual(row.value as? String, "400001")
         }
     }
