@@ -359,3 +359,23 @@ Location	棚番
 Total Item Count	品目数合計
 Addr Err	住所不正
 Check Digit { }	検査数字    { }
+Invoice Proof Report	請求書検証帳票
+SL120 No Transactions to proof! ...Press return for menu.	SL120 検証する取引がありません。Enter でメニューへ戻ります。
+Unapplied Sales Transaction Report	未転記売上取引一覧
+!! Customer Unknown	!! 顧客不明
+Late Charge	延滞料
+Discount	値引
+Carriage	送料
+Cr. Note	赤伝
+Analysis	分析
+Value	金額
+Vat Code	税コード
+Warning Record/s Missing In Sales File	警告: 顧客ファイルに存在しないレコードがあります
+V.A.T. Reconciliation	消費税照合
+Receipts	領収書
+Invoices	請求書
+Credit Notes	赤伝
+Total	合計
+Prompt Pay	早期支払
+Goods	商品
+Gross	総額
