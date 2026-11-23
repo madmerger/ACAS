@@ -3,6 +3,26 @@ import SQLite3
 import XCTest
 
 final class LedgerBatchesTests: XCTestCase {
+    func testLeavingDefaultSelectionConsumesNumberAndRetainingTemporaryDefaultDoesNotCreateBatch() throws {
+        let store = try FileStore()
+        let context = BusinessContext(store: store)
+        let setup = CompanySetup(context)
+        try setup.save(name: "TEST")
+        try ChartOfAccounts(context).add(code: "300000", name: "BANK", type: 0, placement: "S", level: 1)
+        let batch = LedgerBatches(context)
+        let counter = setup.settings.number("next-batch")
+        try batch.exitDefaultSelection()
+        XCTAssertEqual(setup.settings.number("next-batch"), counter + 1)
+        try batch.retainTemporaryDefault(TemporaryLedgerDefault(account: "300000", code: "bk", tax: .noTax),
+                                        branch: "00")
+        let stored = try XCTUnwrap(GeneralLedgerSetup(context).defaults.last)
+        XCTAssertEqual(stored.id, 33)
+        XCTAssertEqual(stored.account, "300000")
+        XCTAssertEqual(stored.transactionCode, "BK")
+        XCTAssertEqual(stored.tax, .noTax)
+        XCTAssertTrue(batch.all.isEmpty)
+    }
+
     func testCycleOutsideCurrentAndNextIsRejectedWithoutWrites() throws {
         let store = try FileStore()
         let context = BusinessContext(store: store)
