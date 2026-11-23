@@ -23,6 +23,7 @@ struct LedgerPostingForm: View {
         .onAppear { workspace.completed("gl-posting-menu") }
         .confirmationDialog(ledgerText("posting.confirm"), isPresented: $confirm, titleVisibility: .visible) {
             Button(ledgerText("posting.run"), action: post)
+                .accessibilityIdentifier("gl.posting.confirm")
         }
     }
 

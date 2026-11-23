@@ -56,6 +56,14 @@ final class LedgerBatchFlows: XCTestCase {
         XCTAssertTrue(status.waitForExistence(timeout: 5))
         XCTAssertEqual(status.label, "予定額と明細の合計が一致しました")
         XCTAssertTrue(app.buttons["gl.report.share"].exists)
+        app.navigationBars.buttons.firstMatch.tap()
+        tap(app, "gl.posting")
+        tap(app, "gl.posting.run")
+        tap(app, "gl.posting.confirm")
+        let posting = app.staticTexts["gl.posting.result"]
+        XCTAssertTrue(posting.waitForExistence(timeout: 5))
+        XCTAssertEqual(posting.label, "仕訳を転記し、転記帳票を出力しました。")
+        XCTAssertTrue(app.buttons["gl.report.share"].exists)
     }
 
     @MainActor
