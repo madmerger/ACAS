@@ -3,7 +3,7 @@
 Web 版の初期データ JSON（{論理ファイル名: {キー16進: レコード16進}}）へ変換する開発用ツール。
 使い方: dump_baselines.py <証跡展開ディレクトリ> <出力ディレクトリ(src/main/resources/baselines)>
 GnuCOBOL 3.1.2 (cobc) が必要。コピー句はこのリポジトリの原本を使う。"""
-import json, struct, subprocess, sys, tempfile
+import json, os, struct, subprocess, sys, tempfile
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
@@ -90,8 +90,24 @@ goback.
 
 def seqkey(n): return struct.pack(">q", n).hex()
 
+
+def validate_evidence(root):
+    def reject_link(path):
+        if path.is_symlink():
+            raise SystemExit(f"証跡のシンボリックリンクは使用できません: {path}")
+
+    def unreadable(error):
+        raise error
+
+    reject_link(root)
+    for directory, dirs, files in os.walk(root, followlinks=False, onerror=unreadable):
+        for entry in dirs + files:
+            reject_link(Path(directory) / entry)
+
+
 def main():
     evid, out_dir = Path(sys.argv[1]), Path(sys.argv[2])
+    validate_evidence(evid)
     out_dir.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory() as t:
         tmp = Path(t)
