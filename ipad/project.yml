@@ -2,7 +2,7 @@ name: ACAS
 options:
   bundleIdPrefix: com.acas
   deploymentTarget:
-    iOS: "17.0"
+    iOS: "18.0"
   xcodeVersion: "16.4"
 settings:
   base:

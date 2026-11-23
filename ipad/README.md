@@ -1,6 +1,6 @@
 # ACAS for iPad
 
-Minimal SwiftUI shell for iPadOS 17.0 or later. Module rows are placeholders;
+Minimal SwiftUI shell for iPadOS 18.0 or later. Module rows are placeholders;
 there is no accounting data storage or backend integration yet.
 
 Open `ACAS.xcodeproj` in Xcode 16.4 or later and select the shared `ACAS`
