@@ -84,6 +84,7 @@ public struct ChartOfAccounts {
 
     public func amend(code: String, branch: String = "00", name: String, type: Int, placement: String, level: Int) throws {
         let key = try validatedKey(code, branch: branch)
+        guard key == code + branch else { throw Error.missingAccount }
         guard var record = file.read(key: key) else { throw Error.missingAccount }
         try apply(name: name, type: type, placement: placement, level: level, to: &record)
         guard file.rewrite(record) == "00" else { throw Error.missingAccount }
@@ -91,6 +92,7 @@ public struct ChartOfAccounts {
 
     public func delete(code: String, branch: String = "00") throws {
         let key = try validatedKey(code, branch: branch)
+        guard key == code + branch else { throw Error.missingAccount }
         guard let record = file.read(key: key) else { throw Error.missingAccount }
         guard record.int("balance") == 0 else { throw Error.nonzeroBalance }
         guard file.delete(key: Array(key.utf8)) == "00" else { throw Error.missingAccount }
