@@ -88,6 +88,13 @@ final class SystemInitializationFlows: XCTestCase {
             tap(app, "gl.account.save")
             XCTAssertTrue(app.staticTexts["勘定科目を保存しました"].waitForExistence(timeout: 5), code)
             back(app)
+            if code == "300000" {
+                tap(app, "gl.accounts.edit")
+                tap(app, "gl.accounts.edit.30000000")
+                tap(app, "gl.account.save")
+                XCTAssertTrue(app.buttons["gl.accounts.edit.30000000"].waitForExistence(timeout: 5))
+                back(app)
+            }
         }
         tap(app, "section.system")
         try MasterSetupFlows.registerMasters(app)

@@ -28,10 +28,15 @@ WORKFLOWS = {
     "GL-021": ("gl-account-edit", "既存の見出し勘定の名称を変更"),
     "GL-022": ("gl-account-delete", "残高ゼロの明細勘定を削除"),
     "GL-023": ("gl-chart-inquiry", "指定した勘定科目を起点に照会"),
+    "GL-024": ("gl-account-error-invalidCode", "範囲外の科目コードを拒否する"),
+    "GL-025": ("gl-account-error-reservedCode", "予約済みの科目コードを拒否する"),
+    "GL-026": ("gl-account-error-invalidPrefix", "売掛元帳用の科目コードを拒否する"),
+    "GL-027": ("gl-account-error-invalidPrefix", "買掛元帳用の科目コードを拒否する"),
     "GL-033": ("gl-chart-print", "勘定科目一覧を出力"),
     "GL-034": ("gl-trial-balance-detail", "詳細試算表を出力"),
     "GL-036": ("gl-business-date-invalid", "存在しない処理日を拒否する"),
     "GL-037": ("gl-cycle-close-cancel", "期間締めを中止して総勘定元帳に戻る"),
+    "GL-038": ("gl-account-error-missingHeader", "部門・拠点未設定で初回の明細登録を拒否"),
     "GL-200": ("gl-business-date", "総勘定元帳を開いて処理日入力へ進む"),
     "GL-201": ("gl-business-date", "総勘定元帳メニューから処理日入力を開く"),
     "GL-204": ("gl-account-edit-menu", "勘定科目の変更・削除画面を表示"),
@@ -144,9 +149,12 @@ def fixture(evidence, case):
         "company": text_inputs[0].split("\r")[0],
         "code": inputs.get("code"),
     }
-    if workflow == "gl-account-add":
-        major, minor, name, _, placement, _ = text_inputs[3].split("\r")[:-1]
-        values.update(account=major + minor, name=name, placement=placement)
+    if workflow == "gl-account-add" or workflow.startswith("gl-account-error-"):
+        fields = text_inputs[3].rstrip("\r").split("\r")
+        values.update(account=fields[0] + (fields[1] if len(fields) > 1 else "00"),
+                      name=fields[2] if len(fields) > 2 else None)
+        if len(fields) > 4:
+            values["placement"] = fields[4]
     changes = expected_changes(evidence, targets.get("keyed_record_diff"))
     if workflow == "company":
         changes += analysis_changes(evidence, run)

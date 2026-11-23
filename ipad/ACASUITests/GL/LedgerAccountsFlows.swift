@@ -2,6 +2,31 @@ import XCTest
 
 final class LedgerAccountsFlows: XCTestCase {
     @MainActor
+    func testGL024() throws {
+        try checkRejected("GL-024", message: "先頭４桁が１０００以上の６桁の勘定科目コードを入力してください")
+    }
+
+    @MainActor
+    func testGL025() throws {
+        try checkRejected("GL-025", message: "先頭４桁が９９９９のコードは予約済みです")
+    }
+
+    @MainActor
+    func testGL026() throws {
+        try checkRejected("GL-026", message: "売上または仕入に予約された先頭桁は使用できません")
+    }
+
+    @MainActor
+    func testGL027() throws {
+        try checkRejected("GL-027", message: "売上または仕入に予約された先頭桁は使用できません")
+    }
+
+    @MainActor
+    func testGL038() throws {
+        try checkRejected("GL-038", message: "対応する見出し科目がありません")
+    }
+
+    @MainActor
     func testGL021() throws {
         let app = try openEditList("GL-021")
         tap(app, "gl.accounts.edit.30000000")
@@ -32,6 +57,33 @@ final class LedgerAccountsFlows: XCTestCase {
         let app = try openEditList("GL-204")
         XCTAssertTrue(app.buttons["gl.accounts.edit.30000000"].waitForExistence(timeout: 5))
         captureMatch(app, "GL-204")
+    }
+
+    @MainActor
+    private func checkRejected(_ id: String, message: String) throws {
+        let app = try submitAccount(id)
+        XCTAssertTrue(app.staticTexts[message].waitForExistence(timeout: 5))
+        captureMatch(app, id)
+    }
+
+    @MainActor
+    private func submitAccount(_ id: String) throws -> XCUIApplication {
+        continueAfterFailure = false
+        let url = try XCTUnwrap(Bundle(for: Self.self).url(forResource: id, withExtension: "json",
+                                                           subdirectory: "fixtures"))
+        let fixture = try Data(contentsOf: url)
+        let object = try XCTUnwrap(JSONSerialization.jsonObject(with: fixture) as? [String: Any])
+        let values = try XCTUnwrap(object["input"] as? [String: Any])
+        let app = XCUIApplication()
+        app.launchEnvironment["ACAS_FIXTURE"] = fixture.base64EncodedString()
+        app.launchArguments = ["-AppleLanguages", "(ja)", "-AppleLocale", "ja_JP"]
+        XCUIDevice.shared.orientation = .landscapeLeft
+        app.launch()
+        for step in ["section.general", "gl.confirm-date", "gl.accounts", "gl.accounts.add"] { tap(app, step) }
+        try fill(app, "gl.account.code", values["account"])
+        if let name = values["name"] as? String { try fill(app, "gl.account.name", name) }
+        tap(app, "gl.account.save")
+        return app
     }
 
     @MainActor

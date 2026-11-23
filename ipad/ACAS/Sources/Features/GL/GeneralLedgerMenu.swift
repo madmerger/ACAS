@@ -94,17 +94,19 @@ private struct LedgerAccountsMenu: View {
     let workspace: Workspace
     @State private var accounts: [LedgerAccount] = []
     @State private var selected: LedgerAccount?
+    @State private var amendScreenVisited = false
     @State private var reportStatus: String?
 
     var body: some View {
         List {
             NavigationLink(ledgerText("account-add")) {
-                LedgerAccountEditor(workspace: workspace, initial: nil)
+                LedgerAccountEditor(workspace: workspace, initial: nil, amendScreenVisited: amendScreenVisited)
             }
             .accessibilityIdentifier("gl.accounts.add")
             NavigationLink(ledgerText("account-edit")) {
                 List(accounts) { account in
                     Button {
+                        amendScreenVisited = true
                         selected = account
                     } label: {
                         LabeledContent(account.name, value: account.code)
@@ -151,6 +153,7 @@ private struct LedgerAccountsMenu: View {
 private struct LedgerAccountEditor: View {
     let workspace: Workspace
     let initial: LedgerAccount?
+    var amendScreenVisited = true
     @Environment(\.dismiss) private var dismiss
     @State private var code = ""
     @State private var branch = ""
@@ -216,7 +219,8 @@ private struct LedgerAccountEditor: View {
         perform {
             let chart = ChartOfAccounts(workspace.context)
             if initial == nil {
-                try chart.add(code: code, branch: branch, name: name, type: type, placement: placement, level: level)
+                try chart.add(code: code, branch: branch, name: name, type: type, placement: placement,
+                              level: level, amendScreenVisited: amendScreenVisited)
                 status = ledgerText("saved")
                 workspace.completed("gl-account-add")
             } else {
@@ -237,7 +241,9 @@ private struct LedgerAccountEditor: View {
 
     private func perform(_ operation: () throws -> Void) {
         do { try operation() } catch let error as ChartOfAccounts.Error {
-            status = ledgerText("error." + String(describing: error))
+            let code = String(describing: error)
+            status = ledgerText("error." + code)
+            if initial == nil { workspace.completed("gl-account-error-" + code) }
         } catch {
             status = ledgerText("error.other")
         }
