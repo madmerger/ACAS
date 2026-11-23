@@ -81,6 +81,12 @@
 "sales.period.confirm" = "売掛元帳の期間締めを実行しますか？";
 "sales.period.finished" = "売掛元帳の期間締めが完了しました";
 "sales.period.failed" = "期間締めを完了できませんでした";
+"sales.receivables.section" = "売掛金帳票";
+"sales.dunning.title" = "督促状出力";
+"sales.dunning.date" = "基準日";
+"sales.dunning.next" = "次へ";
+"sales.dunning.dateNotAccepted" = "旧システムと同じ制約により、基準日を確定できません。督促状は出力されません。";
+"sales.dunning.failed" = "督促状出力を開始できませんでした";
 "sales.payment.post.failed" = "入金を転記できませんでした。先に入金検証帳票を作成してください";
 "sales.payment.post.filename" = "入金転記帳票";
 "sales.payment.reverse" = "入金を取り消す";
