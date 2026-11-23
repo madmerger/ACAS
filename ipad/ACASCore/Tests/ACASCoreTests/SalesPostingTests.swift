@@ -2,6 +2,44 @@ import XCTest
 @testable import ACASCore
 
 final class SalesPostingTests: XCTestCase {
+    func testFirstPrintedInvoiceInitializesAnalysisAndWorkFiles() throws {
+        let (store, context, invoices) = try newCompany()
+        let invoice = try invoices.save(draft(in: invoices))
+        XCTAssertEqual(try invoices.printInvoices().map(\.id), [invoice.id])
+        XCTAssertFalse(store.exists(SalesPosting.analysisPath))
+        XCTAssertFalse(store.exists(SalesPosting.workPath))
+
+        let service = SalesPosting(context)
+        XCTAssertNoThrow(try service.checkAvailability())
+        XCTAssertEqual(try service.post().posted, [invoice.id.value])
+        XCTAssertEqual(store.all(SalesPosting.analysisPath).count, 16)
+        XCTAssertEqual(store.readRaw(SalesPosting.workPath), [])
+        XCTAssertEqual(try SalesLedger(context).systemRecord().int("s-flag-i"), 2)
+        XCTAssertFalse(try SalesPayments(context).allocations(customer: "CUST011", date: invoices.processingDate).isEmpty)
+    }
+
+    private func newCompany() throws -> (FileStore, BusinessContext, SalesInvoices) {
+        let store = try FileStore()
+        let context = BusinessContext(store: store, timeZone: .gmt, now: { Date(timeIntervalSince1970: 1_700_000_000) })
+        try CompanySetup(context).save(name: "TEST COMPANY")
+        var customer = Record(SalesProofRecords.salesLayout)
+        customer["sales-key"] = "CUST011"
+        customer["sales-name"] = "TEST CUSTOMER"
+        customer.setInt("sales-status", 1)
+        XCTAssertEqual(SalesProofRecords.salesFile(store).write(customer), "00")
+        return (store, context, SalesInvoices(context))
+    }
+
+    private func draft(in invoices: SalesInvoices) -> SalesInvoices.Draft {
+        var draft = SalesInvoices.Draft(date: invoices.processingDate)
+        draft.customer = "CUST011"
+        draft.lines[0].product = "PRODUCT"
+        draft.lines[0].description = "PRODUCT NAME"
+        draft.lines[0].analysis = "a1"
+        draft.lines[0].unit = 1_000
+        return draft
+    }
+
     func testPrintedInvoicePostsOnceAndUnprintedInvoiceIsSkipped() throws {
         let store = try FileStore()
         let context = BusinessContext(store: store, timeZone: .gmt)

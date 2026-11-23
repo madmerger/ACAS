@@ -17,10 +17,15 @@ public struct SalesPosting {
     public init(_ context: BusinessContext) { self.context = context }
 
     public func checkAvailability() throws {
-        let system = try SalesLedger(context).systemRecord()
-        guard system.raw("file-statuses")[14] == 0x31 else { throw Error.missingAnalysis }
-        guard context.store.readRaw(Self.workPath) != nil else { throw Error.missingWorkFile }
-        guard context.store.all(Self.analysisPath).allSatisfy({ $0.data.count == 36 }) else {
+        let store = context.store
+        let invoices = SalesInvoices(context)
+        let status = try invoices.settings().raw("file-statuses")[14]
+        let hasInvoices = store.exists(invoices.file.path)
+        guard status == 0x31 || hasInvoices else { throw Error.missingAnalysis }
+        guard store.readRaw(Self.workPath) != nil || hasInvoices else { throw Error.missingWorkFile }
+        guard status == 0x31 || status == 0x30 || status == 0x20,
+              store.readRaw(Self.analysisPath) == nil,
+              store.all(Self.analysisPath).allSatisfy({ $0.data.count == SalesAnalysisFiles.layout.size }) else {
             throw Error.invalidAnalysisLayout
         }
     }
@@ -33,8 +38,10 @@ public struct SalesPosting {
         try store.withTransaction {
             try checkAvailability()
             var system = try invoices.settings()
+            try SalesAnalysisFiles.initialize(store, system: &system)
             var monthly = Record(SalesPostingRecords.monthly, bytes: invoices.systemFile.read(4) ?? SystemAuxRecords.initialRecord4())
-            guard var work = store.readRaw(Self.workPath), work.count % SalesOpenItems.layout.size == 0 else {
+            var work = store.readRaw(Self.workPath) ?? []
+            guard work.count % SalesOpenItems.layout.size == 0 else {
                 throw Error.invalidWorkFile
             }
             let extraction = try extract(invoices, monthly: &monthly)
