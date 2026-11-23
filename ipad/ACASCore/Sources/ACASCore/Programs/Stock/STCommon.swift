@@ -135,4 +135,127 @@ enum ST {
         default: return String(a[6..<10]) + "/" + String(a[3..<5]) + "/" + String(a[0..<2])
         }
     }
+
+    // MARK: レコード領域 (FD)
+
+    /// 起動直後のレコード領域 (全バイト 0)
+    static func blankRecord() -> Record { Record(layout, bytes: [UInt8](repeating: 0, count: 400)) }
+
+    /// INITIALIZE Stock-Record: 英数字は空白、数値は 0。FILLER は変更しない。
+    static func initialize(_ rec: inout Record) {
+        let keep = rec
+        var fresh = Record(layout)
+        for name in ["filler-1", "filler-2"] { fresh.setRaw(name, keep.raw(name)) }
+        rec = fresh
+    }
+
+    /// 符号無し項目への格納 (符号を落とし、桁あふれは上位切り捨て)
+    static func unsignedValue(_ v: Int64, digits: Int) -> Int64 { Cobol.truncate(abs(v), digits: digits, signed: false) }
+
+    // MARK: system-record
+
+    /// File-Status (n) (n は 1 始まり)
+    static func fileStatus(_ s: Session, _ n: Int) -> Int {
+        Int(s.sys.raw("file-statuses")[n - 1]) - 0x30
+    }
+    static func setFileStatus(_ s: Session, _ n: Int, _ v: Int) {
+        var b = s.sys.raw("file-statuses")
+        b[n - 1] = UInt8(0x30 + v)
+        s.sys.setRaw("file-statuses", b)
+    }
+
+    static func purchasePath(_ s: Session) -> String { s.ledgers + "purchled.dat" }
+    static func analysisPath(_ s: Session) -> String { s.ledgers + "analysis.dat" }
+    static func printPath(_ s: Session) -> String { s.ledgers + "prt-1" }
+
+    // MARK: 日付
+
+    /// zz050-Validate-Date: Date-Form 形式の入力をバイナリ日付へ (不正は 0)
+    static func validateDate(_ s: Session, _ test: String) -> Int {
+        if s.sys.int("date-form") == 0 { s.sys.setInt("date-form", 1) }
+        let a = Array(Cobol.x(test, 10))
+        switch Int(s.sys.int("date-form")) {
+        case 1: return Maps04.toBinary(String(a))
+        case 2: return Maps04.toBinary(String(a[3..<5]) + String(a[2]) + String(a[0..<2]) + String(a[5..<10]))
+        default: return Maps04.toBinary(String(a[8..<10]) + "/" + String(a[5..<7]) + "/" + String(a[0..<4]))
+        }
+    }
+
+    /// zz060-Convert-Date: バイナリ日付を Date-Form の表示形式へ
+    static func convertDate(_ s: Session, _ bin: Int64) -> String {
+        let u = Array(Maps04.toDate(Int(bin)))
+        if s.sys.int("date-form") == 0 { s.sys.setInt("date-form", 1) }
+        switch Int(s.sys.int("date-form")) {
+        case 1: return String(u)
+        case 2: return String(u[3..<5]) + String(u[2]) + String(u[0..<2]) + String(u[5..<10])
+        default: return String(u[6..<10]) + "/" + String(u[3..<5]) + "/" + String(u[0..<2])
+        }
+    }
+
+    /// zz010/zz020-convert-date: to-day を Date-Form の表示形式へ (Date-Form の補正はしない)
+    static func headingDate(_ s: Session) -> String {
+        let u = Array(Cobol.x(s.toDay, 10))
+        switch Int(s.sys.int("date-form")) {
+        case 2: return String(u[3..<5]) + String(u[2]) + String(u[0..<2]) + String(u[5..<10])
+        case 3: return String(u[6..<10]) + "/" + String(u[3..<5]) + "/" + String(u[0..<2])
+        default: return String(u)
+        }
+    }
+
+    // MARK: maps09 (チェックディジット)
+
+    /// common/maps09.cbl。reply "C" = 生成 / "V" = 検証。戻り値は (customer-code, maps09-reply)
+    static func maps09(_ code: String, _ reply: String) -> (String, String) {
+        let alpha = Array("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-")
+        var cc = Array(Cobol.x(code, 7))
+        var suma = 0
+        for a in 1...6 {
+            guard let q = alpha.firstIndex(of: cc[a - 1]) else { suma = 0; break }
+            suma += (q + 1) * (8 - a)
+        }
+        if suma == 0 { return (String(cc), "N") }
+        let a = 11 - (suma - 11 * (suma / 11))
+        if reply == "C" {
+            cc[6] = Character(String(a % 10))
+            return (String(cc), "Y")
+        }
+        if reply == "V", let d = Int(String(cc[6])), a == d { return (String(cc), "Y") }
+        return (String(cc), reply)
+    }
+
+    // MARK: 帳票 (print-file "prt-1"、132 桁固定)
+
+    /// WRITE ... BEFORE/AFTER ADVANCING を GnuCOBOL と同じバイト列で出力する
+    final class Printer {
+        let s: Session
+        let path: String
+        let width: Int
+        private var needsNewline = false
+        init(_ s: Session, width: Int = 132) {
+            self.s = s; self.width = width; path = ST.printPath(s)
+            s.store.writeRaw(path, [])   // open output
+        }
+        private func bytes(_ line: String) -> [UInt8] { Array(Cobol.x(line, width).utf8) }
+        func after(_ n: Int, _ line: String) {
+            s.store.appendRaw(path, [UInt8](repeating: 0x0a, count: n) + bytes(line)); needsNewline = true
+        }
+        func afterPage(_ line: String) {
+            s.store.appendRaw(path, [0x0c] + bytes(line)); needsNewline = true
+        }
+        func before(_ n: Int, _ line: String) {
+            s.store.appendRaw(path, bytes(line) + [UInt8](repeating: 0x0a, count: n)); needsNewline = false
+        }
+        func close() {
+            if needsNewline { s.store.appendRaw(path, [0x0a]); needsNewline = false }
+        }
+        /// call "SYSTEM" using Print-Report (lpr)。端末内では帳票の出力を UI へ通知する。
+        func spool() { s.onReport?(path) }
+    }
+
+    /// 数字以外は 0 とみなして数字列を数値にする (英数字集団項目の ACCEPT を数値へ移す箇所)
+    static func digits(_ t: String) -> Int64 {
+        var v: Int64 = 0
+        for ch in t { v = v * 10 + Int64(ch.isASCII ? (ch.wholeNumberValue ?? 0) : 0) }
+        return v
+    }
 }
