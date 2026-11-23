@@ -66,8 +66,9 @@ def mask_os_output(want, got):
     「nohup: appending output to 'nohup.out'」がカーソル位置から端末へ直接書かれる（80 桁で折り返す）。
     これはアプリケーションの画面出力ではなく移行対象外なので、その文字が上書きした桁だけを両側で空白にする。"""
     want, got, n = list(want), list(got), 0
-    for i, line in enumerate(list(want)):
-        visible = line + (want[i + 1] if len(line) == 80 and i + 1 < len(want) else "")
+    legacy_lines = list(want)
+    for i, line in enumerate(legacy_lines):
+        visible = line + (legacy_lines[i + 1] if len(line) == 80 and i + 1 < len(legacy_lines) else "")
         for notice in (OS_OUTPUT, OS_ERROR):
             col = visible.find(notice)
             if not 0 <= col < len(line):
@@ -79,8 +80,6 @@ def mask_os_output(want, got):
                 for side in (want, got):
                     if r < len(side) and c < len(side[r]):
                         side[r] = side[r][:c] + " " + side[r][c + 1:]
-    if n:
-        want, got = ["\n".join(l.rstrip() for l in x).rstrip("\n").split("\n") for x in (want, got)]
     return want, got, n
 
 
@@ -124,7 +123,6 @@ def run_case(api, evid, case, verbose=False):
         keys = to_keys(step.get("text", "")) + ([step["key"]] if "key" in step else [])
         api.call("POST", f"/api/sessions/{sid}/keys", {"keys": keys})
         scr = api.call("GET", f"/api/test/sessions/{sid}/screen?lang=en")
-        got = norm_screen(scr["text"])
         if RESIDUE is not None:   # 日本語面に残った英語文言の収集（--residue）
             for l in api.call("GET", f"/api/test/sessions/{sid}/screen?lang=ja")["text"].split("\n"):
                 if re.search(r"[A-Za-z]*[a-z]{3,}", l): RESIDUE.setdefault(l.strip(), cid)
@@ -135,8 +133,8 @@ def run_case(api, evid, case, verbose=False):
             if not p.is_file():
                 missing_evidence.append(f"画面証跡なし: {screens[i]}")
             else:
-                want = norm_screen(p.read_text())
-                want, got, n = mask_os_output(want, got)
+                want, got, n = mask_os_output(p.read_text().split("\n"), scr["text"].split("\n"))
+                want, got = (norm_screen("\n".join(lines)) for lines in (want, got))
                 os_masked += n
                 if want != got:
                     mism.append(i)
