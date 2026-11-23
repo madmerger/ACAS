@@ -529,3 +529,15 @@ Analysis  Type    <-----Description------>   <-------Transactions------->   <---
 Current   Previous   Y. to D      Current      Previous    Year To Date  Trans. Amount	当期      前期       年累計       当期         前期        年累計        件数   金額
 Group	グループ
  Detail	 明細
+Day Book	日計表
+Printing.......Please wait	印刷中.......お待ちください
+ Number   ---Date--- <------------Customer------------>	 番号     ---日付--- <--------------顧客--------------->
+<---Net-->  <---Vat-->  <--Gross->	<--税抜-->  <-消費税->  <--税込-->
+Goods     Discount   Prompt Pay     Carriage          Net          Vat        Gross	商品      値引       早期入金       運賃              税抜         消費税     税込
+Receipts	領収
+Invoices	請求書
+Credit Notes	貸方票
+    Totals	    合計
+Receipt	領収
+Invoice	請求書
+Cr. Note	貸方票
