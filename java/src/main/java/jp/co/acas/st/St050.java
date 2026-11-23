@@ -42,7 +42,7 @@ public class St050 extends StProgram {
             display(L23, 1, "ST502 Y or N only", 4);
         }
         eraseEol(L23, 1);
-        stock = Layout.of("copybooks/fdstock.cob", "Stock-Record").newRec();
+        stock = St.fdRec(Layout.of("copybooks/fdstock.cob", "Stock-Record"));
         stockFile = St.stockFile(ctx, stock);
         tempFile = CobFile.sequential(ctx.store, ctx.path("tmp-stock.dat"));
         if (recovery.equals("Y")) {

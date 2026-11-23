@@ -62,7 +62,7 @@ public class St030 extends StProgram {
             maps99(45);
             return;
         }
-        stock = Layout.of("copybooks/fdstock.cob", "Stock-Record").newRec();
+        stock = St.fdRec(Layout.of("copybooks/fdstock.cob", "Stock-Record"));
         stockFile = St.stockFile(ctx, stock);
         if (!stockFile.open(CobFile.Mode.INPUT).equals("00")) {
             display(L23, 1, "ST301 Stock File not found", 4);

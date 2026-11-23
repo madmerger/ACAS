@@ -66,8 +66,8 @@ public class St020 extends StProgram {
             maps99(45);
             return;
         }
-        stock = Layout.of("copybooks/fdstock.cob", "Stock-Record").newRec();
-        audit = Layout.of("copybooks/fdaudit.cob", "Stock-Audit-Record").newRec();
+        stock = St.fdRec(Layout.of("copybooks/fdstock.cob", "Stock-Record"));
+        audit = St.fdRec(Layout.of("copybooks/fdaudit.cob", "Stock-Audit-Record"));
         stockFile = St.stockFile(ctx, stock);
         stockFile.open(CobFile.Mode.IO);
         if (!stockFile.status.equals("00")) {
@@ -243,7 +243,7 @@ public class St020 extends StProgram {
         while (true) {
             i++;
             if (i > L22) additions(barcode);
-            audit.initialize();
+            St.initialize(audit);
             String key = upper(acceptUpdate(i, 2, 13, St.x("", 13)));
             if (key.isBlank() || crtStatus() == 2005) return;
             show(i, 2, key);
@@ -419,7 +419,7 @@ public class St020 extends StProgram {
         while (true) {
             i++;
             if (i > L22) deductions();
-            audit.initialize();
+            St.initialize(audit);
             String key = upper(acceptUpdate(i, 2, 13, St.x("", 13)));
             if (key.isBlank() || crtStatus() == 2005) return;
             show(i, 2, key);
