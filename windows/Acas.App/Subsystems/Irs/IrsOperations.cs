@@ -172,9 +172,11 @@ public sealed partial class IrsScreens
             }), () => AccountsMenu(books));
 
     private Screen Import(IrsBookkeeping books) => new ConfirmationScreen("科目表の取り込み",
-        "固定長テキストから科目表を取り込み、既存の科目表を置き換えます。バックアップを確認してください。", "取り込み元を選択",
-        () => Guard("科目表の取り込み", () =>
+        "固定長テキストから科目表を取り込み、既存の科目表を置き換えます。バックアップを確認してください。", "続行",
+        () => Form("科目表の取り込み", [new PasswordField("IrsAccountImportPassword", "暗証番号", 4)], "取り込み元を選択", v =>
         {
+            if (!books.CheckPassword(v.Text("IrsAccountImportPassword")))
+                throw new IrsException("暗証番号が一致しません。");
             var dialog = new OpenFileDialog { Title = "科目表の取り込み元", Filter = "テキスト文書 (*.txt)|*.txt" };
             if (dialog.ShowDialog() != true) return AccountsMenu(books);
             try
