@@ -45,6 +45,13 @@ final class LedgerMenuReachabilityFlows: XCTestCase {
     }
 
     @MainActor
+    func testGL211() throws {
+        try check("GL-211", path: ["gl.final-setup"], buttons: ["gl.financial-statements"]) { app in
+            XCTAssertEqual(app.staticTexts["gl.final-setup.unavailable"].label, "この機能はまだ利用できません")
+        }
+    }
+
+    @MainActor
     func testGL213() throws {
         try check("GL-213", path: ["gl.batches", "gl.batch.new"], buttons: ["gl.batch.add-line"]) { app in
             XCTAssertTrue(app.buttons["gl.batch.default"].exists)
@@ -84,6 +91,14 @@ final class LedgerMenuReachabilityFlows: XCTestCase {
         try check("GL-218", path: ["gl.batches.maintenance", "gl.batch.proof.print-all"],
                   buttons: ["gl.report.share"], verdict: "mismatch") { app in
             XCTAssertEqual(app.staticTexts["gl.batch.proof.status"].label, "全仕訳の帳票を出力しました")
+        }
+    }
+
+    @MainActor
+    func testGL229() throws {
+        try check("GL-229", path: [], buttons: ["gl.final-print"]) { app in
+            XCTAssertFalse(app.buttons["gl.final-print"].isEnabled)
+            XCTAssertFalse(app.buttons["gl.report.share"].exists)
         }
     }
 

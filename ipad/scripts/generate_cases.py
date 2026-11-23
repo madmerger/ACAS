@@ -39,6 +39,7 @@ WORKFLOWS = {
     "GL-007": ("gl-posting-menu", "仕訳転記のバッチ確認を表示"),
     "GL-008": ("gl-cycle-close-menu", "期間締めの確認画面を表示"),
     "GL-009": ("gl-trial-balance-menu", "試算表メニューを表示"),
+    "GL-010": ("gl-financial-statements-date", "損益計算書・貸借対照表の基準日を表示"),
     "GL-020": ("gl-account-add", "新規の見出し勘定を登録"),
     "GL-021": ("gl-account-edit", "既存の見出し勘定の名称を変更"),
     "GL-022": ("gl-account-delete", "残高ゼロの明細勘定を削除"),
@@ -51,6 +52,7 @@ WORKFLOWS = {
     "GL-032": ("gl-account-edit-missing", "未登録の勘定科目を変更画面で検索"),
     "GL-033": ("gl-chart-print", "勘定科目一覧を出力"),
     "GL-034": ("gl-trial-balance-detail", "詳細試算表を出力"),
+    "GL-035": ("gl-financial-statements-print", "損益計算書・貸借対照表を出力"),
     "GL-036": ("gl-business-date-invalid", "存在しない処理日を拒否する"),
     "GL-037": ("gl-cycle-close-cancel", "期間締めを中止して総勘定元帳に戻る"),
     "GL-038": ("gl-account-error-missingHeader", "部門・拠点未設定で初回の明細登録を拒否"),
@@ -67,6 +69,7 @@ WORKFLOWS = {
     "GL-207": ("gl-defaults-menu", "既定勘定の管理メニューを表示"),
     "GL-209": ("gl-defaults-menu", "既定勘定の管理メニューまで到達"),
     "GL-210": ("gl-defaults-menu", "既定勘定の管理メニューまで到達"),
+    "GL-211": ("gl-final-setup-unavailable", "決算書の設定が利用不可であることを確認"),
     "GL-212": ("gl-batch-menu", "仕訳入力メニューに到達"),
     "GL-213": ("gl-batch-new-menu", "新規バッチ登録画面に到達"),
     "GL-214": ("gl-batch-maintenance-menu", "仕訳の検証・修正メニューに到達"),
@@ -81,6 +84,8 @@ WORKFLOWS = {
     "GL-223": ("gl-cycle-close-menu", "期間締めの事前確認を表示"),
     "GL-224": ("gl-trial-balance-menu", "試算表メニューを表示"),
     "GL-225": ("gl-trial-balance-detail", "詳細試算表の帳票を確認"),
+    "GL-227": ("gl-financial-statements-date", "損益計算書・貸借対照表の基準日を表示"),
+    "GL-229": ("gl-final-print-unavailable", "設定済み決算書の印刷が利用不可であることを確認"),
     "GL-230": ("gl-close-ledger", "総勘定元帳を閉じて会計管理メニューに戻る"),
     "GL-231": ("system-company-data", "総勘定元帳から会社・期間設定を開く"),
     "GL-232": ("gl-business-date", "総勘定元帳開始時の処理日入力を確認"),
@@ -136,20 +141,28 @@ def expected_changes(evidence, path):
     return changes
 
 
-def analysis_changes(evidence, run):
-    path = "ledgers/acas/analysis.dat"
-    source = evidence_path(evidence, run / "files" / path)
+def indexed_records(source, key_size, record_size):
+    if not source.exists():
+        return {}
     output = subprocess.run(["db_dump", str(source)], check=True, capture_output=True, text=True).stdout
     lines = output.splitlines()
     items = [bytes.fromhex(line) for line in lines[lines.index("HEADER=END") + 1:lines.index("DATA=END")]]
-    if len(items) % 2 or not items:
-        raise ValueError("分析ファイルに有効な索引レコードがありません")
-    changes = []
+    if len(items) % 2:
+        raise ValueError(f"索引レコードの読み込みに失敗しました: {source}")
+    records = {}
     for key, value in zip(items[::2], items[1::2]):
-        if len(key) != 3 or len(value) != 66 or not value.startswith(key):
-            raise ValueError("分析ファイルのレコード長または索引キーが一致しません")
-        changes.append(dict(file=path, key=key.hex(), before=None, after=value.hex()))
-    return changes
+        if len(key) != key_size or len(value) != record_size or not value.startswith(key):
+            raise ValueError(f"レコード長または索引キーが一致しません: {source}")
+        records[key.hex()] = value.hex()
+    return records
+
+
+def analysis_changes(evidence, run):
+    path = "ledgers/acas/analysis.dat"
+    records = indexed_records(evidence_path(evidence, run / "files" / path), 3, 66)
+    if not records:
+        raise ValueError("分析ファイルに有効な索引レコードがありません")
+    return [dict(file=path, key=key, before=None, after=value) for key, value in records.items()]
 
 
 def recorded_field(evidence, run, pattern):
@@ -177,7 +190,8 @@ def fixture(evidence, case):
     seeded = workflow == "sales-proof" or workflow.startswith(
         (
             "system-", "gl-account-", "gl-accounts-", "gl-chart-", "gl-batch-", "gl-business-date",
-            "gl-close-ledger", "gl-cycle-close-", "gl-defaults-", "gl-posting-", "gl-trial-balance-",
+            "gl-close-ledger", "gl-cycle-close-", "gl-defaults-", "gl-final-", "gl-financial-statements-",
+            "gl-posting-", "gl-trial-balance-",
         )
     )
     seed = snapshot_seed(evidence, run) if seeded else None
@@ -201,12 +215,27 @@ def fixture(evidence, case):
     if workflow == "gl-business-date":
         day, month, year = recorded_field(evidence, run, r"Enter todays date as dd/mm/yyyy - \[([0-9]{2})/([0-9]{2})/([0-9]{4})\]")
         values["businessDate"] = dict(year=int(year), month=int(month), day=int(day))
+    if workflow == "gl-financial-statements-date":
+        day, month, year = recorded_field(evidence, run, r"Enter P&L Date[^\n]*\[([0-9]{2})/([0-9]{2})/([0-9]{4})\]")
+        values["statementDate"] = f"{int(year)}年{int(month)}月{int(day)}日"
     if workflow in ("gl-defaults-save", "gl-defaults-missing-account"):
         number, account, *rest = text_inputs[3].rstrip("\r").split("\r")
         values.update(entry=int(number), account=account.replace(".", ""), transactionCode=rest[0] if rest else None)
     changes = expected_changes(evidence, targets.get("keyed_record_diff"))
     if case["id"] == "SYS-001":
         changes += analysis_changes(evidence, run)
+    if workflow == "gl-financial-statements-print":
+        path = "ledgers/acas/final.dat"
+        before = indexed_records(evidence_path(evidence, run / "before-files" / path), 9, 45)
+        after = indexed_records(evidence_path(evidence, run / "files" / path), 9, 45)
+        if not after:
+            raise ValueError(f"決算書出力後の索引レコードがありません: {run}")
+        if before:
+            payload = json.loads(base64.b64decode(seed))
+            payload["files"][path] = {"type": "indexed", "records": list(before.items())}
+            seed = base64.b64encode(json.dumps(payload, separators=(",", ":")).encode()).decode()
+        changes += [dict(file=path, key=key, before=before.get(key), after=after.get(key))
+                    for key in sorted(before.keys() | after.keys()) if before.get(key) != after.get(key)]
     return {
         "id": case["id"],
         "workflow": workflow,
