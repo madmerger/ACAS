@@ -120,7 +120,7 @@ public struct LedgerBatches {
             end.setInt("cycle", 99)
             guard batches.write(end) == "00" else { throw Error.storage }
         }
-        if !postings.exists { try postings.write(1, Record(Self.postingLayout).bytes) }
+        if !postings.exists { try context.store.writeRaw(Self.postingPath, []) }
     }
 
     public func add(_ draft: LedgerBatchDraft, lines: [JournalLine]) throws -> Int {

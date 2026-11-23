@@ -36,5 +36,20 @@ final class FinancialStatementsTests: XCTestCase {
         XCTAssertEqual(store.readRaw(CompanySetup.reportPath), report)
         XCTAssertTrue(report.split(separator: 10).allSatisfy { $0.count == 132 })
         XCTAssertTrue(String(decoding: report, as: UTF8.self).contains("23/11/2026"))
+        var fixedAsset = Record(ChartOfAccounts.layout)
+        fixedAsset.setInt("code", 500000)
+        fixedAsset.setInt("level", 1)
+        fixedAsset["name"] = "FIXED ASSETS"
+        fixedAsset["placement"] = "O"
+        XCTAssertEqual(ledger.write(fixedAsset), "00")
+        for (form, date): (Int64, String) in [(2, "11/23/2026"), (3, "2026/11/23")] {
+            settings = setup.settings
+            try settings.setNumber(form, for: "date-form")
+            try setup.save(settings)
+            let localized = try FinancialStatements(context).generateReport()
+            let localizedLines = localized.split(separator: 10).map { String(decoding: $0, as: UTF8.self) }
+            XCTAssertEqual(localizedLines.filter { $0.contains("For the period to") }.map { String($0.dropFirst(75).prefix(10)) }, [date])
+            XCTAssertEqual(localizedLines.filter { $0.contains("Balance Sheet  as at") }.map { String($0.dropFirst(64).prefix(10)) }, [date])
+        }
     }
 }

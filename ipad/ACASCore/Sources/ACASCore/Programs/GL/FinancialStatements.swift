@@ -78,7 +78,8 @@ public struct FinancialStatements {
             for level in (2...5).reversed() { rollUp(level) }
             try writeHeading()
             let settings = CompanySetup(context).settings
-            let date = Maps04.toDate(Int(settings.number("run-date")))
+            let date = Maps04.format(Maps04.toDate(Int(settings.number("run-date"))),
+                                     dateForm: Int(settings.number("date-form")))
             let bytes = render(totals.allRecords(), company: settings.text("usera"), date: date)
             try context.store.writeRaw(CompanySetup.reportPath, bytes)
             return bytes
