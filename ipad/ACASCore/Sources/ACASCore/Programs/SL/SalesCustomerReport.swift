@@ -1,6 +1,8 @@
 import Foundation
 
 public struct SalesCustomerReport {
+    public enum Kind { case listing, alphabetical, turnover }
+
     public enum Status: CaseIterable, Hashable { case all, active, dormant }
 
     public enum Relation: CaseIterable, Hashable {
@@ -35,10 +37,22 @@ public struct SalesCustomerReport {
     }
 
     public static let exportPath = "ledgers/acas/prt-1"
+
+    public struct Entry: Identifiable {
+        public var id: String { code }
+        public let code: String
+        public let name: String
+        public let quarterlyTurnover: [Int64]
+    }
+
     private let context: BusinessContext
     public init(_ context: BusinessContext) { self.context = context }
 
-    public func generate(_ filter: Filter) throws -> [SalesLedger.Customer] {
+    public func prepareTurnover() throws {
+        try context.store.writeRaw(Self.exportPath, [])
+    }
+
+    public func generate(_ filter: Filter, kind: Kind = .listing) throws -> [Entry] {
         let ledger = SalesLedger(context)
         let system = try ledger.systemRecord()
         let prefix = filter.code.uppercased()
@@ -58,11 +72,17 @@ public struct SalesCustomerReport {
             guard Maps04.validYMD(y, m, d) else { throw SalesLedger.Error.invalidDate }
             creationDay = Int64(Maps04.integerOfDate(year: y, month: m, day: d))
         }
-        let matching = SalesProofRecords.salesFile(context.store).allRecords().filter { record in
+        var matching = SalesProofRecords.salesFile(context.store).allRecords().filter { record in
             let key = record.raw("sales-key")
             let status = record.int("sales-status")
-            guard Cobol.rtrim(prefix).isEmpty || (!key.lexicographicallyPrecedes(low) && !high.lexicographicallyPrecedes(key)),
-                  filter.status != .active || status != 0,
+            if !Cobol.rtrim(prefix).isEmpty {
+                if kind == .alphabetical {
+                    guard !key.lexicographicallyPrecedes(high), !low.lexicographicallyPrecedes(key) else { return false }
+                } else {
+                    guard !key.lexicographicallyPrecedes(low), !high.lexicographicallyPrecedes(key) else { return false }
+                }
+            }
+            guard filter.status != .active || status != 0,
                   filter.status != .dormant || status != 1 else { return false }
             for (criterion, field) in [(filter.creditDays, "sales-credit"), (filter.invoiceCount, "sales-activety"),
                                        (filter.averageValue, "sales-average")] {
@@ -77,6 +97,17 @@ public struct SalesCustomerReport {
         let date = Maps04.format(Maps04.toDate(Int(runDay)), dateForm: dateForm)
         let configuredLines = Int(system.int("page-lines"))
         let pageLines = configuredLines > 28 ? configuredLines : 48
+        func entry(_ record: Record) -> Entry {
+            Entry(code: Cobol.rtrim(record.str("sales-key")), name: Cobol.rtrim(record.str("sales-name")),
+                  quarterlyTurnover: kind == .turnover ? (1...4).map { record.int("turnover-q\($0)") } : [])
+        }
+        if kind == .turnover {
+            try writeTurnover(matching, system: system, date: date, dateForm: dateForm, pageLines: pageLines)
+            return matching.map(entry)
+        }
+        if kind == .alphabetical {
+            matching.sort { $0.raw("sales-name").lexicographicallyPrecedes($1.raw("sales-name")) }
+        }
         let delimiter = system.raw("sl-delim")[0]
         var spool = [UInt8]()
         var page = 0
@@ -84,7 +115,9 @@ public struct SalesCustomerReport {
         func line(_ bytes: [UInt8]) { spool += [0x0a] + Self.fit(bytes, 132) }
         func headings() {
             page += 1
-            let first = Self.fit("SL010 (3.01.20)", 57) + Self.fit("Customer Listing", 67)
+            let first = (kind == .alphabetical
+                ? Self.fit("SL160 (3.01.16)", 51) + Self.fit("Customer Alphabetical Listing", 73)
+                : Self.fit("SL010 (3.01.20)", 57) + Self.fit("Customer Listing", 67))
                 + Self.fit("Page " + Pic.edit("zz9", value: Int64(page % 1000), scale: 0), 8)
             let third = Self.fit(system.raw("usera"), 40) + Self.fit("Report On : ", 12)
                 + Self.fit(heading, 70) + Self.fit(date, 10)
@@ -108,7 +141,7 @@ public struct SalesCustomerReport {
         headings()
         for record in matching {
             if lineCount > pageLines { headings() }
-            if lineCount > pageLines - 5 { headings() }
+            if lineCount > pageLines - (kind == .alphabetical ? 3 : 5) { headings() }
             let status = record.int("sales-status") == 1 ? "Active" : "Dormant"
             let phone = record.raw("sales-phone")
             let ext = record.raw("sales-ext")
@@ -117,7 +150,11 @@ public struct SalesCustomerReport {
                 printedPhone = phone
             } else {
                 let end = Self.doubleSpaceIndex(phone) ?? phone.count
-                printedPhone = Array(phone.prefix(max(0, end - 1))) + [0x78] + ext
+                if kind == .alphabetical {
+                    printedPhone = Array(phone.prefix(end)) + [0x20, 0x78] + ext
+                } else {
+                    printedPhone = Array(phone.prefix(max(0, end - 1))) + [0x78] + ext
+                }
             }
             let late = record.int("sales-late") == 1 ? "Y" : ""
             let dunning = record.int("sales-dunning") == 1 ? "Y" : ""
@@ -145,9 +182,66 @@ public struct SalesCustomerReport {
             }
             line([])
             lineCount += 3
+            if kind == .alphabetical, lineCount > pageLines { headings() }
         }
-        try context.store.writeRaw(Self.exportPath, spool + [0x0a])
-        return matching.map(ledger.customer(from:))
+        try context.store.withTransaction {
+            try context.store.writeRaw(Self.exportPath, spool + [0x0a])
+            if kind == .alphabetical { try context.store.writeRaw("custsort.tmp", []) }
+        }
+        return matching.map(entry)
+    }
+
+    private func writeTurnover(_ records: [Record], system: Record, date: String, dateForm: Int, pageLines: Int) throws {
+        let p = SalesProofRecords.Printer(context.store)
+        var page: Int64 = 0
+        var lines = 0
+        func headings() {
+            page += 1
+            let first = Cobol.x("SL180 (3.01.08)", 51) + Cobol.x("Sales Ledger Turnover Report", 73)
+                + "Page " + Pic.edit("zz9", value: page % 1000, scale: 0)
+            let user = SJIS.decode(Self.fit(system.raw("usera"), 51)[...])
+            let second = user + Cobol.x("", 71) + date
+            if page == 1 {
+                p.before(1, first)
+                p.before(1, second)
+            } else {
+                p.afterPage(first)
+                p.after(1, second)
+                p.after(1, "")
+            }
+            p.after(2, Cobol.x("", 38)
+                + "Credit Terms  <------------- T u r n o v e r ------------> <--S A L E S-->  <--Date Of Last-->")
+            p.after(1, Cobol.x("Acct No          Name", 38)
+                + "Days   Limit  Mvmt Average   Qtr 1   Qtr 2   Qtr 3   Qtr 4 Current    Last  Invoice    Payment")
+            p.after(1, "")
+            lines = 6
+        }
+        func shortDate(_ day: Int64) -> String {
+            guard (1...3_067_671).contains(day) else { return Cobol.x("", 8) }
+            let full = Maps04.format(Maps04.toDate(Int(day)), dateForm: dateForm)
+            return dateForm == 3 ? String(full.dropFirst(2)) : String(full.prefix(6) + full.suffix(2))
+        }
+        func signed(_ value: Int64, _ width: Int = 8) -> String {
+            let digits = String(value % Cobol.pow10(width - 1))
+            return Cobol.x("", max(0, width - digits.count)) + digits
+        }
+        headings()
+        for record in records {
+            let key = SJIS.decode(Self.fit(record.raw("sales-key"), 8)[...])
+            let name = SJIS.decode(record.raw("sales-name")[...])
+            let terms = Pic.edit("zzz9", value: record.int("sales-credit"), scale: 0)
+                + Pic.edit("z(7)9", value: record.int("sales-limit"), scale: 0)
+            let activity = signed(record.int("sales-activety"), 6) + signed(record.int("sales-average"))
+            let quarters = (1...4).map { signed(record.int("turnover-q\($0)") / 100) }.joined()
+            let balance = signed((record.int("sales-current") - record.int("sales-unapplied")) / 100)
+                + signed(record.int("sales-last") / 100)
+            let dates = "  " + Cobol.x(shortDate(record.int("sales-last-inv")), 10)
+                + shortDate(record.int("sales-last-pay"))
+            p.after(1, key + name + terms + activity + quarters + balance + dates)
+            lines += 1
+            if lines > pageLines { headings() }
+        }
+        try p.close()
     }
 
     private static func heading(_ filter: Filter, code: String, creationDay: Int64, dateForm: Int) -> String {
