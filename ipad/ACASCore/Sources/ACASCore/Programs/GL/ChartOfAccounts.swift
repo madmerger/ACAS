@@ -134,11 +134,11 @@ public struct ChartOfAccounts {
         guard !name.isEmpty, !name.unicodeScalars.contains(where: CharacterSet.controlCharacters.contains),
               Cobol.rtrim(SJIS.decode(SJIS.encode(name, size: 24)[...])) == name else { throw Error.invalidName }
         let code = record.str("code")
-        let branch = record.str("branch")
+        let branch = headerBranch ?? record.str("branch")
         record["name"] = name
         let head = String(code.prefix(4))
         if code.suffix(2) != "00" {
-            guard let header = file.read(key: head + "00" + (headerBranch ?? branch)) else { throw Error.missingHeader }
+            guard let header = file.read(key: head + "00" + branch) else { throw Error.missingHeader }
             record.setInt("type", header.int("type") == 9 ? 9 : 1)
             record["placement"] = header.str("placement")
             record.setInt("level", 0)
