@@ -86,7 +86,7 @@ struct BookkeepingAccountForm: View {
     @State private var code = ""
     @State private var child = ""
     @State private var name = ""
-    @State private var category = BookkeepingService.Category.assets
+    @State private var category: BookkeepingService.Category? = .assets
     @State private var selection: String?
     @State private var message = ""
 
@@ -107,7 +107,7 @@ struct BookkeepingAccountForm: View {
                     code = String(row.code)
                     child = row.child == 0 ? "" : String(row.child)
                     name = row.name
-                    category = row.category ?? .other
+                    category = row.category
                     message = ""
                 }
             } else {
@@ -116,7 +116,8 @@ struct BookkeepingAccountForm: View {
             }
             TextField(irsText("field.accountName"), text: $name).accessibilityIdentifier("irs.accountName")
             Picker(irsText("field.category"), selection: $category) {
-                ForEach(BookkeepingService.Category.allCases, id: \.self) { Text($0.title).tag($0) }
+                if editing { Text(irsText("category.keepExisting")).tag(BookkeepingService.Category?.none) }
+                ForEach(BookkeepingService.Category.allCases, id: \.self) { Text($0.title).tag(Optional($0)) }
             }
             .accessibilityIdentifier("irs.category")
             Button(irsText("action.save")) {
@@ -260,12 +261,16 @@ struct BookkeepingPostingForm: View {
     @State private var message = ""
 
     private var service: BookkeepingService { BookkeepingService(workspace.context) }
+    private var requiresTaxPosting: Bool {
+        service.defaults.contains { $0.id == slot && $0.account != 0 && $0.tax != .none }
+    }
 
     var body: some View {
         Form {
             Picker(irsText("field.defaultAccount"), selection: $slot) {
                 ForEach(service.defaults.filter { $0.account != 0 }) { Text($0.label).tag($0.id) }
             }
+            if requiresTaxPosting { Text(irsText("error.taxPostingUnavailable")) }
             Picker(irsText("field.defaultType"), selection: $side) {
                 Text(irsText("field.debit")).tag(BookkeepingService.Side.debit)
                 Text(irsText("field.credit")).tag(BookkeepingService.Side.credit)
@@ -290,6 +295,7 @@ struct BookkeepingPostingForm: View {
                 workspace.completed("irs.post")
             }
             .accessibilityIdentifier("irs.submitPost")
+            .disabled(requiresTaxPosting)
             if !message.isEmpty { Text(message).accessibilityIdentifier("irs.result") }
         }
         .navigationTitle(irsText("menu.post"))

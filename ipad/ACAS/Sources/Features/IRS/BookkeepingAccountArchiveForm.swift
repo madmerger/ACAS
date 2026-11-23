@@ -44,9 +44,12 @@ struct BookkeepingAccountArchiveForm: View {
                 let url = try result.get()
                 let accessed = url.startAccessingSecurityScopedResource()
                 defer { if accessed { url.stopAccessingSecurityScopedResource() } }
-                fileContents = try Data(contentsOf: url)
+                fileContents = try BookkeepingService.readAccountArchive(at: url)
                 message = irsText("archive.fileReady")
-            } catch { message = bookkeepingError(error) }
+            } catch {
+                fileContents = nil
+                message = bookkeepingError(error)
+            }
         }
         .fileExporter(isPresented: $exporting, document: document, contentType: .data,
                       defaultFilename: BookkeepingService.accountArchiveName) {

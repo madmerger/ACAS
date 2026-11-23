@@ -18,6 +18,7 @@
 "bookkeeping.category.income" = "収益";
 "bookkeeping.category.liability" = "負債";
 "bookkeeping.category.other" = "その他";
+"bookkeeping.category.keepExisting" = "既存の分類を維持";
 "bookkeeping.defaults.create" = "既定勘定登録";
 "bookkeeping.defaults.edit" = "既定勘定変更";
 "bookkeeping.defaults.inputTax" = "仕入付加価値税";
@@ -34,6 +35,7 @@
 "bookkeeping.archive.exported" = "科目を%d件書き出しました。";
 "bookkeeping.archive.imported" = "科目を%d件取り込みました。";
 "bookkeeping.archive.invalid" = "科目表のテキストを確認してください。";
+"bookkeeping.archive.tooLarge" = "科目表のファイルが大きすぎます。";
 "bookkeeping.statement.profitAndLoss" = "損益計算書";
 "bookkeeping.statement.balanceSheet" = "貸借対照表";
 "bookkeeping.statement.appropriation" = "損益処分勘定";
@@ -49,6 +51,7 @@
 "bookkeeping.error.missingPosting" = "転記データがありません。";
 "bookkeeping.error.openPosting" = "転記ファイルがないため開けませんでした（状態コード35）。";
 "bookkeeping.error.posting" = "科目番号と金額を確認してください。";
+"bookkeeping.error.taxPostingUnavailable" = "仕入・売上の付加価値税が設定された既定勘定からの転記には対応していません。";
 "bookkeeping.field.abbreviation" = "略号";
 "bookkeeping.field.account" = "勘定科目";
 "bookkeeping.field.accountCode" = "科目番号";
@@ -118,6 +121,7 @@
 "bookkeeping.trialBalance.output" = "出力方法";
 "bookkeeping.trialBalance.display" = "画面表示";
 "bookkeeping.trialBalance.print" = "印刷";
+"bookkeeping.trialBalance.detailPrintIncludesZero" = "明細の帳票原本には、残高がゼロの科目も含まれます。";
 "bookkeeping.trialBalance.total" = "合計";
 "bookkeeping.recalculate.confirm" = "転記データから元帳を再計算しますか？";
 "bookkeeping.result.accountSaved" = "勘定科目を保存しました。";

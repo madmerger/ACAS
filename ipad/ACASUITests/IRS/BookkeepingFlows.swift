@@ -94,6 +94,24 @@ final class BookkeepingFlows: XCTestCase {
     }
 
     @MainActor
+    func testChangingTrialBalanceOptionsInvalidatesExport() throws {
+        try verifyReach("IRS-216", path: ["trialBalance"]) { app in
+            tap(app, "irs.trialBalanceScope")
+            tap(app, "集計")
+            tap(app, "irs.trialBalanceZero")
+            tap(app, "除外する")
+            tap(app, "irs.trialBalanceOutput")
+            tap(app, "印刷")
+            tap(app, "irs.generateReport")
+            XCTAssertTrue(app.buttons["irs.exportReport"].exists)
+            tap(app, "irs.trialBalanceScope")
+            tap(app, "明細")
+            XCTAssertFalse(app.buttons["irs.exportReport"].exists)
+            XCTAssertTrue(app.staticTexts["irs.trialBalancePrintNote"].exists)
+        }
+    }
+
+    @MainActor
     func testReachIRS007() throws { try verifyStatementEntry("IRS-007") }
 
     @MainActor
@@ -509,6 +527,36 @@ final class BookkeepingFlows: XCTestCase {
     @MainActor
     private func expectLink(_ app: XCUIApplication, _ id: String) {
         XCTAssertTrue(app.descendants(matching: .any)["irs." + id].firstMatch.waitForExistence(timeout: 5), id)
+    }
+
+    @MainActor
+    func testTaxedDefaultAccountShowsPostingLimitation() throws {
+        let url = try XCTUnwrap(Bundle(for: Self.self).url(forResource: "IRS-400", withExtension: "json", subdirectory: "fixtures"))
+        var fixture = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(contentsOf: url)) as? [String: Any])
+        let seedData = try XCTUnwrap((fixture["seed"] as? String).flatMap { Data(base64Encoded: $0) })
+        var seed = try XCTUnwrap(JSONSerialization.jsonObject(with: seedData) as? [String: Any])
+        var files = try XCTUnwrap(seed["files"] as? [String: [String: Any]])
+        let path = "ledgers/irs/dflt.dat"
+        var defaults = try XCTUnwrap(files[path])
+        var hex = Array(try XCTUnwrap(defaults["hex"] as? String))
+        let firstTaxOffset = 224 * 2
+        hex.replaceSubrange(firstTaxOffset..<(firstTaxOffset + 2), with: "49")
+        defaults["hex"] = String(hex)
+        files[path] = defaults
+        seed["files"] = files
+        fixture["seed"] = try JSONSerialization.data(withJSONObject: seed).base64EncodedString()
+
+        let app = XCUIApplication()
+        app.launchEnvironment["ACAS_FIXTURE"] = try JSONSerialization.data(withJSONObject: fixture).base64EncodedString()
+        app.launchArguments += ["-AppleLanguages", "(ja)", "-AppleLocale", "ja_JP"]
+        XCUIDevice.shared.orientation = .landscapeLeft
+        app.launch()
+        tap(app, "section.incomplete")
+        tap(app, "irs.post")
+        tap(app, "irs.postAppend")
+        XCTAssertTrue(app.staticTexts["仕入・売上の付加価値税が設定された既定勘定からの転記には対応していません。"]
+            .waitForExistence(timeout: 5))
+        XCTAssertFalse(app.buttons["irs.submitPost"].isEnabled)
     }
 
     @MainActor

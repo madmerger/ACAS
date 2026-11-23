@@ -1,7 +1,9 @@
 import Foundation
 
 public struct BookkeepingService {
-    public enum Failure: Error { case invalidInput, duplicateAccount, missingAccount, missingDefault, missingPosting, wrongPassword }
+    public enum Failure: Error {
+        case invalidInput, duplicateAccount, missingAccount, missingDefault, missingPosting, wrongPassword, accountArchiveTooLarge
+    }
 
     public struct Configuration {
         public var operatorName = ""
@@ -174,8 +176,9 @@ public struct BookkeepingService {
         }
     }
 
-    public func saveAccount(code: Int, child: Int = 0, name: String, category: Category, editing: Bool) throws {
+    public func saveAccount(code: Int, child: Int = 0, name: String, category: Category?, editing: Bool) throws {
         guard (1...99999).contains(code), (0...99999).contains(child), child != code, !name.isEmpty,
+              editing || category != nil,
               Cobol.rtrim(SJIS.decode(SJIS.encode(name, size: 24)[...])) == name else { throw Failure.invalidInput }
         let key = accountKey(code, child)
         var row = editing ? try accountRecord(code, child) : Record(BookkeepingRecords.nlLayout)
@@ -187,7 +190,7 @@ public struct BookkeepingService {
         row.setInt("sub-nominal", Int64(child))
         row["type"] = "O"
         row["name"] = name
-        row["ac"] = category.rawValue
+        if let category { row["ac"] = category.rawValue }
         if editing {
             guard store.rewrite(accountsPath, key: key, data: row.bytes) else { throw Failure.missingAccount }
         } else {
