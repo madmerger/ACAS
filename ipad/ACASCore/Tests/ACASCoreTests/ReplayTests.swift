@@ -105,8 +105,12 @@ final class ReplayTests: XCTestCase {
                     }
                 }
                 // 帳票・一時ファイルは別途比較
-                got = got.filter { $0.contains(".dat|") }
-                // レガシー実測がレコード単位に読めなかったファイル (after-records の unsupported_files) は実測側に差分が無いので比較対象外
+                // 空ファイルの新規作成はレガシーの論理レコード差分に現れない (例: gl050 が作る 0 バイトの posting.dat)
+                got = got.filter { $0.contains(".dat|") && !$0.hasSuffix("|追加|") }
+                // レガシー側でレコード展開できなかったファイル (unsupported_files。例: gl120 が作る final.dat) は突合対象外
+                let unsupported = Set(o["unsupported_files"] as? [String] ?? [])
+                got = got.filter { !unsupported.contains(String($0.prefix { $0 != "|" })) }
+                                // レガシー実測がレコード単位に読めなかったファイル (after-records の unsupported_files) は実測側に差分が無いので比較対象外
                 let recs = ev.appendingPathComponent(rd).deletingLastPathComponent().appendingPathComponent("after-records/records.json")
                 if let ro = try? JSONSerialization.jsonObject(with: Data(contentsOf: recs)) as? [String: Any],
                    let unsupported = ro["unsupported_files"] as? [String], !unsupported.isEmpty {
