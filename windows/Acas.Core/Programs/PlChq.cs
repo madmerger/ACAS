@@ -49,6 +49,7 @@ public static class PlChq
                     t.D("Warning: Updating Open Item File. Do You Wish to Continue (YES/NO) [   ]", 1201);
                     await t.A(1269, 3);
                     break;
+                case 6: break;                       // レガシー実測 (PL-235): メニューを再表示する
                 default: redraw = false; break;      // レガシー実測 (PL-232): 3 はメニューに留まる
             }
         }
