@@ -645,6 +645,126 @@ final class PurchaseLedgerTests: XCTestCase {
         }
     }
 
+    func testScheduledPaymentLayoutAndChequeRemittanceRegister() throws {
+        let ledger = try makeLedger()
+        let code = try addSupplier(ledger)
+        var invoice = PurchaseLedger.Transaction(date: ledger.processingDate)
+        invoice.supplier = code
+        invoice.reference = "SCHED-1"
+        invoice.lines[0].code = "a1"
+        invoice.lines[0].net = 10_000
+        invoice.deduction = 500
+        invoice.deductionDays = 10
+        let folio = try ledger.saveTransaction(invoice)
+        try ledger.postTransactions()
+        let day = try ledger.legacyDate(ledger.processingDate)
+
+        try ledger.generatePaymentSchedule(age: 1)
+        XCTAssertTrue(ledger.paymentSchedule().isEmpty)
+        try ledger.generatePaymentSchedule(age: 0)
+        let path = ledger.base + "pay.dat"
+        let entry = try XCTUnwrap(ledger.store.all(path).first)
+        XCTAssertEqual(entry.key, Array(code.utf8) + [1])
+        var expected = Array(code.utf8) + [1, 32]
+        func binary(_ value: Int64) -> [UInt8] {
+            (0..<4).map { UInt8(truncatingIfNeeded: value >> (8 * $0)) }
+        }
+        expected += binary(day) + Array(repeating: 0, count: 12)
+        let gross: [UInt8] = [0, 0, 0x11, 0x50, 0x0c]
+        expected += gross
+        expected += binary(folio) + [0] + gross + [0, 0x50, 0x0c] + Array("SCHED-1   ".utf8)
+        let blank = Array(repeating: UInt8(0), count: 9) + [0x0c, 0, 0, 0x0c] + Array(repeating: 32, count: 10)
+        for _ in 0..<8 { expected += blank }
+        XCTAssertEqual(expected.count, 237)
+        XCTAssertEqual(entry.data, expected)
+
+        try ledger.amendPaymentSchedule(supplier: code, sequence: 1, line: 1, amount: 11_000)
+        XCTAssertEqual(ledger.paymentSchedule().first?.amount, 11_000)
+        try ledger.proofPaymentSchedule()
+        XCTAssertTrue(SJIS.decode(try XCTUnwrap(ledger.store.readRaw(PurchaseLedger.reportPath))[...]).contains("SCHED-1"))
+        try ledger.amendPaymentSchedule(supplier: code, sequence: 1, line: 1, amount: 11_500)
+
+        let file = try ledger.generateChequeFile(firstNumber: 901, date: ledger.processingDate)
+        let row = try XCTUnwrap(Array(file).split(separator: 10).first)
+        XCTAssertEqual(SJIS.decode(row[345..<354]), "      901")
+        XCTAssertEqual(SJIS.decode(row[366..<376]), "SCHED-1   ")
+        try ledger.remittanceAdvice()
+        let advice = SJIS.decode(try XCTUnwrap(ledger.store.readRaw(PurchaseLedger.reportPath))[...])
+        XCTAssertTrue(advice.contains("SCHED-1"))
+        XCTAssertTrue(advice.contains("115.00"))
+
+        try ledger.registerScheduledPayments()
+        let invoices = ledger.openItemRecords()
+        let closed = try XCTUnwrap(invoices.first { $0.int("oi-type") == 2 })
+        let payment = try XCTUnwrap(invoices.first { $0.int("oi-type") == 5 })
+        XCTAssertEqual(closed.int("oi-status"), 1)
+        XCTAssertEqual(closed.int("oi-paid"), 11_500)
+        XCTAssertEqual(payment.int("oi-approp"), 11_500)
+        XCTAssertEqual(payment.int("oi-deduct-amt"), 500)
+        XCTAssertEqual(payment.str("oi-ref"), "0000000901")
+        XCTAssertTrue(ledger.paymentSchedule().isEmpty)
+        XCTAssertThrowsError(try ledger.registerScheduledPayments())
+    }
+
+    func testScheduledPaymentContinuationRetainsLegacySlotsAndCumulativeGross() throws {
+        let ledger = try makeLedger()
+        let code = try addSupplier(ledger)
+        var invoice = PurchaseLedger.Transaction(date: ledger.processingDate)
+        invoice.supplier = code
+        invoice.lines[0].code = "a1"
+        invoice.lines[0].net = 10_000
+        for _ in 0..<10 { try ledger.saveTransaction(invoice) }
+        try ledger.postTransactions()
+        try ledger.generatePaymentSchedule(age: 0)
+        let schedules = ledger.paymentSchedule()
+        XCTAssertEqual(schedules.map { $0.lines.count }, [9, 9])
+        XCTAssertEqual(Set(schedules.flatMap(\.lines).map(\.folio)).count, 10)
+        XCTAssertEqual(schedules.map(\.amount), [108_000, 120_000])
+        XCTAssertEqual(schedules.map { $0.lines.first?.folio }, [1, 10])
+        let records = ledger.scheduleRecords()
+        XCTAssertEqual(records.map { $0.str("continuation") }, ["C", "C"])
+        let first = try XCTUnwrap(records.first)
+        let second = try XCTUnwrap(records.dropFirst().first)
+        let secondSlot = PurchaseLedger.scheduleLayout.offset("folio-2")
+        XCTAssertEqual(first.bytes[secondSlot...], second.bytes[secondSlot...])
+    }
+
+    func testScheduledBankTransferProducesGLPosting() throws {
+        let ledger = try makeLedger()
+        let code = try addSupplier(ledger)
+        var supplier = try ledger.supplier(code: code)
+        supplier.sortCode = 123456
+        supplier.accountNumber = 12345678
+        try ledger.saveSupplier(supplier, creating: false)
+        var invoice = PurchaseLedger.Transaction(date: ledger.processingDate)
+        invoice.supplier = code
+        invoice.lines[0].code = "a1"
+        invoice.lines[0].net = 10_000
+        try ledger.saveTransaction(invoice)
+        try ledger.postTransactions()
+        var settings = ledger.system
+        settings.setInt("level-1", 1)
+        settings.setInt("bl-next-batch", 2)
+        settings.setInt("bl-pay-ac", 70)
+        settings.setInt("p-creditors", 80)
+        try ledger.systemFile.write(1, settings.bytes)
+        try ledger.generatePaymentSchedule(age: 0)
+        XCTAssertEqual(ledger.paymentSchedule().first?.bankTransfer, true)
+        let file = try ledger.generateChequeFile(firstNumber: 901, date: ledger.processingDate)
+        let row = try XCTUnwrap(Array(file).split(separator: 10).first)
+        XCTAssertEqual(SJIS.decode(row[345..<354]), "BACS     ")
+
+        try ledger.registerScheduledPayments()
+        let batches = ledger.store.all(ledger.base + "batch.dat")
+        XCTAssertEqual(batches.map { String(decoding: $0.key, as: UTF8.self) }, ["200002"])
+        let posting = RelativeFile(ledger.store, path: ledger.base + "posting.dat", recordSize: PurchaseRecords.postLayout.size)
+        let entry = Record(PurchaseRecords.postLayout, bytes: try XCTUnwrap(posting.read(1)))
+        XCTAssertEqual(entry.int("post-dr"), 80)
+        XCTAssertEqual(entry.int("post-cr"), 70)
+        XCTAssertEqual(entry.int("post-amount"), 12_000)
+        XCTAssertEqual(ledger.system.int("bl-next-batch"), 4)
+    }
+
     func testPaymentPostingRollsBackGLWhenSettingsWriteFails() throws {
         try withDiskLedger { ledger, db in
             var settings = ledger.system

@@ -39,6 +39,8 @@ struct PurchaseMenu: View {
                 .accessibilityIdentifier("pl.payment.proof")
             NavigationLink(plString("purchase.payment.post")) { PurchasePaymentsView(workspace: workspace, mode: .post) }
                 .accessibilityIdentifier("pl.payment.post")
+            NavigationLink(plString("purchase.cheques.menu")) { PurchaseChequeMenu(workspace: workspace) }
+                .accessibilityIdentifier("pl.cheques")
             NavigationLink(plString("purchase.analysis.menu")) { PurchaseAnalysisMenu(workspace: workspace) }
                 .accessibilityIdentifier("pl.analysis")
             NavigationLink(plString("purchase.supplier.alphabetical")) { PurchaseSuppliersView(workspace: workspace, byName: true) }
@@ -86,6 +88,15 @@ struct PurchaseNotice: Identifiable {
     var id: String { message }
 
     init(_ error: Error) {
+        if let error = error as? PurchaseLedger.ScheduleError {
+            switch error {
+            case .noSchedule: message = plString("purchase.cheques.error.empty")
+            case .invalidSchedule: message = plString("purchase.cheques.error.amount")
+            case .invalidAge: message = plString("purchase.cheques.error.age")
+            case .invalidChequeNumber: message = plString("purchase.cheques.error.number")
+            }
+            return
+        }
         if let error = error as? PurchaseLedger.PaymentError {
             switch error {
             case .invalidAmount: message = plString("purchase.error.payment.amount")
