@@ -106,6 +106,8 @@ struct SalesMenu: View {
                 .accessibilityIdentifier("sales.customer.turnover")
             }
             Section {
+                NavigationLink(slText("sales.common.title")) { SalesCommonSettingsView(workspace: workspace) }
+                    .accessibilityIdentifier("sales.common")
                 Button(slText("sales.exit.title"), action: onExit)
                     .accessibilityIdentifier("sales.exit")
             }
