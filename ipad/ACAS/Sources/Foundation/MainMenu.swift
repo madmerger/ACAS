@@ -57,6 +57,8 @@ struct MainMenu: View {
             SystemMenu(workspace: workspace)
         case .sales:
             SalesMenu(workspace: workspace)
+        case .purchases:
+            PurchaseMenu(workspace: workspace)
         default:
             ContentUnavailableView("menu.pending", systemImage: section.symbol)
         }
