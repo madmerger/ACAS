@@ -189,8 +189,8 @@ async function flush() {
 function editableKeys(input, keys) {
   const { selectionStart, selectionEnd } = input;
   if (selectionStart === selectionEnd) return keys;
-  const clear = 'ERASE:' + selectionStart + ':' + selectionEnd;
-  return ['BACKSPACE', 'DELETE'].includes(keys[0]) ? [clear] : [clear, ...keys];
+  const replacement = ['BACKSPACE', 'DELETE'].includes(keys[0]) ? '' : keys.join('');
+  return ['REPLACE:' + selectionStart + ':' + selectionEnd + ':' + replacement];
 }
 
 screen.addEventListener('keydown', event => {
