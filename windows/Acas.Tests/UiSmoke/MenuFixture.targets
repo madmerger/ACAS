@@ -1,0 +1,8 @@
+<Project>
+  <PropertyGroup Condition="'$(MSBuildProjectName)' == 'Acas.App'">
+    <DefineConstants>$(DefineConstants);ACAS_UI_SMOKE</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(MSBuildProjectName)' == 'Acas.App'">
+    <Compile Include="$(MSBuildThisFileDirectory)MenuFixture.cs" />
+  </ItemGroup>
+</Project>

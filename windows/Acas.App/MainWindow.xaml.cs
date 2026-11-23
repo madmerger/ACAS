@@ -5,6 +5,7 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Documents;
+using System.Windows.Input;
 using System.Windows.Media;
 using Acas.Core;
 using Acas.Core.Engine;
@@ -18,6 +19,7 @@ public partial class MainWindow : Window
 {
     private readonly Db _database;
     private readonly List<ISubsystemScreens> _subsystems = [];
+    private MenuScreen? _screenMenu;
 
     public MainWindow(string? database = null)
     {
@@ -80,8 +82,41 @@ public partial class MainWindow : Window
 
     private void OpenNavigation(object sender, RoutedPropertyChangedEventArgs<object> e)
     {
-        if (e.NewValue is TreeViewItem { Tag: NavigationItem { Open: { } open } })
+        if (e.NewValue is TreeViewItem node)
+            OpenNavigationItem(node);
+    }
+
+    private void ReopenSelectedNavigation(object sender, MouseButtonEventArgs e)
+    {
+        for (var element = e.OriginalSource as DependencyObject; element != null;)
+        {
+            if (element is ToggleButton) return;
+            if (element is TreeViewItem node)
+            {
+                if (node.IsSelected && node.Tag is NavigationItem { Open: not null })
+                {
+                    e.Handled = true;
+                    node.Focus();
+                    OpenNavigationItem(node);
+                }
+                return;
+            }
+            element = element is Visual ? VisualTreeHelper.GetParent(element) : LogicalTreeHelper.GetParent(element);
+        }
+    }
+
+    private void OpenNavigationItem(TreeViewItem node)
+    {
+        if (node.Tag is NavigationItem { Open: { } open })
+        {
+            _screenMenu = null;
             ShowScreen(open());
+        }
+    }
+
+    private void ReturnToScreenMenu(object sender, RoutedEventArgs e)
+    {
+        if (_screenMenu is { } menu) ShowScreen(menu);
     }
 
     private Screen OpenReports()
@@ -98,6 +133,9 @@ public partial class MainWindow : Window
 
     private void ShowScreen(Screen screen)
     {
+        if (screen is MenuScreen activeMenu) _screenMenu = activeMenu;
+        ScreenMenuBack.Visibility = _screenMenu != null && screen is not (MenuScreen or ConfirmationScreen)
+            ? Visibility.Visible : Visibility.Collapsed;
         Status.Text = "";
         ScreenTitle.Text = screen.Title;
         ScreenContent.Content = screen switch

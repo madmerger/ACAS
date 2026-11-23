@@ -55,6 +55,10 @@ internal sealed class SalesScreens : ISubsystemScreens
 
 例は API の使い方を示すもので、実業務のファイル名・キー・メニュー番号は COBOL ソースと実測を参照してください。`MenuItem.Children` は左のツリー階層に、`MenuScreen.Items` は画面内の操作一覧に使用します。確認が必要な更新は、ツリー選択で直接実行せず、画面内のボタンから `ConfirmationScreen` へ進めます。
 
+操作一覧から開いた業務画面は、ヘッダーの「メニューへ戻る」（`ScreenMenuBack`）で直前の操作一覧へ戻れます。左ツリーの同じ項目をクリックし直しても、その項目の最初の画面を開き直せます。
+
+Windows の対話デスクトップで `powershell -File .\Acas.Tests\UiSmoke\Test-MenuReturn.ps1` を実行すると、テスト専用サブシステムでこの経路を実操作できます。既定では Windows の一時ディレクトリを使います。別の作業場所を使うには `-WorkDirectory` でローカルディレクトリを指定してください。通常のビルドにはテスト画面は含まれません。
+
 ## 画面モデルと表示
 
 - ナビゲーションは `MenuItem`／`MenuScreen`（WPF の `TreeView`／`ListBox`）。レガシーの階層・項目番号を保ちます。
