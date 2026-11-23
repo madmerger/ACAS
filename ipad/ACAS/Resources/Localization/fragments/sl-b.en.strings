@@ -410,3 +410,24 @@
 "sl920.use_inv_no" = "Do You Wish To Use This Invoice No.? {N}";
 "sl920.use_inv_no2" = "..If So, You must ensure that it Belongs to the same Customer and that it is a ";
 "sl920.use_inv_no3" = "Invoice ie, not a Receipt";
+
+/* sl110 */
+"sl110.title" = "Statement Production";
+"sl110.box_date" = "*Date    [  /  /    ]*                 *";
+"sl110.box_ac" = "*A/C Nos    [       ]*               ***";
+"sl110.box_value" = "*Value    [         ]*                 *";
+"sl110.notes" = "Notes";
+"sl110.note1" = " (1)  -   <Date>  :  Appears on statement";
+"sl110.note2" = " (2)  -   <A/C>   :  A/C's to match for printing";
+"sl110.note3" = " (3)  -   <Value> :  Minimum O/S to print";
+"sl110.msg1" = "Msg Line 1 - [";
+"sl110.msg2" = "Msg Line 2 - [";
+"sl110.aligned" = "Statement correctly aligned.... (Y/N) ? - [ ]";
+"sl110.sl150" = "SL150 Re-align statement to top of form";
+"sl110.sl003" = "SL003 Hit Return To Continue";
+"sl110.unapplied" = "Unapplied Credit Balance";
+"sl110.goods_as_per" = "Goods As Per - ";
+"sl110.goods" = "Goods";
+"sl110.credit_note" = "Credit Note Re. Inv - ";
+"sl110.unapplied_alloc" = "Unapplied Credit Allocated";
+"sl110.payment" = "Payment. Received With Thanks";

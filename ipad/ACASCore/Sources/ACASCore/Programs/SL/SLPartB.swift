@@ -4,6 +4,7 @@ import Foundation
 enum SLPartB {
     static func register(_ s: Session) {
         s.programs["sl100"] = SLB100.run
+        s.programs["sl110"] = SLB110.run
         s.programs["sl115"] = SLB115.run
         s.programs["sl130"] = SLB130.run
         s.programs["sl140"] = SLB140.run
