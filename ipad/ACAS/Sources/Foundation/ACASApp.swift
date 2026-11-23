@@ -40,7 +40,15 @@ final class Workspace: ObservableObject {
                 for: .cachesDirectory, in: .userDomainMask, appropriateFor: nil, create: true
             )
             if let evidence, evidence.equivalence != nil {
-                let export = root.appendingPathComponent("pl-evidence").appendingPathComponent(evidence.id)
+                guard evidence.id.wholeMatch(of: /PL-[0-9]{3}/) != nil else {
+                    throw CocoaError(.fileReadCorruptFile)
+                }
+                let exports = root.resolvingSymlinksInPath().appendingPathComponent("pl-evidence")
+                let export = exports.appendingPathComponent(evidence.id)
+                guard exports.resolvingSymlinksInPath().path == exports.path,
+                      export.resolvingSymlinksInPath().path == export.path else {
+                    throw CocoaError(.fileReadCorruptFile)
+                }
                 if FileManager.default.fileExists(atPath: export.path) { try FileManager.default.removeItem(at: export) }
                 evidence.exportDirectory = export
             }
