@@ -404,3 +404,19 @@
 "pl085.pl003" = "PL003 Hit Return To Continue";
 "pl085.pl140" = "PL140 Not Yet Supporting Corrections";
 "pl085.pl141" = "PL141 Amount Approp Or Deduct Amt Not Zero";
+/* pl095.cbl — Payment Proof Report */
+"pl095.title" = "Payment Proof Report";
+"pl095.printing" = "Printing..... Please Wait";
+"pl095.rep_title" = "Payment and Journal Proof Report";
+"pl095.rep_page" = "Page  ";
+"pl095.rep_line4a" = "  Batch  TP Pay Date <-------------Supplier------------->";
+"pl095.rep_line4b" = "  Value    Approp.  Ded'N    <--------Payment Appropriation--------->";
+"pl095.rep_line5a" = "A/C               Name";
+"pl095.rep_line5b" = "Folio     Date      Approp.     Balance ";
+"pl095.supplier_unknown" = "Supplier Unknown";
+"pl095.payment_totals" = "Payment Totals";
+"pl095.journal_totals" = "Journal Totals";
+"pl095.payments" = "Payments";
+"pl095.appropriations" = "Appropriations";
+"pl095.unapplied_cash" = "Unapplied Cash";
+"pl095.deductions_taken" = "Deductions Taken";

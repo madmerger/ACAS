@@ -404,3 +404,19 @@
 "pl085.pl003" = "PL003 Returnで続行";
 "pl085.pl140" = "PL140 金額の訂正には未対応";
 "pl085.pl141" = "PL141 充当額または割引額がゼロでない";
+/* pl095.cbl — Payment Proof Report */
+"pl095.title" = "支払検証帳票";
+"pl095.printing" = "印刷中..... お待ち下さい";
+"pl095.rep_title" = "支払・振替検証帳票";
+"pl095.rep_page" = "頁    ";
+"pl095.rep_line4a" = "  バッチ 種 支払日   <-------------仕入先--------------->";
+"pl095.rep_line4b" = "  金額     充当額   割引     <-------------支払充当明細------------->";
+"pl095.rep_line5a" = "コード            名称";
+"pl095.rep_line5b" = "整理番号  日付      充当額      残高    ";
+"pl095.supplier_unknown" = "仕入先不明";
+"pl095.payment_totals" = "支払合計";
+"pl095.journal_totals" = "振替合計";
+"pl095.payments" = "支払額";
+"pl095.appropriations" = "充当額";
+"pl095.unapplied_cash" = "未充当額";
+"pl095.deductions_taken" = "割引適用額";
