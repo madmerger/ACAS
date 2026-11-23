@@ -37,6 +37,14 @@ public class SessionManager {
                 log.error("プログラム異常終了", t);
                 msg = "異常終了: " + t;
             } finally {
+                if (msg == null || msg.isEmpty()) {
+                    // GnuCOBOL ランタイムの画面終了時表示（キー入力で終了）
+                    try {
+                        ctx.term.clear();
+                        ctx.term.display(2, 1, "end of program, please press a key to exit", 7);
+                        ctx.term.accept(2, 79, 1, null, Terminal.AUTO, 7);
+                    } catch (RuntimeException ignored) { }
+                }
                 ctx.term.end(msg);
             }
         });
