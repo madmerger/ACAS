@@ -243,8 +243,8 @@ enum IRSMenu {
             let v = try c.accept(at: 1723, size: 1, kind: .numeric, initial: String(st.opSystem), options: [.update], color: 6)
             st.opSystem = v.first ?? "0"
         }
-        let osName = ["1": "DOS", "2": "Windows", "3": "Mac OSX", "4": "OS/2", "5": "Unix", "6": "Linux"][String(st.opSystem)]!
-        c.display(osName, at: 1730, color: 3)
+        let osKey = ["1": "irs.os_dos", "2": "irs.os_windows", "3": "irs.os_mac", "4": "irs.os_os2", "5": "irs.os_unix", "6": "irs.os_linux"][String(st.opSystem)]!
+        c.display(s.t(osKey), at: 1730, color: 3)
         ctx.sys["system-files"] = st.dataFiles + String(st.opSystem)
         ctx.sys["system-work-group"] = ""
         ctx.sys.setInt("pass-value", 0); ctx.sys.setInt("save-sequ", 0); ctx.sys.setInt("first-time-flag", 0)
