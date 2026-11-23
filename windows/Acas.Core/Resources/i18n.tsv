@@ -228,3 +228,10 @@ Processed	転記済
 Archived	保管済
 Enter <N> for next screen or <X> to exit :- [ ]	<N>=次画面  <X>=終了            :- [ ]
 Type return to exit.	Enterで終了します。
+Transaction Posting	仕訳転記
+Phase - 1.  Batch Check	フェーズ 1.  バッチ検査
+Phase - 2.  Transaction Pre-process	フェーズ 2.  仕訳前処理
+End Of Cycle Processing	サイクル締め処理
+GL115 Ensure Archive USB Memory Stick is in path	GL115 保管用USBメモリが接続されているか確認
+GL116 Ensure you have done a file backup prior to running!!!	GL116 実行前に必ずファイルをバックアップすること!!!
+GL117 Hit Escape or press A to abort	GL117 Esc または A で中止
