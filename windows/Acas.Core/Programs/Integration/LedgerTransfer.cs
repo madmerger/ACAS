@@ -22,6 +22,7 @@ public sealed partial class LedgerTransfer(Db db)
     private static readonly Layout SalesInvoiceWithReference = InvoiceLayout(true, includeReference: true);
     private static readonly Layout PurchaseParty = PartyLayout(false);
     private static readonly Layout SalesParty = PartyLayout(true);
+    private static readonly Layout SalesCreditDeductions = new Layout().Fill(30).C3("deductions", 8, 2).Fill(988);
 
     private Rec Settings() => db.Read(SystemFile, SystemKey) is { Length: 1024 } data
         ? Layouts.System.From(data) : throw new IrsException("元帳のシステム設定がありません。");
@@ -112,6 +113,8 @@ public sealed partial class LedgerTransfer(Db db)
             .Append(" Number     Date    <------------Supplier------------>    Type  ".PadRight(64))
             .Append(" Old Balance  New Balance            Net         Vat       Gross\n\n");
         var totals = new (decimal Net, decimal Tax)[4];
+        decimal totalDeductions = 0;
+        int deductionCount = 0;
         int batchLedger = sales ? 3 : 2;
         int firstBatch = sys.I("Next-Batch"), relative = sys.I("Postings") + 1, quarter = sys.I("Current-Quarter");
         if (toNominal)
@@ -170,8 +173,14 @@ public sealed partial class LedgerTransfer(Db db)
                     party.SetN("quarter" + quarter, party.N("quarter" + quarter) + goods);
                 if (type != 1)
                     party.SetN("current", party.N("current") + gross);
+                decimal deduction = 0;
                 if (type == 3)
-                    party.SetN("current", party.N("current") - ApplyCredit(staged, sales, openItem, Math.Abs(gross)));
+                {
+                    deduction = ApplyCredit(staged, sales, openItem, Math.Abs(gross), out int clearedDeductions);
+                    party.SetN("current", party.N("current") - deduction);
+                    totalDeductions += deduction;
+                    deductionCount += clearedDeductions;
+                }
                 if (type is 1 or 2) party.SetN("lastInvoice", invoice.I("date"));
                 if (type is 1 or 3) party.SetN("lastPayment", invoice.I("date"));
                 if (party.N("current") < 0)
@@ -185,11 +194,13 @@ public sealed partial class LedgerTransfer(Db db)
                 decimal newBalance = party.N("current") - party.N("unapplied");
                 totals[type].Net += net;
                 totals[type].Tax += tax;
-                report.AppendLine($"{number}　{invoiceDate:yyyy年M月d日}　{partyKey}　{name}　{names[type]}　{Money(balance)}　{Money(newBalance)}　{Money(net)}　{Money(tax)}　{Money(gross)}");
+                report.AppendLine($"{number}　{invoiceDate:yyyy年M月d日}　{partyKey}　{name}　{names[type]}　{Money(balance)}　{Money(newBalance)}　{Money(net)}　{Money(tax)}　{Money(gross)}" +
+                    (deduction == 0 ? "" : $"　延滞加算免除 {Money(deduction)}"));
                 legacy.Append(number.ToString(Invariant).PadLeft(8)).Append(' ')
                     .Append(invoiceDate.ToString("dd/MM/yyyy", Invariant)).Append(' ')
                     .Append(partyKey.PadRight(9)).Append(name.PadRight(25)).Append("  ").Append(legacyNames[type].PadRight(9))
-                    .Append(PicMoney(balance, 10)).Append(PicMoney(newBalance, 10)).Append(' ', 7)
+                    .Append(PicMoney(balance, 10)).Append(PicMoney(newBalance, 10))
+                    .Append(deduction == 0 ? new string(' ', 7) : Money(deduction).PadLeft(7))
                     .Append(PicMoney(net, 10)).Append(PicMoney(tax, 10)).Append(PicMoney(gross, 10)).Append('\n');
 
                 invoice.Set("status", "z");
@@ -250,6 +261,15 @@ public sealed partial class LedgerTransfer(Db db)
         }
         if (toNominal && !toIrs && relative > short.MaxValue)
             throw new IrsException("転記番号を割り当てられません。");
+        if (totalDeductions != 0)
+        {
+            const string balanceKey = "00000004";
+            var balances = ReadStaged(staged, SalesCreditDeductions, SystemFile, balanceKey) ?? SalesCreditDeductions.New();
+            balances.SetN("deductions", balances.N("deductions") + totalDeductions);
+            staged[(SystemFile, balanceKey)] = balances.B;
+            ApplyDeductions(staged, true, deductionCount, totalDeductions);
+            report.AppendLine($"延滞加算免除合計　{Money(totalDeductions)}");
+        }
         foreach (int type in Enumerable.Range(1, 3))
         {
             var (net, tax) = totals[type];
@@ -260,6 +280,8 @@ public sealed partial class LedgerTransfer(Db db)
                 .Append(PicMoney(net, 11)).Append(PicMoney(tax, 11)).Append(PicMoney(net + tax, 11));
             legacy.Append('\n');
         }
+        if (totalDeductions != 0)
+            legacy.Append("           Total  Amount Late Deductions").Append(PicMoney(totalDeductions, 11)).Append('\n');
         legacy.Append('\n');
         var result = new IrsReport(title, report.ToString(), legacy.ToString());
         db.Atomic(() =>
@@ -295,7 +317,8 @@ public sealed partial class LedgerTransfer(Db db)
         return row;
     }
 
-    private decimal ApplyCredit(Dictionary<(string File, string Key), byte[]> staged, bool sales, Rec credit, decimal remaining)
+    private decimal ApplyCredit(Dictionary<(string File, string Key), byte[]> staged, bool sales, Rec credit, decimal remaining,
+        out int deductionsCleared)
     {
         string file = ItemFile(sales), prefix = credit.S("party") + "/";
         string reference = OpenItemKey(credit.S("party"), credit.I("creditInvoice"));
@@ -305,6 +328,7 @@ public sealed partial class LedgerTransfer(Db db)
             .Distinct(StringComparer.Ordinal).Where(k => k.StartsWith(prefix, StringComparison.Ordinal))
             .OrderBy(k => k != reference).ThenBy(k => k, StringComparer.Ordinal).ToArray();
         decimal deducted = 0;
+        deductionsCleared = 0;
         foreach (string key in keys)
         {
             if (remaining == 0) break;
@@ -328,6 +352,7 @@ public sealed partial class LedgerTransfer(Db db)
                     invoice.SetN("deductAmount", 0);
                     invoice.SetN("deductTax", 0);
                     deducted += deduction;
+                    deductionsCleared++;
                 }
             }
             staged[(file, key)] = invoice.B;
