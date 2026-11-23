@@ -181,5 +181,30 @@ enum SLA {
         return Maps04.toBinary(Common.toUK(s, d))
     }
 
+    /// copybooks/FileStat-Msgs.cpy (x(25))
+    static func fileStatMsg(_ s: Session, _ status: String) -> String {
+        let known = ["00", "02", "04", "05", "07", "10", "14", "21", "22", "23", "30", "31", "34", "35", "37", "38", "39",
+                     "41", "42", "43", "44", "46", "47", "48", "49", "51", "52", "57", "61", "91"]
+        return known.contains(status) ? Cobol.x(s.t("sla.fs.\(status)"), 25) : spaces(25)
+    }
+
+    /// wssys4.cob Sales-Ledger-Data (comp-3 s9(8)v99 × 10) の n 番目 (0 始まり) に加算
+    static func addSys4(_ s: Session, _ n: Int, _ v: Int64) {
+        var r = Record(sys4Layout, bytes: Array(s.sysRecord4[0..<60]))
+        r.setInt("f\(n)", Cobol.truncate(r.int("f\(n)") + v, digits: 10, signed: true))
+        s.sysRecord4.replaceSubrange(0..<60, with: r.bytes)
+    }
+    static func sys4(_ s: Session, _ n: Int) -> Int64 {
+        Record(sys4Layout, bytes: Array(s.sysRecord4[0..<60])).int("f\(n)")
+    }
+    static func setSys4(_ s: Session, _ n: Int, _ v: Int64) {
+        var r = Record(sys4Layout, bytes: Array(s.sysRecord4[0..<60]))
+        r.setInt("f\(n)", Cobol.truncate(v, digits: 10, signed: true))
+        s.sysRecord4.replaceSubrange(0..<60, with: r.bytes)
+    }
+    static let sys4Layout = Layout("system-record-4", (0..<10).map { ("f\($0)", amt) })
+    /// sl-os-bal-last-month 0, sl-os-bal-this-month 1, sl-invoices-this-month 2, sl-credit-notes-this-month 3,
+    /// sl-variance 4, sl-credit-deductions 5, sl-cn-unappl-this-month 6, sl-payments 7
+
     static func spaces(_ n: Int) -> String { String(repeating: " ", count: n) }
 }
