@@ -553,6 +553,43 @@ final class PurchaseLedgerTests: XCTestCase {
         }
     }
 
+    func testPaymentPostingRollsBackGLWhenSettingsWriteFails() throws {
+        try withDiskLedger { ledger, db in
+            var settings = ledger.system
+            settings.setInt("level-1", 1)
+            settings["irs-instead"] = "N"
+            try ledger.systemFile.write(1, settings.bytes)
+            var payment = PurchaseLedger.Payment(date: ledger.processingDate)
+            payment.supplier = try addSupplier(ledger)
+            payment.amount = 5_000
+            let number = try ledger.savePayment(payment)
+            try ledger.proofPayments()
+
+            let batchPath = ledger.base + "batch.dat"
+            let postingPath = ledger.base + "posting.dat"
+            let postings = RelativeFile(ledger.store, path: postingPath, recordSize: PurchaseRecords.postLayout.size)
+            let before = EvidenceComparison.snapshot(ledger.store)
+            let block = """
+                CREATE TRIGGER reject_gl_payment_config BEFORE UPDATE ON files
+                WHEN NEW.name = '\(ledger.base)system.dat'
+                    AND EXISTS (SELECT 1 FROM records WHERE file = '\(batchPath)')
+                    AND (SELECT length(data) FROM files WHERE name = '\(postingPath)') > 0
+                BEGIN SELECT RAISE(ABORT, 'blocked after writing payment to GL'); END
+                """
+            XCTAssertEqual(sqlite3_exec(db, block, nil, nil, nil), SQLITE_OK)
+            XCTAssertThrowsError(try ledger.postPayments())
+            XCTAssertTrue(ledger.store.all(batchPath).isEmpty)
+            XCTAssertEqual(postings.recordCount, 0)
+            XCTAssertTrue(EvidenceComparison.diff(before: before, after: EvidenceComparison.snapshot(ledger.store)).isEmpty)
+
+            XCTAssertEqual(sqlite3_exec(db, "DROP TRIGGER reject_gl_payment_config", nil, nil, nil), SQLITE_OK)
+            XCTAssertEqual(try ledger.postPayments().map(\.number), [number])
+            XCTAssertTrue(try ledger.postPayments().isEmpty)
+            XCTAssertEqual(ledger.store.all(batchPath).count, 1)
+            XCTAssertEqual(postings.recordCount, 1)
+        }
+    }
+
     func testPaymentProofReturnsNoReportForUnappliedCreditOnly() throws {
         let ledger = try makeLedger()
         let code = try addSupplier(ledger)
