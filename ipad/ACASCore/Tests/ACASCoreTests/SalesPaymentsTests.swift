@@ -21,10 +21,11 @@ final class SalesPaymentsTests: XCTestCase {
         let report = try XCTUnwrap(store.readRaw(SalesPaymentProof.exportPath))
         XCTAssertEqual(Array(report[255..<265]), Array("23/11/2026".utf8))
         let row = try XCTUnwrap(report.split(separator: 0x0a).map(Array.init).first {
-            $0.count == 132 && Array($0[22..<29]) == Array("CUST011".utf8)
+            $0.count == 132 && Array($0[23..<30]) == Array("CUST011".utf8)
         })
-        XCTAssertEqual(Array(row[30..<59]), Array(customer.raw("sales-name").prefix(29)))
-        XCTAssertEqual(Array(row[59..<70]), Array("    12.00  ".utf8))
+        XCTAssertEqual(Array(row[12..<23]), Array("23/11/2026 ".utf8))
+        XCTAssertEqual(Array(row[31..<60]), Array(customer.raw("sales-name").prefix(29)))
+        XCTAssertEqual(Array(row[60..<71]), Array("    12.00  ".utf8))
     }
 
     func testUsingOnlyUnappliedBalancePreservesPaymentFlag() throws {
