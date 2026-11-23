@@ -18,6 +18,10 @@ struct GeneralLedgerMenu: View {
                     .accessibilityIdentifier("gl.accounts")
                 NavigationLink(ledgerText("defaults")) { LedgerDefaultsMenu(workspace: workspace) }
                     .accessibilityIdentifier("gl.defaults")
+                NavigationLink(ledgerText("batches")) { LedgerBatchMenu(workspace: workspace) }
+                    .accessibilityIdentifier("gl.batches")
+                NavigationLink(ledgerText("batch-status")) { LedgerBatchStatusMenu(workspace: workspace) }
+                    .accessibilityIdentifier("gl.batch-status")
                 NavigationLink("section.system") { SystemMenu(workspace: workspace) }
                     .accessibilityIdentifier("gl.company-settings")
                 Button(ledgerText("close-ledger")) { opened = false }
