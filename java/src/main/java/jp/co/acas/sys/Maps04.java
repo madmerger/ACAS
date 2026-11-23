@@ -26,9 +26,11 @@ public final class Maps04 {
         if (!dd.matches("\\d\\d") || !mm.matches("\\d\\d") || !cc.matches("\\d\\d")) return 0;
         int d = Integer.parseInt(dd), m = Integer.parseInt(mm);
         if (d < 1 || d > 31 || m < 1 || m > 12) return 0;
-        if (!yy.matches("\\d\\d")) return 0;
-        int y = Integer.parseInt(cc + yy);
-        if (y < 1601) return 0;
+        // レガシーは年下 2 桁の数字検査をしない。test-date9 は各桁を (文字 - '0') として評価される（例: "01/01/24  " → 2224 年）
+        long ymd = 0;
+        for (char c : (cc + yy + mm + dd).toCharArray()) ymd = ymd * 10 + (c - '0');
+        int y = (int) (ymd / 10000);
+        if (y < 1601 || y > 9999 || ymd % 10000 != m * 100 + d) return 0;
         try { return toBin(LocalDate.of(y, m, d)); } catch (DateTimeException e) { return 0; }
     }
 }

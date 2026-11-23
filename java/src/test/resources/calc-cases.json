@@ -1,0 +1,1580 @@
+[
+{
+"id": "CALC-200",
+"title": "V-01-01 チェックディジット K9P34Y",
+"driver": "drv09",
+"input": {
+"code": "K9P34Y"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"check": 2,
+"valid": true
+}
+},
+{
+"id": "CALC-201",
+"title": "V-01-02 チェックディジット 6N3WD2",
+"driver": "drv09",
+"input": {
+"code": "6N3WD2"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"check": 3,
+"valid": true
+}
+},
+{
+"id": "CALC-202",
+"title": "V-01-03 チェックディジット 5RQ4F5",
+"driver": "drv09",
+"input": {
+"code": "5RQ4F5"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"check": 4,
+"valid": true
+}
+},
+{
+"id": "CALC-203",
+"title": "V-01-04 チェックディジット ZR3-7E",
+"driver": "drv09",
+"input": {
+"code": "ZR3-7E"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"check": 7,
+"valid": true
+}
+},
+{
+"id": "CALC-204",
+"title": "V-01-05 チェックディジット 3-P3E2",
+"driver": "drv09",
+"input": {
+"code": "3-P3E2"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"check": 4,
+"valid": true
+}
+},
+{
+"id": "CALC-205",
+"title": "V-01-06 チェックディジット Z8IQ9Y",
+"driver": "drv09",
+"input": {
+"code": "Z8IQ9Y"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"check": 7,
+"valid": true
+}
+},
+{
+"id": "CALC-206",
+"title": "V-01-07 チェックディジット 7-JZB6",
+"driver": "drv09",
+"input": {
+"code": "7-JZB6"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"check": 1,
+"valid": true
+}
+},
+{
+"id": "CALC-207",
+"title": "V-01-08 チェックディジット -CN6Z4",
+"driver": "drv09",
+"input": {
+"code": "-CN6Z4"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"check": 2,
+"valid": true
+}
+},
+{
+"id": "CALC-208",
+"title": "V-01-09 チェックディジット -3DVYR",
+"driver": "drv09",
+"input": {
+"code": "-3DVYR"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"check": 7,
+"valid": true
+}
+},
+{
+"id": "CALC-209",
+"title": "V-01-10 チェックディジット KTTNJF",
+"driver": "drv09",
+"input": {
+"code": "KTTNJF"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"check": 6,
+"valid": true
+}
+},
+{
+"id": "CALC-210",
+"title": "V-01-11 チェックディジット BF5-JX",
+"driver": "drv09",
+"input": {
+"code": "BF5-JX"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"check": 9,
+"valid": true
+}
+},
+{
+"id": "CALC-211",
+"title": "V-01-12 チェックディジット VLSI47",
+"driver": "drv09",
+"input": {
+"code": "VLSI47"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"check": 8,
+"valid": true
+}
+},
+{
+"id": "CALC-212",
+"title": "V-01-13 チェックディジット WQAL9V",
+"driver": "drv09",
+"input": {
+"code": "WQAL9V"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"check": 8,
+"valid": true
+}
+},
+{
+"id": "CALC-213",
+"title": "V-01-14 チェックディジット Q24Z-K",
+"driver": "drv09",
+"input": {
+"code": "Q24Z-K"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"check": 0,
+"valid": true
+}
+},
+{
+"id": "CALC-214",
+"title": "V-01-15 チェックディジット LMVT45",
+"driver": "drv09",
+"input": {
+"code": "LMVT45"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"check": 6,
+"valid": true
+}
+},
+{
+"id": "CALC-215",
+"title": "V-01-16 チェックディジット HU43J-",
+"driver": "drv09",
+"input": {
+"code": "HU43J-"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"check": 8,
+"valid": true
+}
+},
+{
+"id": "CALC-216",
+"title": "V-01-17 チェックディジット SIOM1T",
+"driver": "drv09",
+"input": {
+"code": "SIOM1T"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"check": 5,
+"valid": true
+}
+},
+{
+"id": "CALC-217",
+"title": "V-01-18 チェックディジット MA7V3D",
+"driver": "drv09",
+"input": {
+"code": "MA7V3D"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"check": 5,
+"valid": true
+}
+},
+{
+"id": "CALC-218",
+"title": "V-01-19 チェックディジット I8FPPV",
+"driver": "drv09",
+"input": {
+"code": "I8FPPV"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"check": 4,
+"valid": true
+}
+},
+{
+"id": "CALC-219",
+"title": "V-01-20 チェックディジット 5ASPZH",
+"driver": "drv09",
+"input": {
+"code": "5ASPZH"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"check": 5,
+"valid": true
+}
+},
+{
+"id": "CALC-220",
+"title": "V-01-21 チェックディジット 8RZHQM",
+"driver": "drv09",
+"input": {
+"code": "8RZHQM"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"check": 6,
+"valid": true
+}
+},
+{
+"id": "CALC-221",
+"title": "V-01-22 チェックディジット OE95B9",
+"driver": "drv09",
+"input": {
+"code": "OE95B9"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"check": 1,
+"valid": true
+}
+},
+{
+"id": "CALC-222",
+"title": "V-01-23 チェックディジット EE0VBG",
+"driver": "drv09",
+"input": {
+"code": "EE0VBG"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"check": 9,
+"valid": true
+}
+},
+{
+"id": "CALC-223",
+"title": "V-01-24 チェックディジット I09QYN",
+"driver": "drv09",
+"input": {
+"code": "I09QYN"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"check": 1,
+"valid": true
+}
+},
+{
+"id": "CALC-224",
+"title": "V-01-25 チェックディジット -K8W3T",
+"driver": "drv09",
+"input": {
+"code": "-K8W3T"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"check": 4,
+"valid": true
+}
+},
+{
+"id": "CALC-225",
+"title": "V-01-26 チェックディジット ZPPPP6",
+"driver": "drv09",
+"input": {
+"code": "ZPPPP6"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"check": 3,
+"valid": true
+}
+},
+{
+"id": "CALC-226",
+"title": "V-01-27 チェックディジット UP3C4D",
+"driver": "drv09",
+"input": {
+"code": "UP3C4D"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"check": 7,
+"valid": true
+}
+},
+{
+"id": "CALC-227",
+"title": "V-01-28 チェックディジット SA7L36",
+"driver": "drv09",
+"input": {
+"code": "SA7L36"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"check": 6,
+"valid": true
+}
+},
+{
+"id": "CALC-228",
+"title": "V-01-29 チェックディジット 0-9Y6N",
+"driver": "drv09",
+"input": {
+"code": "0-9Y6N"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"check": 7,
+"valid": true
+}
+},
+{
+"id": "CALC-229",
+"title": "V-01-30 チェックディジット 14DO9G",
+"driver": "drv09",
+"input": {
+"code": "14DO9G"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"check": 8,
+"valid": true
+}
+},
+{
+"id": "CALC-230",
+"title": "V-01-31 チェックディジット MNU77V",
+"driver": "drv09",
+"input": {
+"code": "MNU77V"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"check": 3,
+"valid": true
+}
+},
+{
+"id": "CALC-231",
+"title": "V-01-32 チェックディジット TUUJ59",
+"driver": "drv09",
+"input": {
+"code": "TUUJ59"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"check": 2,
+"valid": true
+}
+},
+{
+"id": "CALC-232",
+"title": "V-01-33 チェックディジット 6LGUAX",
+"driver": "drv09",
+"input": {
+"code": "6LGUAX"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"check": 4,
+"valid": true
+}
+},
+{
+"id": "CALC-233",
+"title": "V-01-34 チェックディジット 1DXN9Y",
+"driver": "drv09",
+"input": {
+"code": "1DXN9Y"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"check": 9,
+"valid": true
+}
+},
+{
+"id": "CALC-234",
+"title": "V-01-35 チェックディジット 1XJ5GX",
+"driver": "drv09",
+"input": {
+"code": "1XJ5GX"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"check": 1,
+"valid": true
+}
+},
+{
+"id": "CALC-235",
+"title": "V-01-36 チェックディジット NAMEYY",
+"driver": "drv09",
+"input": {
+"code": "NAMEYY"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"check": 0,
+"valid": true
+}
+},
+{
+"id": "CALC-236",
+"title": "V-01-37 チェックディジット WLECFP",
+"driver": "drv09",
+"input": {
+"code": "WLECFP"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"check": 4,
+"valid": true
+}
+},
+{
+"id": "CALC-237",
+"title": "V-01-38 チェックディジット ECXVM1",
+"driver": "drv09",
+"input": {
+"code": "ECXVM1"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"check": 7,
+"valid": true
+}
+},
+{
+"id": "CALC-238",
+"title": "V-01-39 チェックディジット 1HUGCM",
+"driver": "drv09",
+"input": {
+"code": "1HUGCM"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"check": 0,
+"valid": true
+}
+},
+{
+"id": "CALC-239",
+"title": "V-01-40 チェックディジット SMN5E6",
+"driver": "drv09",
+"input": {
+"code": "SMN5E6"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"check": 6,
+"valid": true
+}
+},
+{
+"id": "CALC-240",
+"title": "V-01-41 チェックディジット 000003",
+"driver": "drv09",
+"input": {
+"code": "000003"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"check": 1,
+"valid": true
+}
+},
+{
+"id": "CALC-241",
+"title": "V-01-42 チェックディジット 000009",
+"driver": "drv09",
+"input": {
+"code": "000009"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"check": 0,
+"valid": true
+}
+},
+{
+"id": "CALC-242",
+"title": "V-01-43 チェックディジット 000000",
+"driver": "drv09",
+"input": {
+"code": "000000"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"check": 6,
+"valid": true
+}
+},
+{
+"id": "CALC-243",
+"title": "V-01-44 チェックディジット AAAAAA",
+"driver": "drv09",
+"input": {
+"code": "AAAAAA"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"check": 1,
+"valid": true
+}
+},
+{
+"id": "CALC-244",
+"title": "V-01-45 チェックディジット ------",
+"driver": "drv09",
+"input": {
+"code": "------"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"check": 2,
+"valid": true
+}
+},
+{
+"id": "CALC-245",
+"title": "V-02-01 日付 01/01/2024",
+"driver": "drv04",
+"input": {
+"date": "01/01/2024"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"valid": true,
+"integer": 154498,
+"normalized": "01/01/2024"
+}
+},
+{
+"id": "CALC-246",
+"title": "V-02-02 日付 29/02/2024",
+"driver": "drv04",
+"input": {
+"date": "29/02/2024"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"valid": true,
+"integer": 154557,
+"normalized": "29/02/2024"
+}
+},
+{
+"id": "CALC-247",
+"title": "V-02-03 日付 29/02/2023",
+"driver": "drv04",
+"input": {
+"date": "29/02/2023"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"valid": false,
+"integer": 0,
+"normalized": null
+}
+},
+{
+"id": "CALC-248",
+"title": "V-02-04 日付 28/02/2023",
+"driver": "drv04",
+"input": {
+"date": "28/02/2023"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"valid": true,
+"integer": 154191,
+"normalized": "28/02/2023"
+}
+},
+{
+"id": "CALC-249",
+"title": "V-02-05 日付 31/04/2024",
+"driver": "drv04",
+"input": {
+"date": "31/04/2024"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"valid": false,
+"integer": 0,
+"normalized": null
+}
+},
+{
+"id": "CALC-250",
+"title": "V-02-06 日付 30/04/2024",
+"driver": "drv04",
+"input": {
+"date": "30/04/2024"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"valid": true,
+"integer": 154618,
+"normalized": "30/04/2024"
+}
+},
+{
+"id": "CALC-251",
+"title": "V-02-07 日付 15.06.2025",
+"driver": "drv04",
+"input": {
+"date": "15.06.2025"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"valid": true,
+"integer": 155029,
+"normalized": "15/06/2025"
+}
+},
+{
+"id": "CALC-252",
+"title": "V-02-08 日付 15-06-2025",
+"driver": "drv04",
+"input": {
+"date": "15-06-2025"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"valid": true,
+"integer": 155029,
+"normalized": "15/06/2025"
+}
+},
+{
+"id": "CALC-253",
+"title": "V-02-09 日付 15,06,2025",
+"driver": "drv04",
+"input": {
+"date": "15,06,2025"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"valid": true,
+"integer": 155029,
+"normalized": "15/06/2025"
+}
+},
+{
+"id": "CALC-254",
+"title": "V-02-10 日付 00/01/2024",
+"driver": "drv04",
+"input": {
+"date": "00/01/2024"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"valid": false,
+"integer": 0,
+"normalized": null
+}
+},
+{
+"id": "CALC-255",
+"title": "V-02-11 日付 32/01/2024",
+"driver": "drv04",
+"input": {
+"date": "32/01/2024"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"valid": false,
+"integer": 0,
+"normalized": null
+}
+},
+{
+"id": "CALC-256",
+"title": "V-02-12 日付 01/13/2024",
+"driver": "drv04",
+"input": {
+"date": "01/13/2024"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"valid": false,
+"integer": 0,
+"normalized": null
+}
+},
+{
+"id": "CALC-257",
+"title": "V-02-13 日付 01/00/2024",
+"driver": "drv04",
+"input": {
+"date": "01/00/2024"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"valid": false,
+"integer": 0,
+"normalized": null
+}
+},
+{
+"id": "CALC-258",
+"title": "V-02-14 日付 1/1/2024",
+"driver": "drv04",
+"input": {
+"date": "1/1/2024"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"valid": false,
+"integer": 0,
+"normalized": null
+}
+},
+{
+"id": "CALC-259",
+"title": "V-02-15 日付 01/01/24",
+"driver": "drv04",
+"input": {
+"date": "01/01/24"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"valid": true,
+"integer": 227546,
+"normalized": "01/01/24"
+}
+},
+{
+"id": "CALC-260",
+"title": "V-02-16 日付 AB/01/2024",
+"driver": "drv04",
+"input": {
+"date": "AB/01/2024"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"valid": false,
+"integer": 0,
+"normalized": null
+}
+},
+{
+"id": "CALC-261",
+"title": "V-02-17 日付 31/12/1999",
+"driver": "drv04",
+"input": {
+"date": "31/12/1999"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"valid": true,
+"integer": 145731,
+"normalized": "31/12/1999"
+}
+},
+{
+"id": "CALC-262",
+"title": "V-02-18 日付 01/01/2000",
+"driver": "drv04",
+"input": {
+"date": "01/01/2000"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"valid": true,
+"integer": 145732,
+"normalized": "01/01/2000"
+}
+},
+{
+"id": "CALC-263",
+"title": "V-02-19 日付 29/02/2000",
+"driver": "drv04",
+"input": {
+"date": "29/02/2000"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"valid": true,
+"integer": 145791,
+"normalized": "29/02/2000"
+}
+},
+{
+"id": "CALC-264",
+"title": "V-02-20 日付 29/02/1900",
+"driver": "drv04",
+"input": {
+"date": "29/02/1900"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"valid": false,
+"integer": 0,
+"normalized": null
+}
+},
+{
+"id": "CALC-265",
+"title": "V-02-21 日付 31/12/2099",
+"driver": "drv04",
+"input": {
+"date": "31/12/2099"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"valid": true,
+"integer": 182256,
+"normalized": "31/12/2099"
+}
+},
+{
+"id": "CALC-266",
+"title": "V-02-22 日付 01/01/1601",
+"driver": "drv04",
+"input": {
+"date": "01/01/1601"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"valid": true,
+"integer": 1,
+"normalized": "01/01/1601"
+}
+},
+{
+"id": "CALC-267",
+"title": "V-02-23 日付 25/12/2026",
+"driver": "drv04",
+"input": {
+"date": "25/12/2026"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"valid": true,
+"integer": 155587,
+"normalized": "25/12/2026"
+}
+},
+{
+"id": "CALC-268",
+"title": "V-02-24 日付 01/01/2024/ (末尾区切り)",
+"driver": "drv04",
+"input": {
+"date": "01/01/2024/"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"valid": true,
+"integer": 154498,
+"normalized": "01/01/2024"
+}
+},
+{
+"id": "CALC-269",
+"title": "V-03-01 VAT 100.00×20.00%",
+"driver": "drvvat",
+"input": {
+"net": "100.00",
+"rate": "20.00"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"vat": "20.00"
+}
+},
+{
+"id": "CALC-270",
+"title": "V-03-02 VAT 100.00×17.50%",
+"driver": "drvvat",
+"input": {
+"net": "100.00",
+"rate": "17.50"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"vat": "17.50"
+}
+},
+{
+"id": "CALC-271",
+"title": "V-03-03 VAT 0.01×20.00%",
+"driver": "drvvat",
+"input": {
+"net": "0.01",
+"rate": "20.00"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"vat": "0.00"
+}
+},
+{
+"id": "CALC-272",
+"title": "V-03-04 VAT 0.03×17.50%",
+"driver": "drvvat",
+"input": {
+"net": "0.03",
+"rate": "17.50"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"vat": "0.01"
+}
+},
+{
+"id": "CALC-273",
+"title": "V-03-05 VAT 1.25×20.00%",
+"driver": "drvvat",
+"input": {
+"net": "1.25",
+"rate": "20.00"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"vat": "0.25"
+}
+},
+{
+"id": "CALC-274",
+"title": "V-03-06 VAT 1.23×5.00%",
+"driver": "drvvat",
+"input": {
+"net": "1.23",
+"rate": "5.00"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"vat": "0.06"
+}
+},
+{
+"id": "CALC-275",
+"title": "V-03-07 VAT 99.99×20.00%",
+"driver": "drvvat",
+"input": {
+"net": "99.99",
+"rate": "20.00"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"vat": "20.00"
+}
+},
+{
+"id": "CALC-276",
+"title": "V-03-08 VAT 12.34×17.50%",
+"driver": "drvvat",
+"input": {
+"net": "12.34",
+"rate": "17.50"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"vat": "2.16"
+}
+},
+{
+"id": "CALC-277",
+"title": "V-03-09 VAT -100.00×20.00%",
+"driver": "drvvat",
+"input": {
+"net": "-100.00",
+"rate": "20.00"
+},
+"legacy_verdict": "相違",
+"legacy_actual": {
+"vat": "20.00"
+}
+},
+{
+"id": "CALC-278",
+"title": "V-03-10 VAT -0.03×17.50%",
+"driver": "drvvat",
+"input": {
+"net": "-0.03",
+"rate": "17.50"
+},
+"legacy_verdict": "相違",
+"legacy_actual": {
+"vat": "0.01"
+}
+},
+{
+"id": "CALC-279",
+"title": "V-03-11 VAT 1234567.89×20.00%",
+"driver": "drvvat",
+"input": {
+"net": "1234567.89",
+"rate": "20.00"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"vat": "246913.58"
+}
+},
+{
+"id": "CALC-280",
+"title": "V-03-12 VAT 0.15×5.00%",
+"driver": "drvvat",
+"input": {
+"net": "0.15",
+"rate": "5.00"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"vat": "0.01"
+}
+},
+{
+"id": "CALC-281",
+"title": "V-03-13 VAT 0.35×5.00%",
+"driver": "drvvat",
+"input": {
+"net": "0.35",
+"rate": "5.00"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"vat": "0.02"
+}
+},
+{
+"id": "CALC-282",
+"title": "V-03-14 VAT 1.05×5.00%",
+"driver": "drvvat",
+"input": {
+"net": "1.05",
+"rate": "5.00"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"vat": "0.05"
+}
+},
+{
+"id": "CALC-283",
+"title": "V-03-15 VAT 0.05×5.00%",
+"driver": "drvvat",
+"input": {
+"net": "0.05",
+"rate": "5.00"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"vat": "0.00"
+}
+},
+{
+"id": "CALC-284",
+"title": "V-03-16 VAT 0.25×1.00%",
+"driver": "drvvat",
+"input": {
+"net": "0.25",
+"rate": "1.00"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"vat": "0.00"
+}
+},
+{
+"id": "CALC-285",
+"title": "V-03-17 VAT 0.07×5.00%",
+"driver": "drvvat",
+"input": {
+"net": "0.07",
+"rate": "5.00"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"vat": "0.00"
+}
+},
+{
+"id": "CALC-286",
+"title": "V-03-18 VAT 0.09×5.00%",
+"driver": "drvvat",
+"input": {
+"net": "0.09",
+"rate": "5.00"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"vat": "0.00"
+}
+},
+{
+"id": "CALC-287",
+"title": "V-03-19 VAT 0.45×5.00%",
+"driver": "drvvat",
+"input": {
+"net": "0.45",
+"rate": "5.00"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"vat": "0.02"
+}
+},
+{
+"id": "CALC-288",
+"title": "V-03-20 VAT 2.50×0.10%",
+"driver": "drvvat",
+"input": {
+"net": "2.50",
+"rate": "0.10"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"vat": "0.00"
+}
+},
+{
+"id": "CALC-289",
+"title": "V-03-21 VAT 0.10×5.00%",
+"driver": "drvvat",
+"input": {
+"net": "0.10",
+"rate": "5.00"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"vat": "0.01"
+}
+},
+{
+"id": "CALC-290",
+"title": "V-03-22 VAT 0.30×5.00%",
+"driver": "drvvat",
+"input": {
+"net": "0.30",
+"rate": "5.00"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"vat": "0.02"
+}
+},
+{
+"id": "CALC-291",
+"title": "V-03-23 VAT 0.50×1.00%",
+"driver": "drvvat",
+"input": {
+"net": "0.50",
+"rate": "1.00"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"vat": "0.01"
+}
+},
+{
+"id": "CALC-292",
+"title": "V-03-24 VAT 0.70×5.00%",
+"driver": "drvvat",
+"input": {
+"net": "0.70",
+"rate": "5.00"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"vat": "0.04"
+}
+},
+{
+"id": "CALC-293",
+"title": "V-03-25 VAT -0.10×5.00%",
+"driver": "drvvat",
+"input": {
+"net": "-0.10",
+"rate": "5.00"
+},
+"legacy_verdict": "相違",
+"legacy_actual": {
+"vat": "0.01"
+}
+},
+{
+"id": "CALC-294",
+"title": "V-03-26 VAT 12.35×10.00%",
+"driver": "drvvat",
+"input": {
+"net": "12.35",
+"rate": "10.00"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"vat": "1.24"
+}
+},
+{
+"id": "CALC-295",
+"title": "V-03-27 VAT 0.05×10.00%",
+"driver": "drvvat",
+"input": {
+"net": "0.05",
+"rate": "10.00"
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"vat": "0.01"
+}
+},
+{
+"id": "CALC-296",
+"title": "V-13-01 年齢区分 0日",
+"driver": "drvage",
+"input": {
+"days": 0
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"bucket": 0
+}
+},
+{
+"id": "CALC-297",
+"title": "V-13-02 年齢区分 29日",
+"driver": "drvage",
+"input": {
+"days": 29
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"bucket": 0
+}
+},
+{
+"id": "CALC-298",
+"title": "V-13-03 年齢区分 30日",
+"driver": "drvage",
+"input": {
+"days": 30
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"bucket": 30
+}
+},
+{
+"id": "CALC-299",
+"title": "V-13-04 年齢区分 59日",
+"driver": "drvage",
+"input": {
+"days": 59
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"bucket": 30
+}
+},
+{
+"id": "CALC-300",
+"title": "V-13-05 年齢区分 60日",
+"driver": "drvage",
+"input": {
+"days": 60
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"bucket": 60
+}
+},
+{
+"id": "CALC-301",
+"title": "V-13-06 年齢区分 89日",
+"driver": "drvage",
+"input": {
+"days": 89
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"bucket": 60
+}
+},
+{
+"id": "CALC-302",
+"title": "V-13-07 年齢区分 90日",
+"driver": "drvage",
+"input": {
+"days": 90
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"bucket": 90
+}
+},
+{
+"id": "CALC-303",
+"title": "V-13-08 年齢区分 365日",
+"driver": "drvage",
+"input": {
+"days": 365
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"bucket": 90
+}
+},
+{
+"id": "CALC-304",
+"title": "V-20-01 平均原価 1000.00/3",
+"driver": "drvavg",
+"input": {
+"value": "1000.00",
+"qty": 3
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"cost": "333.3333"
+}
+},
+{
+"id": "CALC-305",
+"title": "V-20-02 平均原価 100.00/7",
+"driver": "drvavg",
+"input": {
+"value": "100.00",
+"qty": 7
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"cost": "14.2857"
+}
+},
+{
+"id": "CALC-306",
+"title": "V-20-03 平均原価 1234.56/100",
+"driver": "drvavg",
+"input": {
+"value": "1234.56",
+"qty": 100
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"cost": "12.3456"
+}
+},
+{
+"id": "CALC-307",
+"title": "V-20-04 平均原価 0.10/3",
+"driver": "drvavg",
+"input": {
+"value": "0.10",
+"qty": 3
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"cost": "0.0333"
+}
+},
+{
+"id": "CALC-308",
+"title": "V-20-05 平均原価 99999.99/1",
+"driver": "drvavg",
+"input": {
+"value": "99999.99",
+"qty": 1
+},
+"legacy_verdict": "合格",
+"legacy_actual": {
+"cost": "99999.9900"
+}
+},
+{
+"id": "CALC-309",
+"title": "V-S1-01 初回セットアップ後に自動ログインしメニュー表示",
+"driver": null,
+"input": {
+"action": "setup",
+"password": "TEST"
+},
+"legacy_verdict": "未実施",
+"legacy_actual": null
+},
+{
+"id": "CALC-310",
+"title": "V-S1-02 設定保存後に再読込で値が保持される",
+"driver": null,
+"input": {
+"action": "save",
+"user_name": "テスト社"
+},
+"legacy_verdict": "未実施",
+"legacy_actual": null
+},
+{
+"id": "CALC-311",
+"title": "V-S1-03 誤パスワードで SY001",
+"driver": null,
+"input": {
+"action": "login",
+"password": "XXXX"
+},
+"legacy_verdict": "未実施",
+"legacy_actual": null
+},
+{
+"id": "CALC-312",
+"title": "V-S1-04 正パスワードでログイン成功",
+"driver": null,
+"input": {
+"action": "login",
+"password": "TEST"
+},
+"legacy_verdict": "未実施",
+"legacy_actual": null
+},
+{
+"id": "CALC-313",
+"title": "V-S1-05 6 回目の誤パスワードで SY010 (429)",
+"driver": null,
+"input": {
+"action": "login_x6",
+"password": "XXXX"
+},
+"legacy_verdict": "未実施",
+"legacy_actual": null
+},
+{
+"id": "CALC-314",
+"title": "V-S1-06 パスワード変更で旧トークン無効 (SY003)",
+"driver": null,
+"input": {
+"action": "change_password"
+},
+"legacy_verdict": "未実施",
+"legacy_actual": null
+},
+{
+"id": "CALC-315",
+"title": "V-S1-07 未初期化で GET /system は SY002 系エラー",
+"driver": null,
+"input": {
+"action": "get_uninit"
+},
+"legacy_verdict": "未実施",
+"legacy_actual": null
+},
+{
+"id": "CALC-316",
+"title": "V-S1-08 バックエンド停止時にバナー表示・再試行で復帰",
+"driver": null,
+"input": {
+"action": "backend_down"
+},
+"legacy_verdict": "未実施",
+"legacy_actual": null
+},
+{
+"id": "CALC-317",
+"title": "V-M1-01 L-00 タイトル/ルート",
+"driver": null,
+"input": {
+"route": "/"
+},
+"legacy_verdict": "未実施",
+"legacy_actual": null
+},
+{
+"id": "CALC-318",
+"title": "V-M1-02 L-10 タイトル/ルート",
+"driver": null,
+"input": {
+"route": "/sales"
+},
+"legacy_verdict": "未実施",
+"legacy_actual": null
+},
+{
+"id": "CALC-319",
+"title": "V-M1-03 L-20 タイトル/ルート",
+"driver": null,
+"input": {
+"route": "/purchase"
+},
+"legacy_verdict": "未実施",
+"legacy_actual": null
+},
+{
+"id": "CALC-320",
+"title": "V-M1-04 L-30 タイトル/ルート",
+"driver": null,
+"input": {
+"route": "/general"
+},
+"legacy_verdict": "未実施",
+"legacy_actual": null
+},
+{
+"id": "CALC-321",
+"title": "V-M1-05 L-40 タイトル/ルート",
+"driver": null,
+"input": {
+"route": "/stock"
+},
+"legacy_verdict": "未実施",
+"legacy_actual": null
+},
+{
+"id": "CALC-322",
+"title": "V-M1-06 L-50 タイトル/ルート",
+"driver": null,
+"input": {
+"route": "/irs"
+},
+"legacy_verdict": "未実施",
+"legacy_actual": null
+}
+]
