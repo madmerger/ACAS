@@ -15,6 +15,7 @@ final class SalesInvoiceFlows: XCTestCase {
         reveal(customer, in: app)
         customer.tap()
         customer.typeText("ZZZZZZ9\n")
+        XCTAssertEqual(customer.value as? String, "ZZZZZZ9")
         tap("sales.invoice.save", in: app)
         let result = app.staticTexts["sales.invoice.result"]
         XCTAssertTrue(result.waitForExistence(timeout: 5))
