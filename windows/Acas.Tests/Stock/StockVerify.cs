@@ -22,6 +22,7 @@ public static class StockVerify
         public bool RecordsMatch { get; set; } = true;
         public bool ReportsMatch { get; set; } = true;
         public bool Japanese { get; set; } = true;
+        public bool Compared { get; set; } = true;
         public List<string> Diffs { get; } = [];
         public List<string> Untranslated { get; } = [];
         public List<string[]> Screens { get; } = [];
@@ -120,6 +121,7 @@ public static class StockVerify
         if (full == null)
         {
             r.Verdict = "不一致";
+            r.Compared = r.ScreensMatch = r.RecordsMatch = r.ReportsMatch = false;
             r.Diffs.Add(pathError != null ? "証跡の走査に失敗したため比較できない: " + pathError : "証跡パスが証跡ルート外、またはリンクを含むため読み込まない");
             return r;
         }
