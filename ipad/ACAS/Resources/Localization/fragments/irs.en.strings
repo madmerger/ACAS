@@ -360,3 +360,36 @@
 "irs070.renumber" = "Renumber the postings (Y/N) - [ ]";
 "irs070.sorting" = "Sorting please wait.";
 "irs070.not_numeric" = "Amount not numeric. Re-Enter";
+/* irs080.cbl — 勘定元帳の修復 */
+"irs080.title" = "Fixup Accounts File";
+"irs080.backup_warning" = "You have, made a backup of all the data files? If not do it NOW!!";
+"irs080.quit_help" = "To quit, just enter an invalid password";
+"irs080.password" = "Enter pass word - [****]";
+"irs080.clearing" = "Clearing Nominal Ledger of totals";
+"irs080.cleared" = "Cleared Nominal Ledger of totals";
+"irs080.got_default" = "Got Default record";
+"irs080.irsub1_31" = "IRSUB1-31 returns ";
+"irs080.irsub1_32" = "IRSUB1-32 returns ";
+"irs080.updating" = "Updating Nominal Ledger";
+"irs080.no_postings" = "No Postings Available";
+"irs080.invalid_key_1" = "Invalid key 1 = ";
+"irs080.invalid_key_2" = "Invalid key 2 = ";
+"irs080.complete" = "Processing Complete on 12345 records";
+"irs080.note_counts" = "Note counts. messages and Hit return for menu";
+/* irs085.cbl / irs090.cbl — 月次分析表 */
+"irs085.open_error" = "Error opening postings = ";
+"irs090.title" = "Monthly Analysis Report";
+"irs090.paper" = "You will need 132 column wide paper";
+"irs090.year_start" = "Which Month does your Tax Year start (01-12)  [  ]";
+"irs090.reply" = "090-01 Reply - ";
+"irs090.note_error" = "NOTE ERROR & Hit Return";
+"irs090.not_exist" = "Does not exist..Aborting";
+"irs090.note_error_continue" = "Note error & Hit return to continue";
+"report.irs090.months" = " JAN  FEB MARCHAPRIL MAY  JUNEJULY  AUG SEPT  OCT  NOV  DEC ";
+"report.irs090.heading" = "Monthly Analysis Report";
+"report.irs090.page" = "Page ";
+"report.irs090.account_head" = "<----------Account--------->";
+"report.irs090.year" = "Year";
+"report.irs090.columns" = "  No Typ      Name";
+"report.irs090.total" = "  Total";
+"report.irs090.rounding_note" = "Note that above values are subject to rounding";
