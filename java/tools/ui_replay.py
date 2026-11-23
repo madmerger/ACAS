@@ -8,7 +8,7 @@
 キー入力は Chromium（Playwright）の画面へ実際に打鍵する。画面・レコード・帳票の取得と比較は replay.py と同じ。
 ケース ID と名称は画面上部の帯に表示する。
 """
-import json, os, shutil, subprocess, sys, tempfile, time
+import json, os, re, shutil, subprocess, sys, tempfile, time
 from collections import Counter
 from decimal import Decimal
 from pathlib import Path
@@ -115,6 +115,42 @@ def calc_same(want, got):
     return True
 
 
+def calc_display(name, shown):
+    if name in ("vat", "avg"):
+        if name == "avg" and shown == "数量が0のため、平均原価を計算できません。":
+            return {"cost": None}
+        label, key = ("税額", "vat") if name == "vat" else ("平均原価", "cost")
+        match = re.fullmatch(label + r"：(-?[0-9]+(?:\.[0-9]+)?)", shown)
+        return {key: match[1]} if match else None
+    match = re.fullmatch(r"通算日：([0-9]+)　日付：([0-9]{2}/[0-9]{2}/[0-9]{4})", shown)
+    if match:
+        return {"valid": True, "integer": int(match[1]), "normalized": match[2]}
+    match = re.fullmatch(r"日付が無効です（通算日：([0-9]+)）。日／月／年の順に確認してください。", shown)
+    if match:
+        return {"valid": False, "integer": int(match[1]), "normalized": None}
+    return None
+
+
+def calc_verdict(name, want, got, shown):
+    display_keys = {"vat": {"vat"}, "avg": {"cost"}, "date": {"valid", "integer", "normalized"}}
+    if not isinstance(want, dict) or not want or not isinstance(got, dict) or not want.keys() <= got.keys():
+        return "未検証", "計算の実測値または画面の計算データを取得できませんでした"
+    if name in display_keys:
+        if not display_keys[name] <= want.keys():
+            return "未検証", "画面表示と比較するレガシー実測値が不足しています"
+        shown_actual = calc_display(name, shown)
+        if shown_actual is None:
+            return "未検証", f"画面表示から計算結果を読み取れませんでした: {shown!r}"
+        expected = {k: v for k, v in want.items() if k in display_keys[name]}
+        if not calc_same(expected, shown_actual):
+            return "不一致", f"画面表示がレガシー実測と相違: legacy={expected} 表示={shown!r}"
+    if not calc_same(want, got):
+        return "不一致", f"計算結果相違: legacy={want} java={got}"
+    if name in display_keys:
+        return "一致", f"計算データと画面表示がレガシー実測と一致: {shown}"
+    return "一致", f"計算ロジック画面の結果がレガシー実測と一致: {got}"
+
+
 def run_calc(b, case):
     lr, inp = case["legacy_result"], case["input_data"]
     r = {"id": case["id"], "title": case["title"], "legacy_verdict": lr["verdict"], "input": inp}
@@ -132,11 +168,12 @@ def run_calc(b, case):
     page.wait_for_function("(n) => document.getElementById('o-' + n).textContent !== ''", arg=name, timeout=30000)
     shown = page.inner_text("#o-" + name)
     raw = page.evaluate("(n) => document.getElementById('o-' + n).dataset.result || ''", name)
-    got = json.loads(raw) if raw else {}
-    ok = bool(raw) and calc_same(lr["actual"], got)
-    r.update(java_actual=got, java_display=shown, legacy_actual=lr["actual"], verdict="一致" if ok else "不一致",
-             reason=("計算ロジック画面の結果がレガシー実測と一致: " if ok else
-                     "計算結果相違: legacy=" + json.dumps(lr["actual"], ensure_ascii=False) + " java=") + (raw or shown))
+    try:
+        got = json.loads(raw) if raw else None
+    except json.JSONDecodeError:
+        got = None
+    verdict, reason = calc_verdict(name, lr["actual"], got, shown)
+    r.update(java_actual=got, java_display=shown, legacy_actual=lr["actual"], verdict=verdict, reason=reason)
     return r
 
 
