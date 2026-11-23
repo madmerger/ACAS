@@ -2,6 +2,34 @@ import XCTest
 
 @MainActor
 final class SalesReachFlows: XCTestCase {
+    func testSL003() throws { try unavailableSalesMenuItem("SL-003", labels: ["売掛残高", "明細照会"]) }
+    func testSL017() throws { try unavailableSalesMenuItem("SL-017", labels: ["売掛金年齢表", "年齢分析"]) }
+    func testSL208() throws { try unavailableSalesMenuItem("SL-208", labels: ["売掛残高", "明細照会"]) }
+    func testSL227() throws { try unavailableSalesMenuItem("SL-227", labels: ["売掛金年齢表", "年齢分析"]) }
+
+    func testSL090() throws {
+        let url = try XCTUnwrap(Bundle(for: Self.self).url(forResource: "SL-090", withExtension: "json",
+                                                          subdirectory: "fixtures"))
+        let fixture = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(contentsOf: url)) as? [String: Any])
+        let customers = try XCTUnwrap(fixture["customers"] as? [String: String])
+        XCTAssertEqual(customers.count, 2)
+        try reach("SL-090", through: ["sales.customers", "sales.customer.view"],
+                  title: "得意先表示", verdict: nil) { app in
+            let field = app.textFields["sales.customer.code"]
+            let name = app.descendants(matching: .any)["sales.customer.summary.name"].firstMatch
+            var previous = ""
+            for (code, expectedName) in customers.sorted(by: { $0.key < $1.key }) {
+                field.tap()
+                field.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: previous.count) + code)
+                app.buttons["sales.customer.search"].tap()
+                XCTAssertTrue(name.waitForExistence(timeout: 5))
+                XCTAssertEqual(name.value as? String, expectedName)
+                attach(app, name: "SL-090-\(code)")
+                previous = code
+            }
+        }
+    }
+
     func testSL002() throws { try customerMenu("SL-002") }
     func testSL004() throws { try salesEntry("SL-004") }
     func testSL005() throws { try salesAmendment("SL-005") }
@@ -117,7 +145,50 @@ final class SalesReachFlows: XCTestCase {
 
     func testSL239() throws { try periodConfirmation("SL-239") }
     func testSL240() throws { try customerReport("SL-240") }
+    func testSL238() throws {
+        try reach("SL-238", through: ["sales.invoice.menu"], title: "請求書サブシステム", verdict: nil) { app in
+            XCTAssertTrue(app.buttons["sales.invoice.print"].exists)
+            XCTAssertFalse(app.buttons.containing(NSPredicate(format: "label CONTAINS %@ OR label CONTAINS %@",
+                                                                "納品書", "ピッキング")).firstMatch.exists)
+        }
+    }
+
+    func testSL241() throws {
+        try reach("SL-241", through: ["section.system"], title: "システム設定", verdict: nil) { app in
+            for section in ["general", "sales", "purchases", "stock", "system"] {
+                XCTAssertTrue(app.buttons["section." + section].exists)
+            }
+            XCTAssertFalse(app.buttons["sales.customers"].exists)
+        }
+    }
+
+    func testSL242() throws {
+        try reach("SL-242", through: ["section.system", "system.company"], title: "会社設定", verdict: nil) { app in
+            XCTAssertEqual(app.textFields["system.company.name"].value as? String, "EQUIVALENCE BUSINESS")
+            XCTAssertEqual(app.textFields.count, 1)
+        }
+    }
     func testSL244() throws { try invoiceFixedData("SL-244") }
+
+    private func unavailableSalesMenuItem(_ id: String, labels: [String]) throws {
+        try reach(id, through: [], title: "売掛元帳", verdict: nil) { app in
+            func check() {
+                for label in labels {
+                    XCTAssertFalse(app.buttons.containing(NSPredicate(format: "label CONTAINS %@", label)).firstMatch.exists)
+                }
+            }
+            XCTAssertTrue(app.buttons["sales.customers"].exists)
+            check()
+            attach(app, name: "\(id)-売掛メニュー上部")
+            let last = app.buttons["sales.customer.turnover"]
+            for _ in 0..<4 where !last.isHittable {
+                app.coordinate(withNormalizedOffset: CGVector(dx: 0.80, dy: 0.80))
+                    .press(forDuration: 0.05, thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.80, dy: 0.34)))
+                check()
+            }
+            XCTAssertTrue(last.isHittable)
+        }
+    }
 
     private func customerMenu(_ id: String) throws {
         try reach(id, through: ["sales.customers"], title: "得意先マスター管理") { app in
@@ -293,7 +364,7 @@ final class SalesReachFlows: XCTestCase {
         XCTAssertEqual(app.buttons["sales.invoice.save"].label, save)
     }
 
-    private func reach(_ id: String, through route: [String], title: String, verdict: String = "match",
+    private func reach(_ id: String, through route: [String], title: String, verdict: String? = "match",
                        check: (XCUIApplication) -> Void) throws {
         continueAfterFailure = false
         let bundle = Bundle(for: Self.self)
@@ -320,9 +391,15 @@ final class SalesReachFlows: XCTestCase {
         }
         XCTAssertTrue(app.navigationBars[title].waitForExistence(timeout: 5), title)
         check(app)
-        XCTAssertTrue(app.staticTexts["case.verdict." + verdict].waitForExistence(timeout: 5), id)
+        if let verdict {
+            XCTAssertTrue(app.staticTexts["case.verdict." + verdict].waitForExistence(timeout: 5), id)
+        }
+        attach(app, name: id)
+    }
+
+    private func attach(_ app: XCUIApplication, name: String) {
         let attachment = XCTAttachment(screenshot: app.screenshot())
-        attachment.name = id
+        attachment.name = name
         attachment.lifetime = .keepAlways
         add(attachment)
     }
