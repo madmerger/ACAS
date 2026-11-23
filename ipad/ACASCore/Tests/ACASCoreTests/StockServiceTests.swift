@@ -177,6 +177,24 @@ final class StockServiceTests: XCTestCase {
         XCTAssertNil(report.range(of: Data("Excluded item".utf8)))
     }
 
+    func testStockReportIncludesAbbreviationPrefixAtUpperBound() throws {
+        let service = StockService(BusinessContext(store: try FileStore()))
+        for (code, name) in [("A100", "Exact match"), ("A1001", "Prefix match"), ("A101", "Outside range")] {
+            var item = StockService.Item()
+            item.code = code
+            item.abbreviation = code
+            item.name = name
+            try service.save(item)
+        }
+        let report = try service.printReport(.listing, date: service.today, byAbbreviation: true,
+                                             from: "A100", through: "A100")
+        XCTAssertNotNil(report.range(of: Data("Exact match".utf8)))
+        XCTAssertNotNil(report.range(of: Data("Prefix match".utf8)))
+        XCTAssertNil(report.range(of: Data("Outside range".utf8)))
+        XCTAssertThrowsError(try service.printReport(.listing, date: service.today, byAbbreviation: true,
+                                                      from: "A1001", through: "A100"))
+    }
+
     func testStockImportAcceptsQuotedLegacyDates() throws {
         let store = try FileStore()
         let service = StockService(BusinessContext(store: store))
