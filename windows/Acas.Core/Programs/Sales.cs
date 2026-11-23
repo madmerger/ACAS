@@ -83,14 +83,14 @@ public static partial class Sales
 /// <summary>得意先ファイルの帳票条件指定画面 (sl010 印刷 / sl160 / sl170 / sl180 共通)。</summary>
 public static class SlRep
 {
-    public static async Task<int> Attributes(Ctx c, string toDay, string prog, int col, bool dateRow)
+    public static async Task<int> Attributes(Ctx c, string toDay, string prog, int col, bool dateRow, string title = "Customer File", int titleCol = 34, string who = "Customer")
     {
         var t = c.Crt; string p = new string(' ', col - 1);
         t.V(prog, 0101, eos: true, fg: 2);
-        t.D("Customer File", 0134); t.V(Common.ToForm(c, toDay), 0171);
+        t.D(title, 100 + titleCol); t.V(Common.ToForm(c, toDay), 0171);
         t.D("Report Attributes", 0332);
         t.Paint(
-            (8, p + "Customer Number - [______]    Enter characters in positions to match"),
+            (8, p + who + " Number - [______]    Enter characters in positions to match"),
             (10, p + "Status          - [_]         <L> Live;<D> Dormant;< > All"),
             (12, p + "Credit Period   - [00]  [_]   Enter number of days & operator"),
             (13, p + "                                  <L>  for credit periods < than"),
@@ -100,7 +100,7 @@ public static class SlRep
             (19, p + "Average Value   - [00000] [_] Enter invoice value & operator"),
             (21, p + "Overdue A/Cs    - [00000] [_] Enter number of days & operator"));
         if (dateRow) t.Paint(23, p + "Date Entered-[__________] [_] Enter date & operator");
-        if (prog.StartsWith("SL180")) c.OpenReport(Ctx.L + "prt-1").Close();
+        if (prog.StartsWith("SL180") || prog.StartsWith("PL170")) c.OpenReport(Ctx.L + "prt-1").Close();
         await t.A(800 + col + 19, 6, init: "______");
         // TODO: 条件入力以降 (抽出・帳票出力) は未移植。入力後はメニューへ戻る。
         return 0;

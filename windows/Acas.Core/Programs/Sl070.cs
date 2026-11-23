@@ -4,9 +4,11 @@ namespace Acas.Core.Programs;
 /// <summary>sl070: 売上分析コード保守 (機能メニューと各画面の入口)。TODO: 分析コードの登録・変更・印刷・表示は未移植。</summary>
 public static class Sl070
 {
-    private const string Prog = "SL070 (3.01.11)";
-    public static async Task<int> Run(Ctx c, string toDay)
+    private static readonly AsyncLocal<string?> _prog = new();
+    private static string Prog => _prog.Value ?? "SL070 (3.01.11)";
+    public static async Task<int> Run(Ctx c, string toDay, string prog = "SL070 (3.01.11)")
     {
+        _prog.Value = prog;
         var t = c.Crt;
         while (true)
         {
@@ -44,8 +46,9 @@ public static class Sl070
             var rp = c.OpenReport(Ctx.L + "prt-1");
             rp.Write(Prog.PadRight(33), new Lit("Product Analysis Codes".PadRight(39)), new Lit("Page "), "  1");
             rp.Write(""); rp.Write(c.Sys.S("Usera").PadRight(70), Common.ToForm(c, toDay));
-            rp.Write(""); rp.Write(new Lit("    Code    Gl.Nos.      <-----Description------>   Print      -Type-"));
+            rp.Write(""); rp.Write(new Lit(Prog.StartsWith("PL") ? "    Code    GL.No.      <-----Description------>   Print       -Type-" : "    Code    Gl.Nos.      <-----Description------>   Print      -Type-"));
             rp.Close();
+            if (Prog.StartsWith("PL")) return;      // レガシー実測 (PL-221): 印刷後ただちに機能メニューへ戻る
         }
         await t.A(2480, 1);
     }

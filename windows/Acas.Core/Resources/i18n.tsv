@@ -620,3 +620,78 @@ Invoice Deletion Report         	請求削除帳票
        None to report	       該当なし
 Product Analysis Codes                 	商品分析コード
     Code    Gl.Nos.      <-----Description------>   Print      -Type-	    ｺｰﾄﾞ    GL番号       <---------摘要--------->   印刷       -種別-
+Aged Creditors Report	買掛金年齢表
+Alphabetical Supplier List	仕入先名簿(名称順)
+Cheque	小切手
+Invoice Parameter Amend	請求パラメータ変更
+Purchase Analysis Report	仕入分析表
+Purchase Day Book	仕入日記帳
+Purchase Ledger  Start Of Day	買掛元帳  業務開始
+Purchase Ledger Enquiry	買掛元帳照会
+Purchase Ledger System Menu	買掛元帳システムメニュー
+Purchase Transactions Amend	仕入取引修正
+Purchase Transactions Delete	仕入取引削除
+Purchase Transactions Input	仕入取引入力
+Purchase Transactions Post	仕入取引転記
+Purchase Transactions Proof	仕入取引プルーフ
+Set-Up Purchase Analysis Codes	仕入分析コード設定
+Sub-System	サブ機能
+Supplier File Dump	仕入先ファイル出力
+Supplier File Maintenance	仕入先ファイル保守
+Supplier Turnover Report	仕入先別仕入高表
+(1)  Set-up Supplier records	(1)  仕入先登録
+(2)  Amend Supplier records	(2)  仕入先変更
+(3)  Delete Supplier records	(3)  仕入先削除
+(4)  Print Supplier records	(4)  仕入先印刷
+(5)  Display Supplier records	(5)  仕入先表示
+Supplier File Set-Up & Maintenance	仕入先ファイル登録・保守
+T-025 Error not in error.txt. Hit return to close	T-025 エラー定義なし。Enterで終了
+T-017 Error not in error.txt. Hit return to close	T-017 エラー定義なし。Enterで終了
+T-014 Error not in error.txt. Hit return to close	T-014 エラー定義なし。Enterで終了
+T-023 Error not in error.txt. Hit return to close	T-023 エラー定義なし。Enterで終了
+T-021 Error not in error.txt. Hit return to close	T-021 エラー定義なし。Enterで終了
+T-015 Error not in error.txt. Hit return to close	T-015 エラー定義なし。Enterで終了
+T-003 Error not in error.txt. Hit return to close	T-003 エラー定義なし。Enterで終了
+**                *Order   [          ]*	**                *注文    [          ]*
+*Date [          ]*A/C Nos    [       ]*	*日付 [          ]*取引先     [       ]*
+*Folio  [        ]*Invoice [          ]*	*整理No [        ]*請求書  [          ]*
+F1 = Setup new Supplier	F1 = 仕入先新規登録
+Invoice Data Entry	請求データ入力
+Type [ ]  <1> = Receipt; <2> = Account; <3> = Credit Note	種別 [ ]  <1> = 領収; <2> = 掛仕入; <3> = 赤伝
+*Date [  /  /    ]*A/C Nos    [       ]*	*日付 [  /  /    ]*取引先     [       ]*
+*Folio  [00000000]*Invoice [          ]*	*整理No [00000000]*請求書  [          ]*
+Invoice Data Amend	請求データ修正
+Supplier File	仕入先
+Supplier Number - [______]	仕入先番号      - [______]
+(1)  Generate payments to be made	(1)  支払予定の作成
+(2)  Amend payments	(2)  支払修正
+(3)  Proof payments	(3)  支払プルーフ
+(4)  Generate cheques	(4)  小切手作成
+(5)  Print cheque register	(5)  小切手登録簿印刷
+(6)  Print remittance advices	(6)  送金通知書印刷
+Cheque Menu	小切手ﾒﾆｭｰ
+Details ok to file (Y/N) ...........[Y]	保存してよいですか (Y/N) ...........[Y]
+Next Folio	次回整理No
+Suppler File	仕入先
+Account No : [00000000]	口座番号   : [00000000]
+Credit Period: [00]	与信期間     : [00]
+Sort Code	銀行ｺｰﾄﾞ
+Supplier Name: [                              ]	仕入先名     : [                              ]
+Supplier Nos : [      ]	仕入先番号   : [      ]
+Supplier Note: [                                                ]	仕入先メモ   : [                                                ]
+Supplier Record Creation	仕入先登録
+Suppliers Bank Details	仕入先銀行口座
+Supplier Nos : [       ]	仕入先番号   : [       ]
+Supplier Record Amendment	仕入先変更
+Supplier Record Deletion	仕入先削除
+Supplier Record Display 	仕入先表示
+Cheque Due Reporting	支払予定表
+Current Age to Pay on is - [  ]	支払対象の年齢区分       - [  ]
+is this correct (Y/N) ?  - [ ]	よろしいですか (Y/N) ?   - [ ]
+Cheque Due Amendment	支払予定修正
+Supplier - [       /  ]	仕入先   - [       /  ]
+Cheque Print File Generation	小切手印刷ファイル作成
+PL903 No data to process. Hit return	PL903 処理対象なし  Enter
+Cheque Register	小切手登録簿
+Warning: Updating Open Item File. Do You Wish to Continue (YES/NO) [   ]	警告: 未決済明細を更新します。続行しますか?         (YES/NO)       [   ]
+    Code    GL.No.      <-----Description------>   Print       -Type-	    ｺｰﾄﾞ    GL番号      <---------摘要--------->   印刷        -種別-
