@@ -6,7 +6,9 @@ namespace Acas.Core.Programs.Sales;
 public static class SalesReportValues
 {
     private const string Wide = "　";
-    private const string Money = @"-?\d[\d,]*\.\d{2}(?:CR)?";
+    private const int MaxLineLength = 1024;
+    private const int MaxNumberDigits = 29;
+    private static readonly Regex Money = new(@"-?\d[\d,]*\.\d{2}(?:CR)?", RegexOptions.NonBacktracking);
 
     public static string? Difference(string legacy, string localized)
     {
@@ -40,8 +42,12 @@ public static class SalesReportValues
         return null;
     }
 
-    private static string[] Lines(string body) => body.Replace("\r", "").Replace('\f', '\n')
-        .Split('\n', StringSplitOptions.RemoveEmptyEntries).Where(line => line.Trim().Length != 0).ToArray();
+    private static string[] Lines(string body)
+    {
+        var lines = body.Replace("\r", "").Replace('\f', '\n').Split('\n', StringSplitOptions.RemoveEmptyEntries);
+        if (lines.Any(line => line.Length > MaxLineLength)) throw new FormatException();
+        return lines.Where(line => line.Trim().Length != 0).ToArray();
+    }
 
     private static string Clip(string value, int start, int count) =>
         start >= value.Length ? "" : value.Substring(start, Math.Min(count, value.Length - start)).Trim();
@@ -53,11 +59,14 @@ public static class SalesReportValues
     {
         bool credit = text.EndsWith("CR", StringComparison.Ordinal);
         string amount = credit ? text[..^2] : text;
-        decimal value = amount.Length == 0 ? 0 : decimal.Parse(amount, NumberStyles.Number, CultureInfo.InvariantCulture);
+        if (amount.Length == 0) return "0";
+        if (amount.Count(char.IsDigit) > MaxNumberDigits ||
+            !decimal.TryParse(amount, NumberStyles.Number, CultureInfo.InvariantCulture, out decimal value))
+            throw new FormatException();
         return (credit ? -value : value).ToString("0.##", CultureInfo.InvariantCulture);
     }
 
-    private static string[] Amounts(string text) => Regex.Matches(text, Money).Select(m => Number(m.Value)).ToArray();
+    private static string[] Amounts(string text) => Money.Matches(text).Select(m => Number(m.Value)).ToArray();
     private static string[] Parts(string text) => text.Split(Wide, StringSplitOptions.TrimEntries);
 
     private static string[][] EmptyLegacyAnalysis(string body)
@@ -103,7 +112,7 @@ public static class SalesReportValues
                 yield return ["取引", Number(Clip(line, 0, 9)), Date(Clip(line, 9, 11)), Clip(line, 20, 8),
                     Clip(line, 28, 25), Kind(Clip(line, 58, 14)), .. Amounts(line[72..])];
             else if (Clip(line, 84, 11) == "Vat Code" || Regex.IsMatch(Clip(line, 95, 1), @"^\d$") &&
-                Regex.IsMatch(Clip(line, 72, 12), Money))
+                Money.IsMatch(Clip(line, 72, 12)))
                 yield return ["分析", Clip(line, 58, 6), Number(Clip(line, 72, 12)), Number(Clip(line, 95, 1))];
             else if (text.StartsWith("Total ", StringComparison.Ordinal))
                 yield return ["合計", Kind(Clip(line, 13, 18)), .. Amounts(line[31..])];
