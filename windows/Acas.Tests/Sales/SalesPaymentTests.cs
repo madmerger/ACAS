@@ -6,6 +6,26 @@ namespace Acas.Tests.Sales;
 
 public sealed class SalesPaymentTests
 {
+    [Fact]
+    public void PaymentProofSortsCobolFixedRecordsByBatchAndTypeAndEnablesPosting()
+    {
+        using var db = new Db();
+        var ledger = PostedSale(db);
+        ledger.RecordPaymentBatch([new("CUST011", new DateTime(2026, 11, 23), 120m, false, [new(0, 120m)])]);
+        var menu = new SalesScreens(ledger).MainMenu();
+        var report = Assert.IsType<ReportScreen>(menu.Items.Single(i => i.Id == "SalesPaymentProof").Open!());
+        Assert.Contains("CUST011　ALPHA CUSTOMER　120.00　120.00　0.00", report.Body);
+        Assert.Contains("請求書　0　2026年11月23日　120.00　0.00", report.Body);
+        var before = db.Scan(SalesLedger.PaymentSortFile).SelectMany(row => row.Data).ToArray();
+        Assert.Equal(Convert.FromHexString(
+            "43555354303131e9030000a35f020000000001000135202020202020202020202020202020202020202020202020202020" +
+            "000000000c000012000c000000000c000000000c000000000c000000000c000000000c000000000c000012000c30000000000000000000000000000020a35f0200" +
+            "4355535430313100000000a35f0200000000010001324f5244455230303120202020202020202020202020202020202020" +
+            "000012000c000010000c000000000c000000000c000002000c000000000c000000000c000000000c000012000c3100000000000000000000e02e000020a35f0200"),
+            before);
+        Assert.Equal(2, ledger.SystemRecord().I("S-Flag-P"));
+    }
+
     private static SalesLedger PostedSale(Db db)
     {
         db.LoadBaseline("sl-printed");

@@ -5,6 +5,10 @@ public sealed partial class SalesScreens
     private const string PaymentTitle = "入金入力・消込";
     private const string PaymentAmendTitle = "入金修正";
 
+    private Screen PaymentProof() => sales.SystemRecord().I("S-Flag-P") == 0
+        ? Missing("入金検証帳票", "入金明細")
+        : new ReportScreen("入金検証帳票", sales.PaymentProof(), MainMenu);
+
     private Screen PaymentAmend()
     {
         if (!sales.HasOpenItems() || sales.SystemRecord().I("S-Flag-P") == 0)

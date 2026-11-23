@@ -1,3 +1,5 @@
+using System.Globalization;
+using System.Text;
 using Acas.Core.Engine;
 
 namespace Acas.Core.Programs.Sales;
@@ -11,6 +13,58 @@ public sealed record PendingSalesPayment(int Number, int Batch, int Item, decima
 
 public sealed partial class SalesLedger
 {
+    public const string PaymentSortFile = Prefix + "oisort.wrk";
+
+    public string PaymentProof() => db.Atomic(() =>
+    {
+        var system = SystemRecord();
+        if (system.I("S-Flag-P") == 0) throw new SalesRuleException("未転記の入金がありません。");
+        var items = db.Scan(OpenItemFile).Select(row => DecodePostingItem(row.Data))
+            .Where(item => item.I("type") is not (1 or 3) &&
+                (item.I("batchNumber") != 0 || item.I("batchItem") != 0))
+            .OrderBy(item => item.I("batchNumber")).ThenBy(item => item.I("batchItem"))
+            .ThenByDescending(item => item.I("type")).ThenBy(item => item.I("date"))
+            .ThenBy(item => item.I("number")).ToArray();
+        db.Recreate(PaymentSortFile);
+        var report = new StringBuilder("入金検証帳票\n").AppendLine(GetText(system, "Usera"))
+            .AppendLine(ShowDate(system.I("Run-Date")))
+            .AppendLine("バッチ／明細　区分　日付　得意先　入金額　消込額　値引額　請求番号　請求日　明細消込額　請求残高");
+        var totals = new (decimal Paid, decimal Allocated, decimal Discount)[2];
+        string customer = "";
+        decimal allocated = 0;
+        for (int i = 0; i < items.Length; i++)
+        {
+            var item = items[i];
+            db.Put(PaymentSortFile, (i + 1).ToString("D10", CultureInfo.InvariantCulture), item.B);
+            int type = item.I("type");
+            if (type == 2 && item.N("paid") != 0 && customer == item.S("customer"))
+                report.AppendLine($"　請求書　{item.I("number")}　{ShowDate(item.I("date"))}　{Amount(Math.Min(item.N("paid"), allocated))}　" +
+                    $"{Amount(InvoiceAmounts.Sum(item.N) - item.N("paid"))}");
+            if (type is not (5 or 6) || item.I("closed") != 0) continue;
+            customer = item.S("customer");
+            string name = db.Read(CustomerFile, customer) is { } data && data.Length == CustomerLayout.Size
+                ? GetText(CustomerLayout.From(data), "name") : "得意先不明";
+            allocated = item.N("net");
+            totals[type - 5].Paid += item.N("paid");
+            totals[type - 5].Allocated += allocated;
+            totals[type - 5].Discount += item.N("deductAmount");
+            report.AppendLine($"{item.I("batchNumber")}/{item.I("batchItem"):D3}　{OpenItemType(type)}　{ShowDate(item.I("date"))}　{customer}　{name}　" +
+                $"{Amount(item.N("paid"))}　{Amount(allocated)}　{Amount(item.N("deductAmount"))}");
+        }
+        for (int i = 0; i < totals.Length; i++)
+        {
+            var total = totals[i];
+            report.AppendLine($"{OpenItemType(i + 5)}合計　入金額 {Amount(total.Paid)}　消込額 {Amount(total.Allocated)}　" +
+                $"未消込額 {Amount(total.Paid - total.Allocated)}　値引額 {Amount(total.Discount)}");
+        }
+        system.SetN("S-Flag-P", 2);
+        system.Set("Oi-3-Flag", "Y");
+        SaveSystem(system);
+        string body = report.ToString();
+        db.AddSpool("prt-1", body);
+        return body;
+    });
+
     public IReadOnlyList<SalesPaymentItem> PaymentInvoices(string customer) => ReadOpenItems(customer)
         .Where(item => item.I("type") == 2 && item.I("batchNumber") == 0 && InvoiceAmounts.Sum(item.N) > item.N("paid"))
         .Select(item => new SalesPaymentItem(item.I("number"), item.I("date"),
