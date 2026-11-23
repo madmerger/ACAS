@@ -74,6 +74,9 @@
 "sales.period.analysisMissing" = "分析コードが設定されていません";
 "sales.period.analysisRequired" = "先に分析帳票を作成してください";
 "sales.period.openItemsMissing" = "売掛明細のファイルがありません";
+"sales.enquiry.title" = "売掛残高・明細照会";
+"sales.ageing.title" = "売掛金年齢表";
+"sales.receivable.notAvailable" = "この操作は現在利用できません";
 "sales.period.endQuarter" = "四半期末の締めとして実行する";
 "sales.period.password" = "パスワード";
 "sales.period.invalidPassword" = "パスワードが正しくありません";

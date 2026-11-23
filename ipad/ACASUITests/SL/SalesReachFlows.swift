@@ -2,10 +2,10 @@ import XCTest
 
 @MainActor
 final class SalesReachFlows: XCTestCase {
-    func testSL003() throws { try unavailableSalesMenuItem("SL-003", labels: ["売掛残高", "明細照会"]) }
-    func testSL017() throws { try unavailableSalesMenuItem("SL-017", labels: ["売掛金年齢表", "年齢分析"]) }
-    func testSL208() throws { try unavailableSalesMenuItem("SL-208", labels: ["売掛残高", "明細照会"]) }
-    func testSL227() throws { try unavailableSalesMenuItem("SL-227", labels: ["売掛金年齢表", "年齢分析"]) }
+    func testSL003() throws { try missingOpenItems("SL-003", screen: "enquiry", title: "売掛残高・明細照会") }
+    func testSL017() throws { try missingOpenItems("SL-017", screen: "ageing", title: "売掛金年齢表") }
+    func testSL208() throws { try missingOpenItems("SL-208", screen: "enquiry", title: "売掛残高・明細照会") }
+    func testSL227() throws { try missingOpenItems("SL-227", screen: "ageing", title: "売掛金年齢表") }
 
     func testSL090() throws {
         let url = try fixtureURL("SL-090")
@@ -170,26 +170,6 @@ final class SalesReachFlows: XCTestCase {
         }
     }
     func testSL244() throws { try invoiceFixedData("SL-244") }
-
-    private func unavailableSalesMenuItem(_ id: String, labels: [String]) throws {
-        try reach(id, through: [], title: "売掛元帳", verdict: nil) { app in
-            @MainActor func check() {
-                for label in labels {
-                    XCTAssertFalse(buttons(in: app, containing: label).firstMatch.exists)
-                }
-            }
-            XCTAssertEqual(buttons(in: app, containing: "得意先マスター管理").firstMatch.identifier, "sales.customers")
-            check()
-            attach(app, name: "\(id)-売掛メニュー上部")
-            let last = app.buttons["sales.customer.turnover"]
-            for _ in 0..<4 where !last.isHittable {
-                app.coordinate(withNormalizedOffset: CGVector(dx: 0.80, dy: 0.80))
-                    .press(forDuration: 0.05, thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.80, dy: 0.34)))
-                check()
-            }
-            XCTAssertTrue(last.isHittable)
-        }
-    }
 
     private func buttons(in app: XCUIApplication, containing label: String) -> XCUIElementQuery {
         app.buttons.matching(NSPredicate(format: "label CONTAINS %@", label))

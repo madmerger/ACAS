@@ -83,6 +83,14 @@ struct SalesMenu: View {
                     .accessibilityIdentifier("sales.period")
             }
             Section(slText("sales.receivables.section")) {
+                NavigationLink(slText("sales.enquiry.title")) {
+                    SalesReceivableOpeningView(workspace: workspace, operation: .enquiry)
+                }
+                .accessibilityIdentifier("sales.enquiry")
+                NavigationLink(slText("sales.ageing.title")) {
+                    SalesReceivableOpeningView(workspace: workspace, operation: .ageing)
+                }
+                .accessibilityIdentifier("sales.ageing")
                 NavigationLink(slText("sales.statement.title")) { SalesStatementsView(workspace: workspace) }
                     .accessibilityIdentifier("sales.statement")
                 NavigationLink(slText("sales.dunning.title")) { SalesDunningView(workspace: workspace) }
