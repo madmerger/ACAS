@@ -79,6 +79,42 @@ final class SalesPaymentsTests: XCTestCase {
         XCTAssertEqual(try SalesLedger(context).customer(code: draft.customer).unapplied, 500)
     }
 
+    func testPostingRequiresProofAndWritesLedgerBatch() throws {
+        let (store, context, date) = try setup()
+        let settings = RelativeFile(store, path: "ledgers/acas/system.dat", recordSize: 1024)
+        var system = try SalesLedger(context).systemRecord()
+        system.setInt("level-1", 1)
+        system.setInt("next-batch", 4)
+        system.setInt("sl-pay-ac", 1234)
+        system.setInt("s-debtors", 4567)
+        try settings.write(1, system.bytes)
+        var draft = SalesPayments.Draft(date: date)
+        draft.customer = "CUST011"
+        draft.amount = 1_200
+        draft.allocations = [10: 1_000]
+        try SalesPayments(context).saveBatch([draft])
+        let posting = SalesPaymentPosting(context)
+        XCTAssertThrowsError(try posting.post())
+        _ = try SalesPaymentProof(context).generate()
+
+        XCTAssertEqual(try posting.post().map(\.balance), [-1_700])
+        XCTAssertEqual(try SalesLedger(context).systemRecord().int("s-flag-p"), 0)
+        let openItems = SalesOpenItems.file(store)
+        XCTAssertEqual(openItems.read(key: SalesOpenItems.key(customer: draft.customer, invoice: 10))?.int("batch"), 0)
+        XCTAssertEqual(openItems.read(key: SalesOpenItems.key(customer: draft.customer, invoice: 3_001))?.int("status"), 1)
+        let monthly = Record(SalesPostingRecords.monthly, bytes: try XCTUnwrap(settings.read(4)))
+        XCTAssertEqual(monthly.int("payments"), 1_200)
+        let batchFile = IndexedFile(store, path: "ledgers/acas/batch.dat", layout: SalesPostingRecords.batch, keyLength: 6)
+        XCTAssertEqual(batchFile.read(key: "300004")?.int("actual-gross"), 1_000)
+        let file = RelativeFile(store, path: "ledgers/acas/posting.dat", recordSize: SalesPostingRecords.posting.size)
+        let entry = Record(SalesPostingRecords.posting, bytes: try XCTUnwrap(file.read(1)))
+        XCTAssertEqual(entry.int("debit"), 1234)
+        XCTAssertEqual(entry.int("credit"), 4567)
+        XCTAssertEqual(entry.int("amount"), 1_000)
+        let report = try XCTUnwrap(store.readRaw(SalesPaymentPosting.exportPath))
+        XCTAssertEqual(String(decoding: report[56..<75], as: UTF8.self), "Cash Posting Report")
+    }
+
     private func setup() throws -> (FileStore, BusinessContext, Date) {
         let store = try FileStore()
         let context = BusinessContext(store: store, timeZone: .gmt)

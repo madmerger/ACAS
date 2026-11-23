@@ -59,6 +59,17 @@ final class SalesPaymentsFlows: XCTestCase {
         tap("sales.payment.amend.CUST011/1/1", in: app)
         tap("sales.payment.reverse", in: app)
         XCTAssertTrue(app.staticTexts["sales.payment.cancelled"].waitForExistence(timeout: 5))
+
+        app.navigationBars.buttons.firstMatch.tap()
+        tap("sales.payment.post", in: app)
+        tap("sales.payment.post.start", in: app)
+        tap("sales.payment.post.confirm", in: app)
+        XCTAssertTrue(app.staticTexts["sales.payment.post.finished"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["sales.payment.post.export"].exists)
+        let posting = XCTAttachment(screenshot: app.screenshot())
+        posting.name = "入金転記帳票"
+        posting.lifetime = .keepAlways
+        add(posting)
     }
 
     private func hex(_ bytes: [UInt8]) -> String {

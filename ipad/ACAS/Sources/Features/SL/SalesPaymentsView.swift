@@ -277,3 +277,53 @@ private struct SalesPaymentRow: View {
 private func paymentMoney(_ value: Int64) -> String {
     (Decimal(value) / 100).formatted(.number.precision(.fractionLength(2)))
 }
+
+struct SalesPaymentPostingView: View {
+    let workspace: Workspace
+    @State private var entries: [SalesPaymentPosting.Entry]?
+    @State private var document: SalesReportDocument?
+    @State private var confirm = false
+    @State private var failed = false
+
+    var body: some View {
+        List {
+            if let entries {
+                Text(slText("sales.payment.post.finished"))
+                    .accessibilityIdentifier("sales.payment.post.finished")
+                ForEach(entries) { entry in
+                    LabeledContent(entry.customer, value: paymentMoney(entry.amount))
+                }
+            } else {
+                Button(slText("sales.payment.post"), role: .destructive) { confirm = true }
+                    .accessibilityIdentifier("sales.payment.post.start")
+            }
+        }
+        .navigationTitle(slText("sales.payment.post"))
+        .alert(slText("sales.payment.post.confirm"), isPresented: $confirm) {
+            Button(slText("sales.payment.post"), role: .destructive, action: post)
+                .accessibilityIdentifier("sales.payment.post.confirm")
+            Button(slText("sales.action.cancel"), role: .cancel) {}
+        }
+        .alert(slText("sales.payment.post.failed"), isPresented: $failed) {
+            Button(slText("sales.action.cancel"), role: .cancel) {}
+        }
+        .toolbar {
+            if let document {
+                ToolbarItem(placement: .primaryAction) {
+                    SalesReportExport(report: document, identifier: "sales.payment.post.export",
+                                      filename: slText("sales.payment.post.filename"))
+                }
+            }
+        }
+    }
+
+    private func post() {
+        do {
+            entries = try SalesPaymentPosting(workspace.context).post()
+            document = workspace.context.store.readRaw(SalesPaymentPosting.exportPath).map(SalesReportDocument.init)
+            workspace.completed("sales-payment-posting")
+        } catch {
+            failed = true
+        }
+    }
+}
