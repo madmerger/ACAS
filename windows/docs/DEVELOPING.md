@@ -16,6 +16,8 @@ dotnet run --project Acas.App -c Release --no-build -- --database "$HOME\acas-ve
 
 `devin/acas-windows-01-foundation` を起点に、担当分のファイルだけを追加できます。SDK が配下のソースを自動で取り込むため、`MainWindow.xaml.cs`、ソリューション、プロジェクトファイルに登録行を追加する必要はありません。
 
+共通の起動画面（会社の初期登録）を提供する SYS＋GL は例外です。シェルは同じ `AccountingScreens` インスタンスから起動画面と SYS＋GL のナビゲーションを取得します。追加のサブシステムは以下の属性登録を使用してください。
+
 | 配置先 | 内容 |
 | --- | --- |
 | `Acas.Core/Programs/<担当>/` | レコード操作・業務ルール・帳票生成。端末や WPF に依存させない |

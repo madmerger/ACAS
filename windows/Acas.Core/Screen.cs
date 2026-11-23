@@ -13,7 +13,7 @@ public sealed record InformationScreen(string Title, string Message) : Screen(Ti
 public sealed record MenuScreen(string Title, IReadOnlyList<MenuItem> Items) : Screen(Title);
 
 public sealed record TableScreen(string Title, string Id, IReadOnlyList<string> Columns,
-    IReadOnlyList<TableRow> Rows, string EmptyMessage = "表示するデータがありません。") : Screen(Title);
+    IReadOnlyList<TableRow> Rows, string EmptyMessage = "表示するデータがありません。", Func<Screen>? Back = null) : Screen(Title);
 
 public sealed record TableRow(IReadOnlyList<string> Cells, Func<Screen>? Open = null, IReadOnlyList<object>? SortValues = null)
 {
@@ -22,6 +22,7 @@ public sealed record TableRow(IReadOnlyList<string> Cells, Func<Screen>? Open = 
 
 public abstract record Field(string Id, string Label);
 public sealed record TextField(string Id, string Label, string Value = "", int MaxLength = 0) : Field(Id, Label);
+public sealed record PasswordField(string Id, string Label, int MaxLength) : Field(Id, Label);
 public sealed record DateField(string Id, string Label, DateTime? Value = null) : Field(Id, Label);
 public sealed record ChoiceField(string Id, string Label, IReadOnlyList<Choice> Options, string? Value = null) : Field(Id, Label);
 public sealed record Choice(string Value, string Label);
@@ -37,9 +38,10 @@ public sealed class FormValues
 }
 
 public sealed record FormScreen(string Title, IReadOnlyList<Field> Fields, string SubmitLabel,
-    Func<FormValues, Screen> Submit) : Screen(Title);
+    Func<FormValues, Screen> Submit, Func<Screen>? Back = null, string? Error = null) : Screen(Title);
 
 public sealed record ConfirmationScreen(string Title, string Message, string ConfirmLabel,
     Func<Screen> Confirm, Func<Screen> Cancel) : Screen(Title);
 
-public sealed record ReportScreen(string Title, string Body, Func<Screen>? Back = null) : Screen(Title);
+public sealed record ReportScreen(string Title, string Body, Func<Screen>? Back = null,
+    string BackLabel = "帳票一覧へ戻る") : Screen(Title);
