@@ -9,6 +9,7 @@ var filters = args.Skip(2).Where(a => !a.StartsWith("-")).ToArray();
 bool verbose = args.Contains("-v");
 string? outPath = null;
 for (int i = 0; i < args.Length - 1; i++) if (args[i] == "--out") { outPath = args[i + 1]; filters = filters.Where(f => f != outPath).ToArray(); }
+foreach (var b in I18n.Misaligned()) Console.WriteLine("括弧位置ずれ: " + b);
 using var doc = JsonDocument.Parse(File.ReadAllText(ledger));
 int ok = 0, ng = 0; var results = new List<object>();
 foreach (var c in doc.RootElement.GetProperty("cases").EnumerateArray())

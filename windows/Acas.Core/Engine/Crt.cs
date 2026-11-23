@@ -208,6 +208,13 @@ public sealed class Crt
         return new string(buf, 0, len);
     }
 
+    /// <summary>数値項目の ACCEPT (UPDATE)。現在値をゼロ詰めで表示し、入力結果を数値化して返す。</summary>
+    public async Task<decimal> AN(int pos, int digits, decimal cur = 0, bool update = true, bool auto = false)
+    {
+        var s = await A(pos, digits, update ? Cob.P9(cur, digits) : null, auto: auto);
+        return Cob.Trunc(Cob.ToNum(s), 0) % (decimal)Math.Pow(10, digits);
+    }
+
     public string[] ShadowLines()
     {
         var r = new string[Rows];

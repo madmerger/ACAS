@@ -6,6 +6,11 @@ public static partial class Layouts
     /// <summary>copybooks/wssystem.cob (system.dat レコード1, 1024 バイト)。</summary>
     public static readonly Layout System = BuildSystem();
 
+    /// <summary>general/fdledger.cob (ledger.dat, 126 バイト, キー = nos+pc)。</summary>
+    public static readonly Layout Ledger = new Layout()
+        .N9("nos", 6).N9("pc", 2).N9("type", 1).X("place", 1).N9("level", 1).Fill(5).X("name", 24)
+        .C3("balance", 8, 2).C3("last", 8, 2).C3("q1", 8, 2).C3("q2", 8, 2).C3("q3", 8, 2).C3("q4", 8, 2).Fill(50);
+
     private static Layout BuildSystem()
     {
         var l = new Layout();

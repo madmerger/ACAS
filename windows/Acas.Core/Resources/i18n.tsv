@@ -1,0 +1,68 @@
+ACAS System Menu	ACASシステムメニュー
+at	時
+on	日
+Copyright (c) 1976-	Copyright (c) 1976-
+Applewood Computers	Applewood Computers
+Select one of the following by letter  :- [ ]	次の中から英字で選択してください    :- [ ]
+(A)  General Ledger	(A)  総勘定元帳
+(B)  Sales Ledger	(B)  売掛元帳
+(C)  Purchase Ledger	(C)  買掛元帳
+(D)  Stock Control	(D)  在庫管理
+(E)  Order Entry	(E)  受注入力
+(F)  Payroll	(F)  給与計算
+(G)  Epos	(G)  EPOS
+(X)  Exit To system	(X)  システムへ戻る
+(Z)  System Setup	(Z)  システム設定
+Sorry, not available	この機能は利用できません
+Sorry, not yet available	この機能はまだ利用できません
+Sorry not yet available	この機能はまだ利用できません
+end of program, please press a key to exit	プログラム終了。何かキーを押してください
+Error not in error.txt. Hit return to close	エラー定義なし。Enterで閉じます
+Client -	顧客 -
+General Ledger  Start Of Day	総勘定元帳  業務開始
+Enter todays date as dd/mm/yyyy - [          ]	本日の日付を dd/mm/yyyy で入力  - [          ]
+Enter todays date as mm/dd/yyyy - [          ]	本日の日付を mm/dd/yyyy で入力  - [          ]
+Enter todays date as yyyy/mm/dd - [          ]	本日の日付を yyyy/mm/dd で入力  - [          ]
+GL009 Invalid Date	GL009 日付が不正です
+General Ledger System Menu	総勘定元帳システムメニュー
+(A)  Date Entry	(A)  処理日入力
+(B)  Chart Of Accounts	(B)  勘定科目表
+(C)  Default Account Maintenance	(C)  既定勘定の保守
+(D)* Final Accounts Set-Up	(D)* 決算書設定
+(E)  Enter Transactions	(E)  仕訳入力
+(F)  Proof/Modify Transactions	(F)  仕訳の検証・修正
+(G)  Batch Status Report	(G)  バッチ状況報告
+(H)  Transaction Posting	(H)  仕訳転記
+(I)  End Of Cycle Processing	(I)  期間締め処理
+(J)  Print Trial Balance	(J)  試算表印刷
+(K)  Print P&L and Balance Sheet	(K)  損益計算書・貸借対照表印刷
+(L)  Print Ledgers	(L)  元帳印刷
+(M)* Print Final Accounts	(M)* 決算書印刷
+(X)  Exit to	(X)  終了 →
+(Z)  System Set Up	(Z)  システム設定
+Chart Of Account Utilities	勘定科目表ユーティリティ
+Select one of the following by number :- [ ]	次の中から番号で選択してください   :- [ ]
+Set-up or Amend Profit Centres	利益センターの設定・変更
+Set-up or Amend Branch Codes	支店コードの設定・変更
+Add New Accounts	勘定科目の新規登録
+Amend/Delete Existing Accounts	既存勘定科目の変更・削除
+Print Alphabetic List	名称順一覧の印刷
+Display Chart of Accounts	勘定科目表の照会
+Print Chart of Accounts	勘定科目表の印刷
+Print Report on Profit Centres	利益センター報告の印刷
+Print Report on Branch Codes	支店コード報告の印刷
+Exit to system menu	システムメニューへ戻る
+Chart of Accounts Set-Up	勘定科目表の登録
+Ledger    Sub	科目      補助
+P/C	P/C
+Branch	支店
+-----------Name-----------  Type  Placement  Level	-----------名称-----------  種別  配置       階層
+GL102 Error! Ledger Code must be not less 1000	GL102 エラー! 科目コードは1000以上
+Invalid start number!	開始番号が不正です!
+<9999>  Is reserved!	<9999> は予約済みです!
+Invalid! Code must be numeric or <n*>.	不正! コードは数字か <n*>
+Invalid type!	種別不正!
+Invalid Placement!.	配置が不正です!
+Profit centres/branches only valid for Revenue Accounts!	利益センター/支店は収益勘定のみ有効です!
+Invalid!	不正!
+INVALID! Header Missing	不正! ヘッダなし

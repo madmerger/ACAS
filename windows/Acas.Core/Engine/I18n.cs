@@ -32,7 +32,47 @@ public static class I18n
         var core = text.Trim();
         if (core.Length == 0) return text;
         if (!Map.TryGetValue(core, out var ja)) return null;
-        return new string(' ', text.Length - text.TrimStart().Length) + ja;
+        return new string(' ', text.Length - text.TrimStart().Length) + Align(core, ja);
+    }
+
+    /// <summary>入力欄の括弧 [ ] の桁位置を原文と同じに揃える (入力値は原文と同じ桁に表示されるため)。</summary>
+    public static string Align(string en, string ja)
+    {
+        if (en.IndexOf('[') < 0 && en.IndexOf(']') < 0) return ja;
+        var e = Split(en); var j = Split(ja);
+        if (e.Count != j.Count) return ja;
+        var sb = new StringBuilder();
+        for (int i = 0; i < e.Count; i++)
+        {
+            if (i % 2 == 1) { sb.Append(e[i]); continue; }
+            if (i == e.Count - 1) { sb.Append(j[i]); break; }
+            var seg = e[i].Trim().Length == 0 ? e[i] : j[i].TrimEnd();
+            int w = Width(seg);
+            sb.Append(w <= e[i].Length ? seg + new string(' ', e[i].Length - w) : seg);
+        }
+        return sb.ToString();
+    }
+    private static List<string> Split(string s)
+    {
+        var r = new List<string>(); int st = 0;
+        for (int i = 0; i < s.Length; i++)
+            if (s[i] == '[' || s[i] == ']') { r.Add(s.Substring(st, i - st)); r.Add(s[i].ToString()); st = i + 1; }
+        r.Add(s.Substring(st));
+        return r;
+    }
+
+    /// <summary>対応表の検査: 括弧位置が揃わない (日本語が長すぎる) 行を返す。</summary>
+    public static List<string> Misaligned()
+    {
+        var bad = new List<string>();
+        foreach (var (en, ja) in Map)
+        {
+            var a = Align(en, ja); int ce = 0, cj = 0; var pe = new List<int>(); var pj = new List<int>();
+            foreach (var ch in en) { if (ch == '[' || ch == ']') pe.Add(ce); ce++; }
+            foreach (var ch in a) { if (ch == '[' || ch == ']') pj.Add(cj); cj += IsWide(ch) ? 2 : 1; }
+            if (!pe.SequenceEqual(pj)) bad.Add(en);
+        }
+        return bad;
     }
 
     public static string Tr(string text, Lang lang) => lang == Lang.Ja ? (T(text) ?? text) : text;

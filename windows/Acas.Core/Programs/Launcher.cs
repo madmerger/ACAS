@@ -85,7 +85,7 @@ public static partial class Launcher
     public static async Task EndOfProgram(Ctx c)
     {
         c.Crt.Clear();
-        c.Crt.D("end of program, please press a key to exit", 0101, fg: 7);
+        c.Crt.D("end of program, please press a key to exit", 0201, fg: 7);
         await c.Crt.Keys.Read();
     }
 
