@@ -35,15 +35,19 @@ final class DebugEvidence: Decodable, ObservableObject {
 
 struct CaseBanner: View {
     @ObservedObject var evidence: DebugEvidence
+    private var verdict: String {
+        if evidence.workflow == "legacy-not-run" { return "notApplicable" }
+        return evidence.result ?? "running"
+    }
 
     var body: some View {
         HStack {
             Text(evidence.id).font(.headline).monospacedDigit()
             Text(evidence.title)
             Spacer()
-            Text(LocalizedStringKey("case." + (evidence.result ?? "running")))
+            Text(LocalizedStringKey("case." + verdict))
                 .bold()
-                .accessibilityIdentifier("case.verdict." + (evidence.result ?? "running"))
+                .accessibilityIdentifier("case.verdict." + verdict)
         }
         .padding(.horizontal, 24)
         .padding(.vertical, 12)

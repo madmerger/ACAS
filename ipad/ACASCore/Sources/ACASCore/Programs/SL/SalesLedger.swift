@@ -223,33 +223,36 @@ public struct SalesLedger {
             }
         }
         let delimiter = system.raw("sl-delim")[0]
-        func validAddress(_ bytes: [UInt8]) -> Bool {
-            var index = 0
-            var count = 0
-            while index < bytes.count {
-                let byte = bytes[index]
-                if (0x81...0x9f).contains(byte) || (0xe0...0xfc).contains(byte) {
-                    index += 2
-                    continue
-                }
-                if byte == delimiter {
-                    if count == 0 && index > 30 { return false }
-                    count += 1
-                }
-                index += 1
-            }
-            return (1...4).contains(count)
-        }
-        guard validAddress(record.raw("sales-addr1") + record.raw("sales-addr2")) else { throw Error.invalidAddress }
+        guard Self.validAddress(record.raw("sales-addr1") + record.raw("sales-addr2"), delimiter: delimiter)
+        else { throw Error.invalidAddress }
         if hasDelivery(customer) || !Cobol.rtrim(customer.deliveryName).isEmpty {
-            guard validAddress(SJIS.encode(customer.deliveryAddress1, size: 48) +
-                               SJIS.encode(customer.deliveryAddress2, size: 48)) else { throw Error.invalidAddress }
+            guard Self.validAddress(SJIS.encode(customer.deliveryAddress1, size: 48) +
+                                    SJIS.encode(customer.deliveryAddress2, size: 48), delimiter: delimiter)
+            else { throw Error.invalidAddress }
         }
         for (field, flag) in [
             ("sales-late", customer.lateCharges), ("sales-dunning", customer.dunning), ("email-invoice", customer.emailInvoice),
             ("email-statement", customer.emailStatement), ("email-letters", customer.emailLetters),
             ("delivery-tag", hasDelivery(customer)), ("notes-tag", hasNotes(customer)),
         ] { record.setInt(field, flag ? 1 : 0) }
+    }
+
+    static func validAddress(_ bytes: [UInt8], delimiter: UInt8) -> Bool {
+        var index = 0
+        var count = 0
+        while index < bytes.count {
+            let byte = bytes[index]
+            if (0x81...0x9f).contains(byte) || (0xe0...0xfc).contains(byte) {
+                index += 2
+                continue
+            }
+            if byte == delimiter {
+                if count == 0 && index > 30 { return false }
+                count += 1
+            }
+            index += 1
+        }
+        return (1...4).contains(count)
     }
 
     private func hasDelivery(_ customer: Customer) -> Bool {

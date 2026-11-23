@@ -15,3 +15,4 @@
 "case.running" = "実施中";
 "case.match" = "一致";
 "case.mismatch" = "不一致";
+"case.notApplicable" = "対象外";

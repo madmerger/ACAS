@@ -8,12 +8,69 @@ struct SystemMenu: View {
         List {
             NavigationLink(String(localized: "system.company", table: "System")) { CompanyForm(workspace: workspace) }
                 .accessibilityIdentifier("system.company")
+            NavigationLink(initialCustomerText("title")) { InitialCustomerForm(workspace: workspace) }
+                .accessibilityIdentifier("system.master.customer")
             #if DEBUG
             if workspace.evidence != nil {
                 NavigationLink(String(localized: "calculation.title", table: "CALC")) { CheckDigitForm(workspace: workspace) }
                     .accessibilityIdentifier("calculation.title")
             }
             #endif
+        }
+    }
+}
+
+private func initialCustomerText(_ key: String) -> String {
+    NSLocalizedString("system.master.customer." + key, tableName: "System", comment: "")
+}
+
+private struct InitialCustomerForm: View {
+    let workspace: Workspace
+    @State private var contact = InitialCustomerSetup.Contact()
+    @State private var status: String?
+    @FocusState private var focused: String?
+
+    var body: some View {
+        Form {
+            field("code", $contact.code)
+            field("name", $contact.name)
+            field("address", $contact.address)
+            field("address2", $contact.address2)
+            field("phone", $contact.phone)
+            field("email", $contact.email)
+            if let status { Text(status).accessibilityIdentifier("system.master.status") }
+            Button(String(localized: "system.action.save", table: "System"), action: save)
+                .accessibilityIdentifier("system.master.save")
+        }
+        .navigationTitle(initialCustomerText("title"))
+    }
+
+    private func field(_ name: String, _ value: Binding<String>) -> some View {
+        TextField(initialCustomerText(name), text: value)
+            .textInputAutocapitalization(.never)
+            .autocorrectionDisabled()
+            .focused($focused, equals: name)
+            .submitLabel(.done)
+            .onSubmit { focused = nil }
+            .accessibilityIdentifier("system.master.field." + name)
+    }
+
+    private func save() {
+        do {
+            try InitialCustomerSetup(workspace.context).add(contact)
+            contact = InitialCustomerSetup.Contact()
+            focused = nil
+            status = initialCustomerText("saved")
+        } catch SalesLedger.Error.missingCompany {
+            status = initialCustomerText("missingCompany")
+        } catch InitialCustomerSetup.Error.duplicate {
+            status = initialCustomerText("duplicate")
+        } catch InitialCustomerSetup.Error.invalidInput {
+            status = initialCustomerText("invalid")
+        } catch InitialCustomerSetup.Error.invalidAddress {
+            status = String(localized: "system.master.customer.invalidAddress", table: "System")
+        } catch {
+            status = initialCustomerText("failed")
         }
     }
 }

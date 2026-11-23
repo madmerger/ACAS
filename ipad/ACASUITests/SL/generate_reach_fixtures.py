@@ -141,7 +141,7 @@ def save_analysis_reports(evidence, cases, fixtures):
             })
 
 
-def save_business_customers(evidence, case, fixtures):
+def save_business_customers(evidence, case, setup, fixtures):
     run = BASE.evidence_path(evidence, case["legacy_result"]["evidence"][0])
     path = "ledgers/acas/salesled.dat"
     system_path = "ledgers/acas/system.dat"
@@ -150,17 +150,28 @@ def save_business_customers(evidence, case, fixtures):
     if sorted(customers.values()) != sorted(case["expected_result"]["names"]):
         raise ValueError("SL-090 の得意先名または件数が証跡と一致しません")
     system = BASE.evidence_path(evidence, run / "files" / system_path).read_bytes()
-    seed = {"files": {
-        system_path: {"type": "relative", "hex": system.hex()},
-        path: {"type": "indexed", "records": [[record["hex"][:14], record["hex"]] for record in records.values()]},
-    }}
+    seed = {"files": {system_path: {"type": "relative", "hex": system.hex()}}}
+    changes = [change for change in BASE.expected_changes(evidence, setup["legacy_result"]["comparison_targets"]["keyed_record_diff"])
+               if change["file"] == path]
+    if len(changes) != len(records) or any(change["before"] is not None for change in changes):
+        raise ValueError("SL-090 の得意先登録差分が証跡と一致しません")
+    inputs = setup["input_data"]["text_inputs"]
+    contacts = {}
+    for code, record in records.items():
+        entered = next(inputs[index + 1] for index, value in enumerate(inputs) if value.strip() == code[:6])
+        fields = entered.rstrip("\r\n").split("\t")
+        contacts[code] = {
+            "code": code[:6], "name": fields[0], "address": record["fields"]["address_1"],
+            "address2": record["fields"]["address_2"], "phone": fields[8] if len(fields) > 8 else "",
+            "email": fields[11] if len(fields) > 11 else "",
+        }
     with BASE.evidence_path(evidence, run / "terminal.cast").open(encoding="utf-8") as recording:
         date = json.loads(recording.readline())["timestamp"]
     BASE.save(fixtures / "SL-090.json", {
         "id": "SL-090", "title": "業務用得意先マスター2件の投入",
-        "workflow": "ui-test-only", "dateSeconds": date, "customers": customers,
+        "workflow": "sales-customer-view", "dateSeconds": date, "customers": customers, "contacts": contacts,
         "seed": base64.b64encode(json.dumps(seed, separators=(",", ":")).encode()).decode(),
-        "changes": [], "reports": {},
+        "changes": changes, "reports": {},
     })
 
 
@@ -203,7 +214,7 @@ def main():
             "reports": reports,
         })
     print(f"売掛元帳の画面到達確認用データ {len(CASES)} 件")
-    save_business_customers(evidence, cases["SL-090"], fixtures)
+    save_business_customers(evidence, cases["SL-090"], cases["SYS-001"], fixtures)
     save_analysis_reports(evidence, cases, fixtures)
     print("売上分析コードの帳票比較用データ 3 件")
 

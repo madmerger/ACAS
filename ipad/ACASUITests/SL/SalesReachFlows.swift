@@ -12,8 +12,33 @@ final class SalesReachFlows: XCTestCase {
         let fixture = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(contentsOf: url)) as? [String: Any])
         let customers = try XCTUnwrap(fixture["customers"] as? [String: String])
         XCTAssertEqual(customers.count, 2)
+        let contacts = try XCTUnwrap(fixture["contacts"] as? [String: [String: String]])
+        XCTAssertEqual(Set(contacts.keys), Set(customers.keys))
         try reach("SL-090", through: ["sales.customers", "sales.customer.view"],
-                  title: "得意先表示", verdict: nil) { app in
+                  title: "得意先表示", prepare: { app in
+            let entry = app.buttons["system.master.customer"]
+            XCTAssertTrue(entry.waitForExistence(timeout: 5))
+            entry.tap()
+            for code in contacts.keys.sorted() {
+                for name in ["code", "name", "address", "address2", "phone", "email"] {
+                    guard let value = contacts[code]?[name], !value.isEmpty else { continue }
+                    let input = app.textFields["system.master.field." + name]
+                    for _ in 0..<3 where !input.isHittable { app.swipeUp() }
+                    XCTAssertTrue(input.isHittable, name)
+                    input.tap()
+                    input.typeText(value + "\n")
+                }
+                let save = app.buttons["system.master.save"]
+                for _ in 0..<3 where !save.isHittable { app.swipeUp() }
+                XCTAssertTrue(save.isHittable)
+                save.tap()
+                let status = app.staticTexts["system.master.status"]
+                for _ in 0..<3 where !status.isHittable { app.swipeUp() }
+                XCTAssertTrue(status.waitForExistence(timeout: 5))
+                XCTAssertEqual(status.label, "得意先を登録しました")
+                self.attach(app, name: "SL-090-SYS-\(code)")
+            }
+        }) { app in
             let field = app.textFields["sales.customer.code"]
             let name = app.descendants(matching: .any)["sales.customer.summary.name"].firstMatch
             var previous = ""
@@ -27,6 +52,21 @@ final class SalesReachFlows: XCTestCase {
                 previous = code
             }
         }
+    }
+
+    func testSL105() throws {
+        let app = XCUIApplication()
+        let evidence: [String: Any] = [
+            "id": "SL-105", "title": "印刷済み請求書を得意先・売掛へ転記",
+            "workflow": "legacy-not-run", "dateSeconds": 0, "changes": [], "reports": [:],
+        ]
+        app.launchEnvironment["ACAS_FIXTURE"] = try JSONSerialization.data(withJSONObject: evidence).base64EncodedString()
+        app.launchArguments += ["-AppleLanguages", "(ja)", "-AppleLocale", "ja_JP"]
+        XCUIDevice.shared.orientation = .landscapeLeft
+        app.launch()
+        XCTAssertTrue(app.staticTexts["SL-105"].waitForExistence(timeout: 10))
+        XCTAssertEqual(app.staticTexts["case.verdict.notApplicable"].label, "対象外")
+        attach(app, name: "SL-105")
     }
 
     func testSL002() throws { try customerMenu("SL-002") }
@@ -46,6 +86,34 @@ final class SalesReachFlows: XCTestCase {
     func testSL020() throws { try invoiceFixedData("SL-020") }
     func testSL021() throws { try periodConfirmation("SL-021") }
     func testSL022() throws { try customerReport("SL-022") }
+
+    func testInitialCustomerAddressGuideExplainsDelimiterLimits() throws {
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        app.launchEnvironment["ACAS_FIXTURE"] = try Data(contentsOf: fixtureURL("SL-090")).base64EncodedString()
+        app.launchArguments += ["-AppleLanguages", "(ja)", "-AppleLocale", "ja_JP"]
+        XCUIDevice.shared.orientation = .landscapeLeft
+        app.launch()
+        let entry = app.buttons["system.master.customer"]
+        XCTAssertTrue(entry.waitForExistence(timeout: 5))
+        entry.tap()
+        for (name, value) in [("code", "CUST01"), ("name", "ADDRESS TEST"), ("address", "NO DELIMITER")] {
+            let field = app.textFields["system.master.field." + name]
+            XCTAssertTrue(field.waitForExistence(timeout: 5))
+            field.tap()
+            field.typeText(value + "\n")
+        }
+        let save = app.buttons["system.master.save"]
+        for _ in 0..<3 where !save.isHittable { app.swipeUp() }
+        XCTAssertTrue(save.isHittable)
+        save.tap()
+        let status = app.staticTexts["system.master.status"]
+        for _ in 0..<3 where !status.isHittable { app.swipeUp() }
+        XCTAssertTrue(status.waitForExistence(timeout: 5))
+        XCTAssertTrue(status.label.contains("区切り文字を1〜4個"))
+        XCTAssertTrue(status.label.contains("最初の区切り文字は住所1に入れ、その前はShift_JISで30バイト以内"))
+        attach(app, name: "初期得意先登録-住所入力案内")
+    }
 
     func testSL091() throws {
         try reach("SL-091", through: ["sales.analysis.codes", "sales.analysis.add"],
@@ -394,6 +462,7 @@ final class SalesReachFlows: XCTestCase {
     }
 
     private func reach(_ id: String, through route: [String], title: String, verdict: String? = "match",
+                       prepare: (XCUIApplication) -> Void = { _ in },
                        check: (XCUIApplication) -> Void) throws {
         continueAfterFailure = false
         let url = try fixtureURL(id)
@@ -404,6 +473,7 @@ final class SalesReachFlows: XCTestCase {
         app.launch()
         XCTAssertTrue(app.staticTexts[id].waitForExistence(timeout: 10))
         XCTAssertTrue(app.staticTexts["case.verdict.running"].exists)
+        prepare(app)
         for identifier in ["section.sales", "sales.date.save"] + route {
             let button = app.descendants(matching: .any).matching(identifier: identifier).firstMatch
             for _ in 0..<3 where !button.isHittable {
