@@ -14,10 +14,13 @@ public class Pl020 extends PlBase {
     static final String PROG_NAME = "PL020 (3.01.08)";
     static final String[] D_TYPES = {"Receipt <<<    ", "Account <<<    ", "Credit Note <<<"};
     static final BigDecimal HUNDRED = BigDecimal.valueOf(100);
+    private static final String DELETED_FOLIOS = "delfolio.dat";
     protected Rec ih, lines, purch, anal, del;
-    protected CobFile purchaseFile, analysisFile, invoiceFile, delFile;
+    protected CobFile purchaseFile, analysisFile, invoiceFile;
     protected int z, i, j, lin, newScreen, vatCode;
-    protected boolean delExists;
+    private byte[] deletedFolioCursor;
+    private byte[] selectedDeletedFolio;
+    private boolean delExists;
     protected String escapeCode = " ", wsNamed = " ", wsDate = "";
     protected BigDecimal wsNet = BigDecimal.ZERO, wsVat = BigDecimal.ZERO;
 
@@ -32,7 +35,6 @@ public class Pl020 extends PlBase {
         purch = purchRec(); anal = analRec();
         del = fdRec(Layout.of("purchase/fdpdnos.cob", "del-inv-nos-record"));
         purchaseFile = purchaseFile(purch); analysisFile = analysisFile(anal); invoiceFile = invoiceFile();
-        delFile = CobFile.sequential(ctx.store, ctx.path("delfolio.dat"));
         wsDate = fromUk(toDay());
         programStart();
         main:
@@ -218,19 +220,27 @@ public class Pl020 extends PlBase {
             }
             if (r.equals("Y")) break;
         }
-        storeInvoice();
-        if (!delExists) sys.setNum("next-folio", sys.longv("next-folio") + 1);
-        sys.setNum("p-flag-i", 1);
+        if (storeInvoice()) {
+            if (selectedDeletedFolio == null) sys.setNum("next-folio", sys.longv("next-folio") + 1);
+            sys.setNum("p-flag-i", 1);
+        }
         eraseEos(11, 1);
     }
 
-    /** 請求書ヘッダと明細の書込み（pl030 は rewrite に差し替える）。 */
-    protected void storeInvoice() {
+    /** ヘッダーを新規作成できた請求だけ明細を書き込む。 */
+    protected boolean storeInvoice() {
         ih.set("ih-status", "P");
         i--;
         ih.setNum("ih-lines", i);
         byte[] rec = fdBytes(ih.bytes(), HEADER_SIZE);
-        if (!invoiceFile.write(rec).equals("00")) writeError(invoiceFile, rec, 23, 24);
+        String headerStatus;
+        synchronized (ctx.store) {
+            headerStatus = invoiceFile.write(rec);
+        }
+        if (!headerStatus.equals("00")) {
+            writeError(invoiceFile, rec, 23, 24);
+            return false;
+        }
         j = 0;
         for (int n = 0; n < i; n++) {
             j++;
@@ -240,6 +250,10 @@ public class Pl020 extends PlBase {
             rec = fdBytes(lineBytes(j), LINE_SIZE);
             if (!invoiceFile.write(rec).equals("00")) writeError(invoiceFile, rec, 20, 21);
         }
+        if (selectedDeletedFolio != null) {
+            ctx.store.remove(ctx.path(DELETED_FOLIOS), selectedDeletedFolio);
+        }
+        return true;
     }
 
     protected void totalScreen() {
@@ -338,14 +352,6 @@ public class Pl020 extends PlBase {
                 term().crtStatus = 0;
                 String sup = upper(pad(accept(5, 72, 7), 7));
                 ih.set("ih-supplier", sup);
-                if (sup.equals("CREATE9")) {
-                    display(23, 1, "Creating Invoice File                   ");
-                    invoiceFile.close();
-                    invoiceFile.open(Mode.OUTPUT);
-                    invoiceFile.close();
-                    sys.setNum("file-status", 1, 26);
-                    invoiceFile.open(Mode.IO);
-                }
                 if (sup.trim().equals("NEW") || crtStatus() == 1001) {
                     purchaseFile.close(); invoiceFile.close(); analysisFile.close();
                     call("pl025");
@@ -362,8 +368,9 @@ public class Pl020 extends PlBase {
             }
             show(9, 11, pad("", 23));
             eraseEol(23, 1);
+            selectedDeletedFolio = null;
             if (delExists) getADeletedInvoice();
-            else {
+            if (ih.longv("ih-invoice") == 0) {
                 if (sys.longv("next-folio") == 0) sys.setNum("next-folio", 1);
                 ih.setNum("ih-invoice", sys.longv("next-folio"));
             }
@@ -395,16 +402,29 @@ public class Pl020 extends PlBase {
     }
 
     protected void getADeletedInvoice() {
-        while (delFile.readNext(del).equals("00")) {
-            if (del.longv("del-inv-nos") == 0) continue;
-            ih.setNum("ih-invoice", del.longv("del-inv-nos"));
+        var key = invHeaderRec();
+        while (true) {
+            var entry = ctx.store.next(ctx.path(DELETED_FOLIOS), deletedFolioCursor, false);
+            if (entry == null) break;
+            deletedFolioCursor = entry.getKey();
+            del.load(entry.getValue());
+            long number = del.longv("del-inv-nos");
+            if (number == 0) continue;
+            key.setNum("ih-invoice", number);
+            key.setNum("ih-test", 0);
+            if (invoiceFile.read(key).equals("00")) continue;
+            selectedDeletedFolio = deletedFolioCursor;
+            ih.setNum("ih-invoice", number);
             display(3, 45, "Using Deleted Folio Numbers");
             return;
         }
-        delFile.close();
-        delFile.open(Mode.OUTPUT);
         show(3, 45, pad("", 29));
-        ih.setNum("ih-invoice", sys.longv("next-invoice"));
+        long nextInvoice = sys.longv("next-invoice");
+        key.setNum("ih-invoice", nextInvoice);
+        key.setNum("ih-test", 0);
+        if (nextInvoice > 0 && !invoiceFile.read(key).equals("00")) {
+            ih.setNum("ih-invoice", nextInvoice);
+        }
         delExists = false;
     }
 
@@ -457,16 +477,15 @@ public class Pl020 extends PlBase {
             maps99(15);
         }
         purchaseFile.open(Mode.INPUT); analysisFile.open(Mode.INPUT);
-        if (sys.intv("file-status", 26) != 1) {
-            display(23, 1, "Creating Invoice File                    ");
-            invoiceFile.open(Mode.OUTPUT);
-            invoiceFile.close();
-            sys.setNum("file-status", 1, 26);
+        synchronized (ctx.store) {
+            if (!invoiceFile.exists()) {
+                display(23, 1, "Creating Invoice File                    ");
+            }
+            if (invoiceFile.open(Mode.IO, true).charAt(0) == '0') {
+                sys.setNum("file-status", 1, 26);
+            }
         }
-        invoiceFile.open(Mode.IO);
-        if (!delFile.open(Mode.INPUT).equals("00")) { delExists = false; return; }
-        delFile.close();
-        delFile.open(Mode.IO);
-        delExists = true;
+        deletedFolioCursor = null;
+        delExists = ctx.store.exists(ctx.path(DELETED_FOLIOS));
     }
 }

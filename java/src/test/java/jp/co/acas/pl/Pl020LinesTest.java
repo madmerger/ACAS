@@ -1,7 +1,9 @@
 package jp.co.acas.pl;
 
+import jp.co.acas.core.CobFile;
 import jp.co.acas.core.Layout;
 import jp.co.acas.core.Rec;
+import jp.co.acas.sys.SystemFile;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -42,6 +44,7 @@ class Pl020LinesTest {
         assertEquals(1, heads.size());
         assertEquals(count, heads.get(0).intv("ih-lines"));
         assertEquals(new BigDecimal(totalNet + ".00"), heads.get(0).num("ih-net"));
+        assertEquals(BigDecimal.valueOf(totalNet).multiply(new BigDecimal("0.20")), heads.get(0).num("ih-vat"));
         // 明細レコードは wspinv の invoice-line 形式で書かれる（pl020.cbl: move invoice-line (j) to invoice-record）
         List<Rec> lines = s.records("pinvoice.dat", () -> Layout.of("purchase/wspinv.cob", "Pinvoice-lines").newRec())
                 .stream().filter(r -> r.intv("il-line", 1) != 0).toList();
@@ -61,5 +64,32 @@ class Pl020LinesTest {
     @Test
     void 登録で40行を保存する() throws Exception {
         assertSaved(entered("pl020e40", 40), 40);
+    }
+
+    @Test
+    void 削除済みの伝票番号は正常な再登録で消費する() throws Exception {
+        PlSession s = new PlSession("pl020-reused", "sl-ready");
+        var deleted = CobFile.sequential(s.ctx.store, s.ctx.path("delfolio.dat"));
+        assertEquals("05", deleted.open(CobFile.Mode.EXTEND, true));
+        var folio = Layout.of("purchase/fdpdnos.cob", "del-inv-nos-record").newRec();
+        folio.setNum("del-inv-nos", 7);
+        assertEquals("00", deleted.write(folio));
+        deleted.close();
+
+        s.keys("D").keys(HEADER).keys(newLines(1)).keys(TOTALS);
+        s.assertMenu();
+        assertSaved(s, 1);
+        assertEquals(7, s.records("pinvoice.dat", PlBase::invHeaderRec).getFirst().longv("ih-invoice"));
+        assertEquals(0, deleted.count());
+    }
+
+    @Test
+    void ファイル状態フラグを復旧しても既存の請求書は保持する() throws Exception {
+        PlSession s = new PlSession("pl020-existing", "pl-invoice");
+        SystemFile.shared(s.ctx).setNum("file-status", 0, 26);
+        s.keys("D\r\r");
+        s.assertMenu();
+        assertEquals(2, s.records("pinvoice.dat", PlBase::invHeaderRec).size());
+        assertEquals(1, SystemFile.shared(s.ctx).intv("file-status", 26));
     }
 }
