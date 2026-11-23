@@ -518,3 +518,7 @@ Live	有効
 Dead	休止
 Yes	はい
 No	いいえ
+Sales Ledger Turnover Report	顧客別売上帳票
+Credit Terms  <------------- T u r n o v e r ------------> <--S A L E S-->  <--Date Of Last-->	与信条件      <------------------ 売上高 -----------------> <----売上---->  <------最終日----->
+Acct No          Name	顧客番号         名称
+Days   Limit  Mvmt Average   Qtr 1   Qtr 2   Qtr 3   Qtr 4 Current    Last  Invoice    Payment	日数   限度   件数 平均額    Q1      Q2      Q3      Q4    当期       前期  請求       入金

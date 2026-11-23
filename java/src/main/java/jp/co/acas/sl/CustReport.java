@@ -16,6 +16,8 @@ abstract class CustReport extends SlProgram {
     protected long wsEnterDate;
     /** 入力値を大文字化するか（sl170 は大文字化しない）。 */
     protected boolean upperCase = true;
+    /** 顧客番号条件を大文字化するか（sl180 は演算子のみ大文字化）。 */
+    protected boolean upperCust = true;
     private String up(String v) { return upperCase ? upper(v) : v; }
 
     protected static Rec sortKeyRec() { return Layout.ofSource(" 01  sales-sort-record.\n     03  sales-sort-key  pic x(7).\n", "sales-sort-record").newRec(); }
@@ -58,7 +60,7 @@ abstract class CustReport extends SlProgram {
         s.display();
         while (true) {
             s.accept();
-            custIn = up(pad(custIn, 6));
+            custIn = pad(custIn, 6); if (upperCase && upperCust) custIn = upper(custIn);
             customerIn = pad(custIn, 7);
             if (!customerIn.isBlank()) customerIn = customerIn.replace(' ', 'Z');
             statusIn = up(statusIn);
