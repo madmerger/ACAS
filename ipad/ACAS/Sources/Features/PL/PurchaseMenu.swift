@@ -45,6 +45,8 @@ struct PurchaseMenu: View {
                 .accessibilityIdentifier("pl.analysis")
             NavigationLink(plString("purchase.supplier.alphabetical")) { PurchaseSuppliersView(workspace: workspace, byName: true) }
                 .accessibilityIdentifier("pl.suppliers.alphabetical")
+            NavigationLink(plString("purchase.close.title")) { PurchasePeriodCloseView(workspace: workspace) }
+                .accessibilityIdentifier("pl.period.close")
             NavigationLink(plString("purchase.invoice.settings.menu")) { PurchaseInvoiceMenu(workspace: workspace) }
                 .accessibilityIdentifier("pl.invoice.settings.menu")
             NavigationLink(plString("purchase.settings")) { SystemMenu(workspace: workspace) }
@@ -88,6 +90,16 @@ struct PurchaseNotice: Identifiable {
     var id: String { message }
 
     init(_ error: Error) {
+        if let error = error as? PurchaseLedger.PeriodCloseError {
+            switch error {
+            case .uninitialized: message = plString("purchase.close.error.uninitialized")
+            case .unpostedPayments: message = plString("purchase.close.error.payments")
+            case .analysisRequired: message = plString("purchase.close.error.analysis")
+            case .unpostedInvoices: message = plString("purchase.close.warning.invoices")
+            case .incorrectPassword: message = plString("purchase.close.error.password")
+            }
+            return
+        }
         if let error = error as? PurchaseLedger.ScheduleError {
             switch error {
             case .noSchedule: message = plString("purchase.cheques.error.empty")
