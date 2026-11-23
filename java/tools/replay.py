@@ -204,7 +204,7 @@ def run_case(api, evid, case, verbose=False):
     return res
 
 
-def main(make_api=Api):
+def argument_parser():
     ap = argparse.ArgumentParser()
     ap.add_argument("evidence", type=Path)
     ap.add_argument("cases", nargs="+")
@@ -212,7 +212,11 @@ def main(make_api=Api):
     ap.add_argument("--out", type=Path)
     ap.add_argument("-v", action="store_true")
     ap.add_argument("--residue", type=Path, help="日本語面に英小文字語が残った行を JSON で出力する")
-    a = ap.parse_args()
+    return ap
+
+
+def main(make_api=Api, args=None):
+    a = args if args is not None else argument_parser().parse_args()
     catalog = json.loads((a.evidence / "scenarios/catalog.json").read_text())["cases"]
     sel = [c for c in catalog if any(c["id"] == x or (x.endswith("-") and c["id"].startswith(x)) for x in a.cases)]
     global RESIDUE
