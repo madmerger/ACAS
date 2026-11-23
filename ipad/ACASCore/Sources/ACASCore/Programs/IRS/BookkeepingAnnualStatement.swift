@@ -18,6 +18,12 @@ extension BookkeepingService {
         guard records.allSatisfy({ $0.raw("ac").first.map { (65...90).contains($0) } == true }),
               let finalCategory = records.last?.str("ac") else { throw Failure.invalidInput }
         let buckets = Dictionary(grouping: records) { $0.str("ac") }
+        var detailDebits: [Int64: Int64] = [:]
+        var currentOwner: Int64?
+        for row in records {
+            if row.int("sub-nominal") == 0 { currentOwner = row.int("owning") }
+            if let currentOwner { detailDebits[currentOwner, default: 0] += row.int("dr") - row.int("cr") }
+        }
         let end = system.raw("end-date")
         let year = Array(end.suffix(2))
         guard year.allSatisfy({ (48...57).contains($0) }) else { throw Failure.invalidInput }
@@ -40,9 +46,7 @@ extension BookkeepingService {
             write(spaces(25) + ascii("For the Year Ended ") + end, after: 2)
             write(spaces(34) + ascii("--------20") + year + ascii("--------"), after: 2)
         }
-        func balance(_ row: Record) -> Int64 {
-            let debit = row.int("dr") - row.int("cr")
-            let category = row.str("ac")
+        func balance(_ debit: Int64, category: String) -> Int64 {
             return category < "E" || category == "I" || category == "J" || category >= "U" ? -debit : debit
         }
         func amount(_ cents: Int64) -> [UInt8] {
@@ -56,18 +60,13 @@ extension BookkeepingService {
                 let category = String(letter)
                 // After EOF irs060 still compares the last record's category on the next pass.
                 guard category <= finalCategory else { throw StatementStop.ledgerOrder }
-                var owner: Record?
-                var cents: Int64 = 0
                 for row in buckets[category, default: []] {
+                    total += balance(row.int("dr") - row.int("cr"), category: category)
                     if row.int("sub-nominal") == 0 {
-                        if let owner, cents != 0 { write(owner.raw("name") + spaces(10) + amount(cents)) }
-                        owner = row
-                        cents = 0
+                        let cents = balance(detailDebits[row.int("owning"), default: 0], category: category)
+                        if cents != 0 { write(row.raw("name") + spaces(10) + amount(cents)) }
                     }
-                    cents += balance(row)
-                    total += balance(row)
                 }
-                if let owner, cents != 0 { write(owner.raw("name") + spaces(10) + amount(cents)) }
             }
             return total
         }

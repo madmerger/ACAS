@@ -4,6 +4,26 @@ import XCTest
 @testable import ACASCore
 
 final class BookkeepingPostingTests: XCTestCase {
+    func testAnnualStatementUsesWorkFileOrderForDetailsAndClassificationForTotals() throws {
+        let service = BookkeepingService(BusinessContext(store: try FileStore()))
+        var settings = service.system
+        settings["end-date"] = "31/12/26"
+        try service.writeLine(service.systemPath, settings.bytes)
+        try service.saveAccount(code: 10001, name: "Sales", category: .income, editing: false)
+        try service.saveAccount(code: 10001, child: 10002, name: "Sub", category: .expense, editing: false)
+        try service.saveAccount(code: 20001, name: "Expenses", category: .expense, editing: false)
+        try service.saveAccount(code: 30001, name: "Liabilities", category: .liabilities, editing: false)
+        var child = try service.accountRecord(10001, 10002)
+        child.setInt("dr", 12_300)
+        XCTAssertTrue(service.store.rewrite(service.accountsPath, key: child.raw("key"), data: child.bytes))
+        try service.prepareStatementAccounts()
+        let statement = try service.printAnnualStatement(title: "")
+        let lines = String(decoding: statement.data, as: UTF8.self).components(separatedBy: "\n")
+        XCTAssertTrue(lines.contains { $0.hasPrefix("Sales ") && $0.filter { $0 != " " }.hasSuffix("(123)") })
+        XCTAssertTrue(lines.contains { $0.contains("Less Total Direct Costs") && $0.hasSuffix("123") })
+        XCTAssertFalse(lines.contains { $0.hasPrefix("Expenses ") })
+    }
+
     func testPasswordCanBeRegisteredAndChanged() throws {
         let service = BookkeepingService(BusinessContext(store: try FileStore()))
         var configuration = service.configuration
