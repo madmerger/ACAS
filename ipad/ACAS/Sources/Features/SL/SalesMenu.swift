@@ -19,6 +19,7 @@ struct SalesMenu: View {
                 #endif
             }
             .accessibilityIdentifier("sales.proof")
+            PeriodClosingLink(workspace: workspace, ledger: .sales)
         }
     }
 }

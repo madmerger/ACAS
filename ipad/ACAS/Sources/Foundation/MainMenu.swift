@@ -77,6 +77,8 @@ struct MainMenu: View {
             SystemMenu(workspace: workspace)
         case .sales:
             SalesMenu(workspace: workspace)
+        case .purchases:
+            PurchaseIntegrationMenu(workspace: workspace)
         case .stock:
             StockMenu(workspace: workspace, saveAuditStatus: saveStockAuditStatus) {
                 selectSection(nil)
