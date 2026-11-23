@@ -124,7 +124,7 @@ public class Pl020 extends PlBase {
             getData1();
             if (crtStatus() == 2005) return;
             if (newScreen == 1) continue;
-            if (!lines.str("il-description", i).isBlank() && i != 40) continue;
+            if (i < 40 && !lines.str("il-description", i).isBlank()) continue;
             return;
         }
     }
@@ -134,6 +134,7 @@ public class Pl020 extends PlBase {
         while (true) {
             lin = j + 15;
             if (lin > 23) {
+                if (i > 40) { newScreen = 0; return; }
                 i--;
                 newScreen = 1;
                 return;
