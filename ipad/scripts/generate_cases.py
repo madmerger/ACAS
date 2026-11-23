@@ -2,6 +2,7 @@
 import argparse
 import base64
 import json
+import subprocess
 from pathlib import Path
 
 
@@ -60,6 +61,22 @@ def expected_changes(evidence, path):
     return changes
 
 
+def analysis_changes(evidence, run):
+    path = "ledgers/acas/analysis.dat"
+    source = evidence_path(evidence, run / "files" / path)
+    output = subprocess.run(["db_dump", str(source)], check=True, capture_output=True, text=True).stdout
+    lines = output.splitlines()
+    items = [bytes.fromhex(line) for line in lines[lines.index("HEADER=END") + 1:lines.index("DATA=END")]]
+    if len(items) % 2 or not items:
+        raise ValueError("分析ファイルに有効な索引レコードがありません")
+    changes = []
+    for key, value in zip(items[::2], items[1::2]):
+        if len(key) != 3 or len(value) != 66 or not value.startswith(key):
+            raise ValueError("分析ファイルのレコード長または索引キーが一致しません")
+        changes.append(dict(file=path, key=key.hex(), before=None, after=value.hex()))
+    return changes
+
+
 def fixture(evidence, case):
     legacy = case["legacy_result"]
     targets = legacy.get("comparison_targets", {})
@@ -86,13 +103,16 @@ def fixture(evidence, case):
     if workflow == "gl-account-add":
         major, minor, name, _, placement, _ = text_inputs[3].split("\r")[:-1]
         values.update(account=major + minor, name=name, placement=placement)
+    changes = expected_changes(evidence, targets.get("keyed_record_diff"))
+    if workflow == "company":
+        changes += analysis_changes(evidence, run)
     return {
         "id": case["id"],
         "workflow": workflow,
         "title": title,
         "dateSeconds": date,
         "seed": seed,
-        "changes": expected_changes(evidence, targets.get("keyed_record_diff")),
+        "changes": changes,
         "reports": reports,
         "calculation": legacy.get("actual") if workflow == "check-digit" else None,
         "input": values,

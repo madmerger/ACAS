@@ -8,6 +8,8 @@ struct SystemMenu: View {
         List {
             NavigationLink(String(localized: "system.company", table: "System")) { CompanyForm(workspace: workspace) }
                 .accessibilityIdentifier("system.company")
+            NavigationLink(systemSetting("master.title")) { MasterSetupMenu(workspace: workspace) }
+                .accessibilityIdentifier("system.master")
             #if DEBUG
             if workspace.evidence != nil {
                 NavigationLink(String(localized: "calculation.title", table: "CALC")) { CheckDigitForm(workspace: workspace) }
