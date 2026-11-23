@@ -133,12 +133,6 @@ public struct SalesInvoices {
         return draft
     }
 
-    private static let openItemCreditLayout = Layout("open-item-credit", [
-        ("key", .x(7)), ("invoice", .native(bytes: 4, signed: true)), ("", .filler(10)),
-        ("type", .n9(digits: 1, scale: 0, signed: false)), ("", .filler(72)),
-        ("status", .n9(digits: 1, scale: 0, signed: false)), ("", .filler(19)),
-    ])
-
     private func validateCreditTarget(_ draft: Draft, customer: String, replacing existing: Number?, confirmed: Bool) throws {
         guard draft.kind == .creditNote, draft.creditedInvoice != 0 else { return }
         guard draft.creditedInvoice < 99_999_999 else { throw Error.invalidInput }
@@ -154,13 +148,10 @@ public struct SalesInvoices {
                 return
             }
         } else {
-            var record = Record(Self.openItemCreditLayout)
-            record["key"] = customer
-            record.setInt("invoice", draft.creditedInvoice)
-            let key = Array(record.bytes.prefix(11))
-            if let bytes = context.store.read("ledgers/acas/openitm3.dat", key: key) {
-                let target = Record(Self.openItemCreditLayout, bytes: bytes)
-                guard bytes.count == Self.openItemCreditLayout.size,
+            let key = SalesOpenItems.key(customer: customer, invoice: draft.creditedInvoice)
+            if let bytes = context.store.read(SalesOpenItems.path, key: key) {
+                let target = Record(SalesOpenItems.layout, bytes: bytes)
+                guard bytes.count == SalesOpenItems.layout.size,
                       target.int("type") == Kind.invoice.rawValue, target.int("status") != 1 else {
                     throw Error.invalidCreditTarget
                 }

@@ -29,6 +29,10 @@ struct SalesMenu: View {
                 NavigationLink(slText("sales.invoice.menuTitle")) { SalesInvoiceMenu(workspace: workspace) }
                     .accessibilityIdentifier("sales.invoice.menu")
             }
+            Section(slText("sales.payment.section")) {
+                NavigationLink(slText("sales.payment.entry")) { SalesPaymentsView(workspace: workspace) }
+                    .accessibilityIdentifier("sales.payment.entry")
+            }
             NavigationLink(String(localized: "sales.proof", table: "SL")) {
                 #if DEBUG
                 if workspace.evidence != nil, ProcessInfo.processInfo.environment["ACAS_COMPACT_REPORT"] == "1" {
