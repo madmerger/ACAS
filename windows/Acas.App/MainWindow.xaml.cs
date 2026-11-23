@@ -97,7 +97,7 @@ public partial class MainWindow : Window
     private void OpenNavigation(object sender, RoutedPropertyChangedEventArgs<object> e)
     {
         if (e.NewValue is TreeViewItem node)
-            OpenNavigationItem(node);
+            OpenNavigationItem(node, deferConfirmation: true);
     }
 
     private void ReopenSelectedNavigation(object sender, MouseButtonEventArgs e)
@@ -119,12 +119,19 @@ public partial class MainWindow : Window
         }
     }
 
-    private void OpenNavigationItem(TreeViewItem node)
+    private void OpenNavigationItem(TreeViewItem node, bool deferConfirmation = false)
     {
         if (node.Tag is NavigationItem { Open: { } open })
         {
             _screenMenu = null;
-            ShowScreen(open());
+            var screen = open();
+            if (deferConfirmation && screen is ConfirmationScreen)
+                Dispatcher.InvokeAsync(() =>
+                {
+                    if (ReferenceEquals(Navigation.SelectedItem, node)) ShowScreen(screen);
+                });
+            else
+                ShowScreen(screen);
         }
     }
 

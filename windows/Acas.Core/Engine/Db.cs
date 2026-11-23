@@ -97,6 +97,14 @@ public sealed class Db : IDisposable
         return true;
     }
 
+    public T Atomic<T>(Func<T> operation)
+    {
+        using var transaction = _c.BeginTransaction();
+        T result = operation();
+        transaction.Commit();
+        return result;
+    }
+
     public void AddSpool(string name, string body) =>
         Exec("INSERT INTO spool(name,created,body) VALUES($n,$c,$b)", ("$n", name), ("$c", DateTime.UtcNow.ToString("o")), ("$b", body));
     public List<(long Id, string Name, DateTimeOffset Created, string Body)> Spool()
