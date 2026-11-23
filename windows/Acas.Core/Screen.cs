@@ -10,6 +10,8 @@ public abstract record Screen(string Title);
 
 public sealed record InformationScreen(string Title, string Message) : Screen(Title);
 
+public sealed record MenuScreen(string Title, IReadOnlyList<MenuItem> Items) : Screen(Title);
+
 public sealed record TableScreen(string Title, string Id, IReadOnlyList<string> Columns,
     IReadOnlyList<TableRow> Rows, string EmptyMessage = "表示するデータがありません。") : Screen(Title);
 

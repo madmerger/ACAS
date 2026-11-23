@@ -13,3 +13,5 @@ dotnet run --project Acas.App -c Release --no-build
 ```
 
 保存先はユーザーごとのローカルアプリケーションデータ内の `ACAS\acas.db` です。検証で通常の業務データと分離する場合は `-- --database <検証用データベースのパス>` を指定します。共有パス、ネットワークドライブ、リンクを経由するパスは使用できません。
+
+業務画面の追加方法は [Windows 版 ACAS の開発手順](docs/DEVELOPING.md) を参照してください。

@@ -26,7 +26,9 @@ public partial class MainWindow : Window
         _database = new Db(path);
         Closed += (_, _) => _database.Dispose();
 
-        Navigation.Items.Add(CreateMenuItem(new NavigationItem("MenuReports", "帳票", Open: OpenReports)));
+        foreach (var item in SubsystemScreens.Load(typeof(MainWindow).Assembly, _database)
+            .Append(new NavigationItem("MenuReports", "帳票", Open: OpenReports)))
+            Navigation.Items.Add(CreateMenuItem(item));
         ShowScreen(new InformationScreen("業務メニュー", "左側のメニューから操作を選択してください。"));
     }
 
@@ -70,6 +72,7 @@ public partial class MainWindow : Window
         ScreenContent.Content = screen switch
         {
             InformationScreen info => Identify(new TextBlock { Text = info.Message, TextWrapping = TextWrapping.Wrap }, "ScreenMessage"),
+            MenuScreen menu => CreateMenu(menu),
             TableScreen table => CreateTable(table),
             FormScreen form => CreateForm(form),
             ReportScreen report => CreateReport(report),
@@ -84,6 +87,27 @@ public partial class MainWindow : Window
         var button = Identify(new Button { Content = label }, id);
         button.Click += (_, _) => action();
         return button;
+    }
+
+    private FrameworkElement CreateMenu(MenuScreen menu)
+    {
+        var panel = new DockPanel();
+        var list = Identify(new ListBox(), "ScreenMenu", menu.Title);
+        foreach (var item in menu.Items)
+            list.Items.Add(Identify(new ListBoxItem { Content = item.Caption, Tag = item }, item.Id));
+        var open = ActionButton("ScreenMenuOpen", "開く", () =>
+        {
+            if (list.SelectedItem is ListBoxItem { Tag: NavigationItem { Open: { } action } })
+                ShowScreen(action());
+        });
+        open.IsEnabled = false;
+        list.SelectionChanged += (_, _) => open.IsEnabled =
+            list.SelectedItem is ListBoxItem { Tag: NavigationItem { Open: not null } };
+        open.Margin = new Thickness(0, 12, 0, 0);
+        DockPanel.SetDock(open, Dock.Bottom);
+        panel.Children.Add(open);
+        panel.Children.Add(list);
+        return panel;
     }
 
     private FrameworkElement CreateTable(TableScreen table)
