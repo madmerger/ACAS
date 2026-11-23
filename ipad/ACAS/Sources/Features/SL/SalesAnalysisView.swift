@@ -235,7 +235,7 @@ private func analysisDescription(_ code: SalesAnalysis.Code) -> String {
     case ("Pvi", "VAT Input Invoices/CN's"): slText("sales.analysis.default.purchaseInvoiceTax")
     case ("Pvj", "VAT Input Receipts"): slText("sales.analysis.default.purchaseReceiptTax")
     case ("Sz", "Computer Control"), ("Pz", "Computer Control"): slText("sales.analysis.default.system")
-    case ("Pza", "Purchase Carriage Charges"): slText("sales.analysis.default.purchaseCarriage")
+    case ("Pza", "Purchase Carriage Charge"): slText("sales.analysis.default.purchaseCarriage")
     case ("Pzb", "Purchase Late Charges"): slText("sales.analysis.default.purchaseLate")
     case ("Szc", "Sales Carriage Charges"): slText("sales.analysis.default.salesCarriage")
     case ("Szd", "Sales Late Charges"): slText("sales.analysis.default.salesLate")

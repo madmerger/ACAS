@@ -46,6 +46,14 @@ final class SalesAnalysisFlows: XCTestCase {
         screenshot.name = "登録した売上分析コード"
         screenshot.lifetime = .keepAlways
         add(screenshot)
+
+        app.navigationBars["売上分析コード表示"].buttons.firstMatch.tap()
+        tap("sales.analysis.printAll", in: app)
+        tap("sales.analysis.generate", in: app)
+        let purchaseCarriage = app.descendants(matching: .any)["sales.analysis.code.Pza"].firstMatch
+        if !purchaseCarriage.isHittable { app.swipeUp() }
+        XCTAssertTrue(purchaseCarriage.waitForExistence(timeout: 5))
+        XCTAssertTrue(purchaseCarriage.label.contains("仕入運賃"))
     }
 
     @MainActor
