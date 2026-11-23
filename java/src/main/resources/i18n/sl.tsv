@@ -350,3 +350,10 @@ Invoice No	請求書番号
 Cust No	顧客番号
 Page	頁
 Date	日付
+Delivery / Picking Note Print	納品書／ピッキングリスト印刷
+Picking/Delivery Note	納品書／ピッキングリスト
+Receipt Pick	領収ピック
+Invoice Pick	請求ピック
+Abrev #	略号
+Location	棚番
+Total Item Count	品目数合計
