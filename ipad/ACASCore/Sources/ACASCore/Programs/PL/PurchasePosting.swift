@@ -35,14 +35,36 @@ private final class PurchasePosting {
     }
 
     func post() throws -> [PurchaseLedger.Transaction] {
+        let stagingPath = ledger.base + "openitm4.dat"
+        let staged = store.readRaw(stagingPath) ?? []
+        let size = R.oiLayout.size
+        guard staged.count.isMultiple(of: size) else { throw PurchaseLedger.Error.invalidTransaction }
+        var keys = Set<[UInt8]>()
+        var items: [(header: Record?, item: Record, staged: Bool)] = []
+        for offset in stride(from: 0, to: staged.count, by: size) {
+            let item = Record(R.oiLayout, bytes: Array(staged[offset..<(offset + size)]))
+            let key = openKey(item)
+            guard (1...3).contains(item.int("oi-type")) else { throw PurchaseLedger.Error.invalidTransaction }
+            guard keys.insert(key).inserted, store.read(archivePath, key: key) == nil else {
+                throw PurchaseLedger.Error.duplicateTransaction
+            }
+            let header = ledger.header(item.int("oi-invoice")).flatMap {
+                $0.raw("ih-supplier") == item.raw("oi-supplier") ? $0 : nil
+            }
+            items.append((header, item, true))
+        }
         let headers = ledger.headers().filter { $0.str("ih-status").uppercased() != "Z" }
-        guard !headers.isEmpty else { return [] }
-        let items = try headers.map { header -> (Record, Record, PurchaseLedger.Transaction) in
-            guard let transaction = ledger.decodeTransaction(header) else { throw PurchaseLedger.Error.invalidTransaction }
-            guard ledger.supplierRecord(transaction.supplier) != nil else { throw PurchaseLedger.Error.supplierNotFound }
+        for header in headers {
+            guard ledger.decodeTransaction(header) != nil else { throw PurchaseLedger.Error.invalidTransaction }
             let item = openItem(header)
-            guard store.read(archivePath, key: openKey(item)) == nil else { throw PurchaseLedger.Error.duplicateTransaction }
-            return (header, item, transaction)
+            let key = openKey(item)
+            if !keys.insert(key).inserted { continue }
+            guard store.read(archivePath, key: key) == nil else { throw PurchaseLedger.Error.duplicateTransaction }
+            items.append((header, item, false))
+        }
+        guard !items.isEmpty else { return [] }
+        guard items.allSatisfy({ ledger.supplierRecord($0.item.str("oi-supplier")) != nil }) else {
+            throw PurchaseLedger.Error.supplierNotFound
         }
         if usesGL {
             let chunks = (items.count - 1) / 99
@@ -53,15 +75,17 @@ private final class PurchasePosting {
             }
         }
         head(credits: false)
-        for (var header, var item, transaction) in items {
-            let type = transaction.type.rawValue
+        for (header, storedItem, staged) in items {
+            var item = storedItem
             if usesGL { writePosting(item) }
-            if type == 3 { allocateCredit(&item) }
-            updateSupplier(item)
+            if item.int("oi-type") == 3 { allocateCredit(&item) }
+            updateSupplier(item, tally: !staged)
             store.write(archivePath, key: openKey(item), data: item.bytes)
-            header["ih-status"] = "z"
-            header["ih-update"] = "z"
-            store.rewrite(ledger.invoicePath, key: ledger.invoiceKey(transaction.id), data: header.bytes)
+            if var header {
+                header["ih-status"] = "z"
+                header["ih-update"] = "z"
+                store.rewrite(ledger.invoicePath, key: ledger.invoiceKey(item.int("oi-invoice")), data: header.bytes)
+            }
         }
         closeBatch()
         if printLines > pageLength - 7 { head(credits: false) }
@@ -74,7 +98,7 @@ private final class PurchasePosting {
         }
         finishUnappliedCredits()
         printer.close()
-        store.writeRaw(ledger.base + "openitm4.dat", [])
+        store.writeRaw(stagingPath, [])
         system.setInt("p-flag-i", 2)
         system.setInt("p-flag-a", 1)
         system["oi-5-flag"] = "Y"
@@ -83,7 +107,10 @@ private final class PurchasePosting {
         var retained = ledger.systemFile.read(4) ?? SystemAuxRecords.initialRecord4()
         retained.replaceSubrange(0..<totals.bytes.count, with: totals.bytes)
         ledger.systemFile.write(4, retained)
-        return items.compactMap { ledger.header($0.2.id).flatMap(ledger.decodeTransaction) }
+        return items.compactMap { item in
+            guard item.header != nil else { return nil }
+            return ledger.header(item.item.int("oi-invoice")).flatMap(ledger.decodeTransaction)
+        }
     }
 
     private func openKey(_ item: Record) -> [UInt8] { Array(item.bytes.prefix(11)) }
@@ -115,7 +142,7 @@ private final class PurchasePosting {
         totals.setInt(name, Cobol.truncate(totals.int(name) + value, digits: 10))
     }
 
-    private func updateSupplier(_ item: Record) {
+    private func updateSupplier(_ item: Record, tally: Bool) {
         guard var supplier = ledger.supplierRecord(item.str("oi-supplier")) else { return }
         let type = Int(item.int("oi-type")), quarter = system.int("current-quarter")
         let value = gross(item)
@@ -143,7 +170,7 @@ private final class PurchasePosting {
             if current < 0 {
                 supplier.setInt("purch-unapplied", Cobol.truncate(supplier.int("purch-unapplied") - current, digits: 10))
             }
-            addTotal(type == 2 ? "pl-invoices-this-month" : "pl-credit-notes-this-month", abs(value))
+            if tally { addTotal(type == 2 ? "pl-invoices-this-month" : "pl-credit-notes-this-month", abs(value)) }
         }
         supplier.setInt("purch-status", 1)
         store.rewrite(ledger.suppliersPath, key: Array(supplier.bytes.prefix(7)), data: supplier.bytes)

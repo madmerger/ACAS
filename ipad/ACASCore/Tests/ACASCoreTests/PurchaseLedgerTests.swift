@@ -3,6 +3,28 @@ import XCTest
 @testable import ACASCore
 
 final class PurchaseLedgerTests: XCTestCase {
+    func testPostingPreservesLegacyExtractedTransactions() throws {
+        let ledger = try makeLedger()
+        let code = try addSupplier(ledger)
+        var old = Record(PurchaseRecords.oiLayout)
+        old["oi-supplier"] = code
+        old.setInt("oi-invoice", 99)
+        old.setInt("oi-date", ledger.system.int("run-date"))
+        old.setInt("oi-type", 2)
+        old.setInt("oi-net", 4_000)
+        let path = ledger.base + "openitm4.dat"
+        ledger.store.writeRaw(path, old.bytes)
+        var new = PurchaseLedger.Transaction(date: ledger.processingDate)
+        new.supplier = code
+        new.lines[0].code = "a1"
+        new.lines[0].net = 10_000
+        try ledger.saveTransaction(new)
+        try ledger.postTransactions()
+        XCTAssertEqual(try ledger.supplier(code: code).currentBalance, 16_000)
+        XCTAssertEqual(ledger.openItems(supplier: code).map(\.id), [1, 99])
+        XCTAssertEqual(ledger.store.readRaw(path), [])
+    }
+
     func testCreditRejectsReceiptAndOtherSuppliersInvoice() throws {
         let ledger = try makeLedger()
         let code = try addSupplier(ledger)
