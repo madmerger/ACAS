@@ -20,6 +20,7 @@ public class Purchase extends PlBase {
             // Open-System
             if (!SystemFile.read(ctx).equals("00")) { call("mapser"); SystemFile.read(ctx); }
             init();
+            readSys4();
             if (sys.intv("scycle") == 0) {
                 termCode(0);
                 SystemFile.rewrite(ctx);
@@ -113,7 +114,7 @@ public class Purchase extends PlBase {
         return false;
     }
 
-    private void overrewrite() { SystemFile.rewrite(ctx); }
+    private void overrewrite() { SystemFile.rewrite(ctx); rewriteSys4(); }
 
     private void messageRun(int code) {
         displayMenuPara();

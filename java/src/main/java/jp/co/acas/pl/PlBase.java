@@ -18,6 +18,28 @@ abstract class PlBase extends Program {
 
     protected void init() { sys = SystemFile.shared(ctx); }
 
+    /** 共有 system-record-4（system.dat の rrn 4）。 */
+    protected Rec sys4() {
+        return (Rec) ctx.shared.computeIfAbsent("system-record-4", k -> Layout.of("copybooks/wssys4.cob", "System-Record-4").newRec());
+    }
+    protected void readSys4() {
+        CobFile f = SystemFile.file(ctx);
+        if (!f.open(CobFile.Mode.IO).equals("00")) return;
+        f.rrn = 4;
+        f.read(sys4());
+        f.close();
+    }
+    protected void rewriteSys4() {
+        CobFile f = SystemFile.file(ctx);
+        if (!f.open(CobFile.Mode.IO).equals("00")) return;
+        f.rrn = 4;
+        f.rewrite(sys4());
+        f.close();
+    }
+
+    /** INVALID KEY 条件（FILE STATUS 2x）。39/47 などは該当しない。 */
+    protected static boolean invalid(String status) { return status.startsWith("2"); }
+
     protected int termCode() { return (int) ctx.shared.getOrDefault("ws-term-code", 0); }
     protected void termCode(int v) { ctx.shared.put("ws-term-code", v); }
     protected String toDay() { return (String) ctx.shared.getOrDefault("to-day", "01/01/2000"); }
