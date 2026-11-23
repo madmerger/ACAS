@@ -22,6 +22,7 @@ CASES = {
     "SL-014": ("sales-day-book-unavailable", "売上日計簿・必要ファイルなし"),
     "SL-015": ("sales-statement", "得意先明細書・売掛明細なし"),
     "SL-016": ("sales-dunning", "督促状出力・売掛明細なし"),
+    "SL-020": ("sales-invoice-fixed-data-view", "請求書の初回固定項目設定"),
     "SL-021": ("sales-period-view", "期間締めの確認画面"),
     "SL-022": ("sales-customer-report-view", "得意先ファイル帳票の抽出条件"),
     "SL-091": ("sales-analysis-code", "売上分析コードAと勘定科目400001の設定"),
@@ -45,13 +46,15 @@ CASES = {
     "SL-224": ("sales-day-book-unavailable", "売上日計簿・必要ファイルなし"),
     "SL-225": ("sales-statement", "得意先明細書・売掛明細なし"),
     "SL-226": ("sales-dunning", "督促状出力・売掛明細なし"),
-    "SL-231": ("sales-invoice-menu-view", "請求書サブシステムの到達確認"),
+    "SL-230": ("sales-invoice-fixed-data-view", "請求書サブシステムの初回固定項目設定"),
+    "SL-231": ("sales-invoice-fixed-data-view", "請求書固定項目設定・次の請求書番号"),
     "SL-232": ("sales-invoice-entry-view", "一括印刷待ち請求書登録の到達確認"),
     "SL-233": ("sales-invoice-immediate-view", "請求書即時印刷の到達確認"),
     "SL-234": ("sales-invoice-edit-list-view", "請求書修正の到達確認"),
     "SL-235": ("sales-invoice-delete-list-view", "請求書削除の到達確認"),
     "SL-239": ("sales-period-view", "期間締めの確認画面"),
     "SL-240": ("sales-customer-report-view", "得意先ファイル帳票の抽出条件"),
+    "SL-244": ("sales-invoice-fixed-data-view", "請求書固定項目設定・初回表示"),
 }
 
 

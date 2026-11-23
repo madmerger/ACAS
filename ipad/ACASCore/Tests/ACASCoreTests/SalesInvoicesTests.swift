@@ -2,6 +2,43 @@ import XCTest
 @testable import ACASCore
 
 final class SalesInvoicesTests: XCTestCase {
+    func testFixedDataValidatesAndPersistsCobolFields() throws {
+        let (service, _) = try makeInvoice()
+        var system = try service.settings()
+        system.setInt("level-1", 1)
+        try service.systemFile.write(1, system.bytes)
+        var draft = try service.fixedData()
+        draft.nextInvoice = "0"
+        draft.entryLevel = "2"
+        draft.stockLink = "n"
+        draft.extraDescription = "追加料金"
+        draft.extraType = "c"
+        draft.printExtra = "y"
+        draft.extraRate = "5.129"
+        draft.extraAccount = "400001"
+        draft.taxAccount = "400002"
+        draft.proFormaDays = "90"
+        XCTAssertThrowsError(try service.saveFixedData(draft))
+        XCTAssertEqual(try service.settings().bytes, system.bytes)
+        draft.nextInvoice = "10000000"
+        XCTAssertThrowsError(try service.saveFixedData(draft))
+        XCTAssertEqual(try service.settings().bytes, system.bytes)
+        draft.extraRate = "5.1"
+        try service.saveFixedData(draft)
+        let saved = try service.fixedData()
+        XCTAssertEqual(saved.nextInvoice, "10000000")
+        XCTAssertEqual(saved.entryLevel, "2")
+        XCTAssertEqual(saved.stockLink, "N")
+        XCTAssertEqual(saved.stockAudit, "N")
+        XCTAssertEqual(saved.extraDescription, "追加料金")
+        XCTAssertEqual(saved.extraType, "C")
+        XCTAssertEqual(saved.printExtra, "Y")
+        XCTAssertEqual(saved.extraRate, "05.10")
+        XCTAssertEqual(saved.extraAccount, "400001")
+        XCTAssertEqual(saved.taxAccount, "400002")
+        XCTAssertEqual(saved.proFormaDays, "090")
+    }
+
     func testInvoiceCanBeRegisteredForExistingDormantCustomer() throws {
         let (service, invoice) = try makeInvoice()
         let draft = try service.draft(for: invoice.id)

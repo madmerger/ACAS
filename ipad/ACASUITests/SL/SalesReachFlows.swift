@@ -15,6 +15,7 @@ final class SalesReachFlows: XCTestCase {
     func testSL014() throws { try missingDayBook("SL-014") }
     func testSL015() throws { try missingOpenItems("SL-015", screen: "statement", title: "得意先明細書") }
     func testSL016() throws { try missingOpenItems("SL-016", screen: "dunning", title: "督促状出力") }
+    func testSL020() throws { try invoiceFixedData("SL-020") }
     func testSL021() throws { try periodConfirmation("SL-021") }
     func testSL022() throws { try customerReport("SL-022") }
 
@@ -72,12 +73,8 @@ final class SalesReachFlows: XCTestCase {
     func testSL225() throws { try missingOpenItems("SL-225", screen: "statement", title: "得意先明細書") }
     func testSL226() throws { try missingOpenItems("SL-226", screen: "dunning", title: "督促状出力") }
 
-    func testSL231() throws {
-        try reach("SL-231", through: ["sales.invoice.menu"], title: "請求書サブシステム") { app in
-            XCTAssertTrue(app.buttons["sales.invoice.pending"].exists)
-            XCTAssertTrue(app.buttons["sales.invoice.print"].exists)
-        }
-    }
+    func testSL230() throws { try invoiceFixedData("SL-230") }
+    func testSL231() throws { try invoiceFixedData("SL-231", nextNumber: "10000000") }
 
     func testSL232() throws { try invoiceEntry("SL-232", operation: "pending", title: "請求書登録", save: "保存") }
     func testSL233() throws { try invoiceEntry("SL-233", operation: "immediate", title: "請求書即時印刷", save: "保存して印刷") }
@@ -97,6 +94,7 @@ final class SalesReachFlows: XCTestCase {
 
     func testSL239() throws { try periodConfirmation("SL-239") }
     func testSL240() throws { try customerReport("SL-240") }
+    func testSL244() throws { try invoiceFixedData("SL-244") }
 
     private func customerMenu(_ id: String) throws {
         try reach(id, through: ["sales.customers"], title: "得意先マスター管理") { app in
@@ -238,6 +236,20 @@ final class SalesReachFlows: XCTestCase {
     private func invoiceEntry(_ id: String, operation: String, title: String, save: String) throws {
         try reach(id, through: ["sales.invoice.menu", "sales.invoice." + operation], title: title) { app in
             assertInvoiceForm(app, save: save)
+        }
+    }
+
+    private func invoiceFixedData(_ id: String, nextNumber: String? = nil) throws {
+        try reach(id, through: ["sales.invoice.menu"], title: "請求書固定項目設定") { app in
+            let number = app.textFields["sales.invoice.fixed.nextInvoice"]
+            XCTAssertEqual(number.value as? String, "00000000")
+            XCTAssertEqual(app.textFields["sales.invoice.fixed.extraRate"].value as? String, "00.00")
+            XCTAssertFalse(app.buttons["sales.invoice.pending"].exists)
+            if let nextNumber {
+                number.coordinate(withNormalizedOffset: CGVector(dx: 0.98, dy: 0.5)).tap()
+                number.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: 8) + nextNumber)
+                XCTAssertEqual(number.value as? String, nextNumber)
+            }
         }
     }
 

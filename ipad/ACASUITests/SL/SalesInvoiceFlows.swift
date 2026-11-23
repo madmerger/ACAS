@@ -10,7 +10,7 @@ final class SalesInvoiceFlows: XCTestCase {
     @MainActor
     func testUnregisteredCustomerShowsRegistrationError() throws {
         let (app, _) = try launch("SL-100")
-        tap("sales.invoice.pending", in: app)
+        tap("sales.invoice.sale", in: app)
         let customer = app.textFields["sales.invoice.customer"]
         reveal(customer, in: app)
         customer.tap()
@@ -46,7 +46,7 @@ final class SalesInvoiceFlows: XCTestCase {
     @MainActor
     private func create(_ id: String, credit: Bool) throws {
         let (app, input) = try launch(id)
-        tap("sales.invoice.pending", in: app)
+        tap("sales.invoice.sale", in: app)
         func fill(_ name: String, field: String, replacing: Bool = false, submit: Bool = true) throws {
             let text = try XCTUnwrap(input[name])
             let element = app.textFields["sales.invoice." + field]
@@ -74,8 +74,10 @@ final class SalesInvoiceFlows: XCTestCase {
         editProof.name = id + "-明細入力"
         editProof.lifetime = .keepAlways
         add(editProof)
-        app.buttons["sales.invoice.line.done"].tap()
-        app.buttons["sales.invoice.save"].tap()
+        let done = app.buttons["sales.invoice.line.done"]
+        done.tap()
+        XCTAssertTrue(done.waitForNonExistence(timeout: 5))
+        tap("sales.invoice.save", in: app)
         finish(app, id, result: "売上取引を保存しました：00000000")
     }
 
@@ -97,7 +99,9 @@ final class SalesInvoiceFlows: XCTestCase {
         XCTAssertTrue(app.staticTexts[id].waitForExistence(timeout: 10))
         tap("section.sales", in: app)
         tap("sales.date.save", in: app)
-        tap("sales.invoice.menu", in: app)
+        if id == "SL-103" {
+            tap("sales.invoice.menu", in: app)
+        }
         return (app, input)
     }
 
