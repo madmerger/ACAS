@@ -65,6 +65,19 @@ static Result Check(JsonElement entry, string evidence)
                     string folio = BinaryPrimitives.ReadInt32LittleEndian(key.AsSpan(7)).ToString("00000000", CultureInfo.InvariantCulture);
                     expected.Add((openItems, $"{supplier}/{folio}"), (null, Convert.ToHexString(record).ToLowerInvariant()));
                 }
+            if (id == "PL-414" && referenceDirectory != null)
+            {
+                const string values = "ledgers/acas/value.dat";
+                var oldValues = ValueRows("before-files");
+                var newValues = ValueRows("files");
+                foreach (var key in oldValues.Keys.Union(newValues.Keys))
+                    if (oldValues.GetValueOrDefault(key) != newValues.GetValueOrDefault(key))
+                        expected[(values, key)] = (oldValues.GetValueOrDefault(key), newValues.GetValueOrDefault(key));
+
+                Dictionary<string, string> ValueRows(string folder) =>
+                    BTreeRows(Path.Combine(referenceDirectory, folder, values)).ToDictionary(
+                        row => Encoding.ASCII.GetString(row.Key), row => Convert.ToHexString(row.Data).ToLowerInvariant());
+            }
             foreach (var key in before.Keys.Concat(after.Keys).Concat(expected.Keys).Distinct().OrderBy(key => key))
             {
                 before.TryGetValue(key, out string? oldHex);

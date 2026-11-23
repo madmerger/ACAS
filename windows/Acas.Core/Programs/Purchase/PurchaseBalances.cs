@@ -1,3 +1,4 @@
+using System.Text;
 using Acas.Core.Engine;
 
 namespace Acas.Core.Programs.Purchase;
@@ -16,6 +17,7 @@ public sealed partial class PurchaseLedger
 
     private bool AccumulatePurchaseAnalysis(PurchaseInvoice[] invoices)
     {
+        bool legacyAnalysisUnavailable = HasInvalidAnalysisLength;
         var specials = new (string Code, Func<PurchaseInvoice, decimal> Amount)[]
         {
             ("vi", invoice => invoice.Type == 1 ? 0 : (invoice.Tax + invoice.CarriageTax) * (invoice.Type == 3 ? -1 : 1)),
@@ -24,17 +26,27 @@ public sealed partial class PurchaseLedger
             ("zb", invoice => invoice.Discount)
         };
         foreach (var invoice in invoices)
-            foreach (var line in invoice.Lines)
-                if (!AddPurchaseAnalysis(line.Code, 1, invoice.Type == 3 ? -line.Net : line.Net)) return false;
+            for (int index = 0; index < invoice.Lines.Count; index++)
+            {
+                var line = invoice.Lines[index];
+                var code = line.Code;
+                if (legacyAnalysisUnavailable)
+                {
+                    // PL055 reads the analysis code after a 13-byte product field in the legacy file.
+                    var bytes = database.Read(InvoiceFile, InvoiceKey(invoice.Folio, index + 1))!;
+                    code = Encoding.Latin1.GetString(bytes, InvoiceLine.F["analysis"].Off + 1, 2);
+                }
+                if (!AddPurchaseAnalysis(code, 1, invoice.Type == 3 ? -line.Net : line.Net, legacyAnalysisUnavailable)) return false;
+            }
         foreach (var (code, amount) in specials)
         {
             var values = invoices.Select(amount).Where(value => value != 0).ToArray();
-            if (!AddPurchaseAnalysis(code, values.Length, values.Sum())) return false;
+            if (!AddPurchaseAnalysis(code, values.Length, values.Sum(), legacyAnalysisUnavailable, ensureGroup: true)) return false;
         }
         return true;
     }
 
-    private bool AddPurchaseAnalysis(string code, int count, decimal amount)
+    private bool AddPurchaseAnalysis(string code, int count, decimal amount, bool legacyAnalysisUnavailable, bool ensureGroup = false)
     {
         var group = code[..1];
         var detailKey = AnalysisKey(code);
@@ -42,7 +54,7 @@ public sealed partial class PurchaseLedger
         if (detailKey != groupKey)
         {
             if (!AddValue(detailKey, code)) return false;
-            if (database.Read(ValuesFile, groupKey) is null && Analysis(group) is null) return true;
+            if (!ensureGroup && database.Read(ValuesFile, groupKey) is null && Analysis(group) is null) return true;
         }
         return AddValue(groupKey, group);
 
@@ -57,9 +69,14 @@ public sealed partial class PurchaseLedger
                 value.Set("system", "P");
                 value.Set("first", analysisCode[..1]);
                 value.Set("second", analysisCode.PadRight(2)[1..]);
-                value.SetN("account", analysis?.N("account") ?? 0);
-                value.Set("description", analysis?.S("description") ?? "Emergency Name");
-                value.Set("print", analysis?.S("reference") ?? "");
+                if (legacyAnalysisUnavailable)
+                    value.B.AsSpan(AnalysisValue.F["account"].Off, 33).Clear();
+                else
+                {
+                    value.SetN("account", analysis?.N("account") ?? 0);
+                    value.Set("description", analysis?.S("description") ?? "Emergency Name");
+                    value.Set("print", analysis?.S("reference") ?? "");
+                }
             }
             decimal period = value.N("amount") + amount, year = value.N("yearAmount") + amount;
             if (Math.Abs(period) > 99999999.99m || Math.Abs(year) > 99999999.99m) return false;
