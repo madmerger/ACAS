@@ -131,55 +131,57 @@ public final class Terminal {
     }
 
     /**
-     * ACCEPT screen-name（SCREEN SECTION の複数項目入力）。GnuCOBOL と同じく TAB / 下矢印で次項目、
-     * BACKTAB / 上矢印で前項目、項目末尾まで入力すると次項目へ進み、ENTER で確定する。終了キーは crtStatus。
+     * ACCEPT screen-name（SCREEN SECTION の複数項目入力）。GnuCOBOL と同じく、開始時に入力項目の空白を
+     * プロンプト文字 '_' で表示し、TAB / 下矢印で次項目、BACKTAB / 上矢印で前項目、ENTER で確定する
+     * （項目末尾まで入力してもカーソルは末尾に留まる）。終了キーは crtStatus。
      */
     public int acceptScreen(List<Field> fields, int fg) {
         if (fields.isEmpty()) { crtStatus = 0; return 0; }
         int f = 0, idx = 0;
-        for (Field x : fields) if ((x.flags & SECURE) == 0) displayData(x.line, x.col, x.value.replace(' ', '_'), fg);
+        char[][] shown = new char[fields.size()][];
+        for (int i = 0; i < fields.size(); i++) {
+            Field x = fields.get(i);
+            shown[i] = x.value.replace(' ', '_').toCharArray();
+            if ((x.flags & SECURE) == 0) displayData(x.line, x.col, new String(shown[i]), fg);
+        }
         while (true) {
             Field cur = fields.get(f);
             String k = take(cur.line - 1, cur.col - 1 + idx);
             if (k == null) throw new StopRun("セッションが終了しました");
             char[] buf = cur.value.toCharArray();
+            boolean edit = false;
             if (k.length() == 1) {
                 char ch = k.charAt(0);
                 if (ch < ' ' || ch > '~') continue;
                 if ((cur.flags & UPPER) != 0) ch = Character.toUpperCase(ch);
-                buf[idx] = ch;
-                cur.value = new String(buf);
-                if ((cur.flags & SECURE) == 0) displayData(cur.line, cur.col, cur.value.replace(' ', '_'), fg);
+                buf[idx] = ch; shown[f][idx] = ch; edit = true;
                 if (idx < cur.size - 1) idx++;
-                else if (f < fields.size() - 1) { f++; idx = 0; }
-                continue;
-            }
-            Integer st = switch (k) {
-                case "ENTER" -> 0; case "PGUP" -> 2001; case "PGDN" -> 2002;
-                case "ESC" -> escEnabled ? 2005 : null;
-                default -> k.matches("F\\d{1,2}") && exceptionsEnabled ? 1000 + Integer.parseInt(k.substring(1)) : null;
-            };
-            if (st != null) { crtStatus = st; return st; }
-            switch (k) {
-                case "TAB", "DOWN" -> { f = (f + 1) % fields.size(); idx = 0; }
-                case "BACKTAB", "UP" -> { f = (f + fields.size() - 1) % fields.size(); idx = 0; }
-                case "HOME" -> { f = 0; idx = 0; }
-                case "END" -> { f = fields.size() - 1; idx = 0; }
-                case "LEFT" -> { if (idx > 0) idx--; else if (f > 0) { f--; idx = fields.get(f).size - 1; } }
-                case "RIGHT" -> { if (idx < cur.size - 1) idx++; else if (f < fields.size() - 1) { f++; idx = 0; } }
-                case "BACKSPACE" -> {
-                    if (idx > 0) {
-                        idx--; System.arraycopy(buf, idx + 1, buf, idx, cur.size - idx - 1); buf[cur.size - 1] = ' ';
-                        cur.value = new String(buf);
-                        if ((cur.flags & SECURE) == 0) displayData(cur.line, cur.col, cur.value.replace(' ', '_'), fg);
+            } else {
+                Integer st = switch (k) {
+                    case "ENTER" -> 0; case "PGUP" -> 2001; case "PGDN" -> 2002;
+                    case "ESC" -> escEnabled ? 2005 : null;
+                    default -> k.matches("F\\d{1,2}") && exceptionsEnabled ? 1000 + Integer.parseInt(k.substring(1)) : null;
+                };
+                if (st != null) { crtStatus = st; return st; }
+                switch (k) {
+                    case "TAB", "DOWN" -> { f = (f + 1) % fields.size(); idx = 0; }
+                    case "BACKTAB", "UP" -> { f = (f + fields.size() - 1) % fields.size(); idx = 0; }
+                    case "HOME" -> { f = 0; idx = 0; }
+                    case "END" -> { f = fields.size() - 1; idx = 0; }
+                    case "LEFT" -> { if (idx > 0) idx--; else if (f > 0) { f--; idx = fields.get(f).size - 1; } }
+                    case "RIGHT" -> { if (idx < cur.size - 1) idx++; else if (f < fields.size() - 1) { f++; idx = 0; } }
+                    case "BACKSPACE", "DELETE" -> {
+                        if (k.equals("BACKSPACE")) { if (idx == 0) continue; idx--; }
+                        System.arraycopy(buf, idx + 1, buf, idx, cur.size - idx - 1); buf[cur.size - 1] = ' ';
+                        System.arraycopy(shown[f], idx + 1, shown[f], idx, cur.size - idx - 1); shown[f][cur.size - 1] = '_';
+                        edit = true;
                     }
+                    default -> { }
                 }
-                case "DELETE" -> {
-                    System.arraycopy(buf, idx + 1, buf, idx, cur.size - idx - 1); buf[cur.size - 1] = ' ';
-                    cur.value = new String(buf);
-                    if ((cur.flags & SECURE) == 0) displayData(cur.line, cur.col, cur.value.replace(' ', '_'), fg);
-                }
-                default -> { }
+            }
+            if (edit) {
+                cur.value = new String(buf);
+                if ((cur.flags & SECURE) == 0) displayData(cur.line, cur.col, new String(shown[f]), fg);
             }
         }
     }
