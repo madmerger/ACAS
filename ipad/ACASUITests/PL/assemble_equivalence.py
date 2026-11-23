@@ -10,7 +10,8 @@ from pathlib import Path
 def probe(video):
     raw = subprocess.check_output([
         "ffprobe", "-v", "error", "-select_streams", "v:0",
-        "-show_entries", "stream=codec_name,width,height:format=duration", "-of", "json", str(video),
+        "-show_entries", "stream=codec_name,width,height:stream_side_data=rotation:format=duration",
+        "-of", "json", str(video),
     ])
     info = json.loads(raw)
     stream = info["streams"][0]
@@ -18,6 +19,12 @@ def probe(video):
             stream["width"], stream["height"]) < 1280:
         raise ValueError(f"録画条件を満たしません: {video}: {stream}")
     return float(info["format"]["duration"]), stream
+
+
+def fallback_rotation(stream):
+    if any("rotation" in metadata for metadata in stream.get("side_data_list", [])):
+        return ""
+    return "transpose=cclock," if stream["height"] > stream["width"] else ""
 
 
 def main():
@@ -47,7 +54,7 @@ def main():
         stop = min(duration, datetime.fromisoformat(end[1]).timestamp() - recording["startEpoch"])
         if stop <= trim:
             raise ValueError(f"テスト終了時刻が録画範囲外です: {run}")
-        rotation = "transpose=cclock," if stream["height"] > stream["width"] else ""
+        rotation = fallback_rotation(stream)
         subprocess.run([
             "ffmpeg", "-v", "error", "-y", "-ss", f"{trim:.6f}", "-i", str(source),
             "-t", f"{stop - trim:.6f}",
