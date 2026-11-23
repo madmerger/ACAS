@@ -12,12 +12,9 @@ internal sealed partial class AccountingScreens
                 Open: () => LedgerReport("詳細試算表", _ledgerReports.TrialBalance(false), TrialBalanceMenu))
         };
         string? division = _settings.Read()?.S("P-C");
-        if (division is "P" or "B")
-        {
-            string title = division == "B" ? "拠点別試算表" : "部門別試算表";
-            items.Add(new("StructuredTrialBalance", title, 2,
-                Open: () => LedgerReport(title, _ledgerReports.TrialBalance(true), TrialBalanceMenu)));
-        }
+        string title = division == "B" ? "拠点別試算表" : "部門別試算表";
+        items.Add(new("StructuredTrialBalance", title, 2,
+            Open: () => LedgerReport(title, _ledgerReports.TrialBalance(true), TrialBalanceMenu)));
         items.Add(new("TrialBalanceBack", "総勘定元帳へ戻る", 9, Open: GeneralMenu));
         return new MenuScreen("試算表", items);
     }
