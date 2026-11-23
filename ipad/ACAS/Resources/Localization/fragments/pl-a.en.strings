@@ -389,3 +389,18 @@
 "pl080.fully_paid" = "....Fully Paid  ";
 "pl080.no_change" = "....no change  ";
 "pl080.too_high" = "Payment Too High";
+/* pl085.cbl — Payment Data Amend */
+"pl085.title" = "Payment Data Amend";
+"pl085.box_date" = "*Date  [  /  /    ]*A/C Nos   [       ]*";
+"pl085.box_value" = "*Value [          ]*Batch   [     /   ]*";
+"pl085.warning_unapplied" = "Warning Unapplied Balance Journal";
+"pl085.current_balance" = "Current Balance - ";
+"pl085.confirm_no_action" = "Confirm No action? i.e. Request cancelled (Y/N)..[ ]";
+"pl085.further" = "Make further corrections? (Y/N)  [Y]";
+"pl085.reversing" = "Reversing please wait";
+"pl085.for_folio" = "For Folio  No.  ";
+"pl085.enter_deduct" = "Enter deduct amount - [      ]";
+"pl085.amount_available" = "Amount Available = ";
+"pl085.pl003" = "PL003 Hit Return To Continue";
+"pl085.pl140" = "PL140 Not Yet Supporting Corrections";
+"pl085.pl141" = "PL141 Amount Approp Or Deduct Amt Not Zero";

@@ -389,3 +389,18 @@
 "pl080.fully_paid" = "....全額支払済  ";
 "pl080.no_change" = "....変更なし   ";
 "pl080.too_high" = "支払額が過大";
+/* pl085.cbl — Payment Data Amend */
+"pl085.title" = "支払修正";
+"pl085.box_date" = "*日付  [  /  /    ]*仕入先    [       ]*";
+"pl085.box_value" = "*金額  [          ]*バッチ  [     /   ]*";
+"pl085.warning_unapplied" = "警告 未充当残高の振替";
+"pl085.current_balance" = "現在残高        - ";
+"pl085.confirm_no_action" = "何もせず取り消しますか? (Y/N)                  ..[ ]";
+"pl085.further" = "続けて修正しますか? (Y/N)        [Y]";
+"pl085.reversing" = "取消中 お待ち下さい";
+"pl085.for_folio" = "整理番号        ";
+"pl085.enter_deduct" = "割引額を入力        - [      ]";
+"pl085.amount_available" = "利用可能額       = ";
+"pl085.pl003" = "PL003 Returnで続行";
+"pl085.pl140" = "PL140 金額の訂正には未対応";
+"pl085.pl141" = "PL141 充当額または割引額がゼロでない";
