@@ -2,7 +2,7 @@ import Foundation
 
 extension PurchaseLedger {
     public enum SupplierReport: CaseIterable, Hashable {
-        case alphabetical, turnover, file
+        case alphabetical, turnover, listing, file
     }
 
     public struct SupplierReportFilter {
@@ -40,7 +40,8 @@ extension PurchaseLedger {
         if let date = filter.creationDate { created.value = try legacyDate(date) }
         return try store.withTransaction {
             let records = try kind == .alphabetical ? sortReportSuppliers() : reportSupplierRecords()
-            let range = SupplierReportRange(filter.supplier, upperSpace: kind == .file ? 0xff : 0x5a)
+            let supplier = kind == .listing ? Cobol.x(filter.supplier.uppercased(), 6) : filter.supplier
+            let range = SupplierReportRange(supplier, upperSpace: kind == .file ? 0xff : 0x5a)
             let printer = PurchasePrinter(self)
             var page: Int64 = 0, line: Int64 = 0, printed = 0
             let title: String
@@ -48,14 +49,25 @@ extension PurchaseLedger {
             switch kind {
             case .alphabetical: (title, version) = ("Supplier Alphabetical Listing", "PL160 (3.01.05)")
             case .turnover: (title, version) = ("Purchase Ledger Turnover Report", "PL170 (3.01.06)")
+            case .listing: (title, version) = ("Supplier Listing", "PL010 (3.01.13)")
             case .file: (title, version) = ("Purchase Ledger Dump", "PL190 (3.01.04)")
             }
             func headings() {
                 page += 1
-                let width = kind == .file ? 57 : 51
+                let width = kind == .file || kind == .listing ? 57 : 51
                 let heading = Cobol.x(version, width) + Cobol.x(title, 124 - width) + "Page " + Pic.edit("zz9", value: page, scale: 0)
                 if page == 1 { printer.writeBefore(heading, before: 1) } else { printer.writePage(heading) }
-                if kind == .turnover {
+                if kind == .listing {
+                    let second = supplierListingHeading(filter, created: created, range: range, settings: settings)
+                    if page == 1 { printer.writeBefore(second, before: 1) }
+                    else { printer.write(second, after: 1); printer.write("", after: 1) }
+                    printer.write(Cobol.x("Supplier  Status    <----------------Name & Address", 51)
+                                  + Cobol.x("---------------->   ----Telephone---- -----Fax-----", 51)
+                                  + "    ----Credit----   Discount ", after: 1)
+                    printer.write(Cobol.x(" Number   ------", 87) + "                   Limit   Period       %", after: 1)
+                    printer.write("", after: 1)
+                    line = 6
+                } else if kind == .turnover {
                     let second = Cobol.x(settings.str("usera"), 122) + reportDate(runDay)
                     if page == 1 { printer.writeBefore(second, before: 1) }
                     else { printer.write(second, after: 1); printer.write("", after: 1) }
@@ -104,6 +116,9 @@ extension PurchaseLedger {
                 }
                 let balance = current - value.int("purch-unapplied")
                 switch kind {
+                case .listing:
+                    if line > settings.int("page-lines") - 3 { headings() }
+                    line += supplierListingRow(value, settings: settings, printer: printer)
                 case .alphabetical:
                     if line > settings.int("page-lines") - 3 { headings() }
                     let ext = Cobol.rtrim(value.str("purch-ext"))
@@ -157,9 +172,69 @@ extension PurchaseLedger {
             }
             if kind == .alphabetical { try store.writeRaw(supplierSortPath, []) }
             try printer.close()
-            guard kind != .file || printed > 0 else { return nil }
+            guard (kind != .file && kind != .listing) || printed > 0 else { return nil }
             return Data(store.readRaw(Self.reportPath) ?? [])
         }
+    }
+
+    private func supplierListingHeading(_ filter: SupplierReportFilter, created: SupplierReportFilter.Criterion,
+                                        range: SupplierReportRange, settings: Record) -> String {
+        let criteria = [filter.credit, filter.activity, filter.average, filter.overdue]
+        let all = range.isEmpty && filter.status == .all && criteria.allSatisfy { $0.comparison == .any }
+        func operand(_ criterion: SupplierReportFilter.Criterion) -> String {
+            switch criterion.comparison {
+            case .any: ""
+            case .less: "< "
+            case .greater: "> "
+            case .equal: "= "
+            }
+        }
+        let status = filter.status == .active ? "Live" : filter.status == .dormant ? "Dormant" : ""
+        var selection = (all ? "All" : "Matched") + " " + status + " "
+        let columns = [("z9", " Days Credit"), ("zzzz9", " Invoices"),
+                       ("zzzz9", " Av. Value"), ("zzzz9", " Days Overdue")]
+        for (criterion, column) in zip(criteria, columns) {
+            if criterion.comparison != .any {
+                selection += operand(criterion) + Pic.edit(column.0, value: criterion.value, scale: 0) + column.1
+            }
+            selection += " "
+        }
+        if created.comparison != .any {
+            let entered = created.value == 0 ? "" : reportDate(created.value)
+            selection += operand(created) + Cobol.x(entered, 8) + " Entry Date"
+        }
+        selection += " "
+        if !range.isEmpty { selection += " Keys Matching - " + SJIS.decode(range.lower[...]) }
+        return Cobol.x(settings.str("usera"), 40) + "Report On : " + Cobol.x(selection, 70) + reportDate(settings.int("run-date"))
+    }
+
+    private func supplierListingRow(_ value: Record, settings: Record, printer: PurchasePrinter) -> Int64 {
+        func field(_ name: String, _ width: Int) -> String { Cobol.x(value.str(name), width) }
+        func number(_ name: String, _ picture: String, _ width: Int, scale: Int = 0) -> String {
+            let amount = value.int(name)
+            return Cobol.x(amount == 0 ? "" : Pic.edit(picture, value: amount, scale: scale), width)
+        }
+        let telephone = value.str("purch-phone")
+        let ext = value.str("purch-ext")
+        let phonePart = telephone.components(separatedBy: "  ").first ?? ""
+        let phone = Cobol.rtrim(ext).isEmpty ? telephone :
+            (phonePart.isEmpty ? "" : String(phonePart.dropLast()) + "x" + ext)
+        printer.write(field("purch-key", 10) + Cobol.x(value.int("purch-status") == 1 ? "Active" : "Dormant", 10)
+                      + field("purch-name", 51) + Cobol.x(phone, 18) + field("purch-fax", 13)
+                      + number("purch-limit", "z(8)9", 9) + number("purch-credit", "z(7)9", 8)
+                      + number("purch-discount", "z(7)9.99", 11, scale: 2), after: 1)
+        let delim = settings.str("sl-delim")
+        let address = value.str("purch-address")
+        let indent = Cobol.x("", 20)
+        printer.write(indent + (delim.isEmpty ? address : address.replacingOccurrences(of: delim, with: ",")), after: 1)
+        let hasNotes = value.int("purch-notes-tag") > 0
+        if hasNotes {
+            let key = [UInt8(0x4e)] + value.raw("purch-key")
+            let address = store.read(notesPath, key: key).flatMap { $0.count == 134 ? SJIS.decode($0[38..<134]) : nil } ?? "Record Not Found"
+            printer.write(indent + "Notes: " + (address.components(separatedBy: "  ").first ?? ""), after: 1)
+        }
+        printer.write("", after: 1)
+        return hasNotes ? 4 : 3
     }
 
     public func analysisCodeReport(allLedgers: Bool = false) throws -> Data {

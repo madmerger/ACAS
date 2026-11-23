@@ -46,6 +46,8 @@ struct PurchaseMenu: View {
                 .accessibilityIdentifier("pl.suppliers.alphabetical")
             NavigationLink(PurchaseReportView.Mode.turnover.title) { PurchaseReportView(workspace: workspace, mode: .turnover) }
                 .accessibilityIdentifier("pl.report.turnover")
+            NavigationLink(PurchaseReportView.Mode.listing.title) { PurchaseReportView(workspace: workspace, mode: .listing) }
+                .accessibilityIdentifier("pl.report.supplier_listing")
             NavigationLink(PurchaseReportView.Mode.file.title) { PurchaseReportView(workspace: workspace, mode: .file) }
                 .accessibilityIdentifier("pl.report.supplier_file")
             NavigationLink(plString("purchase.close.title")) { PurchasePeriodCloseView(workspace: workspace) }
@@ -59,8 +61,6 @@ struct PurchaseMenu: View {
             NavigationStack { PurchaseDateForm(workspace: workspace) }
         }
         .onAppear { if !opening { workspace.completed("pl.menu") } }
-    }
-}
         .purchaseAlert($notice)
         .navigationDestination(item: $destination) { action in
             switch action {
@@ -83,6 +83,8 @@ struct PurchaseMenu: View {
             else { destination = action }
         }
         .accessibilityIdentifier(identifier)
+    }
+}
 
 private struct PurchaseDateForm: View {
     let workspace: Workspace
@@ -115,12 +117,12 @@ struct PurchaseNotice: Identifiable {
     var id: String { message }
 
     init(_ error: Error) {
-        if let error = error as? PurchaseLedger.PurchaseReportError {
-            switch error {
         if let rejection = error as? PurchaseLedger.MenuRejection {
             message = rejection.rawValue + "： " + plString("purchase.menu.error." + rejection.rawValue)
             return
         }
+        if let error = error as? PurchaseLedger.PurchaseReportError {
+            switch error {
             case .missingOpenItems: message = plString("purchase.report.error.open_items")
             case .proofRequired: message = plString("purchase.report.error.pending_payments")
             case .invalidMinimum: message = plString("purchase.report.error.minimum")

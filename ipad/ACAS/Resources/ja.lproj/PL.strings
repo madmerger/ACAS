@@ -149,6 +149,8 @@
 "purchase.menu.error.T-030" = "修正・検証・転記する支払取引がありません。";
 "purchase.report.turnover" = "仕入先別取引帳票";
 "purchase.report.supplier_file" = "仕入先ファイル帳票";
+"purchase.report.supplier_listing" = "仕入先一覧帳票";
+"purchase.report.use_creation_date" = "登録日を入力";
 "purchase.report.analysis_codes" = "買掛の分析コードを印刷";
 "purchase.report.all_analysis_codes" = "全元帳の分析コードを印刷";
 "purchase.report.day_book" = "仕入日計帳";

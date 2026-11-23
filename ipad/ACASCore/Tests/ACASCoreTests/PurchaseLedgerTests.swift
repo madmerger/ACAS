@@ -183,6 +183,48 @@ final class PurchaseLedgerTests: XCTestCase {
         XCTAssertNil(try ledger.supplierReport(.file, filter: filter))
     }
 
+    func testSupplierListingUsesPL010RegistrationDateAndLayout() throws {
+        let ledger = try makeLedger()
+        var settings = ledger.system
+        settings.setInt("page-lines", 60)
+        try ledger.systemFile.write(1, settings.bytes)
+        let day = try ledger.legacyDate(ledger.processingDate)
+        for (index, name) in ["EARLIER", "SAME", "LATER"].enumerated() {
+            var supplier = ledger.newSupplier
+            supplier.code = "SUPP0\(index + 1)"
+            supplier.name = name
+            supplier.address1 = "1 MAIN ROAD\\CITY"
+            supplier.telephone = "12345"
+            supplier.extensionNumber = "123"
+            let key = try ledger.saveSupplier(supplier, creating: true)
+            var record = try XCTUnwrap(ledger.supplierRecord(key))
+            record.setInt("purch-create-date", day + Int64(index) - 1)
+            XCTAssertTrue(ledger.store.rewrite(ledger.suppliersPath, key: record.raw("purch-key"), data: record.bytes))
+        }
+        var filter = PurchaseLedger.SupplierReportFilter()
+        for (comparison, name): (PurchaseLedger.SupplierReportFilter.Comparison, String) in [
+            (.less, "EARLIER"), (.equal, "SAME"), (.greater, "LATER"),
+        ] {
+            filter.created.comparison = comparison
+            filter.creationDate = ledger.processingDate
+            let data = try XCTUnwrap(ledger.supplierReport(.listing, filter: filter))
+            let rows = data.split(separator: 10, omittingEmptySubsequences: true)
+            let lines = rows.map { String(decoding: $0, as: UTF8.self) }
+            XCTAssertTrue(lines[0].hasPrefix("PL010 (3.01.13)"))
+            XCTAssertTrue(lines[0].contains("Supplier Listing"))
+            XCTAssertTrue(lines[1].contains("Entry Date"))
+            XCTAssertEqual(lines.first { $0.hasPrefix("SUPP") }.map { String($0.dropFirst(20).prefix(name.count)) }, name)
+            XCTAssertEqual(lines.first { $0.hasPrefix("SUPP") }.map { String($0.dropFirst(71).prefix(8)) }, "1234x123")
+            XCTAssertEqual(lines.filter { $0.hasPrefix("SUPP") }.count, 1)
+            XCTAssertEqual(rows.map(\.count), Array(repeating: 132, count: 8))
+        }
+        filter.creationDate = nil
+        filter.created.comparison = .equal
+        XCTAssertNil(try ledger.supplierReport(.listing, filter: filter))
+        let dump = try XCTUnwrap(ledger.supplierReport(.file, filter: filter))
+        XCTAssertTrue(String(decoding: dump, as: UTF8.self).contains("Purchase Ledger Dump"))
+    }
+
     func testAnalysisCodeReportDistinguishesPurchaseAndAllLedgers() throws {
         let ledger = try makeLedger()
         var entry = PurchaseLedger.AnalysisCode()

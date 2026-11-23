@@ -405,7 +405,7 @@ final class PurchaseFlows: XCTestCase {
         203: Route("pl.suppliers", "pl.supplier.add", title: "仕入先登録"),
         204: Route("pl.suppliers", "pl.supplier.edit", title: "仕入先変更"),
         205: Route("pl.suppliers", "pl.supplier.delete", title: "仕入先削除"),
-        206: Route("pl.report.supplier_file", title: "仕入先ファイル帳票"),
+        206: Route("pl.report.supplier_listing", title: "仕入先一覧帳票"),
         207: Route("pl.suppliers", "pl.supplier.show", title: "仕入先表示"),
         208: Route("pl.enquiry", title: "買掛残高・明細照会"),
         209: Route("pl.transaction.add", title: "仕入取引入力"),
@@ -549,7 +549,7 @@ final class PurchaseFlows: XCTestCase {
                     && (supplier.value as? String == "" || supplier.value as? String == supplier.placeholderValue)
                     && !app.descendants(matching: .any)["pl.report.share"].firstMatch.exists
                     && !app.descendants(matching: .any)["pl.report.preview"].firstMatch.exists
-                let hasDate = app.descendants(matching: .any).matching(identifier: "登録日").firstMatch.exists
+                let hasDate = app.descendants(matching: .any)["pl.report.created"].firstMatch.exists
                 if !hasDate {
                     print("ACAS_PL_SCREEN|\(id)|移行版は帳票未生成だが、旧証跡の「登録日」条件がない")
                 }
