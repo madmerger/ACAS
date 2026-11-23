@@ -99,3 +99,6 @@
 "gl.batch-tax" = "予定税額";
 "gl.batch-gross-actual" = "実績税込合計";
 "gl.batch-tax-actual" = "実績税額";
+"gl.account-print" = "勘定科目一覧を出力";
+"gl.account-printed" = "勘定科目一覧を出力しました";
+"gl.account-print-failed" = "勘定科目一覧を出力できませんでした";

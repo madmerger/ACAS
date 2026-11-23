@@ -83,6 +83,7 @@ private struct LedgerAccountsMenu: View {
     let workspace: Workspace
     @State private var accounts: [LedgerAccount] = []
     @State private var selected: LedgerAccount?
+    @State private var reportStatus: String?
 
     var body: some View {
         List {
@@ -116,6 +117,11 @@ private struct LedgerAccountsMenu: View {
                 .navigationTitle(ledgerText("account-list"))
             }
             .accessibilityIdentifier("gl.accounts.list")
+            Button(ledgerText("account-print"), action: printReport)
+                .accessibilityIdentifier("gl.accounts.print")
+            if let reportStatus {
+                Text(reportStatus).accessibilityIdentifier("gl.accounts.print.result")
+            }
         }
         .navigationTitle(ledgerText("accounts"))
         .onAppear {
@@ -125,6 +131,16 @@ private struct LedgerAccountsMenu: View {
     }
 
     private func reload() { accounts = ChartOfAccounts(workspace.context).accounts }
+
+    private func printReport() {
+        do {
+            try ChartOfAccountsReport(workspace.context).generate()
+            reportStatus = ledgerText("account-printed")
+            workspace.completed("gl-chart-print")
+        } catch {
+            reportStatus = ledgerText("account-print-failed")
+        }
+    }
 }
 
 private struct LedgerAccountEditor: View {
