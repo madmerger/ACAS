@@ -9,6 +9,7 @@ struct LedgerBatchStatusMenu: View {
         List {
             NavigationLink(ledgerText("batch-status-display")) {
                 LedgerBatchStatusList(report: LedgerBatchStatus(workspace.context))
+                    .onAppear { workspace.completed("gl-batch-status-display") }
             }
             .accessibilityIdentifier("gl.batch-status.display")
             Button(ledgerText("batch-status-print"), action: printReport)
@@ -18,6 +19,7 @@ struct LedgerBatchStatusMenu: View {
             }
         }
         .navigationTitle(ledgerText("batch-status"))
+        .onAppear { workspace.completed("gl-batch-status-menu") }
     }
 
     private func printReport() {
@@ -37,7 +39,12 @@ private struct LedgerBatchStatusList: View {
     var body: some View {
         List {
             Section {
-                LabeledContent(ledgerText("batch-cycle"), value: String(report.cycle))
+                LabeledContent {
+                    Text(report.cycle, format: .number)
+                        .accessibilityIdentifier("gl.batch-status.cycle")
+                } label: {
+                    Text(ledgerText("batch-cycle"))
+                }
             }
             ForEach(report.rows) { row in
                 Section("\(ledgerText("batch-ledger.\(row.ledger.rawValue)"))　\(row.number)") {
@@ -52,6 +59,7 @@ private struct LedgerBatchStatusList: View {
                     LabeledContent(ledgerText("batch-gross-actual"), value: money(row.actualGross))
                     LabeledContent(ledgerText("batch-tax-actual"), value: money(row.actualTax))
                 }
+                .accessibilityIdentifier("gl.batch-status.row." + row.id)
             }
         }
         .navigationTitle(ledgerText("batch-status-display"))
