@@ -1,8 +1,14 @@
 import ACASCore
 import SwiftUI
 
+struct PendingInitialCompany {
+    let settings: CompanySettings
+    let paths: SystemReportPaths
+    var printReport: Bool
+}
+
 struct CompanyForm: View {
-    let workspace: Workspace
+    @ObservedObject var workspace: Workspace
     @Environment(\.dismiss) private var dismiss
     @State private var settings: CompanySettings
     @State private var textDraft: [String: String] = [:]
@@ -13,21 +19,17 @@ struct CompanyForm: View {
     @FocusState private var editingName: Bool
     @State private var printing = false
     @State private var printReport = true
-    @State private var pendingInitialSave: CompanySettings?
     @State private var incompletePath: String
     @State private var ledgersPath: String
+    @State private var loaded = false
 
     init(workspace: Workspace) {
         self.workspace = workspace
         let setup = CompanySetup(workspace.context)
-        let current = setup.settings
+        let pending = workspace.pendingInitialCompany
+        let current = pending?.settings ?? setup.settings
         _settings = State(initialValue: current)
-        _dateDraft = State(initialValue: Dictionary(uniqueKeysWithValues: ["start-date", "end-date"].map { key in
-            let value = current.number(key)
-            let date = Maps04.dateOfInteger(Int(value))
-            return (key, value == 0 ? "" : "\(date.year)/\(date.month)/\(date.day)")
-        }))
-        let archivePaths = setup.archivePaths
+        let archivePaths = pending?.paths ?? setup.archivePaths
         _incompletePath = State(initialValue: archivePaths.incompleteRecords)
         _ledgersPath = State(initialValue: archivePaths.ledgers)
     }
@@ -47,7 +49,7 @@ struct CompanyForm: View {
                 }
                 .accessibilityIdentifier("system.settings.modules")
             }
-            .disabled(pendingInitialSave != nil)
+            .disabled(workspace.pendingInitialCompany != nil)
             Section {
                 ForEach(SystemSettingGroup.detailGroups) { group in
                     if group.module.map({ settings.number($0) == 1 }) ?? true {
@@ -56,15 +58,15 @@ struct CompanyForm: View {
                     }
                 }
             }
-            .disabled(pendingInitialSave != nil)
+            .disabled(workspace.pendingInitialCompany != nil)
             Section {
-                Toggle(isOn: $printReport) { Text(systemSetting("include-report")) }
+                Toggle(isOn: reportSelection) { Text(systemSetting("include-report")) }
                     .accessibilityIdentifier("system.settings.include-report")
-                if let draft = pendingInitialSave {
+                if let pending = workspace.pendingInitialCompany {
                     Text(systemSetting("confirm-initial-report"))
                         .accessibilityIdentifier("system.settings.confirm-report")
-                    Text(systemSetting(printReport ? "confirm-report-on" : "confirm-report-off"))
-                    Button(String(localized: "system.action.save", table: "System")) { commit(draft) }
+                    Text(systemSetting(pending.printReport ? "confirm-report-on" : "confirm-report-off"))
+                    Button(String(localized: "system.action.save", table: "System")) { commit(pending) }
                         .accessibilityIdentifier("system.settings.confirm-save")
                 } else {
                     Button(String(localized: "system.action.save", table: "System"), action: save)
@@ -78,6 +80,7 @@ struct CompanyForm: View {
             }
         }
         .navigationTitle(String(localized: "system.company", table: "System"))
+        .onAppear(perform: loadSettings)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button(String(localized: "system.company.cancel", table: "System")) {
@@ -115,6 +118,34 @@ struct CompanyForm: View {
                 .toolbar {
                     Button("action.close") { printing = false }
                 }
+            }
+        }
+    }
+
+    private func loadSettings() {
+        guard !loaded else { return }
+        loaded = true
+        let setup = CompanySetup(workspace.context)
+        let pending = workspace.pendingInitialCompany
+        settings = pending?.settings ?? setup.settings
+        let paths = pending?.paths ?? setup.archivePaths
+        incompletePath = paths.incompleteRecords
+        ledgersPath = paths.ledgers
+        dateDraft = Dictionary(uniqueKeysWithValues: ["start-date", "end-date"].map { key in
+            let value = settings.number(key)
+            let date = Maps04.dateOfInteger(Int(value))
+            return (key, value == 0 ? "" : "\(date.year)/\(date.month)/\(date.day)")
+        })
+    }
+
+    private var reportSelection: Binding<Bool> {
+        Binding {
+            workspace.pendingInitialCompany?.printReport ?? printReport
+        } set: { value in
+            if workspace.pendingInitialCompany != nil {
+                workspace.pendingInitialCompany?.printReport = value
+            } else {
+                printReport = value
             }
         }
     }
@@ -213,12 +244,16 @@ struct CompanyForm: View {
                 try draft.setDate(year: year, month: month, day: day, for: key)
             }
             let setup = CompanySetup(workspace.context)
+            let selection = PendingInitialCompany(
+                settings: draft, paths: .init(incompleteRecords: incompletePath, ledgers: ledgersPath),
+                printReport: printReport
+            )
             if setup.name.isEmpty {
                 try setup.prepareInitialRecord(draft)
-                pendingInitialSave = draft
+                workspace.pendingInitialCompany = selection
                 workspace.completed("system-initial-report-confirmation")
             } else {
-                commit(draft)
+                commit(selection)
             }
         } catch is CompanySetup.Error {
             invalid = true
@@ -227,18 +262,18 @@ struct CompanyForm: View {
         }
     }
 
-    private func commit(_ draft: CompanySettings) {
-        pendingInitialSave = nil
+    private func commit(_ selection: PendingInitialCompany) {
         do {
             let setup = CompanySetup(workspace.context)
-            try setup.save(draft, printReport: printReport,
-                           archivePaths: SystemReportPaths(incompleteRecords: incompletePath, ledgers: ledgersPath))
+            try setup.save(selection.settings, printReport: selection.printReport, archivePaths: selection.paths)
             settings = setup.settings
+            printReport = selection.printReport
+            workspace.pendingInitialCompany = nil
             textDraft.removeAll()
             editingName = false
             saved = true
             workspace.completed("company")
-            if printReport { workspace.completed("system-company-report") }
+            if selection.printReport { workspace.completed("system-company-report") }
         } catch is CompanySetup.Error {
             invalid = true
         } catch {

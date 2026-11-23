@@ -70,7 +70,10 @@ final class LedgerAccountsFlows: XCTestCase {
             try fill(app, "gl.accounts.lookup.branch", input["branch"])
         }
         tap(app, "gl.accounts.lookup.submit")
-        XCTAssertEqual(app.staticTexts["gl.accounts.lookup.missing"].label, "勘定科目が存在しません")
+        let warning = app.staticTexts["gl.accounts.lookup.missing"]
+        XCTAssertTrue(warning.waitForExistence(timeout: 5))
+        XCTAssertEqual(warning.label, "勘定科目が存在しません")
+        XCTAssertFalse(app.textFields["gl.account.name"].exists)
         return app
     }
 
