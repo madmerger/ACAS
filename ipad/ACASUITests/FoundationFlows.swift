@@ -29,6 +29,20 @@ final class FoundationFlows: XCTestCase {
     }
 
     @MainActor
+    func testSL104CompactShowsAllAmounts() throws {
+        let (app, _) = try launch("SL-104", compactReport: true)
+        tap(app, "section.sales")
+        tap(app, "sales.proof")
+        tap(app, "action.generate")
+        XCTAssertTrue(app.staticTexts["CUST011"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["ALPHA CUSTOMER"].exists)
+        for (id, amount) in [("net", "100.00"), ("tax", "20.00"), ("gross", "120.00")] {
+            XCTAssertEqual(app.staticTexts["sales.proof.compact." + id].label, amount)
+        }
+        finish(app, "SL-104", verdict: "match")
+    }
+
+    @MainActor
     func testSYS001() throws {
         let (app, input) = try launch("SYS-001")
         tap(app, "system.company")
@@ -42,7 +56,7 @@ final class FoundationFlows: XCTestCase {
     }
 
     @MainActor
-    private func launch(_ id: String) throws -> (XCUIApplication, [String: Any]) {
+    private func launch(_ id: String, compactReport: Bool = false) throws -> (XCUIApplication, [String: Any]) {
         continueAfterFailure = false
         let url = try XCTUnwrap(Bundle(for: Self.self).url(forResource: id, withExtension: "json", subdirectory: "fixtures"))
         let data = try Data(contentsOf: url)
@@ -50,6 +64,7 @@ final class FoundationFlows: XCTestCase {
         let input = try XCTUnwrap(object["input"] as? [String: Any])
         let app = XCUIApplication()
         app.launchEnvironment["ACAS_FIXTURE"] = data.base64EncodedString()
+        if compactReport { app.launchEnvironment["ACAS_COMPACT_REPORT"] = "1" }
         app.launchArguments += ["-AppleLanguages", "(ja)", "-AppleLocale", "ja_JP"]
         XCUIDevice.shared.orientation = .landscapeLeft
         app.launch()
