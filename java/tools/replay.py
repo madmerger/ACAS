@@ -36,6 +36,18 @@ def to_keys(text):
 TOKEN_HEADER = "X-ACAS-Test-Token"
 
 
+def required_token():
+    token = os.environ.get("ACAS_TEST_API_TOKEN", "")
+    if not re.fullmatch(r"[!-~]{32,}", token):
+        raise ValueError("ACAS_TEST_API_TOKEN に空白を含まない半角英数字・記号を32文字以上指定してください")
+    return token
+
+
+def terminal_text(value):
+    """証跡由来の文字列を端末の制御命令として解釈させない。"""
+    return "".join(char if char.isprintable() else repr(char)[1:-1] for char in str(value))
+
+
 def http_origin(url):
     if "\\" in url or any(c.isspace() for c in url):
         return None
@@ -295,11 +307,12 @@ def main(make_api=Api, args=None):
         except Exception as e:  # noqa
             r = {"id": c["id"], "title": c["title"], "verdict": "未検証", "reason": f"実行エラー: {e}"}
         results.append(r)
-        print(r["id"], r["verdict"], r["reason"][:150], flush=True)
+        print(terminal_text(r["id"]), r["verdict"], terminal_text(r["reason"][:150]), flush=True)
         if getattr(api, "after_case", None): api.after_case(r)
         if a.v and r.get("detail"):
             for d in r["detail"]:
-                print("  ", {k: v for k, v in d.items() if k != "diff"}); print("\n".join("     " + l for l in d["diff"]))
+                print("  ", terminal_text({k: v for k, v in d.items() if k != "diff"}))
+                print("\n".join("     " + terminal_text(line) for line in d["diff"]))
     if a.out:
         a.out.parent.mkdir(parents=True, exist_ok=True)
         a.out.write_text(json.dumps(results, ensure_ascii=False, indent=1))

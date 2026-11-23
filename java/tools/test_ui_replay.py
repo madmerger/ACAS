@@ -22,6 +22,7 @@ class UiReplayTest(unittest.TestCase):
                     route.fetch.assert_called_once_with(
                         headers={"accept": "*/*", "X-ACAS-Test-Token": "synthetic"}, max_redirects=0)
                     route.fulfill.assert_called_once_with(response=route.fetch.return_value)
+                    route.fetch.return_value.dispose.assert_called_once_with()
                     route.continue_.assert_not_called()
                 else:
                     route.fetch.assert_not_called()
@@ -38,6 +39,7 @@ class UiReplayTest(unittest.TestCase):
         route.fulfill.assert_not_called()
         route.continue_.assert_not_called()
         route.abort.assert_called_once_with()
+        route.fetch.return_value.dispose.assert_called_once_with()
 
     def test_visible_calc_result_is_compared_independently_of_payload(self):
         for name, actual, shown, wrong in [
