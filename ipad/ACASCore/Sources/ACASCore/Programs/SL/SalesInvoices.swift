@@ -46,6 +46,7 @@ public struct SalesInvoices {
         public let net: Int64
         public let tax: Int64
         public let printed: Bool
+        let pending: Bool
         public var total: Int64 { net + tax }
     }
 
@@ -95,7 +96,8 @@ public struct SalesInvoices {
                 kind: Kind(rawValue: header.int("ih-type")) ?? .invoice,
                 net: ["ih-net", "ih-extra", "ih-carriage", "ih-deduct-amt"].reduce(0) { $0 + header.int($1) },
                 tax: ["ih-vat", "ih-e-vat", "ih-c-vat", "ih-deduct-vat"].reduce(0) { $0 + header.int($1) },
-                printed: header.str("ih-status-l") == "L")
+                printed: header.str("ih-status-l") == "L",
+                pending: header.str("ih-status") == "P")
     }
 
     public func invoices() -> [Invoice] {
@@ -146,9 +148,10 @@ public struct SalesInvoices {
         var header: Record
         if let existing {
             guard let current = self.header(existing) else { throw Error.missingInvoice }
-            guard current.str("ih-status") == "P" else { throw Error.locked }
+            guard ["P", "I"].contains(current.str("ih-status")) else { throw Error.locked }
             number = existing
             header = current
+            header["ih-status-p"] = " "
         } else {
             let candidates = (ownNumber == nil ? [""] : ["", "A", "B", "C"]).map { Number(value: requested, suffix: $0) }
             guard let available = candidates.first(where: { self.header($0) == nil }) else { throw Error.duplicate }
