@@ -2,6 +2,28 @@ import ACASCore
 import XCTest
 
 final class CompanySettingsTests: XCTestCase {
+    func testInitialRecordPrecedesSettingsAndReport() throws {
+        let store = try FileStore()
+        let setup = CompanySetup(BusinessContext(store: store))
+        var draft = setup.settings
+        try draft.setText("TEST", for: "usera")
+        try draft.setText("Test Street", for: "address-1")
+        try draft.setNumber(1, for: "level-1")
+        try draft.setNumber(1, for: "scycle")
+
+        try setup.prepareInitialRecord(draft)
+        XCTAssertEqual(setup.name, "TEST")
+        XCTAssertEqual(setup.settings.number("level-1"), 1)
+        XCTAssertEqual(setup.settings.number("scycle"), 0)
+        XCTAssertEqual(setup.settings.text("address-1"), "")
+        XCTAssertNil(store.readRaw(CompanySetup.reportPath))
+
+        try setup.save(draft, printReport: true)
+        XCTAssertEqual(setup.settings.number("scycle"), 1)
+        XCTAssertEqual(setup.settings.text("address-1"), "Test Street")
+        XCTAssertNotNil(store.readRaw(CompanySetup.reportPath))
+    }
+
     func testCreditDaysCannotExceedTheLegacyInputWidth() throws {
         let setup = CompanySetup(BusinessContext(store: try FileStore()))
         var settings = setup.settings
