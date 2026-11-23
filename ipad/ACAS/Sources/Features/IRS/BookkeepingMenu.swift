@@ -1,5 +1,6 @@
 import ACASCore
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct BookkeepingMenu: View {
     let workspace: Workspace
@@ -100,6 +101,8 @@ private struct BookkeepingReportPreview<Content: View>: View {
     let workflow: String
     let preview: Content
     @State private var message = ""
+    @State private var document: BookkeepingReportDocument?
+    @State private var exporting = false
 
     var body: some View {
         preview
@@ -107,19 +110,45 @@ private struct BookkeepingReportPreview<Content: View>: View {
                 HStack {
                     Button(irsText("action.generateReport")) {
                         do {
-                            try BookkeepingService(workspace.context).printReport(report)
+                            document = BookkeepingReportDocument(
+                                data: try BookkeepingService(workspace.context).printReport(report)
+                            )
                             message = irsText("result.reportGenerated")
                             workspace.completed(workflow)
                         } catch {
+                            document = nil
                             message = bookkeepingError(error)
                         }
                     }
                     .buttonStyle(.borderedProminent)
                     .accessibilityIdentifier("irs.generateReport")
+                    if document != nil {
+                        Button(irsText("action.exportReport")) { exporting = true }
+                            .accessibilityIdentifier("irs.exportReport")
+                    }
                     Text(message).accessibilityIdentifier("irs.reportResult")
                 }
                 .padding()
             }
+            .fileExporter(isPresented: $exporting, document: document, contentType: .data, defaultFilename: "prt-1") {
+                if case .failure = $0 { message = irsText("error.exportReport") }
+            }
+    }
+}
+
+private struct BookkeepingReportDocument: FileDocument {
+    static let readableContentTypes: [UTType] = [.data]
+    let data: Data
+
+    init(data: Data) { self.data = data }
+
+    init(configuration: ReadConfiguration) throws {
+        guard let data = configuration.file.regularFileContents else { throw CocoaError(.fileReadCorruptFile) }
+        self.data = data
+    }
+
+    func fileWrapper(configuration: WriteConfiguration) throws -> FileWrapper {
+        FileWrapper(regularFileWithContents: data)
     }
 }
 

@@ -6,6 +6,8 @@
 "bookkeeping.accounts.print" = "科目表印刷";
 "bookkeeping.action.confirmRecalculate" = "再計算する";
 "bookkeeping.action.generateReport" = "帳票を作成";
+"bookkeeping.action.exportReport" = "帳票原本を書き出す";
+"bookkeeping.error.exportReport" = "帳票原本を書き出せませんでした。";
 "bookkeeping.action.post" = "転記";
 "bookkeeping.action.recalculate" = "元帳を再計算";
 "bookkeeping.action.save" = "保存";

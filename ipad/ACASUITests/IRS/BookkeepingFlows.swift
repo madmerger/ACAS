@@ -71,6 +71,7 @@ final class BookkeepingFlows: XCTestCase {
             tap(app, "irs.generateReport")
             XCTAssertTrue(app.staticTexts["irs.reportResult"].waitForExistence(timeout: 5), id)
             XCTAssertEqual(app.staticTexts["irs.reportResult"].label, "帳票を作成しました。", id)
+            XCTAssertTrue(app.buttons["irs.exportReport"].isHittable, id)
         }
     }
 
