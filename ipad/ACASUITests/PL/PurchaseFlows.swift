@@ -407,8 +407,8 @@ final class PurchaseFlows: XCTestCase {
             """
         )
         var data = try Data(contentsOf: url)
+        var fixture = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
         if let smokeID {
-            var fixture = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
             fixture["id"] = smokeID
             fixture["title"] = "実UIの動作確認（同一性比較なし）"
             fixture["workflow"] = "pl.smoke"
@@ -422,7 +422,11 @@ final class PurchaseFlows: XCTestCase {
         XCUIDevice.shared.orientation = .landscapeLeft
         app.launch()
         XCTAssertTrue(app.staticTexts[smokeID ?? id].waitForExistence(timeout: 10))
-        if smokeID == nil { print("ACAS_PL_START|\(id)|\(Date().timeIntervalSince1970)") }
+        if smokeID == nil {
+            let title = try XCTUnwrap(fixture["title"] as? String)
+            XCTAssertTrue(app.staticTexts[title].exists, "\(id)：ケース名が表示されていません")
+            print("ACAS_PL_START|\(id)|\(Date().timeIntervalSince1970)")
+        }
         if openPurchases {
             tap(app, "section.purchases")
             tap(app, "pl.date.confirm")

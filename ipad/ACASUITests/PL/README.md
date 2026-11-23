@@ -17,9 +17,14 @@ xcodebuild -project ipad/ACAS.xcodeproj -scheme ACAS \
   -parallel-testing-enabled NO -only-testing:ACASUITests/PurchaseFlows test
 ```
 
-74件の証跡ケースだけを録画する場合は、先に `build-for-testing` し、テスト済みアプリを Simulator にインストールしてください。
+74件の証跡ケースだけを録画する場合は、Simulator 本体の言語と地域を変更して再起動し、録画前に `build-for-testing` とインストールを済ませてください。
 
 ```sh
+xcrun simctl spawn "$UDID" defaults write -g AppleLanguages -array ja
+xcrun simctl spawn "$UDID" defaults write -g AppleLocale ja_JP
+xcrun simctl shutdown "$UDID"
+xcrun simctl boot "$UDID"
+xcrun simctl bootstatus "$UDID" -b
 xcrun simctl install "$UDID" ipad/.derived/Build/Products/Debug-iphonesimulator/ACAS.app
 python3 ipad/ACASUITests/PL/record_equivalence.py "$UDID" ipad/.derived/Build/Products/*.xctestrun "$HOME/acas-pl-run-1"
 ```
@@ -39,6 +44,8 @@ python3 ipad/ACASUITests/PL/assemble_equivalence.py "$DELIVERABLES" "$WORK" "$HO
 python3 ipad/ACASUITests/PL/summarize_equivalence.py "$EVIDENCE" "$DELIVERABLES" \
   "$WORK/timeline.json" --sha "$(git rev-parse HEAD)"
 ```
+
+ケース名は `case_names_ja.json` で統一します。CSVは従来の6列のまま「移行後結果」の冒頭にケース名を表示します。Excel版も必要な場合は、`openpyxl` を用意し、集計に `--xlsx` を指定すると「ケース名」を独立列にした `ACAS-PL.xlsx` が生成されます。
 
 調査済みの原因・対処を追記する場合のみ、ケース ID から日本語の説明文字列への JSON オブジェクトを作成し、`--diagnoses "$WORK/diagnoses.json"` を追加します。診断ファイルがなければこの指定は不要です。
 

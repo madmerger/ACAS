@@ -1,14 +1,20 @@
 import json
+import re
 import tempfile
 import unittest
 from pathlib import Path
 
 from generate_fixtures import (
-    check_required_cases, equivalence_fixture, fixture, purchase_case_ids, seed_files, validate_case_id,
+    CASE_NAMES, check_required_cases, equivalence_fixture, fixture, purchase_case_ids, seed_files, validate_case_id,
 )
 
 
 class EvidencePathTests(unittest.TestCase):
+    def test_each_purchase_case_has_a_japanese_display_name(self):
+        self.assertEqual(CASE_NAMES.keys(), purchase_case_ids())
+        self.assertTrue(all(re.search(r"[ぁ-んァ-ヶ一-龯]", name) for name in CASE_NAMES.values()))
+        self.assertEqual(CASE_NAMES["PL-007"], "仕入の検証帳票 — 画面表示")
+
     def test_incomplete_catalog_removes_stale_purchase_outputs(self):
         fixtures = self.root / "fixtures"
         fixtures.mkdir()
@@ -67,7 +73,9 @@ class EvidencePathTests(unittest.TestCase):
                   "comparison_targets": {"keyed_record_diff": "run/diff.json", "report_files": [],
                                          "screen_text": ["run/screen.txt"]}}
         case = {"id": "PL-003", "title": "買掛残高・明細照会", "legacy_result": legacy}
-        comparison = equivalence_fixture(self.root, case)["equivalence"]
+        generated = equivalence_fixture(self.root, case)
+        self.assertEqual(generated["title"], CASE_NAMES["PL-003"])
+        comparison = generated["equivalence"]
         self.assertIsNone(comparison["outOfScope"])
         self.assertEqual(comparison["checkpoint"]["kind"], "blocked")
         self.assertIn("T-025", comparison["checkpoint"]["detail"])

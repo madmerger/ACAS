@@ -9,13 +9,13 @@ from pathlib import Path
 
 
 WORKFLOWS = {
-    "PL-400": ("pl.supplier.edit", "仕入先名を更新"),
-    "PL-401": ("pl.supplier.delete", "残高ゼロの仕入先を削除"),
-    "PL-402": ("pl.supplier.lookup", "存在しない仕入先を照会"),
-    "PL-403": ("pl.supplier.add", "仕入先を新規登録"),
-    "PL-411": ("pl.transaction.save", "税抜百・税額二十の仕入請求書を保存"),
-    "PL-412": ("pl.transaction.reject", "未登録の仕入先を拒否"),
-    "PL-413": ("pl.transaction.proof", "未転記の仕入取引の検証帳票"),
+    "PL-400": "pl.supplier.edit",
+    "PL-401": "pl.supplier.delete",
+    "PL-402": "pl.supplier.lookup",
+    "PL-403": "pl.supplier.add",
+    "PL-411": "pl.transaction.save",
+    "PL-412": "pl.transaction.reject",
+    "PL-413": "pl.transaction.proof",
 }
 KEY_LENGTHS = {"purchled.dat": 7, "pinvoice.dat": 9, "analysis.dat": 3, "delivery.dat": 8,
                "batch.dat": 6}
@@ -24,6 +24,9 @@ RELATIVE_SIZES = {"posting.dat": 98}
 
 def read_json(path):
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+CASE_NAMES = read_json(Path(__file__).with_name("case_names_ja.json"))
 
 
 def evidence_path(root, path):
@@ -89,7 +92,8 @@ def fixture(root, case):
             raise ValueError(f"帳票スプールと原本が一致しません: {path}")
     with evidence_path(root, run / "terminal.cast").open(encoding="utf-8") as recording:
         date = json.loads(recording.readline())["timestamp"]
-    workflow, title = WORKFLOWS[case["id"]]
+    workflow = WORKFLOWS[case["id"]]
+    title = CASE_NAMES[case["id"]]
     return {
         "id": case["id"], "workflow": workflow, "title": title, "dateSeconds": date, "seed": seed_files(root, run),
         "changes": changes, "reports": reports, "calculation": None,
@@ -167,7 +171,7 @@ def equivalence_fixture(root, case):
     with evidence_path(root, run / "terminal.cast").open(encoding="utf-8") as recording:
         date = json.loads(recording.readline())["timestamp"]
     return {
-        "id": case_id, "title": case["title"], "workflow": "pl.equivalence", "dateSeconds": date,
+        "id": case_id, "title": CASE_NAMES[case_id], "workflow": "pl.equivalence", "dateSeconds": date,
         "seed": seed_files(root, run), "changes": changes, "reports": {}, "calculation": None,
         "equivalence": {"reportDigests": reports, "outOfScope": out_of_scope,
                         "checkpoint": checkpoint,

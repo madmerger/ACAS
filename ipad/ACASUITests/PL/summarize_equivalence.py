@@ -6,7 +6,7 @@ import re
 import string
 from collections import Counter, defaultdict
 from pathlib import Path
-from generate_fixtures import evidence_path, validate_case_id
+from generate_fixtures import CASE_NAMES, evidence_path, validate_case_id
 
 
 VERDICTS = {"match": "一致", "mismatch": "不一致", "out_of_scope": "対象外"}
@@ -155,7 +155,7 @@ def observed_summary(case, current, reports):
     if 1 <= number <= len(MENU_SCREENS):
         screen = MENU_SCREENS[number - 1]
     else:
-        screen = SCREEN_NAMES.get(case_id) or re.sub(r"^PL-\S+ |：到達確認$", "", case["title"])
+        screen = SCREEN_NAMES.get(case_id) or CASE_NAMES[case_id].removesuffix("：到達確認")
     return f"「{screen}」画面に到達"
 
 
@@ -181,6 +181,7 @@ def main():
     parser.add_argument("timeline", type=Path, help="run ディレクトリごとの trim と動画内 offset を記録した JSON")
     parser.add_argument("--diagnoses", type=Path, help="ケース ID ごとの原因・対処（JSON）")
     parser.add_argument("--sha", default="未 push")
+    parser.add_argument("--xlsx", action="store_true", help="Excel 版も出力（openpyxl が必要）")
     args = parser.parse_args()
     catalog = json.loads(evidence_path(args.evidence.resolve(), "scenarios/catalog.json").read_text())["cases"]
     cases = sorted((c for c in catalog if c["id"].startswith("PL-")), key=lambda case: case["id"])
@@ -195,6 +196,14 @@ def main():
             history[case].append({**result, "run": run})
 
     fields = ["ケースID", "移行後結果", "一致判定", "動画ファイル名", "動画開始時刻(秒)", "不一致原因・対処履歴"]
+    if args.xlsx:
+        from openpyxl import Workbook
+
+        workbook = Workbook()
+        sheet = workbook.active
+        sheet.title = "買掛元帳"
+        sheet.append([fields[0], "ケース名", *fields[1:]])
+        sheet.freeze_panes = "C2"
     verdict_counts = Counter()
     mismatches = []
     unverified = []
@@ -202,6 +211,7 @@ def main():
     byte_checks = []
     supplier_rerun = []
     corrected = []
+    case_names = []
     with (args.deliverables / "ACAS-PL.csv").open("w", encoding="utf-8-sig", newline="") as output:
         writer = csv.writer(output)
         writer.writerow(fields)
@@ -219,24 +229,32 @@ def main():
                 details.append(diagnosis)
             seconds = current["start"]
             summary = observed_summary(case, current, reports)
-            writer.writerow(map(csv_cell, [case_id, summary, verdict, VIDEO if seconds is not None else "",
-                                           f"{seconds:.2f}" if seconds is not None else "", " / ".join(details)]))
+            title = CASE_NAMES[case_id]
+            tail = [verdict, VIDEO if seconds is not None else "",
+                    f"{seconds:.2f}" if seconds is not None else "", " / ".join(details)]
+            writer.writerow(map(csv_cell, [case_id, f"【{title}】{summary}", *tail]))
+            if args.xlsx:
+                sheet.append(list(map(csv_cell, [case_id, title, summary, *tail])))
+            case_names.append(f"- {case_id}：{markdown_text(title)}")
             if case_id == "PL-090" and len(attempts) > 1 and seconds is not None:
                 supplier_rerun = ["## PL-090 再実行", f"- {markdown_text(summary)}。{markdown_text(diagnosis)}\n"
                                   f"- 動画 `{VIDEO}` の最終再実行開始は **{seconds:.2f}秒**。各試行の履歴はCSVに記録。"]
             if verdict == "不一致":
-                mismatches.append(f"- **{case_id}** {markdown_text(case['title'])}："
+                mismatches.append(f"- **{case_id}** {markdown_text(title)}："
                                   + " / ".join(map(markdown_text, details)))
             if verdict == "一致" and diagnosis and len(attempts) > 1 and attempts[-2][0]["verdict"] == "不一致":
                 corrected.append(f"- **{case_id}**：{markdown_text(diagnosis)}"
                                  + (f"（{seconds:.2f}秒）" if seconds is not None else ""))
             if verdict in ("未判定", "未実行"):
-                unverified.append(f"- **{case_id}** {markdown_text(case['title'])}："
+                unverified.append(f"- **{case_id}** {markdown_text(title)}："
                                   + (" / ".join(map(markdown_text, details)) or verdict))
             if verdict == "対象外":
                 excluded.append(f"- {case_id}：{markdown_text(case['legacy_result']['reason'])}")
             if reports:
                 byte_checks.append(f"- {case_id}：{'、'.join(markdown_text(detail) for _, detail, _ in reports)}")
+    if args.xlsx:
+        sheet.auto_filter.ref = sheet.dimensions
+        workbook.save(args.deliverables / "ACAS-PL.xlsx")
     sections = [
         "# 買掛元帳（PL）移行同一性確認",
         "・".join(f"{label} {verdict_counts[label]} 件" for label in ("一致", "不一致", "対象外", "未判定", "未実行")),
@@ -257,6 +275,7 @@ def main():
         "\n- PL-090 は SYS-001 のうち仕入先2件のみ。SYS-001 の他台帳と帳票は対象外。",
         "\n- 帳票作成前の PL-018・PL-228 は、旧版の空ファイルと iPad の未作成を同じ『帳票なし』の状態として比較。"
         "\n- SQLite と Berkeley DB のコンテナ構造や、対応できない型の全ファイルについてはバイト一致を確認していない。",
+        "## ケース名", "\n".join(case_names),
     ]
     (args.deliverables / "ACAS-PL.md").write_text("\n\n".join(sections) + "\n", encoding="utf-8")
 
