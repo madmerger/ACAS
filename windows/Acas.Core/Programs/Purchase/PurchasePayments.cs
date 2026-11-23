@@ -178,6 +178,8 @@ public sealed partial class PurchaseLedger
         {
             var system = System();
             if (system.I("P-Flag-P") != 2 || PaymentItems() is not { } rows) return false;
+            int discountCount = 0;
+            decimal discountTotal = 0;
             foreach (var (key, item) in rows)
             {
                 if (item.I("type") == 2 && item.I("batchNumber") != 0 && item.I("batchItem") != 0)
@@ -194,7 +196,10 @@ public sealed partial class PurchaseLedger
                     decimal paid = item.N("paid");
                     decimal applied = item.N("net");
                     decimal old = supplier.N("current") - supplier.N("unapplied");
-                    decimal balance = supplier.N("current") - applied - item.N("discountAmount");
+                    decimal discount = item.N("discountAmount");
+                    if (discount != 0) discountCount++;
+                    discountTotal += discount;
+                    decimal balance = supplier.N("current") - applied - discount;
                     decimal unapplied = supplier.N("unapplied") + paid - applied + Math.Max(0, -balance);
                     if (!AmountFits(unapplied, 99999999.99m)) return false;
                     supplier.SetN("current", Math.Max(0, balance));
@@ -208,6 +213,7 @@ public sealed partial class PurchaseLedger
                         return false;
                 }
             }
+            if (!DeductPaidDiscounts(discountCount, discountTotal)) return false;
             if (GeneralLedgerEnabled && !WritePaymentBatches(system, posted)) return false;
             const string totalsKey = "00000004";
             if (database.Read(SystemFile, totalsKey) is { } data && data.Length == PurchaseTotals.Size)

@@ -273,6 +273,24 @@ public sealed class PurchaseLedgerTests
     }
 
     [Fact]
+    public void 支払転記は使用した割引を分析明細とグループから差し引く()
+    {
+        using var db = Fixture("sl-ready");
+        var ledger = new PurchaseLedger(db);
+        Assert.True(ledger.SaveAnalysis(ledger.NewAnalysis("a1"), true));
+        var invoice = Sample(ledger) with { Discount = 10m, DiscountDays = 20 };
+        Assert.True(ledger.SaveInvoice(invoice, true));
+        Assert.Single(ledger.PostInvoices()!);
+        Assert.Contains(ledger.PurchaseAnalysisTotals()!, row => row is { Code: "zb", Current: 10m, Year: 10m });
+        Assert.True(ledger.SavePayment("SUPP018", invoice.Date, 110m, false, new Dictionary<int, decimal> { [1] = 110m }));
+        Assert.Single(ledger.ProvePayments()!);
+        Assert.Single(ledger.PostPayments()!);
+        var totals = ledger.PurchaseAnalysisTotals()!;
+        Assert.DoesNotContain(totals, row => row.Code == "zb");
+        Assert.Contains(totals, row => row is { Code: "z", Current: 0m, Year: 0m, CurrentCount: 0, YearCount: 0 });
+    }
+
+    [Fact]
     public void アイアールエスの仕入と支払は同じ採番でも別バッチになる()
     {
         using var db = Fixture("pl-invoice");

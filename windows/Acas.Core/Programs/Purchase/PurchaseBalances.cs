@@ -67,15 +67,34 @@ public sealed partial class PurchaseLedger
                     value.Set("print", analysis?.S("reference") ?? "");
                 }
             }
-            decimal period = value.N("amount") + amount, year = value.N("yearAmount") + amount;
-            if (Math.Abs(period) > 99999999.99m || Math.Abs(year) > 99999999.99m) return false;
-            value.SetN("count", value.N("count") + count);
-            value.SetN("yearCount", value.N("yearCount") + count);
-            value.SetN("amount", period);
-            value.SetN("yearAmount", year);
+            if (!AdjustAnalysisValue(value, count, amount)) return false;
             database.Put(ValuesFile, key, value.B);
             return true;
         }
+    }
+
+    private bool DeductPaidDiscounts(int count, decimal amount)
+    {
+        if (amount == 0) return true;
+        foreach (var key in new[] { AnalysisKey("zb"), AnalysisKey("z") })
+        {
+            if (database.Read(ValuesFile, key) is not { } bytes) return true;
+            if (bytes.Length != AnalysisValue.Size) return false;
+            var value = AnalysisValue.From(bytes);
+            if (!AdjustAnalysisValue(value, -count, -amount) || !database.Rewrite(ValuesFile, key, value.B)) return false;
+        }
+        return true;
+    }
+
+    private static bool AdjustAnalysisValue(Rec value, int count, decimal amount)
+    {
+        decimal period = value.N("amount") + amount, year = value.N("yearAmount") + amount;
+        if (Math.Abs(period) > 99999999.99m || Math.Abs(year) > 99999999.99m) return false;
+        value.SetN("count", value.N("count") + count);
+        value.SetN("yearCount", value.N("yearCount") + count);
+        value.SetN("amount", period);
+        value.SetN("yearAmount", year);
+        return true;
     }
 
     public IReadOnlyList<PurchaseAnalysisTotal>? PurchaseAnalysisTotals()
