@@ -69,7 +69,9 @@ public static class CaseRunner
     public static string? SafePath(string root, string rel)
     {
         string r = Path.GetFullPath(root).TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
-        string full = Path.GetFullPath(Path.Combine(r, rel.Replace('/', Path.DirectorySeparatorChar)));
+        string full;
+        try { full = Path.GetFullPath(Path.Combine(r, rel.Replace('/', Path.DirectorySeparatorChar))); }
+        catch (Exception e) when (e is ArgumentException or NotSupportedException or PathTooLongException) { return null; }
         return full.StartsWith(r, StringComparison.OrdinalIgnoreCase) ? full : null;
     }
 
