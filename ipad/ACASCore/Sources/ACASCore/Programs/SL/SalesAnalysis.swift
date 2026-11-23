@@ -53,7 +53,9 @@ public struct SalesAnalysis {
     public func save(group: String, account: Int64, description: String, printCode: String, replacing: Bool = false) throws {
         let group = Cobol.rtrim(group)
         guard (1...2).contains(group.utf8.count), group.utf8.allSatisfy({ (0x21...0x7e).contains($0) }),
-              (0...999_999).contains(account) else { throw Error.invalidInput }
+              (0...999_999).contains(account),
+              Cobol.rtrim(fixed(description, 24)) == Cobol.rtrim(description),
+              Cobol.rtrim(fixed(printCode, 3)) == Cobol.rtrim(printCode) else { throw Error.invalidInput }
         let key = "S" + group
         try store.withTransaction {
             try validAnalysis()

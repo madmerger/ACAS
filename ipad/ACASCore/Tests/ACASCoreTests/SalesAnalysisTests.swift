@@ -2,6 +2,25 @@ import XCTest
 @testable import ACASCore
 
 final class SalesAnalysisTests: XCTestCase {
+    func testRejectsDescriptionsAndPrintCodesThatExceedRecordWidths() throws {
+        let store = try FileStore()
+        let context = BusinessContext(store: store)
+        try CompanySetup(context).save(name: "TEST")
+        let service = SalesAnalysis(context)
+        try service.prepare()
+        let name = String(repeating: "売", count: 12)
+        try service.save(group: "A", account: 1, description: name, printCode: "売A")
+
+        let before = store.snapshot()
+        for (description, printCode) in [(name + "売", "売A"), (name, "売上")] {
+            XCTAssertThrowsError(try service.save(group: "A", account: 1, description: description,
+                                                  printCode: printCode, replacing: true)) {
+                XCTAssertEqual($0 as? SalesAnalysis.Error, .invalidInput)
+            }
+            XCTAssertEqual(store.snapshot(), before)
+        }
+    }
+
     func testSetupAndRegistrationPreserveLegacyLayouts() throws {
         let store = try FileStore()
         let context = BusinessContext(store: store, timeZone: .gmt)
