@@ -490,6 +490,7 @@ final class PurchaseFlows: XCTestCase {
         let result = try XCTUnwrap(verdict).identifier
         let reason = verdict?.value as? String ?? ""
         print("ACAS_PL_RESULT|\(id)|\(result)|\(reason)")
+        if number == 90 { RunLoop.current.run(until: Date().addingTimeInterval(2)) }
         let proof = XCTAttachment(screenshot: app.screenshot())
         proof.name = id
         proof.lifetime = .keepAlways
