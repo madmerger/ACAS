@@ -108,6 +108,7 @@ final class PurchaseTransferTests: XCTestCase {
         let settings = RelativeFile(store, path: prefix + "system.dat", recordSize: 1024)
         let state = Record(SystemLayout.layout, bytes: try XCTUnwrap(settings.read(1)))
         XCTAssertEqual(state.int("p-flag-i"), 2)
+        XCTAssertEqual(state.raw("file-statuses")[28], 0x31)
     }
 
     private struct Timestamp: Decodable { let timestamp: Double }

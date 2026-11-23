@@ -120,6 +120,9 @@ public struct PurchaseTransfer {
             var system = Record(SystemLayout.layout, bytes: bytes)
             system.setInt("p-flag-i", 2)
             system["oi-5-flag"] = "Y"
+            var statuses = system.raw("file-statuses")
+            statuses[28] = 0x31
+            system.setRaw("file-statuses", statuses)
             try settings.write(1, system.bytes)
             try store.writeRaw(directory + "prt-1", postingReport(posted, settings: config, date: date))
         }
