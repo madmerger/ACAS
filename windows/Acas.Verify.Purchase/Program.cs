@@ -41,13 +41,18 @@ static Result Check(JsonElement entry, string evidence)
     {
         using var db = new Db();
         db.LoadBaseline(entry.GetProperty("baseline").GetString()!);
+        const string values = "ledgers/acas/value.dat";
         string? referenceDirectory = targets.GetProperty("keyed_record_diff").GetString() is { } diffPath
             ? Path.GetDirectoryName(EvidenceFile(evidence, diffPath)) : null;
         if (referenceDirectory != null)
             foreach (var row in BTreeRows(Path.Combine(referenceDirectory, "before-files", PurchaseLedger.AnalysisFile)))
                 db.Put(PurchaseLedger.AnalysisFile, Encoding.ASCII.GetString(row.Key), row.Data);
         if (id == "PL-414" && referenceDirectory != null)
+        {
             LoadLegacyPostingLines(db, referenceDirectory);
+            foreach (var (key, record) in BTreeRows(Path.Combine(referenceDirectory, "before-files", values)))
+                db.Put(values, Encoding.ASCII.GetString(key), record);
+        }
         var before = Rows(db);
         var reference = RecordChanges(evidence, targets);
         if (id == "PL-090")
@@ -69,12 +74,10 @@ static Result Check(JsonElement entry, string evidence)
                 }
             if (id == "PL-414" && referenceDirectory != null)
             {
-                const string values = "ledgers/acas/value.dat";
                 var oldValues = ValueRows("before-files");
                 var newValues = ValueRows("files");
                 foreach (var key in oldValues.Keys.Union(newValues.Keys))
-                    if (oldValues.GetValueOrDefault(key) != newValues.GetValueOrDefault(key))
-                        expected[(values, key)] = (oldValues.GetValueOrDefault(key), newValues.GetValueOrDefault(key));
+                    expected[(values, key)] = (oldValues.GetValueOrDefault(key), newValues.GetValueOrDefault(key));
 
                 Dictionary<string, string> ValueRows(string folder) =>
                     BTreeRows(Path.Combine(referenceDirectory, folder, values)).ToDictionary(

@@ -142,6 +142,23 @@ public sealed class PurchaseLedgerTests
     }
 
     [Fact]
+    public void 次の仕入転記は既存の分析値の当期と年累計に追記する()
+    {
+        using var db = Fixture("sl-ready");
+        var ledger = new PurchaseLedger(db);
+        Assert.True(ledger.SaveAnalysis(ledger.NewAnalysis("a1"), true));
+        Assert.True(ledger.SaveInvoice(Sample(ledger), true));
+        Assert.Single(ledger.PostInvoices()!);
+        var detail = Assert.Single(ledger.PurchaseAnalysisTotals()!, row => row.Code == "a1");
+        Assert.Equal((100m, 1, 100m, 1), (detail.Current, detail.CurrentCount, detail.Year, detail.YearCount));
+        var next = Sample(ledger) with { Lines = [new("a1", 35m, 0, 0m, "")] };
+        Assert.True(ledger.SaveInvoice(next, true));
+        Assert.Single(ledger.PostInvoices()!);
+        detail = Assert.Single(ledger.PurchaseAnalysisTotals()!, row => row.Code == "a1");
+        Assert.Equal((135m, 2, 135m, 2), (detail.Current, detail.CurrentCount, detail.Year, detail.YearCount));
+    }
+
+    [Fact]
     public void 仕入転記は明細の当期と年累計を分析帳票に追加する()
     {
         using var db = Fixture("pl-invoice");
