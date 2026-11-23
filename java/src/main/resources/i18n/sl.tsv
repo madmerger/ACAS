@@ -120,3 +120,31 @@ Enter invoice value & operator	請求金額と比較条件を入力
 Overdue A/Cs    - [	延滞顧客        - [
 Date Entered-[	登録日      -[
 Enter date & operator	日付と比較条件を入力
+SL008 P.A. Code Already Exists!!	SL008 分析コードは登録済みです
+SL009 P.A. Group Code Does Not Exist!!	SL009 分析グループコードがありません
+SL010 P.A. Group Code Used As Analysis Code!!	SL010 グループが分析コードとして使用中です
+SL011 P.A. Code Does Not Exist!!	SL011 分析コードがありません
+Product Analysis Codes	製品分析コード一覧
+Code    Gl.Nos.      <-----Description------>   Print	コード  GL番号       <---------名称---------->   印字
+-Type-	-種別-
+Warning: One or more P.A. codes contain a zero value for General Ledger numbers	警告: GL 番号がゼロの分析コードがあります
+(1)  Set-up P/A records	(1)  分析コード登録
+(2)  Amend/Delete P/A records	(2)  分析コード変更・削除
+(3)  Print P/A records	(3)  分析コード印刷
+(4)  Print All P/A records	(4)  分析コード全件印刷
+(5)  Display P/A records	(5)  分析コード表示
+Product Analysis File Set-Up & Maintenance	製品分析コード登録・保守
+Set-Up P/A Records	分析コード登録
+Amend/Delete P/A Records	分析コード変更・削除
+Print P/A Records	分析コード印刷
+Print All P/A Records	分析コード全件印刷
+Display P/A Records	分析コード表示
+Code   G/L Nos          Description	コード GL番号           名称
+Ref	印字
+Type	種別
+Escape Code [ ]	操作コード  [ ]
+<B> = Back	<B> = 戻る
+<S> = Save	<S> = 保存
+<Q> = Quit	<Q> = 中止
+<K> = Deleted	<K> = 削除
+Enter <X> to exit or <Return> to continue...[ ]	<X> で終了、<Enter> で続行              ...[ ]

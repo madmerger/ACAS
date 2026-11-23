@@ -104,6 +104,10 @@ public abstract class SlProgram extends Program {
             }
         }
     }
+    protected static Rec analysisRec() { return fdRec("copybooks/fdanal.cob", "analysis-record"); }
+    protected static Rec valueRec() { return fdRec("copybooks/fdval.cob", "value-record"); }
+    protected CobFile analysisFile(Rec r) { return CobFile.indexed(ctx.store, ctx.path(F_ANALYSIS), r, "pa-code"); }
+    protected CobFile valueFile(Rec r) { return CobFile.indexed(ctx.store, ctx.path(F_VALUE), r, "va-code"); }
     protected CobFile salesFile(Rec r) { return CobFile.indexed(ctx.store, ctx.path(F_SALES), r, "sales-key"); }
     protected CobFile deliveryFile(Rec r) { return CobFile.indexed(ctx.store, ctx.path(F_DELIVERY), r, "deliv-key"); }
     protected static boolean invalidKey(CobFile f) { return f.status.charAt(0) == '2'; }
@@ -112,7 +116,7 @@ public abstract class SlProgram extends Program {
     protected void spoolReport(String file, String spoolName, boolean landscape) {
         String opts = landscape
             ? "lpr -r -o 'orientation-requested=4 page-left=21 page-top=48 page-right=10 sides=two-sided-long-edge cpi=12 lpi=8' -P "
-            : "lpr -r -o 'orientation-requested=3 page-left=48 page-right=24 sides=two-sided-long-edge cpi=12 lpi=8' -P ";
+            : "lpr -r -o 'orientation-requested=3 page-left=36 page-top=24 page-right=24 sides=two-sided-long-edge cpi=12 lpi=8' -P ";
         ctx.spool(file, opts + spoolName.stripTrailing() + " " + file);
     }
 
