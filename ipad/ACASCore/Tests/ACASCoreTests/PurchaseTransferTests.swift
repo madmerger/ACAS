@@ -83,7 +83,21 @@ final class PurchaseTransferTests: XCTestCase {
         XCTAssertEqual(EvidenceComparison.snapshot(store), before)
         XCTAssertFalse(store.exists(prefix + "posting.dat"))
         XCTAssertEqual(sqlite3_exec(db, "DROP TRIGGER reject_invoice", nil, nil, nil), SQLITE_OK)
+        let pending = try XCTUnwrap(store.all(prefix + "pinvoice.dat").first { $0.key.last == 0 })
+        let otherDocuments = [1, 3].map { type -> [UInt8] in
+            var row = Record(PeriodRecords.pihLayout, bytes: pending.data)
+            row.setInt("invoice", 300000 + Int64(type))
+            row.setInt("type", Int64(type))
+            row["status"] = "P"
+            return row.bytes + pending.data.dropFirst(row.bytes.count)
+        }
+        for row in otherDocuments {
+            XCTAssertTrue(store.write(prefix + "pinvoice.dat", key: Array(row.prefix(9)), data: row))
+        }
         XCTAssertEqual(try transfer.postPending(), ["200001"])
+        for row in otherDocuments {
+            XCTAssertEqual(store.read(prefix + "pinvoice.dat", key: Array(row.prefix(9))), row)
+        }
         let diff = try JSONDecoder().decode(Diff.self, from: read("record-diff.json"))
         XCTAssertEqual(diff.changes.count, 4)
         for change in diff.changes {

@@ -58,9 +58,9 @@ public struct PurchaseTransfer {
         for (key, raw) in store.all(invoicePath) where key.count == 9 && key.last == 0 {
             var invoice = Record(PeriodRecords.pihLayout, bytes: raw)
             guard invoice.str("status").uppercased() == "P" else { continue }
+            guard invoice.int("test") == 0, invoice.int("type") == 2 else { continue }
             let supplierKey = invoice.raw("supplier")
-            guard invoice.int("test") == 0, invoice.int("type") == 2,
-                  let supplierRaw = store.read(supplierPath, key: supplierKey)
+            guard let supplierRaw = store.read(supplierPath, key: supplierKey)
             else { throw Failure.invalidInvoice }
             var supplier = suppliers[supplierKey] ?? Record(PeriodRecords.purchLayout, bytes: supplierRaw)
             let goods = invoice.int("net")
