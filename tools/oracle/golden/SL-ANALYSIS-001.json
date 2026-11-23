@@ -1,0 +1,135 @@
+{
+  "data": {
+    "analysis": [
+      {
+        "code": "a",
+        "description": "Purchase group",
+        "gl": 0,
+        "ledger": "P",
+        "print": ""
+      },
+      {
+        "code": "a1",
+        "description": "Purchase materials",
+        "gl": 200100,
+        "ledger": "P",
+        "print": "MAT"
+      },
+      {
+        "code": "a",
+        "description": "Sales group",
+        "gl": 0,
+        "ledger": "S",
+        "print": ""
+      },
+      {
+        "code": "a1",
+        "description": "Sales goods",
+        "gl": 100100,
+        "ledger": "S",
+        "print": "GDS"
+      },
+      {
+        "code": "b",
+        "description": "Oracle service",
+        "gl": 0,
+        "ledger": "S",
+        "print": "SVC"
+      }
+    ],
+    "suppliers": [
+      {
+        "code": "SUP0001",
+        "name": "Oracle Supplier"
+      }
+    ]
+  },
+  "id": "SL-ANALYSIS-001",
+  "reports": {
+    "prt-1": {
+      "lines": [
+        "SL070 (3.01.11)                  Product Analysis Codes                 Page   1",
+        "Oracle Company                                                        <DATE>",
+        "Lgr Code    Gl.Nos.      <-----Description------>   Print      -Type-",
+        " P   a                   Purchase group                        Group",
+        "     a1     002001       Purchase materials          MAT       Detail",
+        " S   a                   Sales group                           Group",
+        "     a1     001001       Sales goods                 GDS       Detail",
+        " S   b                   Oracle service              SVC       Group"
+      ],
+      "records": [
+        {
+          "code": "a",
+          "description": "Purchase group",
+          "gl": 0,
+          "ledger": "P",
+          "print": "",
+          "type": "Group"
+        },
+        {
+          "code": "a1",
+          "description": "Purchase materials",
+          "gl": 2001,
+          "ledger": "",
+          "print": "MAT",
+          "type": "Detail"
+        },
+        {
+          "code": "a",
+          "description": "Sales group",
+          "gl": 0,
+          "ledger": "S",
+          "print": "",
+          "type": "Group"
+        },
+        {
+          "code": "a1",
+          "description": "Sales goods",
+          "gl": 1001,
+          "ledger": "",
+          "print": "GDS",
+          "type": "Detail"
+        },
+        {
+          "code": "b",
+          "description": "Oracle service",
+          "gl": 0,
+          "ledger": "S",
+          "print": "SVC",
+          "type": "Group"
+        }
+      ]
+    }
+  },
+  "screens": [
+    {
+      "lines": [
+        "SL070 (3.01.11)    Product Analysis File Set-Up & Maintenance         <DATE>",
+        "",
+        "",
+        "                                 Function  Menu",
+        "",
+        "",
+        "Select one of the following by number :- [0]",
+        "",
+        "",
+        "   (1)  Set-up P/A records",
+        "",
+        "   (2)  Amend/Delete P/A records",
+        "",
+        "   (3)  Print P/A records",
+        "",
+        "   (4)  Print All P/A records",
+        "",
+        "   (5)  Display P/A records",
+        "",
+        "   (9)  Return to system menu",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "name": "final-menu"
+    }
+  ]
+}
