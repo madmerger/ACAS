@@ -45,6 +45,28 @@ final class PeriodClosingFlows: XCTestCase {
     }
 
     @MainActor
+    func testSalesPeriodClosing() throws {
+        try verifyClosing("INT-402", section: "section.sales", route: "integration.salesPeriod")
+    }
+
+    @MainActor
+    func testPurchasePeriodClosing() throws {
+        try verifyClosing("INT-403", section: "section.purchases", route: "integration.purchasePeriod")
+    }
+
+    @MainActor
+    private func verifyClosing(_ id: String, section: String, route: String) throws {
+        let fixture = Bundle(for: Self.self).url(forResource: id + "-close", withExtension: "json", subdirectory: "fixtures")
+        guard let fixture else { throw XCTSkip("期末確定までのレガシー実測証跡が必要です。") }
+        let app = try launch(id, fixture: Data(contentsOf: fixture))
+        for identifier in [section, route, "integration.confirmBackup", "integration.closePeriod"] {
+            tap(app, identifier)
+        }
+        XCTAssertTrue(app.staticTexts["integration.periodResult"].waitForExistence(timeout: 5))
+        finish(app, id)
+    }
+
+    @MainActor
     private func verifyConfirmation(_ id: String, section: String, route: String) throws {
         let app = try launch(id)
         for identifier in [section, route, "integration.confirmBackup"] {
@@ -79,10 +101,10 @@ final class PeriodClosingFlows: XCTestCase {
     }
 
     @MainActor
-    private func launch(_ id: String, irsDirectory: String? = nil) throws -> XCUIApplication {
+    private func launch(_ id: String, irsDirectory: String? = nil, fixture: Data? = nil) throws -> XCUIApplication {
         continueAfterFailure = false
         let app = XCUIApplication()
-        app.launchEnvironment["ACAS_FIXTURE"] = try fixtureData(id).base64EncodedString()
+        app.launchEnvironment["ACAS_FIXTURE"] = try (fixture ?? fixtureData(id)).base64EncodedString()
         app.launchEnvironment["ACAS_IRS"] = irsDirectory
         app.launchArguments += ["-AppleLanguages", "(ja)", "-AppleLocale", "ja_JP"]
         XCUIDevice.shared.orientation = .landscapeLeft

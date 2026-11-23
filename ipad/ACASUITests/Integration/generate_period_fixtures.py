@@ -38,11 +38,43 @@ def purchase_transfer(evidence, run, date):
         "changes": changes, "recordFiles": sorted({entry["file"] for entry in changes}), "reports": reports,
     }
 
+def confirmed_period(evidence, run, case_id, workflow, title):
+    result = read_json(evidence_path(evidence, run / "result.json"))
+    if result["exitstatus"] != 0 or result["error"] or result["lifecycle"] != "normal-exit":
+        raise ValueError(f"{case_id}: 期末確定後の正常終了証跡が必要です")
+    with evidence_path(evidence, run / "terminal.cast").open(encoding="utf-8") as recording:
+        date = json.loads(recording.readline())["timestamp"]
+    system = "ledgers/acas/system.dat"
+    ledger = "ledgers/acas/" + ("salesled.dat" if workflow == "salesPeriod" else "purchled.dat")
+    invoice = "ledgers/acas/" + ("invoice.dat" if workflow == "salesPeriod" else "pinvoice.dat")
+    keys = {ledger: 14, invoice: 20 if workflow == "salesPeriod" else 18}
+    seed = json.loads(base64.b64decode(snapshot_seed(evidence, run)))
+    before = read_json(evidence_path(evidence, run / "before-records/records.json"))
+    for file, width in keys.items():
+        seed["files"][file] = {
+            "type": "indexed",
+            "records": [[record["hex"][:width], record["hex"]]
+                        for record in before["files"][file]["records"].values()],
+        }
+    changes = []
+    for change in read_json(evidence_path(evidence, run / "record-diff.json"))["changes"]:
+        if (file := change["file"]) not in keys:
+            continue
+        old, new = (change[k]["hex"] if change[k] else None for k in ("before", "after"))
+        changes.append({"file": file, "key": (new or old)[:keys[file]], "before": old, "after": new})
+    return {
+        "id": case_id, "title": title, "workflow": "integration." + workflow + ".close", "dateSeconds": date,
+        "seed": base64.b64encode(json.dumps(seed, separators=(",", ":")).encode()).decode(),
+        "changes": changes, "recordFiles": sorted(keys),
+        "reports": {system: evidence_path(evidence, run / "files" / system).read_bytes().hex()},
+    }
+
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("evidence", type=Path)
     parser.add_argument("--output", type=Path, default=IPAD / ".generated" / "fixtures")
+    parser.add_argument("--confirmed-root", type=Path, help="INT-402 と INT-403 の期末確定実測の親ディレクトリ")
     args = parser.parse_args()
     evidence = args.evidence.resolve()
     args.output.mkdir(parents=True, exist_ok=True)
@@ -88,7 +120,11 @@ def main():
             "changes": [],
             "reports": {},
         })
-    print("連携の実画面用データ 5 件")
+    if args.confirmed_root:
+        root = args.confirmed_root.resolve()
+        for case_id, title in (("INT-402", "売掛元帳の期末処理確定"), ("INT-403", "買掛元帳の期末処理確定")):
+            save(args.output / (case_id + "-close.json"), confirmed_period(root, Path(case_id), case_id, cases[case_id], title))
+    print(f"連携の実画面用データ {7 if args.confirmed_root else 5} 件")
 
 
 if __name__ == "__main__":

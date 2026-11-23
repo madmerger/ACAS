@@ -61,9 +61,11 @@ struct PeriodClosingView: View {
                     }
                     Button(intText("period.perform"), role: .destructive, action: close)
                         .disabled(!sales && !purchases)
+                        .accessibilityIdentifier("integration.closePeriod")
                 }
             case .complete:
                 Text(intText("period.completed"))
+                    .accessibilityIdentifier("integration.periodResult")
             }
             if !message.isEmpty { Text(message).accessibilityIdentifier("integration.result") }
         }
@@ -85,6 +87,7 @@ struct PeriodClosingView: View {
             password = ""
             message = ""
             stage = .complete
+            workspace.completed("integration." + (initialLedger == .sales ? "salesPeriod.close" : "purchasePeriod.close"))
         } catch { show(error) }
     }
 
