@@ -27,7 +27,9 @@ struct BookkeepingMenu: View {
             link(irsText("accounts.create"), "accountCreate") { BookkeepingAccountForm(workspace: workspace, editing: false) }
             link(irsText("accounts.edit"), "accountEdit") { BookkeepingAccountForm(workspace: workspace, editing: true) }
             link(irsText("accounts.list"), "accountList") { accountTable(irsText("accounts.list")) }
-            link(irsText("accounts.print"), "accountPrint") { accountTable(irsText("accounts.print")) }
+            link(irsText("accounts.print"), "accountPrint") {
+                report(.accounts, workflow: "irs.accountPrint") { accountTable(irsText("accounts.print")) }
+            }
             link(irsText("accounts.export"), "accountExport") { accountTable(irsText("accounts.export")) }
             link(irsText("accounts.import"), "accountImport") { accountTable(irsText("accounts.import")) }
         }
@@ -39,7 +41,9 @@ struct BookkeepingMenu: View {
             link(irsText("defaults.create"), "defaultCreate") { BookkeepingDefaultForm(workspace: workspace, editing: false) }
             link(irsText("defaults.edit"), "defaultEdit") { BookkeepingDefaultForm(workspace: workspace, editing: true) }
             link(irsText("defaults.list"), "defaultList") { defaultTable(irsText("defaults.list")) }
-            link(irsText("defaults.print"), "defaultPrint") { defaultTable(irsText("defaults.print")) }
+            link(irsText("defaults.print"), "defaultPrint") {
+                report(.defaults, workflow: "irs.defaultPrint") { defaultTable(irsText("defaults.print")) }
+            }
             link(irsText("defaults.statementSettings"), "statementSettings") { defaultTable(irsText("defaults.statementSettings")) }
         }
         .navigationTitle(irsText("menu.defaults"))
@@ -56,6 +60,11 @@ struct BookkeepingMenu: View {
 
     private func accountTable(_ title: String) -> some View {
         BookkeepingAccountTable(service: service, title: title)
+    }
+
+    private func report<Content: View>(_ report: BookkeepingService.Report, workflow: String,
+                                       @ViewBuilder preview: () -> Content) -> some View {
+        BookkeepingReportPreview(workspace: workspace, report: report, workflow: workflow, preview: preview())
     }
 
     private func defaultTable(_ title: String) -> some View {
@@ -82,6 +91,35 @@ struct BookkeepingMenu: View {
             }
             .navigationTitle(title)
         }
+    }
+}
+
+private struct BookkeepingReportPreview<Content: View>: View {
+    let workspace: Workspace
+    let report: BookkeepingService.Report
+    let workflow: String
+    let preview: Content
+    @State private var message = ""
+
+    var body: some View {
+        preview
+            .safeAreaInset(edge: .bottom) {
+                HStack {
+                    Button(irsText("action.generateReport")) {
+                        do {
+                            try BookkeepingService(workspace.context).printReport(report)
+                            message = irsText("result.reportGenerated")
+                            workspace.completed(workflow)
+                        } catch {
+                            message = bookkeepingError(error)
+                        }
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .accessibilityIdentifier("irs.generateReport")
+                    Text(message).accessibilityIdentifier("irs.reportResult")
+                }
+                .padding()
+            }
     }
 }
 

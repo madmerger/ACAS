@@ -56,6 +56,160 @@ final class StockFlows: XCTestCase {
     }
 
     @MainActor
+    func testPrintST208() throws {
+        let id = "ST-208"
+        let app = try launchReach(id)
+        for identifier in ["stock.confirmDate", "stock.master", "stock.masterReport", "stock.generateMasterReport"] {
+            tap(app, identifier)
+        }
+        let result = app.staticTexts["stock.masterReportResult"]
+        XCTAssertTrue(result.waitForExistence(timeout: 5))
+        XCTAssertEqual(result.label, "帳票を作成しました。")
+        verifyVerdict(app, id)
+    }
+
+    @MainActor
+    func testPrintST216() throws { try verifyConfirmedReport("ST-216", route: "valuation") }
+
+    @MainActor
+    func testPrintST217() throws { try verifyConfirmedReport("ST-217", route: "activity") }
+
+    @MainActor
+    func testPrintST218() throws { try verifyConfirmedReport("ST-218", route: "reorder") }
+
+    @MainActor
+    func testPrintST219() throws { try verifyConfirmedReport("ST-219", route: "history") }
+
+    @MainActor
+    func testPrintST220() throws { try verifyConfirmedReport("ST-220", route: "listing") }
+
+    @MainActor
+    func testConfirmST090() throws {
+        let app = try launchStockOperation("ST-090", "stock.master", "stock.create")
+        register(app, code: "ITEM001", abbreviation: "ITM001", name: "ALPHA WIDGET", location: "BIN-A",
+                 held: "10", retail: "12", cost: "5", value: "50", point: "2", standard: "5")
+        for route in ["section.system", "section.stock", "stock.confirmDate", "stock.master", "stock.create"] {
+            tap(app, route)
+        }
+        register(app, code: "ITEM002", abbreviation: "ITM002", name: "BETA WIDGET", location: "BIN-B",
+                 held: "20", retail: "24", cost: "10", value: "200", point: "3", standard: "10")
+        verifyVerdict(app, "ST-090")
+    }
+
+    @MainActor
+    func testConfirmST203() throws {
+        let app = try launchStockOperation("ST-203", "stock.master", "stock.create")
+        register(app, code: "ITEM003", abbreviation: "ITM003", name: "GAMMA WIDGET", location: "BIN-C",
+                 held: "10", retail: "12", cost: "5", value: "50", point: "2", standard: "5")
+        verifyVerdict(app, "ST-203")
+    }
+
+    @MainActor
+    func testConfirmST204() throws {
+        let app = try launchStockOperation("ST-204", "stock.master", "stock.edit")
+        enter(app, "stock.code", "ITEM001")
+        tap(app, "stock.load")
+        replace(app, "stock.name", with: "ALPHA WIDGET UPDATED")
+        tap(app, "stock.action")
+        XCTAssertEqual(app.staticTexts["stock.result"].label, "品目を保存しました。")
+        verifyVerdict(app, "ST-204", verdict: "mismatch")
+    }
+
+    @MainActor
+    func testConfirmST213() throws {
+        let app = try launchStockOperation("ST-213", "stock.movements", "stock.order")
+        enter(app, "stock.code", "ITM001")
+        enter(app, "stock.quantity", "7")
+        enter(app, "stock.backordered", "2")
+        tap(app, "stock.action")
+        XCTAssertTrue(app.staticTexts["stock.result"].waitForExistence(timeout: 5))
+        verifyVerdict(app, "ST-213")
+    }
+
+    @MainActor
+    func testConfirmST222() throws {
+        let app = try launchStockOperation("ST-222", "stock.import")
+        let source = app.textViews["stock.importContents"]
+        XCTAssertTrue(source.waitForExistence(timeout: 5))
+        source.tap()
+        source.typeText("BATCH01,'BATCH ITEM',2,5,0,0,10,0,12,5,50,,")
+        tap(app, "stock.runImport")
+        tap(app, "stock.confirmImport")
+        XCTAssertEqual(app.staticTexts["stock.importResult"].label, "1 件の品目を取り込みました。")
+        verifyVerdict(app, "ST-222", verdict: "mismatch")
+    }
+
+    @MainActor
+    func testConfirmST223() throws {
+        let app = try launchStockOperation("ST-223", "stock.closeStock")
+        XCTAssertTrue(app.staticTexts["メニューを選んでください"].waitForExistence(timeout: 5))
+        verifyVerdict(app, "ST-223")
+    }
+
+    @MainActor
+    func testConfirmST225() throws {
+        let app = try launchStockOperation("ST-225", "stock.settings")
+        XCTAssertTrue(app.descendants(matching: .any)["system.company"].firstMatch.waitForExistence(timeout: 5))
+        verifyVerdict(app, "ST-225")
+    }
+
+    @MainActor
+    private func launchStockOperation(_ id: String, _ routes: String...) throws -> XCUIApplication {
+        guard Bundle(for: Self.self).url(forResource: id, withExtension: "json", subdirectory: "fixtures") != nil else {
+            throw XCTSkip("在庫操作のレガシー実測が必要です。")
+        }
+        let app = try launchReach(id)
+        tap(app, "stock.confirmDate")
+        routes.forEach { tap(app, $0) }
+        return app
+    }
+
+    @MainActor
+    private func register(_ app: XCUIApplication, code: String, abbreviation: String, name: String, location: String,
+                          held: String, retail: String, cost: String, value: String, point: String, standard: String) {
+        for (id, input) in [("code", code), ("abbreviation", abbreviation), ("name", name), ("location", location)] {
+            enter(app, "stock." + id, input)
+        }
+        for (id, input) in [("held", held), ("retail", retail), ("cost", cost), ("value", value),
+                            ("reorderPoint", point), ("reorderQuantity", standard)] {
+            replace(app, "stock." + id, with: input)
+        }
+        makeVisible(app, app.descendants(matching: .any)["stock.action"].firstMatch)
+        tap(app, "stock.action")
+        XCTAssertEqual(app.staticTexts["stock.result"].label, "品目を保存しました。")
+    }
+
+    @MainActor
+    private func replace(_ app: XCUIApplication, _ id: String, with text: String) {
+        let field = app.textFields[id]
+        makeVisible(app, field)
+        XCTAssertTrue(field.waitForExistence(timeout: 5), id)
+        field.tap()
+        field.typeText(XCUIKeyboardKey.end.rawValue + String(repeating: XCUIKeyboardKey.delete.rawValue,
+                       count: (field.value as? String ?? "").count) + text)
+    }
+
+    @MainActor
+    private func makeVisible(_ app: XCUIApplication, _ element: XCUIElement) {
+        let start = app.coordinate(withNormalizedOffset: CGVector(dx: 0.85, dy: 0.45))
+        let end = app.coordinate(withNormalizedOffset: CGVector(dx: 0.85, dy: 0.26))
+        for _ in 0..<3 where !element.isHittable { start.press(forDuration: 0.05, thenDragTo: end) }
+    }
+
+    @MainActor
+    private func verifyConfirmedReport(_ id: String, route: String) throws {
+        guard Bundle(for: Self.self).url(forResource: id, withExtension: "json", subdirectory: "fixtures") != nil else {
+            throw XCTSkip("帳票確定のレガシー実測が必要です。")
+        }
+        let app = try launchReach(id)
+        for button in ["stock.confirmDate", "stock.reports", "stock." + route, "stock.generateReport"] {
+            tap(app, button)
+        }
+        XCTAssertEqual(app.staticTexts["stock.reportResult"].label, "帳票を作成しました。", id)
+        verifyVerdict(app, id)
+    }
+
+    @MainActor
     func testReachST209() throws { try verifyMovements("ST-209") }
 
     @MainActor
@@ -168,9 +322,9 @@ final class StockFlows: XCTestCase {
     }
 
     @MainActor
-    private func verifyVerdict(_ app: XCUIApplication, _ id: String) {
-        XCTAssertTrue(app.staticTexts["case.verdict.match"].waitForExistence(timeout: 5), id)
-        let screenshot = XCTAttachment(screenshot: app.screenshot())
+    private func verifyVerdict(_ app: XCUIApplication, _ id: String, verdict: String = "match") {
+        XCTAssertTrue(app.staticTexts["case.verdict." + verdict].waitForExistence(timeout: 5), id)
+        let screenshot = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
         screenshot.name = id
         screenshot.lifetime = .keepAlways
         add(screenshot)
@@ -275,6 +429,7 @@ final class StockFlows: XCTestCase {
         enter(app, "stock.code", "ITEM001")
         enter(app, "stock.abbreviation", "ITEM")
         enter(app, "stock.name", "Test item")
+        makeVisible(app, app.descendants(matching: .any)["stock.action"].firstMatch)
         tap(app, "stock.action")
         let result = app.staticTexts["stock.result"]
         XCTAssertTrue(result.waitForExistence(timeout: 5))

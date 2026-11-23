@@ -60,7 +60,10 @@ struct MainMenu: View {
         case .purchases:
             PurchaseIntegrationMenu(workspace: workspace)
         case .stock:
-            StockMenu(workspace: workspace)
+            StockMenu(workspace: workspace) {
+                self.section = nil
+                workspace.completed("stock.close")
+            }
         case .incomplete:
             BookkeepingMenu(workspace: workspace)
         default:

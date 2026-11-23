@@ -23,6 +23,46 @@ REACH_CASES = {
     "IRS-221": ("recalculate", "元帳再計算の認証"),
 }
 
+REPORT_CASES = {
+    "IRS-206": ("accountPrint", "科目表印刷"),
+    "IRS-213": ("defaultPrint", "既定勘定印刷"),
+}
+
+
+def seeded_accounts(evidence, run):
+    records = read_json(evidence_path(evidence, run / "before-records/records.json"))
+    return {
+        "type": "indexed",
+        "records": [[key.encode().hex(), record["hex"]]
+                    for key, record in records["files"]["ledgers/irs/acnts.dat"]["records"].items()],
+    }
+
+
+def report_fixture(evidence, case):
+    destination, title = REPORT_CASES[case["id"]]
+    legacy = case["legacy_result"]
+    run = evidence_path(evidence, legacy["evidence"][0])
+    targets = legacy["comparison_targets"]
+    report = "ledgers/irs/prt-1"
+    original = evidence_path(evidence, run / "files" / report).read_bytes()
+    spool = [evidence_path(evidence, path).read_bytes() for path in targets["report_files"] if "/files/spool/" in path]
+    if legacy["verdict"] != "合格" or spool != [original]:
+        raise ValueError(f'{case["id"]}: 帳票原本とスプールの実測が一致しません')
+    with evidence_path(evidence, run / "terminal.cast").open(encoding="utf-8") as recording:
+        timestamp = json.loads(recording.readline())["timestamp"]
+    seed = json.loads(base64.b64decode(snapshot_seed(evidence, run)))
+    seed["files"]["ledgers/irs/acnts.dat"] = seeded_accounts(evidence, run)
+    for name in ("system.dat", "dflt.dat"):
+        path = "ledgers/irs/" + name
+        contents = evidence_path(evidence, run / "before-files" / path).read_bytes()
+        seed["files"][path] = {"type": "raw", "hex": contents.hex()}
+    return {
+        "id": case["id"], "title": title, "workflow": f"irs.{destination}", "dateSeconds": timestamp,
+        "seed": base64.b64encode(json.dumps(seed, separators=(",", ":")).encode()).decode(),
+        "changes": expected_changes(evidence, targets["keyed_record_diff"]),
+        "reports": {report: original.hex()},
+    }
+
 
 def reach_fixture(evidence, case):
     destination, title = REACH_CASES[case["id"]]
@@ -36,13 +76,7 @@ def reach_fixture(evidence, case):
         timestamp = json.loads(recording.readline())["timestamp"]
     seed = json.loads(base64.b64decode(snapshot_seed(evidence, run)))
     if destination == "accountList":
-        accounts = "ledgers/irs/acnts.dat"
-        records = read_json(evidence_path(evidence, run / "before-records/records.json"))
-        seed["files"][accounts] = {
-            "type": "indexed",
-            "records": [[key.encode().hex(), record["hex"]]
-                        for key, record in records["files"][accounts]["records"].items()],
-        }
+        seed["files"]["ledgers/irs/acnts.dat"] = seeded_accounts(evidence, run)
     if destination in {"defaultEdit", "defaultList"}:
         defaults = "ledgers/irs/dflt.dat"
         data = evidence_path(evidence, run / "before-files" / defaults).read_bytes()
@@ -73,11 +107,7 @@ def main():
     journal = prefix + "post.dat"
     system = prefix + "system.dat"
     seed = json.loads(base64.b64decode(snapshot_seed(evidence, run)))
-    records = read_json(evidence_path(evidence, run / "before-records/records.json"))
-    seed["files"][accounts] = {
-        "type": "indexed",
-        "records": [[key.encode().hex(), record["hex"]] for key, record in records["files"][accounts]["records"].items()],
-    }
+    seed["files"][accounts] = seeded_accounts(evidence, run)
     seed["files"][defaults] = {"type": "raw", "hex": evidence_path(evidence, run / "before-files" / defaults).read_bytes().hex()}
     changes = [
         {"file": accounts, "key": entry["key"].encode().hex(), "before": entry["before"]["hex"], "after": entry["after"]["hex"]}
@@ -104,7 +134,9 @@ def main():
     })
     for case_id in REACH_CASES:
         save(args.output / (case_id + ".json"), reach_fixture(evidence, cases[case_id]))
-    print(f"簡易記帳の実画面用データ {1 + len(REACH_CASES)} 件")
+    for case_id in REPORT_CASES:
+        save(args.output / (case_id + ".json"), report_fixture(evidence, cases[case_id]))
+    print(f"簡易記帳の実画面用データ {1 + len(REACH_CASES) + len(REPORT_CASES)} 件")
 
 
 if __name__ == "__main__":
