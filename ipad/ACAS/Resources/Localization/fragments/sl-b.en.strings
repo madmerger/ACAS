@@ -111,3 +111,14 @@
 "report.sl100.payment" = "Payment";
 "report.sl100.payment_totals" = "Payment Totals";
 "report.sl100.journal_totals" = "Journal Totals";
+/* sl130 */
+"sl130.title" = "Sales Analysis";
+"report.sl130.title" = "Sales  Analysis";
+"report.sl130.page" = "Page ";
+"report.sl130.head4_a" = "Analysis  Type    <-----Description------>   <------";
+"report.sl130.head4_b" = "-Transactions------->   <----------------A";
+"report.sl130.head4_c" = "mount----------------->  % Period Mvmt";
+"report.sl130.head5_a" = "  Code";
+"report.sl130.head5_b" = "Current   Previous   Y. to D      Current      Previous    Year To Date  Trans. Amount";
+"report.sl130.group" = "Group";
+"report.sl130.detail" = " Detail";

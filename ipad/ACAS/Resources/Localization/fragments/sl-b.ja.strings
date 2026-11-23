@@ -111,3 +111,14 @@
 "report.sl100.payment" = "入金";
 "report.sl100.payment_totals" = "入金合計";
 "report.sl100.journal_totals" = "振替合計";
+/* sl130 */
+"sl130.title" = "売上分析";
+"report.sl130.title" = "売上分析表";
+"report.sl130.page" = "頁   ";
+"report.sl130.head4_a" = "分析      種別    <---------名称--------->   <------";
+"report.sl130.head4_b" = "-取引件数----------->   <----------------金";
+"report.sl130.head4_c" = "額-------------------->  % 期間増減";
+"report.sl130.head5_a" = "  コード";
+"report.sl130.head5_b" = "当期      前期       年累計       当期         前期        年累計        件数    金額";
+"report.sl130.group" = "グループ";
+"report.sl130.detail" = " 明細";
