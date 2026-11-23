@@ -105,6 +105,12 @@ final class PeriodClosingFlows: XCTestCase {
         client.tap()
         client.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: original.count) + fixture.input.client)
         XCTAssertEqual(client.value as? String, fixture.input.client)
+        let save = app.buttons["irs.saveSettings"]
+        let formStart = app.coordinate(withNormalizedOffset: CGVector(dx: 0.75, dy: 0.48))
+        let formEnd = app.coordinate(withNormalizedOffset: CGVector(dx: 0.75, dy: 0.17))
+        for _ in 0..<5 where !save.isHittable {
+            formStart.press(forDuration: 0.05, thenDragTo: formEnd)
+        }
         tap(app, "irs.saveSettings")
         let result = app.staticTexts["irs.result"]
         XCTAssertTrue(result.waitForExistence(timeout: 5))
