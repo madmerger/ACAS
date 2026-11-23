@@ -7,7 +7,7 @@
 比較対象: 画面テキスト（レガシー原文面, 時刻はマスク）、レコード差分（追加/更新/削除の 16 進）、帳票（prt-*）。
 画面操作そのもの（ブラウザ UI）の確認・録画は tools/ui_replay.py を使う。
 """
-import argparse, difflib, json, os, re, sys, urllib.request
+import argparse, difflib, json, os, re, sys, urllib.parse, urllib.request
 from pathlib import Path
 
 ESC = {"\x1bOH": "HOME", "\x1b[A": "UP", "\x1b[B": "DOWN", "\x1b[C": "RIGHT", "\x1b[D": "LEFT",
@@ -33,18 +33,53 @@ def to_keys(text):
     return keys
 
 
+TOKEN_HEADER = "X-ACAS-Test-Token"
+
+
+def http_origin(url):
+    if "\\" in url or any(c.isspace() for c in url):
+        return None
+    try:
+        parts = urllib.parse.urlsplit(url)
+        default_port = {"http": 80, "https": 443}.get(parts.scheme)
+        if default_port is not None and parts.hostname and parts.username is None and parts.password is None:
+            return parts.scheme, parts.hostname, default_port if parts.port is None else parts.port
+    except ValueError:
+        pass
+    return None
+
+
+def test_server_origin(url):
+    origin = http_origin(url)
+    if origin is None or origin[1] not in {"localhost", "127.0.0.1", "::1"}:
+        raise ValueError("検証サーバーにはループバックの HTTP(S) URL を指定してください")
+    if "?" in url or "#" in url:
+        raise ValueError("検証サーバーの URL にクエリーやフラグメントは指定できません")
+    return origin
+
+
+class NoRedirect(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        return None
+
+
 class Api:
     supports_irs_path = True
 
-    def __init__(self, url): self.url = url.rstrip("/")
+    def __init__(self, url):
+        self.origin = test_server_origin(url)
+        self.url = url.rstrip("/")
+        self.opener = urllib.request.build_opener(urllib.request.ProxyHandler({}), NoRedirect())
+
     def call(self, method, path, body=None):
-        headers = {"Content-Type": "application/json"}
-        if path.startswith("/api/test/"):
-            headers["X-ACAS-Test-Token"] = os.environ["ACAS_TEST_API_TOKEN"]
-        req = urllib.request.Request(self.url + path, method=method,
+        url = self.url + path
+        if not path.startswith("/") or http_origin(url) != self.origin:
+            raise ValueError("検証サーバーの同一オリジンにのみ接続できます")
+        headers = {"Content-Type": "application/json", TOKEN_HEADER: os.environ["ACAS_TEST_API_TOKEN"]}
+        req = urllib.request.Request(url, method=method,
                                      data=None if body is None else json.dumps(body).encode(),
                                      headers=headers)
-        with urllib.request.urlopen(req, timeout=120) as r:
+        with self.opener.open(req, timeout=120) as r:
             data = r.read()
         return json.loads(data) if data else None
 
