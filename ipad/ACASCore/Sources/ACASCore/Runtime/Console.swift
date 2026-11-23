@@ -318,7 +318,7 @@ public final class Console: @unchecked Sendable {
         func enter(_ i: Int) {
             fields[idx].value = string(of: buf)
             finalize(fields[idx])
-            redraw(fields[idx], accepting: true)
+            if fields[idx].kind != .alpha { redraw(fields[idx], accepting: true) }
             idx = (i + fields.count) % fields.count
             buf = cells(of: fields[idx].value, size: fields[idx].size)
             pos = 0; atEOF = false
@@ -359,7 +359,8 @@ public final class Console: @unchecked Sendable {
                 buf[pos] = ch
                 if w == 2 { buf[pos + 1] = Self.tailMark }
                 fields[idx].value = string(of: buf)
-                redraw(f, accepting: true)
+                // レガシー (screenio.c) は入力した文字だけをそのまま表示する (入力した空白はプロンプト文字にならない)
+                term.put(String(f.secure ? "*" : ch), line: f.line, col: f.col + pos, color: f.color)
                 if pos + w - 1 == f.size - 1 {
                     if atEOF { beep() } else { atEOF = true }
                     if w == 2 { pos = f.size - 2 }
