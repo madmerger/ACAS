@@ -8,7 +8,9 @@ final class PurchaseFlows: XCTestCase {
         tap(app, "pl.supplier.edit")
         enter(app, "pl.supplier.search.code", "SUPP018")
         tap(app, "pl.supplier.search")
-        tap(app, "pl.supplier.edit.open")
+        XCTAssertTrue(app.descendants(matching: .any)["pl.supplier.result"].firstMatch.exists)
+        dismissKeyboard(app)
+        tap(app, "pl.supplier.edit.open", scrolling: true)
         enter(app, "pl.supplier.name", "EQUIV UPDATED SUPPLIER", replacing: true)
         tap(app, "pl.supplier.save", scrolling: true)
         finish(app, "PL-400")
@@ -20,7 +22,9 @@ final class PurchaseFlows: XCTestCase {
         tap(app, "pl.supplier.delete")
         enter(app, "pl.supplier.search.code", "SUPP026")
         tap(app, "pl.supplier.search")
-        tap(app, "pl.supplier.delete.open")
+        XCTAssertTrue(app.descendants(matching: .any)["pl.supplier.result"].firstMatch.exists)
+        dismissKeyboard(app)
+        tap(app, "pl.supplier.delete.open", scrolling: true)
         tap(app, "pl.supplier.delete.confirm")
         finish(app, "PL-401")
     }
@@ -52,8 +56,11 @@ final class PurchaseFlows: XCTestCase {
         enter(app, "pl.invoice.supplier", "SUPP018")
         enter(app, "pl.invoice.order", "PL-ORDER")
         enter(app, "pl.invoice.reference", "PL-REF")
+        dismissKeyboard(app)
         enter(app, "pl.invoice.line.0.code", "a1", scrolling: true)
+        dismissKeyboard(app)
         enter(app, "pl.invoice.line.0.net", "100", replacing: true, scrolling: true)
+        dismissKeyboard(app)
         tap(app, "pl.invoice.save", scrolling: true)
         finish(app, "PL-411")
     }
@@ -85,7 +92,28 @@ final class PurchaseFlows: XCTestCase {
         finish(app, "PL-413")
     }
 
-    private func launch(_ id: String) throws -> XCUIApplication {
+    func testPaymentEntryShowsSavedAmountInPendingPayments() throws {
+        let app = try launch("PL-413", smokeID: "支払入力スモーク")
+        tap(app, "pl.payment.add", scrolling: true)
+        tap(app, "pl.payment.supplier")
+        let supplier = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "SUPP018")).firstMatch
+        XCTAssertTrue(supplier.waitForExistence(timeout: 5))
+        supplier.tap()
+        enter(app, "pl.payment.amount", "50", replacing: true)
+        dismissKeyboard(app)
+        tap(app, "pl.payment.save", scrolling: true)
+        XCTAssertTrue(app.textFields["pl.payment.amount"].waitForNonExistence(timeout: 5), "支払入力画面が閉じません")
+        tap(app, "pl.payment.edit", scrolling: true)
+        let amount = app.descendants(matching: .any)["pl.payment.pending.amount.SUPP018/1001"].firstMatch
+        XCTAssertTrue(amount.waitForExistence(timeout: 5))
+        XCTAssertEqual(amount.value as? String, "50.00")
+        let proof = XCTAttachment(screenshot: app.screenshot())
+        proof.name = "支払入力スモーク"
+        proof.lifetime = .keepAlways
+        add(proof)
+    }
+
+    private func launch(_ id: String, smokeID: String? = nil) throws -> XCUIApplication {
         continueAfterFailure = false
         let url = try XCTUnwrap(
             Bundle(for: Self.self).url(forResource: id, withExtension: "json", subdirectory: "fixtures"),
@@ -95,12 +123,20 @@ final class PurchaseFlows: XCTestCase {
             xcodegen generate --spec ipad/project.yml
             """
         )
+        var data = try Data(contentsOf: url)
+        if let smokeID {
+            var fixture = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+            fixture["id"] = smokeID
+            fixture["title"] = "実UIの動作確認（同一性比較なし）"
+            fixture["workflow"] = "pl.smoke"
+            data = try JSONSerialization.data(withJSONObject: fixture)
+        }
         let app = XCUIApplication()
-        app.launchEnvironment["ACAS_FIXTURE"] = try Data(contentsOf: url).base64EncodedString()
+        app.launchEnvironment["ACAS_FIXTURE"] = data.base64EncodedString()
         app.launchArguments += ["-AppleLanguages", "(ja)", "-AppleLocale", "ja_JP"]
         XCUIDevice.shared.orientation = .landscapeLeft
         app.launch()
-        XCTAssertTrue(app.staticTexts[id].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.staticTexts[smokeID ?? id].waitForExistence(timeout: 10))
         tap(app, "section.purchases")
         tap(app, "pl.date.confirm")
         return app
@@ -124,10 +160,18 @@ final class PurchaseFlows: XCTestCase {
 
     private func reveal(_ element: XCUIElement, in app: XCUIApplication, scrolling: Bool) {
         if scrolling {
-            for _ in 0..<4 where !element.isHittable { app.swipeUp() }
+            for _ in 0..<4 where !element.exists || !element.isHittable { app.swipeUp() }
         }
         XCTAssertTrue(element.waitForExistence(timeout: 5), element.identifier)
         XCTAssertTrue(element.isHittable, element.identifier)
+    }
+
+    private func dismissKeyboard(_ app: XCUIApplication) {
+        let keyboard = app.keyboards.firstMatch
+        guard keyboard.exists else { return }
+        let dismiss = keyboard.buttons["キーボードを非表示"]
+        guard dismiss.isHittable else { return }
+        dismiss.tap()
     }
 
     private func finish(_ app: XCUIApplication, _ id: String) {

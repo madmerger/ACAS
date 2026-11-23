@@ -464,6 +464,70 @@ final class PurchaseLedgerTests: XCTestCase {
         XCTAssertThrowsError(try ledger.removeSupplier(code: code, deactivate: false))
     }
 
+    func testPaymentAllocatesEditsAndPosts() throws {
+        let ledger = try makeLedger()
+        let code = try addSupplier(ledger)
+        var invoice = PurchaseLedger.Transaction(date: ledger.processingDate)
+        invoice.supplier = code
+        invoice.lines[0].code = "a1"
+        invoice.lines[0].net = 10_000
+        let number = try ledger.saveTransaction(invoice)
+        try ledger.postTransactions()
+        var payment = PurchaseLedger.Payment(date: ledger.processingDate)
+        payment.supplier = code
+        payment.amount = 5_000
+        payment.allocations = try ledger.proposedAllocations(supplier: code, amount: payment.amount, date: payment.date)
+        XCTAssertEqual(payment.allocations.map(\.id), [number])
+        XCTAssertEqual(payment.allocations.map(\.amount), [5_000])
+        let paymentNumber = try ledger.savePayment(payment)
+        let pendingInvoice = try XCTUnwrap(ledger.openItemRecords().first { $0.int("oi-invoice") == number })
+        XCTAssertEqual(pendingInvoice.int("oi-cr"), 500_000)
+        XCTAssertThrowsError(try ledger.postPayments())
+        XCTAssertEqual(try ledger.proofPayments().map(\.number), [paymentNumber])
+        payment.number = paymentNumber
+        payment.amount = 12_500
+        payment.allocations = [.init(invoice: number, amount: 12_000)]
+        try ledger.savePayment(payment)
+        XCTAssertThrowsError(try ledger.postPayments())
+        XCTAssertEqual(try ledger.proofPayments().map(\.allocated), [12_000])
+        XCTAssertEqual(try ledger.postPayments().map(\.number), [paymentNumber])
+        let supplier = try XCTUnwrap(ledger.supplierRecord(code))
+        XCTAssertEqual(supplier.int("purch-current"), 0)
+        XCTAssertEqual(supplier.int("purch-unapplied"), 500)
+        let openItem = try XCTUnwrap(ledger.openItemRecords().first { $0.int("oi-invoice") == number })
+        XCTAssertEqual(openItem.int("oi-status"), 1)
+        XCTAssertEqual(openItem.int("oi-paid"), 12_000)
+        XCTAssertEqual(openItem.int("oi-b-nos"), 0)
+        XCTAssertTrue(ledger.pendingPayments().isEmpty)
+    }
+
+    func testCancelPaymentReversesAllocationAndRequiresNewProof() throws {
+        let ledger = try makeLedger()
+        let code = try addSupplier(ledger)
+        var invoice = PurchaseLedger.Transaction(date: ledger.processingDate)
+        invoice.supplier = code
+        invoice.lines[0].code = "a1"
+        invoice.lines[0].net = 10_000
+        let folio = try ledger.saveTransaction(invoice)
+        try ledger.postTransactions()
+        var payment = PurchaseLedger.Payment(date: ledger.processingDate)
+        payment.supplier = code
+        payment.amount = 12_000
+        payment.allocations = [.init(invoice: folio, amount: 12_000)]
+        let paymentNumber = try ledger.savePayment(payment)
+        try ledger.proofPayments()
+
+        try ledger.cancelPayment(supplier: code, number: paymentNumber)
+
+        XCTAssertTrue(ledger.pendingPayments().isEmpty)
+        XCTAssertEqual(ledger.system.int("p-flag-p"), 1)
+        let openItem = try XCTUnwrap(ledger.openItemRecords().first { $0.int("oi-invoice") == folio })
+        for field in ["oi-status", "oi-paid", "oi-p-c", "oi-b-nos", "oi-b-item", "oi-cr"] {
+            XCTAssertEqual(openItem.int(field), 0, field)
+        }
+        XCTAssertEqual(ledger.openItems(supplier: code).map(\.balance), [12_000])
+    }
+
     func testEvidencePurchaseEntryAndReports() throws {
         guard let root = ProcessInfo.processInfo.environment["ACAS_PL_ORACLE"] else {
             throw XCTSkip("実測照合には ACAS_PL_ORACLE を指定してください")

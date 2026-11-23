@@ -31,6 +31,14 @@ struct PurchaseMenu: View {
                 .accessibilityIdentifier("pl.transaction.proof")
             NavigationLink(plString("purchase.invoice.post")) { PurchaseTransactionsView(workspace: workspace, mode: .post) }
                 .accessibilityIdentifier("pl.transaction.post")
+            NavigationLink(plString("purchase.payment.add")) { PurchasePaymentForm(workspace: workspace) }
+                .accessibilityIdentifier("pl.payment.add")
+            NavigationLink(plString("purchase.payment.edit")) { PurchasePaymentsView(workspace: workspace, mode: .edit) }
+                .accessibilityIdentifier("pl.payment.edit")
+            NavigationLink(plString("purchase.payment.proof")) { PurchasePaymentsView(workspace: workspace, mode: .proof) }
+                .accessibilityIdentifier("pl.payment.proof")
+            NavigationLink(plString("purchase.payment.post")) { PurchasePaymentsView(workspace: workspace, mode: .post) }
+                .accessibilityIdentifier("pl.payment.post")
             NavigationLink(plString("purchase.analysis.menu")) { PurchaseAnalysisMenu(workspace: workspace) }
                 .accessibilityIdentifier("pl.analysis")
             NavigationLink(plString("purchase.supplier.alphabetical")) { PurchaseSuppliersView(workspace: workspace, byName: true) }
@@ -76,6 +84,16 @@ struct PurchaseNotice: Identifiable {
     var id: String { message }
 
     init(_ error: Error) {
+        if let error = error as? PurchaseLedger.PaymentError {
+            switch error {
+            case .invalidAmount: message = plString("purchase.error.payment.amount")
+            case .paymentNotFound: message = plString("purchase.error.payment.missing")
+            case .notProofed: message = plString("purchase.error.payment.proof")
+            case .unavailableInvoice, .alreadyAllocated: message = plString("purchase.error.payment.invoice")
+            case .issuedSchedule: message = plString("purchase.error.generic")
+            }
+            return
+        }
         switch error as? PurchaseLedger.Error {
         case .invalidDate: message = plString("purchase.error.date")
         case .invalidCode: message = plString("purchase.error.code")
