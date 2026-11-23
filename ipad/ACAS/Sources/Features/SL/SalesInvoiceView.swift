@@ -94,6 +94,8 @@ struct SalesInvoiceMenu: View {
                 .accessibilityIdentifier("sales.invoice.deletionReport")
             NavigationLink(slText("sales.invoice.printTitle")) { SalesInvoiceList(workspace: workspace, action: .print) }
                 .accessibilityIdentifier("sales.invoice.print")
+            NavigationLink(slText("sales.invoice.deliveryPrint.title")) { SalesDeliveryPrintView(workspace: workspace) }
+                .accessibilityIdentifier("sales.invoice.deliveryPrint")
         }
         .navigationTitle(slText("sales.invoice.menuTitle"))
         .task { workspace.completed("sales-invoice-menu-view") }

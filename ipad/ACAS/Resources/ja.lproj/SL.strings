@@ -77,6 +77,11 @@
 "sales.enquiry.title" = "売掛残高・明細照会";
 "sales.ageing.title" = "売掛金年齢表";
 "sales.receivable.notAvailable" = "この操作は現在利用できません";
+"sales.invoice.deliveryPrint.title" = "納品書・ピッキングリスト印刷";
+"sales.invoice.deliveryPrint.mode" = "印刷区分";
+"sales.invoice.deliveryPrint.print" = "印刷";
+"sales.invoice.deliveryPrint.reprint" = "再印刷";
+"sales.invoice.deliveryPrint.unavailable" = "請求書の印刷に必要な設定またはファイルがありません";
 "sales.period.endQuarter" = "四半期末の締めとして実行する";
 "sales.period.password" = "パスワード";
 "sales.period.invalidPassword" = "パスワードが正しくありません";
