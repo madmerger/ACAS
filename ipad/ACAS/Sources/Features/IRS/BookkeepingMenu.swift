@@ -48,9 +48,7 @@ struct BookkeepingMenu: View {
                 .accessibilityIdentifier("irs.postDefaults")
             NavigationLink(irsText("posting.append")) { BookkeepingPostingForm(workspace: workspace) }
                 .accessibilityIdentifier("irs.postAppend")
-            Text(irsText("posting.clear"))
-                .foregroundStyle(.secondary)
-                .accessibilityIdentifier("irs.postClear")
+            link(irsText("posting.clear"), "postClear") { BookkeepingPostingClearAuthentication() }
             Text(irsText("posting.import"))
                 .foregroundStyle(.secondary)
                 .accessibilityIdentifier("irs.postImport")
@@ -169,10 +167,25 @@ private struct BookkeepingAuditOptions<Journal: View>: View {
     }
 }
 
+private struct BookkeepingPostingClearAuthentication: View {
+    @State private var password = ""
+
+    var body: some View {
+        Form {
+            Text(irsText("posting.clearBackup"))
+            SecureField(irsText("field.password"), text: $password)
+                .accessibilityIdentifier("irs.postClearPassword")
+            Text(irsText("posting.clearUnavailable")).font(.footnote)
+        }
+        .navigationTitle(irsText("posting.clear"))
+    }
+}
+
 private struct BookkeepingStatementOptions: View {
     let workspace: Workspace
     @State private var comparison = 0
     @State private var message = ""
+    @State private var ready = false
 
     var body: some View {
         Form {
@@ -185,14 +198,54 @@ private struct BookkeepingStatementOptions: View {
             .accessibilityIdentifier("irs.statementComparison")
             .accessibilityValue(comparison == 0 ? irsText("statement.noComparison")
                 : String(format: irsText("statement.comparisonSlot"), comparison))
+            NavigationLink(irsText("statement.continue")) { BookkeepingAnnualStatementForm(workspace: workspace) }
+                .disabled(!ready || comparison != 0)
+                .accessibilityIdentifier("irs.statementContinue")
             if !message.isEmpty { Text(message) }
         }
         .navigationTitle(irsText("menu.statements"))
         .onAppear {
             do {
                 try BookkeepingService(workspace.context).prepareStatementAccounts()
+                ready = true
                 workspace.completed("irs.statements.prepare")
             } catch { message = bookkeepingError(error) }
+        }
+    }
+}
+
+private struct BookkeepingAnnualStatementForm: View {
+    let workspace: Workspace
+    @State private var title = ""
+    @State private var message = ""
+    @State private var document: BookkeepingReportDocument?
+    @State private var exporting = false
+
+    var body: some View {
+        Form {
+            TextField(irsText("statement.title"), text: $title, prompt: Text(irsText("statement.defaultTitle")))
+                .accessibilityIdentifier("irs.statementTitle")
+            Button(irsText("statement.generateAnnual")) {
+                do {
+                    let statement = try BookkeepingService(workspace.context).printAnnualStatement(title: title)
+                    document = BookkeepingReportDocument(data: statement.data)
+                    message = irsText(statement.interrupted ? "statement.interrupted" : "result.reportGenerated")
+                    workspace.completed("irs.statements.annual")
+                } catch {
+                    document = nil
+                    message = bookkeepingError(error)
+                }
+            }
+            .accessibilityIdentifier("irs.generateAnnualStatement")
+            if document != nil {
+                Button(irsText("action.exportReport")) { exporting = true }
+                    .accessibilityIdentifier("irs.exportReport")
+            }
+            if !message.isEmpty { Text(message).accessibilityIdentifier("irs.annualStatementResult") }
+        }
+        .navigationTitle(irsText("statement.profitAndLoss"))
+        .fileExporter(isPresented: $exporting, document: document, contentType: .data, defaultFilename: "prt-1") {
+            if case .failure = $0 { message = irsText("error.exportReport") }
         }
     }
 }

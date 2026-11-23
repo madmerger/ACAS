@@ -234,7 +234,8 @@ def reach_fixture(evidence, case):
         reports[path] = data.hex()
     return {
         "id": case["id"], "title": title + "への到達確認",
-        "workflow": f"irs.{destination}.open", "dateSeconds": timestamp,
+        "workflow": "irs.postClear.open" if case["id"] == "IRS-215" else f"irs.{destination}.open",
+        "dateSeconds": timestamp,
         "seed": base64.b64encode(json.dumps(seed, separators=(",", ":")).encode()).decode(),
         "changes": changes, "reports": reports,
     }
@@ -385,25 +386,28 @@ def trial_balance_fixture(evidence):
 
 def statement_entry_fixture(evidence, case):
     legacy = case["legacy_result"]
-    run = Path(legacy["evidence"][0])
+    annual = case["id"] == "IRS-218"
+    run = Path("linux-x64/confirm-third/IRS-218") if annual else Path(legacy["evidence"][0])
     result = read_json(evidence_path(evidence, run / "result.json"))
     work = "ledgers/irs/worksort.tmp"
-    if result["error"] or set(result["changed"]) != {work}:
+    expected = {work, "ledgers/irs/prt-1"} if annual else {work}
+    if result["error"] or result["deleted"] or set(result["changed"]) != expected:
         raise ValueError(f'{case["id"]}: 決算書の比較対象入力画面と並べ替えファイルの実測が必要です')
     with evidence_path(evidence, run / "terminal.cast").open(encoding="utf-8") as recording:
         timestamp = json.loads(recording.readline())["timestamp"]
     seed = json.loads(base64.b64decode(snapshot_seed(evidence, run)))
     seed["files"]["ledgers/irs/acnts.dat"] = seeded_accounts(evidence, run)
-    reports = {work: evidence_path(evidence, run / "files" / work).read_bytes().hex()}
+    reports = {path: evidence_path(evidence, run / "files" / path).read_bytes().hex() for path in expected}
     for name in ("system.dat", "dflt.dat"):
         path = "ledgers/irs/" + name
         data = evidence_path(evidence, run / "before-files" / path).read_bytes().hex()
         seed["files"][path] = {"type": "raw", "hex": data}
         reports[path] = data
     return {
-        "id": case["id"], "title": "決算書比較対象の入力画面", "workflow": "irs.statements.prepare",
+        "id": case["id"], "title": "年次損益計算書" if annual else "決算書比較対象の入力画面",
+        "workflow": "irs.statements.annual" if annual else "irs.statements.prepare",
         "dateSeconds": timestamp, "seed": base64.b64encode(json.dumps(seed, separators=(",", ":")).encode()).decode(),
-        "changes": expected_changes(evidence, legacy["comparison_targets"]["keyed_record_diff"]),
+        "changes": expected_changes(evidence, run / "record-diff.json"),
         "reports": reports,
     }
 
