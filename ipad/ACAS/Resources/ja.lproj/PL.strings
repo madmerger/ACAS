@@ -21,6 +21,8 @@
 "purchase.enquiry" = "買掛残高・明細照会";
 "purchase.enquiry.items" = "買掛明細";
 "purchase.error.address" = "住所に区切りを1～4個入力してください。";
+"purchase.error.address.missing" = "住所を入力してください。";
+"purchase.error.address.tooLong" = "住所が長すぎます。区切りを含めて96バイト以内にしてください。";
 "purchase.error.analysis.format" = "仕入分析ファイルのレコード形式が一致しません。";
 "purchase.error.analysis.missing" = "該当する仕入分析コードがありません。";
 "purchase.error.code" = "コードまたは勘定科目を確認してください。";

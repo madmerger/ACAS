@@ -287,7 +287,7 @@ final class PurchaseLedgerTests: XCTestCase {
         let before = try XCTUnwrap(ledger.supplierRecord(supplier.code)).bytes
         supplier.address1 = String(repeating: "東", count: 14)
         XCTAssertThrowsError(try ledger.saveSupplier(supplier, creating: false, joiningAddressLines: true)) {
-            XCTAssertEqual($0 as? PurchaseLedger.Error, .invalidAddress)
+            XCTAssertEqual($0 as? PurchaseLedger.Error, .addressTooLong)
         }
         XCTAssertEqual(ledger.supplierRecord(supplier.code)?.bytes, before)
     }
@@ -299,7 +299,7 @@ final class PurchaseLedgerTests: XCTestCase {
         supplier.address1 = " "
         supplier.address2 = ""
         XCTAssertThrowsError(try ledger.saveSupplier(supplier, creating: true, joiningAddressLines: true)) {
-            XCTAssertEqual($0 as? PurchaseLedger.Error, .invalidAddress)
+            XCTAssertEqual($0 as? PurchaseLedger.Error, .missingAddress)
         }
         XCTAssertTrue(ledger.suppliers().isEmpty)
     }

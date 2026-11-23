@@ -80,6 +80,8 @@ struct PurchaseNotice: Identifiable {
         case .invalidDate: message = plString("purchase.error.date")
         case .invalidCode: message = plString("purchase.error.code")
         case .invalidAddress: message = plString("purchase.error.address")
+        case .missingAddress: message = plString("purchase.error.address.missing")
+        case .addressTooLong: message = plString("purchase.error.address.tooLong")
         case .duplicateSupplier: message = plString("purchase.error.supplier.duplicate")
         case .supplierNotFound: message = plString("purchase.error.supplier.missing")
         case .supplierHasBalance: message = plString("purchase.error.supplier.balance")
