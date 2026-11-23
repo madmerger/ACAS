@@ -10,6 +10,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /** 請求入力（pl020）・修正（pl030）で明細 39 行／40 行（occurs 40 の上限）を保存する。 */
 class Pl020LinesTest {
@@ -80,7 +81,8 @@ class Pl020LinesTest {
 
     private static CobFile addDeletedFolio(PlSession s, int number) {
         var deleted = CobFile.sequential(s.ctx.store, s.ctx.path("delfolio.dat"));
-        assertEquals("05", deleted.open(CobFile.Mode.EXTEND, true));
+        deleted.open(CobFile.Mode.EXTEND, true);
+        assertTrue(deleted.ok());
         var folio = Layout.of("purchase/fdpdnos.cob", "del-inv-nos-record").newRec();
         folio.setNum("del-inv-nos", number);
         assertEquals("00", deleted.write(folio));
@@ -109,19 +111,40 @@ class Pl020LinesTest {
     void 明細保存に失敗したときは今回の請求を取り消す() throws Exception {
         PlSession s = new PlSession("pl020-rollback", "sl-ready");
         var deleted = addDeletedFolio(s, 7);
-        var invoice = CobFile.indexed(s.ctx.store, s.ctx.path("pinvoice.dat"), 0, 9);
-        invoice.open(CobFile.Mode.IO, true);
-        var priorLine = PlBase.invLineRec();
-        priorLine.setNum("il-invoice", 7);
-        priorLine.setNum("il-line", 2);
-        assertEquals("00", invoice.write(priorLine));
-        invoice.close();
+        s.keys("D").keys(HEADER).keys(newLines(2));
+        addOldLine(s, 7);
         var before = s.ctx.store.snapshot().get(s.ctx.path("pinvoice.dat"));
 
-        s.keys("D").keys(HEADER).keys(newLines(2)).keys("\r\r\r\rY\rY\r\rN\r");
+        s.keys("\r\r\r\rY\rY\r\rN\r");
         s.assertMenu();
         assertEquals(before, s.ctx.store.snapshot().get(s.ctx.path("pinvoice.dat")));
         assertEquals(1, deleted.count());
+    }
+
+    @Test
+    void 旧明細だけが残る番号を飛ばして次の候補で保存する() throws Exception {
+        PlSession s = new PlSession("pl020-orphan", "sl-ready");
+        var deleted = addDeletedFolio(s, 7);
+        addDeletedFolio(s, 8);
+        addOldLine(s, 7);
+
+        s.keys("D").keys(HEADER).keys(newLines(2)).keys(TOTALS);
+        s.assertMenu();
+        var headers = s.records("pinvoice.dat", PlBase::invHeaderRec)
+                .stream().filter(r -> r.intv("ih-test") == 0).toList();
+        assertEquals(1, headers.size());
+        assertEquals(8, headers.getFirst().longv("ih-invoice"));
+        assertEquals(1, deleted.count());
+    }
+
+    private static void addOldLine(PlSession s, long folio) {
+        var invoice = CobFile.indexed(s.ctx.store, s.ctx.path("pinvoice.dat"), 0, 9);
+        invoice.open(CobFile.Mode.IO, true);
+        var priorLine = PlBase.invLineRec();
+        priorLine.setNum("il-invoice", folio);
+        priorLine.setNum("il-line", 2);
+        assertEquals("00", invoice.write(priorLine));
+        invoice.close();
     }
 
     @Test
