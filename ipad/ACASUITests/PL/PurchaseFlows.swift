@@ -440,6 +440,8 @@ final class PurchaseFlows: XCTestCase {
         switch number {
         case 90:
             tap(app, "pl.suppliers")
+            let addSupplier = app.descendants(matching: .any).matching(identifier: "pl.supplier.add").firstMatch
+            let returnedToMenu = NSPredicate(format: "exists == true AND hittable == true")
             for (code, name, address) in [
                 ("SUPP01", "ALPHA SUPPLIER", "1 SUPPLY ROAD\\LONDON\\UK"),
                 ("SUPP02", "BETA SUPPLIER", "2 SUPPLY ROAD\\LONDON\\UK"),
@@ -451,8 +453,9 @@ final class PurchaseFlows: XCTestCase {
                 dismissKeyboard(app)
                 XCTAssertEqual(app.textFields["pl.supplier.code"].value as? String, code)
                 tap(app, "pl.supplier.save", scrolling: true)
-                XCTAssertTrue(app.textFields["pl.supplier.code"].waitForNonExistence(timeout: 5),
-                              app.alerts.firstMatch.debugDescription)
+                let menu = XCTNSPredicateExpectation(predicate: returnedToMenu, object: addSupplier)
+                XCTAssertEqual(XCTWaiter.wait(for: [menu], timeout: 10), .completed,
+                               "\(code): 保存後に仕入先マスター管理へ戻りませんでした")
             }
         case 410:
             tap(app, "pl.analysis", scrolling: true)
