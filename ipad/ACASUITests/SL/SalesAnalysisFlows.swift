@@ -35,6 +35,8 @@ final class SalesAnalysisFlows: XCTestCase {
         let row = app.descendants(matching: .any)["sales.analysis.code.SA"].firstMatch
         XCTAssertTrue(row.waitForExistence(timeout: 5))
         XCTAssertEqual(row.value as? String, "400001")
+        let standard = app.descendants(matching: .any)["sales.analysis.code.Sa"].firstMatch
+        XCTAssertTrue(standard.label.contains("標準グループ"))
         let screenshot = XCTAttachment(screenshot: app.screenshot())
         screenshot.name = "登録した売上分析コード"
         screenshot.lifetime = .keepAlways

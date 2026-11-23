@@ -60,13 +60,13 @@ private struct SalesAnalysisCodeRow: View {
 
     var body: some View {
         VStack(alignment: .leading) {
-            Text(code.group + "　" + code.description)
+            Text(code.group + "　" + analysisDescription(code))
             Text(slText(code.isGroup ? "sales.analysis.groupType" : "sales.analysis.detailType"))
                 .foregroundStyle(.secondary)
             if code.account != 0 {
-                LabeledContent(slText("sales.analysis.account"), value: account)
+                Text(slText("sales.analysis.account") + "　" + account)
             }
-            if !code.printCode.isEmpty { LabeledContent(slText("sales.analysis.printCode"), value: code.printCode) }
+            if !code.printCode.isEmpty { Text(slText("sales.analysis.printCode") + "　" + code.printCode) }
         }
         .accessibilityElement(children: .combine)
         .accessibilityValue(code.account == 0 ? "" : account)
@@ -185,7 +185,7 @@ struct SalesAnalysisReportView: View {
                         LabeledContent(slText(String.LocalizationValue(item.element)), value: amount)
                     }
                 } header: {
-                    Text(entry.code.group + "　" + entry.code.description)
+                    Text(entry.code.group + "　" + analysisDescription(entry.code))
                 }
             }
         }
@@ -218,6 +218,25 @@ struct SalesAnalysisReportView: View {
         } catch {
             failure = analysisFailure(error)
         }
+    }
+}
+
+private func analysisDescription(_ code: SalesAnalysis.Code) -> String {
+    switch (code.id, code.description) {
+    case ("Sv", "VAT Control"), ("Pv", "VAT Control"): slText("sales.analysis.default.tax")
+    case ("Pvi", "VAT Input Invoices/CN's"): slText("sales.analysis.default.purchaseInvoiceTax")
+    case ("Pvj", "VAT Input Receipts"): slText("sales.analysis.default.purchaseReceiptTax")
+    case ("Sz", "Computer Control"), ("Pz", "Computer Control"): slText("sales.analysis.default.system")
+    case ("Pza", "Purchase Carriage Charges"): slText("sales.analysis.default.purchaseCarriage")
+    case ("Pzb", "Purchase Late Charges"): slText("sales.analysis.default.purchaseLate")
+    case ("Szc", "Sales Carriage Charges"): slText("sales.analysis.default.salesCarriage")
+    case ("Szd", "Sales Late Charges"): slText("sales.analysis.default.salesLate")
+    case ("Svo", "VAT Output Invoices/CN's"): slText("sales.analysis.default.salesInvoiceTax")
+    case ("Svp", "VAT Output Receipts"): slText("sales.analysis.default.salesReceiptTax")
+    case ("Pa", "Default Group"), ("Sa", "Default Group"): slText("sales.analysis.default.group")
+    case ("Pa1", "Default Purchases"): slText("sales.analysis.default.purchases")
+    case ("Sa1", "Default Sales"): slText("sales.analysis.default.sales")
+    default: code.description
     }
 }
 
