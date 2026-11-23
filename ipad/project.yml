@@ -14,8 +14,8 @@ targets:
     platform: iOS
     sources:
       - path: ACAS/Sources
-      - path: ACAS/Resources/Localization/en.lproj
-      - path: ACAS/Resources/Localization/ja.lproj
+      - path: ACAS/Resources/Localization
+        excludes: ["fragments"]
       - path: ACAS/Resources/Seeds
         type: folder
       - path: ACAS/Resources/Cases
