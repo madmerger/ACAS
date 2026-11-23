@@ -64,7 +64,8 @@ struct StockMenu: View {
             itemForm(.delete)
             itemForm(.renumber)
             itemForm(.lookup)
-            report(stockText("report.master"), id: "masterReport")
+            NavigationLink(stockText("report.master")) { StockMasterReportView(workspace: workspace) }
+                .accessibilityIdentifier("stock.masterReport")
         }
         .navigationTitle(stockText("menu.master"))
         .onAppear { workspace.completed("stock.master.open") }
@@ -159,6 +160,33 @@ private struct StockItemTable: View {
         }
         .searchable(text: $filter, prompt: stockText("search.prompt"))
         .navigationTitle(title)
+    }
+}
+
+private struct StockMasterReportView: View {
+    let workspace: Workspace
+    @State private var message = ""
+
+    var body: some View {
+        let stock = StockService(workspace.context)
+        StockItemTable(stock: stock, title: stockText("report.master"), id: "masterReport")
+            .safeAreaInset(edge: .bottom) {
+                HStack {
+                    Button(stockText("action.generateReport")) {
+                        do {
+                            try stock.printMasterReport()
+                            message = stockText("result.reportGenerated")
+                            workspace.completed("stock.masterReport")
+                        } catch {
+                            message = stockError(error)
+                        }
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .accessibilityIdentifier("stock.generateMasterReport")
+                    Text(message).accessibilityIdentifier("stock.masterReportResult")
+                }
+                .padding()
+            }
     }
 }
 

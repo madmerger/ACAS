@@ -6,6 +6,7 @@
 "stock.action.load" = "品目を読み込む";
 "stock.action.lookup" = "照会";
 "stock.action.run" = "実行";
+"stock.action.generateReport" = "帳票を作成";
 "stock.audit.generated" = "入庫・出庫の在庫監査帳票を発行しました。";
 "stock.date.title" = "在庫処理日";
 "stock.delete.confirm" = "この品目を削除しますか？";
@@ -66,5 +67,6 @@
 "stock.result.held" = "在庫数：%@";
 "stock.result.ordered" = "発注を記録しました。";
 "stock.result.renumbered" = "品目コードを変更しました。";
+"stock.result.reportGenerated" = "帳票を作成しました。";
 "stock.result.saved" = "品目を保存しました。";
 "stock.search.prompt" = "品目コード・品名";

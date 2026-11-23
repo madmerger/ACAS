@@ -56,6 +56,19 @@ final class StockFlows: XCTestCase {
     }
 
     @MainActor
+    func testPrintST208() throws {
+        let id = "ST-208"
+        let app = try launchReach(id)
+        for identifier in ["stock.confirmDate", "stock.master", "stock.masterReport", "stock.generateMasterReport"] {
+            tap(app, identifier)
+        }
+        let result = app.staticTexts["stock.masterReportResult"]
+        XCTAssertTrue(result.waitForExistence(timeout: 5))
+        XCTAssertEqual(result.label, "帳票を作成しました。")
+        verifyVerdict(app, id)
+    }
+
+    @MainActor
     func testReachST209() throws { try verifyMovements("ST-209") }
 
     @MainActor

@@ -92,6 +92,24 @@ def movement_fixture(evidence, case):
     }
 
 
+def master_report_fixture(evidence, case):
+    legacy = case["legacy_result"]
+    run = evidence_path(evidence, legacy["evidence"][0])
+    targets = legacy["comparison_targets"]
+    report = "ledgers/acas/prt-1"
+    original = evidence_path(evidence, run / "files" / report).read_bytes()
+    spool = [evidence_path(evidence, path).read_bytes() for path in targets["report_files"] if "/files/spool/" in path]
+    if legacy["verdict"] != "合格" or spool != [original]:
+        raise ValueError(f'{case["id"]}: 帳票原本とスプールの実測が一致しません')
+    with evidence_path(evidence, run / "terminal.cast").open(encoding="utf-8") as recording:
+        timestamp = json.loads(recording.readline())["timestamp"]
+    return {
+        "id": case["id"], "title": "在庫品目帳票", "workflow": "stock.masterReport",
+        "dateSeconds": timestamp, "seed": snapshot_seed(evidence, run),
+        "changes": expected_changes(evidence, targets["keyed_record_diff"]), "reports": {report: original.hex()},
+    }
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("evidence", type=Path)
@@ -119,9 +137,10 @@ def main():
     })
     for case_id in ("ST-400", "ST-401", "ST-402", "ST-403"):
         save(args.output / (case_id + ".json"), movement_fixture(evidence, cases[case_id]))
+    save(args.output / "ST-208.json", master_report_fixture(evidence, cases["ST-208"]))
     for case_id in REACH_CASES:
         save(args.output / (case_id + ".json"), reach_fixture(evidence, cases[case_id]))
-    print(f"在庫の実画面用データ {5 + len(REACH_CASES)} 件")
+    print(f"在庫の実画面用データ {6 + len(REACH_CASES)} 件")
 
 
 if __name__ == "__main__":
