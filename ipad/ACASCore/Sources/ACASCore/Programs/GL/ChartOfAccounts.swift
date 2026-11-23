@@ -54,6 +54,11 @@ public struct ChartOfAccounts {
         file.allRecords().map(LedgerAccount.init).filter { $0.id != Self.terminator }
     }
 
+    public func accounts(startingAt code: Int, branch: Int = 0) -> [LedgerAccount] {
+        let key = Cobol.z(code, 6) + Cobol.z(branch, 2)
+        return accounts.filter { $0.id >= key && !$0.code.hasPrefix("9999") }
+    }
+
     public func account(code: String, branch: String = "00") -> LedgerAccount? {
         guard Self.isDigits(code, count: 6), Self.isDigits(branch, count: 2),
               code + branch != Self.terminator

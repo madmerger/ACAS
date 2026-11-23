@@ -107,14 +107,7 @@ private struct LedgerAccountsMenu: View {
             }
             .accessibilityIdentifier("gl.accounts.edit")
             NavigationLink(ledgerText("account-list")) {
-                Table(accounts) {
-                    TableColumn(ledgerText("account-code"), value: \.code)
-                    TableColumn(ledgerText("account-name"), value: \.name)
-                    TableColumn(ledgerText("account-balance")) { account in
-                        Text(Cobol.rtrim(Pic.edit("-(8)9.99", value: account.balance, scale: 2)))
-                    }
-                }
-                .navigationTitle(ledgerText("account-list"))
+                LedgerAccountInquiry(workspace: workspace)
             }
             .accessibilityIdentifier("gl.accounts.list")
             Button(ledgerText("account-print"), action: printReport)
