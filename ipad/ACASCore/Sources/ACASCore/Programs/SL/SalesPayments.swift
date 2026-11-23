@@ -1,6 +1,14 @@
 import Foundation
 
 public struct SalesPayments {
+    public enum Operation {
+        case entry, amend, proof, post
+    }
+
+    public enum Blocker {
+        case pendingSales, missingOpenItems, noPendingPayments, proofRequired
+    }
+
     public enum Error: Swift.Error {
         case unavailable, invalidInput, invalidAllocation, writeFailed
     }
@@ -35,6 +43,19 @@ public struct SalesPayments {
 
     private let context: BusinessContext
     public init(_ context: BusinessContext) { self.context = context }
+
+    public func blocker(for operation: Operation) throws -> Blocker? {
+        let system = try SalesLedger(context).systemRecord()
+        switch operation {
+        case .entry:
+            if system.int("s-flag-i") == 1 { return .pendingSales }
+            return system.raw("file-statuses")[18] == 0x31 ? nil : .missingOpenItems
+        case .amend, .proof:
+            return system.int("s-flag-p") == 0 ? .noPendingPayments : nil
+        case .post:
+            return system.int("s-flag-p") != 2 ? .proofRequired : nil
+        }
+    }
 
     public func allocations(customer: String, date: Date) throws -> [Allocation] {
         let key = try customerKey(customer)

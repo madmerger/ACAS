@@ -103,6 +103,7 @@
 "sales.payment.reverse" = "入金を取り消す";
 "sales.payment.cancelled" = "入金を取り消しました";
 "sales.payment.none" = "対象の入金がありません";
+"sales.payment.pendingSales" = "未転記の売上取引を先に転記してください";
 "sales.payment.restoreTotal" = "戻す控除額の合計";
 "sales.payment.journal" = "未消込残高の振替";
 "sales.payment.batchNumber" = "入金組番号／明細番号";
