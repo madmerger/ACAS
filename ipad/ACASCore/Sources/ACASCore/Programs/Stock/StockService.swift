@@ -5,10 +5,13 @@ public struct StockService {
         public var code = ""
         public var abbreviation = ""
         public var name = ""
+        public var location = ""
         public var held: Int64 = 0
         public var cost: Int64 = 0
+        public var retail: Int64 = 0
         public var value: Int64 = 0
         public var reorderPoint: Int64 = 0
+        public var reorderQuantity: Int64 = 0
         public var ordered: Int64 = 0
         public var added: Int64 = 0
         public var deducted: Int64 = 0
@@ -20,10 +23,13 @@ public struct StockService {
             code = Cobol.rtrim(row.str("stock-key"))
             abbreviation = Cobol.rtrim(row.str("stock-abrev-key"))
             name = Cobol.rtrim(row.str("stock-desc"))
+            location = Cobol.rtrim(row.str("stock-location"))
             held = row.int("stock-held")
             cost = row.int("stock-cost")
+            retail = row.int("stock-retail")
             value = row.int("stock-value")
             reorderPoint = row.int("stock-reorder-pnt")
+            reorderQuantity = row.int("stock-std-reorder")
             ordered = row.int("stock-on-order")
             added = row.int("stock-adds")
             deducted = row.int("stock-deducts")
@@ -69,8 +75,10 @@ public struct StockService {
         let id = try key(item.code.uppercased(), 13)
         let abbreviation = try key(item.abbreviation.uppercased(), 7)
         _ = try key(item.name, 32)
+        if !item.location.isEmpty { _ = try key(item.location, 10) }
         guard (-999_999...999_999).contains(item.held), (0...99_999_999_999).contains(item.cost),
               (-999_999...999_999).contains(item.reorderPoint),
+              (-999_999...999_999).contains(item.reorderQuantity), (0...999_999_999).contains(item.retail),
               (0...99_999_999_999).contains(item.value) else { throw Failure.invalidInput }
         var row = try original.map(record) ?? Record(StockLayout.layout)
         let previous = original == nil ? nil : row.raw("stock-key")
@@ -79,6 +87,7 @@ public struct StockService {
               ($0.raw("stock-key") == id || $0.raw("stock-abrev-key") == abbreviation)
         }) else { throw Failure.duplicate }
         if original == nil {
+            row["stock-services-flag"] = "N"
             row.setRaw("filler-1", [UInt8](repeating: 0, count: 8))
             row.setRaw("filler-2", [UInt8](repeating: 0, count: 15))
         }
@@ -95,9 +104,12 @@ public struct StockService {
         row.setRaw("stock-key", id)
         row.setRaw("stock-abrev-key", abbreviation)
         row["stock-desc"] = item.name
+        row["stock-location"] = item.location
         row.setInt("stock-held", item.held)
         row.setInt("stock-cost", item.cost)
+        row.setInt("stock-retail", item.retail)
         row.setInt("stock-reorder-pnt", item.reorderPoint)
+        row.setInt("stock-std-reorder", item.reorderQuantity)
         if id == previous {
             guard store.rewrite(path, key: id, data: row.bytes) else { throw Failure.missing }
         } else {
@@ -131,12 +143,52 @@ public struct StockService {
     public func order(_ code: String, quantity: Int64, backOrdered: Int64, ordered: Date?, due: Date?) throws {
         guard (0...999_998).contains(quantity), (0...999_998).contains(backOrdered)
         else { throw Failure.invalidInput }
-        var row = try movementRecord(code)
+        var row = try code.count <= 7 ? movementRecord(code) : record(code)
+        guard row.str("stock-services-flag") != "Y" else { throw Failure.invalidInput }
         row.setInt("stock-on-order", quantity)
         row.setInt("stock-back-ordered", backOrdered)
         row.setInt("stock-order-date", Int64(ordered.map(day) ?? 0))
         row.setInt("stock-order-due", Int64(due.map(day) ?? 0))
-        store.rewrite(path, key: row.raw("stock-key"), data: row.bytes)
+        guard store.rewrite(path, key: row.raw("stock-key"), data: row.bytes) else { throw Failure.missing }
+    }
+
+    public func confirmOrder(_ code: String, quantity: Int64, backOrdered: Int64,
+                             ordered: Date?, due: Date?, date: Date) throws {
+        try store.transaction {
+            guard let bytes = settings.read(1) else { throw Failure.invalidInput }
+            var system = Record(SystemLayout.layout, bytes: bytes)
+            if system.int("stk-audit-used") == 1 {
+                let audit = directory + "staudit.dat"
+                var statuses = system.raw("file-statuses")
+                if statuses[9] != 0x31 {
+                    try store.writeRaw(audit, [])
+                    statuses[9] = 0x31
+                    system.setRaw("file-statuses", statuses)
+                    try settings.write(1, system.bytes)
+                }
+            }
+            try order(code, quantity: quantity, backOrdered: backOrdered, ordered: ordered, due: due)
+            let row = try movementRecord(code)
+            let form = Int(system.int("date-form"))
+            func displayDate(_ value: Date?) -> String {
+                Cobol.x(value.map { Maps04.format(Maps04.toDate(day($0)), dateForm: form) } ?? "", 13)
+            }
+            let time = context.calendar.dateComponents([.hour, .minute], from: context.now())
+            let header = Cobol.x("ST020 (3.01.29)", 55) + Cobol.x("Stock Orders Update", 69) + "Page   1"
+            let company = system.raw("usera")
+            let dateTime = String(displayDate(date).prefix(10)) + " " + Cobol.z(time.hour ?? 0, 2) + ":" + Cobol.z(time.minute ?? 0, 2)
+            let detail = Array(repeating: UInt8(0x20), count: 11) + row.raw("stock-key") + [0x20]
+                + row.raw("stock-desc")
+                + SJIS.encode(Pic.edit("z(6)9-", value: quantity, scale: 0)
+                    + Cobol.x("", 2) + Pic.edit("z(5)9", value: backOrdered, scale: 0) + Cobol.x("", 19)
+                    + displayDate(ordered) + displayDate(due), size: 75)
+            let report = SJIS.encode(header, size: 132) + [10] + company
+                + Array(repeating: 0x20, count: 116 - company.count) + Array(dateTime.utf8) + [10, 10]
+                + SJIS.encode(Cobol.x("", 78) + "Change in", size: 132) + [10]
+                + SJIS.encode("           Stock Number  Description                         Qty    B'Qty                   Order Date    Date Due", size: 132) + [10]
+                + SJIS.encode("", size: 132) + [10] + detail + [10]
+            try store.writeRaw(directory + "prt-1", report)
+        }
     }
 
     public func closePeriod(current: Bool, yearly: Bool) throws {

@@ -25,6 +25,9 @@ struct StockItemForm: View {
     let date: Date
     @State private var code = ""
     @State private var item = StockService.Item()
+    @State private var itemCost = "0"
+    @State private var itemRetail = "0"
+    @State private var itemValue = "0"
     @State private var replacement = ""
     @State private var quantity = ""
     @State private var price = ""
@@ -54,7 +57,7 @@ struct StockItemForm: View {
             case .create:
                 itemFields
             case .edit:
-                Button(stockText("action.load"), action: load)
+                Button(stockText("action.load"), action: load).accessibilityIdentifier("stock.load")
                 if selected != nil { itemFields }
             case .receive, .issue, .barcode, .order:
                 TextField(operation == .order ? stockText("field.ordered") : stockText("field.quantity"), text: $quantity)
@@ -68,7 +71,8 @@ struct StockItemForm: View {
                         .keyboardType(.decimalPad)
                 }
                 if operation == .order {
-                    TextField(stockText("field.backordered"), text: $backOrdered).keyboardType(.numbersAndPunctuation)
+                    TextField(stockText("field.backordered"), text: $backOrdered)
+                        .keyboardType(.numbersAndPunctuation).accessibilityIdentifier("stock.backordered")
                     optionalDate(stockText("field.orderedDate"), value: $ordered)
                     optionalDate(stockText("field.due"), value: $due)
                 }
@@ -115,10 +119,19 @@ struct StockItemForm: View {
         Group {
             TextField(stockText("field.abbreviation"), text: $item.abbreviation).accessibilityIdentifier("stock.abbreviation")
             TextField(stockText("field.name"), text: $item.name).accessibilityIdentifier("stock.name")
+            TextField(stockText("field.location"), text: $item.location).accessibilityIdentifier("stock.location")
             TextField(stockText("field.held"), value: $item.held, format: .number).keyboardType(.numbersAndPunctuation)
-            TextField(stockText("field.price"), value: $item.cost, format: .number.scale(0.0001)).keyboardType(.decimalPad)
-            TextField(stockText("field.value"), value: $item.value, format: .number.scale(0.01)).keyboardType(.decimalPad)
+                .accessibilityIdentifier("stock.held")
+            TextField(stockText("field.price"), text: $itemCost).keyboardType(.decimalPad)
+                .accessibilityIdentifier("stock.cost")
+            TextField(stockText("field.retail"), text: $itemRetail).keyboardType(.decimalPad)
+                .accessibilityIdentifier("stock.retail")
+            TextField(stockText("field.value"), text: $itemValue).keyboardType(.decimalPad)
+                .accessibilityIdentifier("stock.value")
             TextField(stockText("field.reorder"), value: $item.reorderPoint, format: .number).keyboardType(.numbersAndPunctuation)
+                .accessibilityIdentifier("stock.reorderPoint")
+            TextField(stockText("field.reorderQuantity"), value: $item.reorderQuantity, format: .number)
+                .keyboardType(.numbersAndPunctuation).accessibilityIdentifier("stock.reorderQuantity")
         }
     }
 
@@ -138,6 +151,9 @@ struct StockItemForm: View {
     private func load() {
         do {
             item = try stock.find(code)
+            itemCost = amountText(item.cost, scale: 10_000)
+            itemRetail = amountText(item.retail, scale: 100)
+            itemValue = amountText(item.value, scale: 100)
             selected = code
             message = ""
         } catch { message = stockError(error) }
@@ -149,11 +165,28 @@ struct StockItemForm: View {
         return NSDecimalNumber(decimal: decimal * 100).int64Value
     }
 
+    private func amountText(_ amount: Int64, scale: Int) -> String {
+        NSDecimalNumber(decimal: Decimal(amount) / Decimal(scale)).stringValue
+    }
+
+    private func itemAmount(_ text: String, scale: Int, maximum: Int64) throws -> Int64 {
+        let parts = text.split(separator: ".", omittingEmptySubsequences: false)
+        guard !text.isEmpty, parts.count <= 2, text.contains(where: { $0.isASCII && $0.isNumber }),
+              parts.allSatisfy({ $0.allSatisfy { $0.isASCII && $0.isNumber } }),
+              let amount = Decimal(string: text, locale: Locale(identifier: "ja_JP")),
+              amount * Decimal(scale) <= Decimal(maximum)
+        else { throw StockService.Failure.invalidInput }
+        return NSDecimalNumber(decimal: amount * Decimal(scale)).int64Value
+    }
+
     private func submit() {
         do {
             switch operation {
             case .create, .edit:
                 item.code = code
+                item.cost = try itemAmount(itemCost, scale: 10_000, maximum: 99_999_999_999)
+                item.retail = try itemAmount(itemRetail, scale: 100, maximum: 999_999_999)
+                item.value = try itemAmount(itemValue, scale: 100, maximum: 99_999_999_999)
                 try stock.save(item, editing: operation == .edit ? selected : nil)
                 message = stockText("result.saved")
             case .delete:
@@ -174,7 +207,7 @@ struct StockItemForm: View {
             case .order:
                 guard let count = Int64(quantity), let back = Int64(backOrdered)
                 else { throw StockService.Failure.invalidInput }
-                try stock.order(code, quantity: count, backOrdered: back, ordered: ordered, due: due)
+                try stock.confirmOrder(code, quantity: count, backOrdered: back, ordered: ordered, due: due, date: date)
                 message = stockText("result.ordered")
             }
         } catch { message = stockError(error) }

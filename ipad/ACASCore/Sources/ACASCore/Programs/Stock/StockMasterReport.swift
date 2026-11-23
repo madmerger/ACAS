@@ -68,7 +68,7 @@ extension StockService {
         try store.writeRaw(directory + "prt-1", output + [0x0a])
     }
 
-    private func masterReportDetail(_ row: Record, dateForm: Int) -> [UInt8] {
+    func masterReportDetail(_ row: Record, dateForm: Int) -> [UInt8] {
         func number(_ picture: String, _ field: String, scale: Int = 0) -> String {
             Pic.edit(picture, value: row.int("stock-" + field), scale: scale)
         }
@@ -90,7 +90,7 @@ extension StockService {
         return detail + Array((amounts + date("date", width: 11) + date("due", width: 10) + orders).utf8)
     }
 
-    private func masterReportDescription(_ row: Record) -> [UInt8] {
+    func masterReportDescription(_ row: Record) -> [UInt8] {
         var detail = Array("     Description: ".utf8) + row.raw("stock-desc") + Array("     ".utf8)
         let suppliers = ["stock-supplier-p2", "stock-supplier-p3"].map { row.raw($0) }
         if suppliers.contains(where: { $0.contains(where: { $0 != 0x20 }) }) {

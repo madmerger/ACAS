@@ -58,7 +58,10 @@ struct MainMenu: View {
         case .sales:
             SalesMenu(workspace: workspace)
         case .stock:
-            StockMenu(workspace: workspace)
+            StockMenu(workspace: workspace) {
+                self.section = nil
+                workspace.completed("stock.close")
+            }
         default:
             ContentUnavailableView("menu.pending", systemImage: section.symbol)
         }
