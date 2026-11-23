@@ -2,6 +2,31 @@ import XCTest
 @testable import ACASCore
 
 final class SalesPaymentsTests: XCTestCase {
+    func testPaymentProofAlignsShiftJISNamesWithoutShiftingDateOrAmounts() throws {
+        let (store, context, date) = try setup()
+        var settings = try SalesLedger(context).systemRecord()
+        settings["usera"] = "α株式会社"
+        settings.setInt("run-date", Int64(Maps04.integerOfDate(year: 2026, month: 11, day: 23)))
+        try RelativeFile(store, path: "ledgers/acas/system.dat", recordSize: 1024).write(1, settings.bytes)
+        let customers = SalesProofRecords.salesFile(store)
+        var customer = try XCTUnwrap(customers.read(key: SJIS.encode("CUST011", size: 7)))
+        customer["sales-name"] = "α支店"
+        XCTAssertEqual(customers.rewrite(customer), "00")
+        var draft = SalesPayments.Draft(date: date)
+        draft.customer = "CUST011"
+        draft.amount = 1_200
+        try SalesPayments(context).saveBatch([draft])
+
+        _ = try SalesPaymentProof(context).generate()
+        let report = try XCTUnwrap(store.readRaw(SalesPaymentProof.exportPath))
+        XCTAssertEqual(Array(report[255..<265]), Array("23/11/2026".utf8))
+        let row = try XCTUnwrap(report.split(separator: 0x0a).map(Array.init).first {
+            $0.count == 132 && Array($0[22..<29]) == Array("CUST011".utf8)
+        })
+        XCTAssertEqual(Array(row[30..<59]), Array(customer.raw("sales-name").prefix(29)))
+        XCTAssertEqual(Array(row[59..<70]), Array("    12.00  ".utf8))
+    }
+
     func testUsingOnlyUnappliedBalancePreservesPaymentFlag() throws {
         let (store, context, date) = try setup()
         var draft = SalesPayments.Draft(date: date)
