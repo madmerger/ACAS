@@ -65,7 +65,10 @@ struct StockMenu: View {
             itemForm(.issue)
             itemForm(.barcode)
             itemForm(.order)
-            report(stockText("report.audit"), id: "audit")
+            NavigationLink(stockText("report.audit")) {
+                StockAuditView(workspace: workspace)
+            }
+            .accessibilityIdentifier("stock.audit")
         }
         .navigationTitle(stockText("menu.movements"))
     }
@@ -91,6 +94,35 @@ struct StockMenu: View {
     private func report(_ title: String, id: String) -> some View {
         NavigationLink(title) { StockItemTable(stock: stock, title: title, id: id) }
             .accessibilityIdentifier("stock." + id)
+    }
+}
+
+private struct StockAuditView: View {
+    let workspace: Workspace
+    @State private var result: StockService.AuditReport?
+    @State private var message = ""
+
+    var body: some View {
+        Form {
+            Button(stockText("action.run")) {
+                let stock = StockService(workspace.context)
+                do {
+                    result = try stock.generateAuditReport(date: stock.today)
+                    message = stockText("audit.generated")
+                } catch {
+                    result = nil
+                    message = stockError(error)
+                }
+                workspace.completed("stock.audit")
+            }
+            .accessibilityIdentifier("stock.generateAudit")
+            if !message.isEmpty { Text(message) }
+            if let result {
+                LabeledContent(stockText("field.received"), value: result.additions.formatted())
+                LabeledContent(stockText("field.issued"), value: result.deductions.formatted())
+            }
+        }
+        .navigationTitle(stockText("report.audit"))
     }
 }
 

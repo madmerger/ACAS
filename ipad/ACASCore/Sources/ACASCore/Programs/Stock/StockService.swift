@@ -56,12 +56,11 @@ public struct StockService {
 
     func movementRecord(_ code: String) throws -> Record {
         let normalized = code.uppercased()
-        if let row = try? record(normalized) { return row }
         if let abbreviation = try? key(normalized, 7),
            let row = records.first(where: { $0.raw("stock-abrev-key") == abbreviation }) {
             return row
         }
-        throw Failure.missing
+        return try record(normalized)
     }
 
     public func find(_ code: String) throws -> Item { Item(try record(code)) }

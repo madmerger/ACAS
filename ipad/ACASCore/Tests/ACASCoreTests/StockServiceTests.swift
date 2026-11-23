@@ -4,6 +4,51 @@ import XCTest
 @testable import ACASCore
 
 final class StockServiceTests: XCTestCase {
+    func testAuditReportEnablesPeriodClosingAndIncludesMovements() throws {
+        let store = try FileStore()
+        let service = StockService(BusinessContext(store: store))
+        var settings = Record(SystemLayout.layout)
+        settings.setInt("stk-audit-used", 1)
+        try service.settings.write(1, settings.bytes)
+        var item = StockService.Item()
+        item.code = "ITEM001"
+        item.abbreviation = "ITEM"
+        item.name = "品目"
+        try service.save(item)
+        _ = try service.move(.receipt, code: "ITEM", quantity: 2, price: 123, date: service.today)
+        XCTAssertThrowsError(try service.closePeriod(current: true, yearly: false))
+        let result = try service.generateAuditReport(date: service.today)
+        XCTAssertEqual(result.additions, 1)
+        XCTAssertEqual(result.deductions, 0)
+        let additions = try XCTUnwrap(store.readRaw("ledgers/acas/audit-additions.prt"))
+        XCTAssertTrue(String(decoding: additions, as: UTF8.self).contains("ITEM001"))
+        XCTAssertEqual(store.readRaw("ledgers/acas/prt-1"), store.readRaw("ledgers/acas/audit-deductions.prt"))
+        try service.closePeriod(current: true, yearly: false)
+        XCTAssertEqual(try service.find("ITEM001").added, 0)
+    }
+
+    func testEmptyAuditReportMatchesLegacyBytes() throws {
+        guard let path = ProcessInfo.processInfo.environment["ACAS_LEGACY_EVIDENCE"] else {
+            throw XCTSkip("ACAS_LEGACY_EVIDENCE にレガシー証跡の展開先を指定してください。")
+        }
+        let date = try XCTUnwrap(ISO8601DateFormatter().date(from: "2026-11-23T04:12:00Z"))
+        let store = try FileStore()
+        let service = StockService(BusinessContext(store: store, timeZone: .gmt))
+        var system = Record(SystemLayout.layout)
+        system["usera"] = "EQUIVALENCE BUSINESS"
+        system.setInt("stk-audit-used", 1)
+        try service.settings.write(1, system.bytes)
+        _ = try service.generateAuditReport(date: date)
+        let run = URL(fileURLWithPath: path).appending(path: "runs/ST-214-breadth/files")
+        for (output, evidence) in [
+            ("audit-additions.prt", "spool/1795407133946126964/prt-1"),
+            ("audit-deductions.prt", "ledgers/acas/prt-1"),
+        ] {
+            XCTAssertEqual(store.readRaw("ledgers/acas/" + output).map(Data.init(_:)),
+                           try Data(contentsOf: run.appending(path: evidence)))
+        }
+    }
+
     func testPostingReportFailureRollsBackStockAndAudit() throws {
         let path = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString).path
         defer { try? FileManager.default.removeItem(atPath: path) }
@@ -28,7 +73,7 @@ final class StockServiceTests: XCTestCase {
         XCTAssertNil(store.readRaw("ledgers/acas/prt-1"))
     }
 
-    func testPrimaryCodeWinsAndBarcodeDoesNotUseAbbreviation() throws {
+    func testManualMovementPrefersAbbreviationAndBarcodeUsesPrimaryCode() throws {
         let service = StockService(BusinessContext(store: try FileStore()))
         var item = StockService.Item()
         item.code = "ITEM001"
@@ -39,8 +84,10 @@ final class StockServiceTests: XCTestCase {
         item.abbreviation = "OTHER"
         try service.save(item)
         let updated = try service.move(.receipt, code: "ITEM", quantity: 2, date: service.today)
-        XCTAssertEqual(updated.code, "ITEM")
-        XCTAssertEqual(try service.find("ITEM001").held, 0)
+        XCTAssertEqual(updated.code, "ITEM001")
+        let scanned = try service.move(.receipt, code: "ITEM", quantity: 1, date: service.today, codeOnly: true)
+        XCTAssertEqual(scanned.code, "ITEM")
+        XCTAssertEqual(try service.find("ITEM001").held, 2)
         XCTAssertThrowsError(try service.move(.receipt, code: "OTHER", quantity: 1, date: service.today, codeOnly: true))
     }
 
