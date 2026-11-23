@@ -44,9 +44,13 @@ enum SystemSettingsReport {
             pending = false
         }
         func close() { if pending { output.append(10); pending = false } }
-        var line5: String { String(repeating: " ", count: 10) + name.text + d1.text + d2.text }
         func clear5() { name.clear(); d1.clear(); d2.clear() }
-        func write5(_ n: Int = 1) { after(n, line5) }
+        func write5(_ n: Int = 1) {
+            output += [UInt8](repeating: 10, count: n)
+            output += [UInt8](repeating: 32, count: 10) + name.bytes + d1.bytes + d2.bytes
+            output += [UInt8](repeating: 32, count: 12)
+            pending = true
+        }
         func yesNo(_ cond: Bool) -> String { t(cond ? "yes" : "no") }
         func isY(_ f: String) -> Bool { sys.str(f) == "Y" }
         /// "見出し" を先頭に置き、skip 桁あけて値を置く (STRING ... POINTER / ADD n TO pointer)
