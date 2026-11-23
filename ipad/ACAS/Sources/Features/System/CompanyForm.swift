@@ -152,6 +152,7 @@ struct CompanyForm: View {
                 }
             }
         }
+        .accessibilityIdentifier("system.settings.form." + group.rawValue)
         .navigationTitle(systemSetting(group.rawValue))
     }
 
