@@ -172,6 +172,7 @@ private struct SalesCustomerView: View {
     @ViewBuilder private func summary(_ customer: SalesLedger.Customer) -> some View {
         Section("得意先情報") {
             LabeledContent("名称", value: customer.name)
+                .accessibilityLabel(customer.name)
             LabeledContent("状態", value: customer.active ? "取引中" : "取引停止")
             LabeledContent("住所（上段）", value: customer.address1)
             LabeledContent("住所（下段）", value: customer.address2)
