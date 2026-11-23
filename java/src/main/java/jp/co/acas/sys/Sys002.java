@@ -111,17 +111,36 @@ public class Sys002 extends Program implements ScreenDef.Binder {
         ws.put("verify-message", "");
         ws.put("p-start", ""); ws.put("p-end", ""); ws.put("s-pass-word", "");
         ws.put("num-6", "00000");
-        if (!userParams()) { file.close(); return; }
+        Rec initial = sys.copy();
+        if (!userParams()) { sys.load(initial.bytes()); file.close(); return; }
         systemParams();
         if (n("level-1") == 1) glParams();
         if (n("level-3") == 1) slParams();
         if (n("level-2") == 1) plParams();
         if (n("level-4") == 1) stockParams();
-        printParams();
+        String printReply = printReply();
+        if (crtStatus() == 2005) { sys.load(initial.bytes()); file.close(); return; }
         clearScreen();
-        file.rrn = 1;
-        diskError("SY103 Rewrite Err 1 = ", file.rewrite(sys));
+        String status;
+        synchronized (ctx.store) {
+            Rec current = sys.layout.newRec();
+            file.rrn = 1;
+            status = file.read(current);
+            if (status.equals("00") && !Arrays.equals(initial.bytes(), current.bytes())) {
+                sys.load(current.bytes());
+                status = "競合";
+            } else if (status.equals("00")) {
+                status = file.rewrite(sys);
+            }
+        }
         file.close();
+        if (status.equals("競合")) {
+            display(5, 1, "別の操作で設定が更新されました。設定を開き直してください。", 4);
+            accept(6, 1, 1);
+            return;
+        }
+        diskError("SY103 Rewrite Err 1 = ", status);
+        if (status.equals("00") && !printReply.equalsIgnoreCase("N")) printParams();
         ctx.shared.put("ws-term-code", 0);
     }
 
@@ -383,11 +402,13 @@ public class Sys002 extends Program implements ScreenDef.Binder {
     private void account(String label, String f, int skip) { int p = str(D2, 1, label); str(D2, p + skip, z(f, 6)); }
     private void yesNo(String label, int skip, boolean yes) { int p = str(D2, 1, label); str(D2, p + skip, yes ? "Yes" : "No"); }
 
-    private void printParams() {
+    private String printReply() {
         clearScreen();
         display(12, 1, "Do you want printed copy (Y/N) [ ]");
-        String r = ctx.term.accept(12, 33, 1, "Y", 0, 4);
-        if (r.equalsIgnoreCase("N")) return;
+        return ctx.term.accept(12, 33, 1, "Y", 0, 4);
+    }
+
+    private void printParams() {
         boolean stock = n("level-4") == 1;
         boolean pcs = is("p-c", "P"), br = is("p-c", "B");
         out.setLength(0);
