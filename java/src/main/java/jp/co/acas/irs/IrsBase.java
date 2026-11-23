@@ -90,6 +90,10 @@ public abstract class IrsBase extends Program {
     protected static void writeAfterPage(CobFile f, String line) { f.writeLine("\f" + line); }
     /** call "SYSTEM" using Print-Report（lpr による印刷指示）。IRS の prt-1 は IRS ディレクトリにあるため spool へ自前で複写する。 */
     protected void printReport(Rec sys, CobFile f) {
+        printReport(sys, f, "orientation-requested=3 page-left=48 page-top=24 page-right=24");
+    }
+    /** print-spool-command.cob（横向き）/ print-spool-command-p.cob（縦向き）の lpr オプション違いを opts で渡す。 */
+    protected void printReport(Rec sys, CobFile f, String opts) {
         f.close();
         String src = ctx.irsPath("prt-1");
         if (!ctx.store.exists(src)) return;
@@ -99,7 +103,7 @@ public abstract class IrsBase extends Program {
         String dir = "spool/" + String.format("%04d", max + 1);
         ctx.store.create(dir + "/prt-1");
         for (var e : ctx.store.all(src)) ctx.store.put(dir + "/prt-1", e.getKey(), e.getValue());
-        String command = "lpr -r -o 'orientation-requested=3 page-left=48 page-top=24 page-right=24 sides=two-sided-long-edge cpi=12 lpi=8' -P "
+        String command = "lpr -r -o '" + opts + " sides=two-sided-long-edge cpi=12 lpi=8' -P "
                 + sys.str("print-spool-name").trim() + " prt-1";
         ctx.store.create(dir + "/command.txt");
         ctx.store.put(dir + "/command.txt", new byte[8], command.getBytes(java.nio.charset.StandardCharsets.ISO_8859_1));
