@@ -38,6 +38,7 @@ public struct SalesAnalysis {
         try store.withTransaction {
             var system = try files.settings()
             guard system.raw("file-statuses")[14] != 0x31 else { return }
+            try validateRegistration()
             do {
                 try SalesAnalysisFiles.initialize(store, system: &system)
             } catch SalesPosting.Error.invalidAnalysisLayout {
@@ -52,6 +53,10 @@ public struct SalesAnalysis {
     public func codes(allLedgers: Bool = false) throws -> [Code] {
         try validAnalysis()
         return analysis.allRecords().map(code(from:)).filter { allLedgers || $0.ledger == "S" }
+    }
+
+    public func validateRegistration() throws {
+        try validAnalysis()
     }
 
     public func save(group: String, account: Int64, description: String, printCode: String, replacing: Bool = false) throws {
@@ -210,8 +215,9 @@ public struct SalesAnalysis {
     }
 
     private func validAnalysis() throws {
-        guard store.readRaw(analysis.path) == nil,
-              store.all(analysis.path).allSatisfy({ $0.data.count == Self.layout.size }) else { throw Error.invalidLayout }
+        guard let kind = store.kind(analysis.path) else { return }
+        guard kind == "indexed", store.all(analysis.path).allSatisfy({ $0.data.count == Self.layout.size })
+        else { throw Error.invalidLayout }
     }
 
     private func code(from row: Record) -> Code {

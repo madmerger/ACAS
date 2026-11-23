@@ -88,9 +88,14 @@ private struct SalesAnalysisEditor: View {
     @State private var failed = false
     @State private var failure: String.LocalizationValue = "sales.analysis.failed"
     @State private var confirmDelete = false
+    @State private var registrationReady = false
+    @State private var registrationFailure: String.LocalizationValue?
 
     var body: some View {
         Form {
+            if let registrationFailure {
+                Text(slText(registrationFailure)).accessibilityIdentifier("sales.analysis.error")
+            } else if registrationReady {
             if let original {
                 LabeledContent(slText("sales.analysis.group"), value: original.group)
             } else {
@@ -117,10 +122,18 @@ private struct SalesAnalysisEditor: View {
             if original != nil {
                 Button(slText("sales.analysis.delete"), role: .destructive) { confirmDelete = true }
             }
+            }
         }
         .navigationTitle(slText(original == nil ? "sales.analysis.add" : "sales.analysis.edit"))
         .task {
-            if original == nil { workspace.completed("sales-analysis-add-view") }
+            do {
+                if original == nil { try SalesAnalysis(workspace.context).validateRegistration() }
+                registrationReady = true
+                if original == nil { workspace.completed("sales-analysis-add-view") }
+            } catch {
+                registrationFailure = "sales.analysis.registrationStatus39"
+                workspace.completed("sales-analysis-registration-refused")
+            }
         }
         .onAppear {
             if let original {
