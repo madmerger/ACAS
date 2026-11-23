@@ -68,7 +68,7 @@ internal sealed partial class AccountingScreens
             return status == JournalError.None ? JournalLines(header, []) : JournalHeaderForm(header, JournalMessage(status));
         }, () => new ConfirmationScreen("バッチ登録の中止", "明細を登録せず終了しますか。", "中止する",
             () => _journal.CancelSetup(number) == JournalError.None ? GeneralMenu() : JournalHeaderForm(),
-            () => JournalHeaderForm(draft)));
+            () => JournalHeaderForm(draft)), Error: error);
     }
 
     private Screen JournalLines(JournalHeader header, IReadOnlyList<JournalLine> lines)
