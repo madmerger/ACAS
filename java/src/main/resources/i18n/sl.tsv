@@ -1,0 +1,586 @@
+# レガシー英語文言⇥日本語文言（SL 売掛）。日本語の表示幅（全角=2）は原文の長さ以下にすること。
+Sales Ledger System Menu	売掛元帳メニュー
+(A)  Date Entry	(A)  処理日入力
+(B)  Customer File Maintenance	(B)  顧客マスター管理
+(C)  Sales Ledger Enquiry	(C)  売掛残高・明細照会
+(D)  Sales Transactions Input	(D)  売上取引入力
+(E)  Sales Transactions Amend	(E)  売上取引修正
+(F)  Sales Transactions Proof	(F)  売上の検証帳票
+(G)  Sales Transactions Post	(G)  売上転記
+(H)  Payment Input	(H)  入金入力
+(I)  Payment Amend	(I)  入金修正
+(J)  Payment Proof	(J)  入金の検証帳票
+(K)  Payment Post	(K)  入金転記
+(L)  Set-Up Sales Analysis Codes	(L)  売上分析コード設定
+(M)  Sales Analysis Report	(M)  売上分析帳票
+(N)  Sales Day Book	(N)  売上日計帳
+(O)  Statement Production	(O)  顧客明細書発行
+(P)  Dunning Letters Generation	(P)  督促状出力
+(Q)  Aged Debtors Analysis	(Q)  売掛金年齢表
+(R)  Alphabetical Customer List	(R)  顧客名順一覧
+(S)  Customer Turnover Report	(S)  顧客別売上帳票
+(T)  Invoice Sub-System	(T)  請求書サブシステム
+(U)  End of Cycle Processing	(U)  期間締め処理
+(V)  Customer File Dump	(V)  顧客ファイル帳票
+(X)  Exit To	(X)  終了
+Using	使用:
+Sorry not available	利用できません
+SL009 Environment variables not yet set up : ABORTING	SL009 環境が未設定のため中止します
+Client -	会社 -
+Sales Ledger  Start Of Day	売掛元帳  業務開始
+Enter todays date as dd/mm/yyyy - [          ]	本日の日付 (dd/mm/yyyy)   - [          ]
+Enter todays date as mm/dd/yyyy - [          ]	本日の日付 (mm/dd/yyyy)   - [          ]
+Enter todays date as yyyy/mm/dd - [          ]	本日の日付 (yyyy/mm/dd)   - [          ]
+SL005 Invalid Date	SL005 日付不正
+Error not in error.txt. Hit return to close	error.txt に未登録のエラー。Enter で閉じる
+hit return	Enter 押下
+SL101 Addr Err	SL101 住所不正
+Error	エラー
+SL103 Sales Ledger files have not been set up yet	SL103 売掛元帳ファイルが未作成です
+SL104 Do you wish to create them (Y/N) ? [ ]	SL104 作成しますか (Y/N) ?              [ ]
+SL105 Creating Sales & Delivery Files	SL105 売掛・納品先ファイルを作成中
+SL106 Opening Sales files gives	SL106 売掛ファイルのオープン結果
+SL107 Opening Delivery files gives	SL107 納品先ファイルのオープン結果
+SL108 Abort Or Recover (A/R) : [ ]	SL108 中止／回復 (A/R)       : [ ]
+SL109 <<<Can not Delete currently active account>>>	SL109 <<<取引中の顧客は削除できません>>>
+Customer Listing	顧客一覧表
+Page	頁
+Report On :	出力条件 :
+Customer  Status    <---------------Name & Address-------------->     ----Telephone---- -----Fax-----     Late       Credit	顧客      状態      <---------------名称・住所------------------>     ------電話------- -----FAX-----     延滞       与信
+Disc	値引
+Number   ------	番号     ------
+Chg  Let   Limit/Days    %	料  督促   限度/日数     %
+Select one of the following by number :- [ ]	番号で選択してください                :- [ ]
+Select one of the following by letter  :- [ ]	英字で選択してください                 :- [ ]
+(1)  Set-up customer records	(1)  顧客登録
+(2)  Amend Customer records	(2)  顧客変更
+(3)  Delete Customer records	(3)  顧客削除
+(4)  Print Customer records	(4)  顧客一覧印刷
+(5)  Display Customer records	(5)  顧客表示
+(9)  Return to system menu	(9)  メニューへ戻る
+Customer File Set-Up & Maintenance	顧客マスター登録・保守
+Function  Menu	機能メニュー
+Customer Record Creation	顧客登録
+Customer Record Amendment	顧客変更
+Customer Record Deletion	顧客削除
+Customer Record Display	顧客表示
+Check Digit {	検査数字    {
+Customer Nos : [	顧客番号     : [
+Customer Name: [	顧客名       : [
+Addr: [	住所: [
+Delivery name: [	納品先名     : [
+Customer Note: [	顧客メモ     : [
+Telephone    : [	電話番号     : [
+Ext: [	内線:[
+Fax : [	FAX : [
+Email Sales  : [	営業メール   : [
+Late charges : [	延滞料       : [
+Minimum balance before late charge : [	延滞料対象の最低残高               : [
+Late letters : [	督促状       : [
+Maximum late charge	延滞料上限
+Credit period: [	支払期間     : [
+EMail-Inv:[	請求Mail  :[
+Stat: [	明細: [
+Dun : [	督促: [
+Credit limit : [	与信限度額   : [
+] Discount : [	] 値引率   : [
+Unapplied Bal: {	未消込残高   : {
+* Escape Code [	* 操作コード  [
+Current Bal  : {	現在残高     : {
+* <B> = Back      *	* <B> = 戻る      *
+Last invoice : {	最終請求日   : {
+* <S> = Save      *	* <S> = 保存      *
+Last payment : {	最終入金日   : {
+* <Q> = Quit      *	* <Q> = 中止      *
+D> = Dormant	D> = 休眠
+K> = Kill	K> = 削除
+Note and hit return	確認後 Enter 押下
+write deliverytag	納品先 書込エラー
+rewrite deliverytag	納品先 更新エラー
+Delete deliverytag	納品先 削除エラー
+write notes tag	メモ 書込エラー
+Rewrite notes tag	メモ 更新エラー
+Delete notes tag	メモ 削除エラー
+Rewrite Sales Rec	顧客 更新エラー
+Customer File	顧客ファイル
+Report Attributes	帳票出力条件
+Customer Number - [	顧客番号        - [
+Enter characters in positions to match	照合する位置に文字を入力
+Status          - [	状態            - [
+<L> Live;<D> Dormant;< > All	<L> 有効;<D> 休眠;< > 全件
+Credit Period   - [	支払期間        - [
+Enter number of days & operator	日数と比較条件を入力
+<L>  for credit periods < than	<L>  支払期間が指定未満
+<G>  for credit periods > than	<G>  支払期間が指定超
+<E>  for credit periods = to	<E>  支払期間が指定一致
+Invoice Activity  [	請求件数          [
+Enter number of invoices & operator	請求件数と比較条件を入力
+Average Value   - [	平均金額        - [
+Enter invoice value & operator	請求金額と比較条件を入力
+Overdue A/Cs    - [	延滞顧客        - [
+Date Entered-[	登録日      -[
+Enter date & operator	日付と比較条件を入力
+SL008 P.A. Code Already Exists!!	SL008 分析コードは登録済みです
+SL009 P.A. Group Code Does Not Exist!!	SL009 分析グループコードがありません
+SL010 P.A. Group Code Used As Analysis Code!!	SL010 グループが分析コードとして使用中です
+SL011 P.A. Code Does Not Exist!!	SL011 分析コードがありません
+Product Analysis Codes	製品分析コード一覧
+Code    Gl.Nos.      <-----Description------>   Print	コード  GL番号       <---------名称---------->   印字
+-Type-	-種別-
+Warning: One or more P.A. codes contain a zero value for General Ledger numbers	警告: GL 番号がゼロの分析コードがあります
+(1)  Set-up P/A records	(1)  分析コード登録
+(2)  Amend/Delete P/A records	(2)  分析コード変更・削除
+(3)  Print P/A records	(3)  分析コード印刷
+(4)  Print All P/A records	(4)  分析コード全件印刷
+(5)  Display P/A records	(5)  分析コード表示
+Product Analysis File Set-Up & Maintenance	製品分析コード登録・保守
+Set-Up P/A Records	分析コード登録
+Amend/Delete P/A Records	分析コード変更・削除
+Print P/A Records	分析コード印刷
+Print All P/A Records	分析コード全件印刷
+Display P/A Records	分析コード表示
+Code   G/L Nos          Description	コード GL番号           名称
+Ref	印字
+Type	種別
+Escape Code [ ]	操作コード  [ ]
+<B> = Back	<B> = 戻る
+<S> = Save	<S> = 保存
+<Q> = Quit	<Q> = 中止
+<K> = Deleted	<K> = 削除
+Enter <X> to exit or <Return> to continue...[ ]	<X> で終了、<Enter> で続行              ...[ ]
+SL111 Error On Writing Work File. Hit Return To Abort	SL111 作業ファイル書込エラー。Enter で中止
+SL112 Can't open file	SL112 ファイルを開けません
+SL113 Can't find it	SL113 見つかりません
+SL114 Record not found	SL114 該当レコードなし
+SL115 Error On Rewrite	SL115 更新エラー
+SL116 Note: and hit return to continue	SL116 確認後 Enter で続行
+SL117 No Work File Created..No Data	SL117 作業ファイル未作成（データなし）
+SL118 Work file Created	SL118 作業ファイルを作成しました
+Sales Ledger Enquiry	売掛元帳照会
+****************************************	****************************************
+*A/C Nos [       ]*Balance             *	*顧客番号[       ]*残高                *
+*Ytd              *Unapplied           *	*年累計           *未消込              *
+*Credit           *Unposted            *	*与信限度         *未転記              *
+* A/C Nos	* 顧客番号
+*Balance	*残高
+* YTD	* 年累計
+*Unapplied	*未消込
+* Credit	* 与信
+*Unposted	*未転記
+Customer:	顧客:
+Address :	住所:
+Number	番号
+Date	日付
+Description	摘要
+Invoiced	請求額
+Paid	入金
+Balance	残高
+Inv #	件数
+Total O/S	未収合計
+Current	当月
+Select: 'P'rint, 'N'ext enquiry, 'T'oggle query flag, 	選択: 'P'印刷, 'N'次の照会, 'T'照会フラグ切替,
+'M'ore or 'E'nd [ ]	'M'続き / 'E'終了[ ]
+or 'E'nd [ ]	/ 'E'終了[ ]
+For Account:        . Give invoice no. to toggle [        ]	対象顧客:           . 切替える請求書番号を入力   [        ]
+Receipt	入金
+Goods -	商品 -
+CN.Re Inv -	CN 対象請求
+Payment	支払
+Journal Payment	振替入金
+>> screen overflow <<	>> 画面あふれ <<
+Invoicing Menu	請求書メニュー
+(1)  Amend Invoicing Fixed Data	(1)  請求書固定項目の設定
+(2)  Enter Invoice Details	(2)  請求情報入力
+(2)  Enter Invoices For Batch Printing	(2)  請求情報入力（一括印刷待ち）
+(3)  Enter Invoice For Immediate Printing	(3)  請求情報入力（即時印刷）
+(7)  Print Invoices	(7)  請求書印刷
+(8)  Print Delivery Notes/Picking Lists	(8)  納品書・ピッキングリスト印刷
+(4)  Amend Invoices	(4)  請求書修正
+(5)  Delete Invoices	(5)  請求書削除
+(6)  Invoice Deletion Report	(6)  請求書削除帳票
+(9)  Return To System menu	(9)  メニューへ戻る
+Invalid option, try again	選択が不正です。再入力
+Invoicing Fixed Data	請求書固定項目
+Next Invoice	次回請求書番号
+- [        ]	- [        ]
+Extra Charge/Discount Description - [	追加料金・値引の名称              - [
+]	]
+Extra Charge/Discount Type (C/D)  - [ ]	追加料金・値引の区分 (C/D)        - [ ]
+Print Extra on Invoices (N/Y)     - [ ]	請求書へ追加項目を印字 (N/Y)      - [ ]
+Extra Charge/Discount Percentage  - [     ]	追加料金・値引の率                - [     ]
+Invoice Entry Level (1, 2) 	請求入力レベル (1, 2)
+- [ ]	- [ ]
+Invoice to Stock Link  - [ ]	在庫連携               - [ ]
+Invoice to Stock Audit - [ ]	在庫監査記録           - [ ]
+Extra Charge Discount Account	追加料金・値引の勘定
+- [      ]	- [      ]
+Vat Account	消費税勘定
+Proforma Retention In Days 	見積請求書の保存日数
+- [   ]	- [   ]
+Details Ok To File (Y/N) ...........[Y]	この内容で登録しますか (Y/N) .......[Y]
+SL003 Hit Return To Continue	SL003 Enter で続行
+SL006 Note Details & Hit Return to continue	SL006 内容を確認し Enter で続行
+SL180 Err on Invoice file write : 	SL180 請求書ファイル書込エラー :
+SL181 Invoice To Credit Does Not Exist On Open Item File	SL181 対象請求書が未決済明細にありません
+SL182 Invoice To Credit Is Paid	SL182 対象請求書は入金済みです
+SL183 Invoice To Credit Has Query Flag Set	SL183 対象請求書は照会フラグ設定中です
+SL184 You Can Only Credit Invoices. Not Receipts, Credit Notes Or Proformas	SL184 赤伝対象は請求書のみです（領収・赤伝・見積は不可）
+SL185 Credit of Prompt Pay/Late Charge will be Automatic	SL185 早期支払値引・延滞料の取消は自動で行います
+SL186 P.A. Code Does Not Exist	SL186 分析コードが存在しません
+SL190 Error on Writing to Audit File	SL190 監査ファイル書込エラー
+SL191 Error on Stock file Rewrite	SL191 在庫ファイル更新エラー
+Receipt <<<	領収 <<<
+Account <<<	掛売 <<<
+Credit Note <<<	赤伝 <<<
+Pro-Forma <<<	見積 <<<
+Enter Further Invoices? (Y/N) [Y] 	続けて入力しますか (Y/N) [Y]
+Level 1	レベル 1
+Level 2	レベル 2
+Stock Linked	在庫連携
+Line - 	行 -
+[          ]	[          ]
+Code	コード
+<---Net---->  Vat   Vat Amount  Gross Amount	<--税抜額-->  税   税額        税込額
+Net <          >	税抜<          >
+Vat <          >	税額<          >
+Invoice <          >	請求額  <          >
+Product    Code <---------Description-------->   Qty   Unit Price  Disc. Vat	商品       分析 <------------摘要------------>   数量  単価        値引  税
+Product     <----------Description--------->    Qty   Unit Price  Disc. Vat	商品        <-------------摘要------------->    数量  単価        値引  税
+SizEr	桁溢れ
+*********************	*********************
+Invoice Ok to	この請求書を
+Store	保存
+Print	印刷
+(Y/N) ? [Y]	(Y/N) ? [Y]
+Level 	レベル
+<---Net---->   <---Vat--->	<--税抜額-->   <--税額--->
+<---Gross-->     Days	<--税込額-->     日数
+Sub-Totals	小計
+{          }   {         }	{          }   {         }
+{          }     [  ]	{          }     [  ]
+[          ]   [         ]	[          ]   [         ]
+{          }	{          }
+Shipping & Handling	送料・手数料
+Late Charge	延滞料
+[          ]              	[          ]
+------------   -----------	------------   -----------
+------------	------------
+Itemised Totals	合計
+Invoicing Data Entry	請求情報入力
+*Date  [  /  /    ]*                   *	*日付  [  /  /    ]*                   *
+*A/C Nos  [       ]*Ref    [          ]*	*顧客番号 [       ]*参照   [          ]*
+*Invoice [        ]*Order  [          ]*	*請求書  [        ]*注文   [          ]*
+F1 = Setup new Customer; F8 = Only Show delivery details	F1 = 顧客新規登録; F8 = 納品先のみ表示
+Type [ ]  <1> = Receipt; <2> = Account; <3> = Credit Note; <4> = Pro-Forma	区分 [ ]  <1> = 領収; <2> = 掛売; <3> = 赤伝; <4> = 見積
+Creating Invoice File                    	請求書ファイルを作成中
+No such Customer	該当顧客なし
+Confirm Duplicate - [ ]	重複を確認 -        [ ]
+>>> 	>>>
+Overdue Balance <<<	支払期限超過 <<<
+Balance Exceeds Credit Limit <<<	残高が与信限度超過 <<<
+No Longer an Account Customer <<<	掛売対象外の顧客 <<<
+>>> Warning! 	>>> 警告!
+**********************	**********************
+None Zero To Abort	0 以外で中止
+Return To Continue	Enter で続行
+Using Deleted Invoice Numbers	削除済み請求書番号を再利用
+Invoice To Credit - [	赤伝対象請求書    - [
+] 	]
+Do you wish to use this Invoice No.? {N}	この請求書番号を使いますか          ? {N}
+..If so, you must ensure that it belonged to the same customer and that it is a 	..使う場合、同一顧客の請求書（領収ではない）であることを確認してください
+Invoice ie, not a receipt	（請求書のみ可）
+Amount O/S on Invoice is 	請求書の未収額は
+of which	うち
+is Late Charges	が延滞料
+SL192 Err on Invoice file rewrite : 	SL192 請求書ファイル更新エラー :
+SL193 Invoice To Credit Does Not Exist On Invoice File	SL193 対象請求書が請求書ファイルにありません
+SL194 Invoice Not Found!!!!	SL194 請求書が見つかりません
+SL195 Invoice Details Already Passed To Sales Ledger!	SL195 この請求書は売掛元帳へ転記済みです
+SL196 You Can Only Credit An Invoice With The Same Account Number	SL196 赤伝対象は同一顧客の請求書のみです
+Amend Further Invoices? (Y/N)  [Y]	続けて修正しますか (Y/N)       [Y]
+<          >	<          >
+Invoice Ok To Store?	この内容で保存
+(Y/N)  [Y]	(Y/N)  [Y]
+Invoicing Data Amend	請求情報修正
+*Date   [  /  /    ]*                  *	*日付   [  /  /    ]*                  *
+*A/C Nos   [       ]*Ref   [          ]*	*顧客番号  [       ]*参照  [          ]*
+*Invoice [         ]*Order [          ]*	*請求書  [         ]*注文  [          ]*
+F8 = Only Show delivery details on 'A/C nos' entry	F8 = 顧客番号入力時に納品先のみ表示
+Invoice To Credit - [         ]	赤伝対象請求書    - [         ]
+Do You Wish To Use This Invoice No.? {N}	この請求書番号を使いますか          ? {N}
+..If So, You must ensure that it Belongs to the same Customer and that it is a 	..使う場合、同一顧客の請求書（領収ではない）であることを確認してください
+Invoice ie, not a Receipt	（請求書のみ可）
+Invoice Printing	請求書印刷
+Invoice Number - 	請求書番号     - 
+Already Invoiced!.....Re-Print  (Y/N) ? - [Y]	請求済みです..........再印刷    (Y/N) ? - [Y]
+Print Or Re-Print.............  (P/R) ? - [P]	印刷または再印刷..............  (P/R) ? - [P]
+Any Amended Invoices In This Batch? [N]	このバッチに修正済み請求書あり    ? [N]
+More To Print? [Y]	続けて印刷   ? [Y]
+Give Lowest Invoice No. [        ]	最小の請求書番号を入力  [        ]
+INVOICE	請求書
+Invoice	請求書
+Credit Note	赤伝
+Pro-Forma	見積書
+This is not a VAT Invoice	本書は税額票ではありません
+Inv:	請求:
+Order:	注文:
+Ref :	参照:
+A/C :	顧客:
+Product Code	商品コード
+Item Description	品名
+Qty	数量
+Cost	単価
+Net	税抜
+Vat	税額
+Credit Terms:	支払条件:
+Late Payment Surcharge	延滞料
+Prompt pay time:	早期支払期限:
+Total Due:	請求合計:
+Invoicing Data Deletion	請求情報削除
+*A/C Nos   [       ]*                 **	*顧客番号  [       ]*                 **
+Delete Further Invoices (Y/N) ? [Y]	続けて削除しますか      (Y/N) ? [Y]
+Now give Invoice letter (A, B, C or return for space)	請求書の枝番を入力 (A, B, C または Enter で空白)
+Invoice To Be Deleted (Y/N) - [ ]	この請求書を削除 (Y/N)      - [ ]
+Type [ ]  <1> = Receipt; <2> = Account; <3> = CrediT Note; <4> = Pro-Forma	種別 [ ]  <1> = 領収; <2> = 掛売; <3> = 赤伝; <4> = 見積
+Invoice Deletion Report	請求書削除一覧
+None to report	該当データなし
+Invoice No	請求書番号
+Cust No	顧客番号
+Delivery / Picking Note Print	納品書／ピッキングリスト印刷
+Picking/Delivery Note	納品書／ピッキングリスト
+Receipt Pick	領収ピック
+Invoice Pick	請求ピック
+Abrev #	略号
+Location	棚番
+Total Item Count	品目数合計
+Addr Err	住所不正
+Check Digit { }	検査数字    { }
+Invoice Proof Report	請求書検証帳票
+SL120 No Transactions to proof! ...Press return for menu.	SL120 検証する取引がありません。Enter でメニューへ戻ります。
+Unapplied Sales Transaction Report	未転記売上取引一覧
+!! Customer Unknown	!! 顧客不明
+Discount	値引
+Carriage	送料
+Cr. Note	赤伝
+Analysis	分析
+Value	金額
+Vat Code	税コード
+Warning Record/s Missing In Sales File	警告: 顧客ファイルに存在しないレコードがあります
+V.A.T. Reconciliation	消費税照合
+Receipts	領収書
+Invoices	請求書
+Credit Notes	赤伝
+Total	合計
+Prompt Pay	早期支払
+Goods	商品
+Gross	総額
+Invoice Post Extract	請求書転記抽出
+Working...........Please Wait	処理中...........お待ちください
+SL002 Note error and hit return	SL002 エラーを確認し Enter を押してください
+SL121 Error writing to Open Item 2 File	SL121 未消込明細ファイル 2 の書込エラー
+SL122 Unprinted Invoices Exist. Correct & Run Again	SL122 未印刷の請求書があります。修正して再実行してください
+Emergency Name	仮登録名称
+Invoice Posting & Report	請求書転記・帳票
+OK to post Sales transactions (YES/NO) ?  [   ]	売上取引を転記しますか (YES/NO) ?      [   ]
+Posting......Please Wait	転記中......お待ちください
+Phase 1 - Building OTM3 from OTM2	フェーズ 1 - OTM2 から OTM3 を作成
+2 - Applying Cr. Notes to OTM3	2 - 赤伝を OTM3 へ充当
+Invoice Posting Report	請求書転記帳票
+Un-Applied Credits	未充当クレジット
+Un-Applied Credits C/F	未充当クレジット繰越
+*** Customer Unknown ***	*** 顧客不明 ***
+CR. Note	赤伝
+Total  Posted	転記合計
+Total  Amount Late Deductions	延滞控除合計
+SL130 Open-IT3 =	SL130 Open-IT3 =
+SL131 PE - CR SWOP: Return to continue	SL131 PE - 赤伝充当: Enter で続行
+SL132 Err on Batch file write :	SL132 バッチファイル書込エラー :
+SL133 PE 060-01	SL133 PE 060-01
+SL134 Warning Record/s missing in Sales File	SL134 警告: 顧客ファイルに存在しないレコードがあります
+SL135 Error On Re/write Sales File	SL135 顧客ファイルの書込/更新エラー
+fs-reply =	fs-reply =
+Payment Data Entry	入金データ入力
+*Date    [  /  /    ]*A/C Nos [       ]*	*日付    [  /  /    ]*顧客    [       ]*
+*Value   {          }*Batch [     /   ]*	*金額    {          }*ﾊﾞｯﾁ  [     /   ]*
+Batch Closed..It is Full!	バッチ終了..満杯です
+Current Balance -	現在残高 -
+Unapplied Balance -	未充当残高 -
+Do you wish to allocate the Unapplied Balance to this account?  [Y]	未充当残高をこの顧客に充当しますか?                              [Y]
+Batch Total -	バッチ合計 -
+Enter further payments (Y/N) ? [Y]	続けて入金を入力 (Y/N) ?       [Y]
+Inv.Nos  --Date--  --Amount--	請求番号 --日付--  ---金額---
+Deductable  ---Paid----	控除可能    --入金額---
+Deduction Taken	控除適用
+....Fully Paid	....全額入金済
+....No Change	....変更なし
+Payment Too High	入金額超過
+Payment Data Amend	入金データ修正
+*Date    [  /  /    ]                  *	*日付    [  /  /    ]                  *
+*A/C Nos    [       ]                ***	*顧客       [       ]                ***
+Warning Unapplied Balance Journal	警告: 未充当残高の振替です
+Confirm No Action? i.e. Request Cancelled (Y/N)..[ ]	処理なし（依頼取消）でよいですか (Y/N)..........[ ]
+Make Further Corrections (Y/N) ? [Y]	続けて修正しますか (Y/N) ?       [Y]
+Reversing Please Wait	戻し処理中 お待ちください
+For Invoice No.	請求番号
+Enter Deduct Amount - [      ]	控除額を入力        - [      ]
+Amount Available =	利用可能額 =
+SL140 Not Yet Supporting Corrections	SL140 金額の修正には未対応です
+SL141 Amount Approp Or Deduct Amt Not Zero	SL141 充当額または控除額がゼロではありません
+Payment Proof Report	入金検証帳票
+Printing..... Please Wait	印刷中..... お待ちください
+Payment And Journal Proof Report	入金・振替 検証帳票
+  Batch  Tp  Pay Date  <-------------Customer------------->	  ﾊﾞｯﾁ   種  入金日    <--------------顧客---------------->
+  Value    Approp.    Ded'n    <--------Payment Appropriation--------->	  金額     充当額     控除     <-------------入金充当---------------->
+ A/C               Name	 顧客              名称
+Invoice   Date      Approp.     Balance	請求番号  日付      充当額      残高
+Journal	振替
+ Totals	 合計
+Payments	入金額
+Appropriations	充当額
+Unapplied Cash	未充当入金
+Deductions Taken	控除適用額
+Cash Posting	入金転記
+OK to Post Payment Transactions (YES/NO) ? [   ]	入金取引を転記しますか (YES/NO) ?          [   ]
+Posting,  Please wait	転記中  お待ちください
+Cash Posting Report	入金転記帳票
+ Number   ---Date--  <------------Customer------------>  --Type--	 番号     ---日付--  <--------------顧客-------------->  --種別--
+ Old Balance    New Balance    Payment   Deduction   Apportioned	 旧残高         新残高         入金額    控除        充当額
+Cr Journal	貸方振替
+Payment Totals	入金 合計
+Journal Totals	振替 合計
+SL170 Not Found - 	SL170 見つかりません - 
+Customer Alphabetical Listing	顧客名順一覧
+Report On : 	出力対象  : 
+Disc 	値引 
+Active	有効
+Dormant	休止
+Record not found	レコードなし
+   Deliver	   配送先
+y Address	住所
+Notes: 	備考: 
+Sales Ledger Dump	顧客ファイルダンプ
+Sales-Key	顧客コード
+Sales-Credit	与信日数
+Sales-Current	現在残高
+Sales-Name	顧客名
+Sales-Discount	値引率
+Sales-Last	前回残高
+Sales-Addr1	住所1
+Sales-Late-Min	延滞料下限
+Turnover-Q1	売上高 Q1
+Sales-Addr2	住所2
+Sales-Late-Max	延滞料上限
+Turnover-Q2	売上高 Q2
+Sales-Phone	電話
+Sales-Limit	与信限度
+Turnover-Q3	売上高 Q3
+Delivery-Tag	配送先有無
+Sales-Activety	請求件数
+Turnover-Q4	売上高 Q4
+Notes Tag	備考有無
+Sales-Status	状態
+Sales-Last-Inv	最終請求日
+Sales-Late	延滞料
+Sales-Last-Pay	最終入金日
+Sales-Dunning	督促状
+Sales-Average	平均請求額
+Sales-Email   	メール        
+Live	有効
+Dead	休止
+Yes	はい
+No	いいえ
+Sales Ledger Turnover Report	顧客別売上帳票
+Credit Terms  <------------- T u r n o v e r ------------> <--S A L E S-->  <--Date Of Last-->	与信条件      <------------------ 売上高 -----------------> <----売上---->  <------最終日----->
+Acct No          Name	顧客番号         名称
+Days   Limit  Mvmt Average   Qtr 1   Qtr 2   Qtr 3   Qtr 4 Current    Last  Invoice    Payment	日数   限度   件数 平均額    Q1      Q2      Q3      Q4    当期       前期  請求       入金
+Sales Analysis	売上分析
+Sales  Analysis	売上分析
+Analysis  Type    <-----Description------>   <-------Transactions------->   <----------------Amount----------------->  % Period Mvmt	分析      種別    <---------名称--------->   <----------取引件数--------->   <------------------金額------------------>  % 期間増減
+  Code	  コード
+Current   Previous   Y. to D      Current      Previous    Year To Date  Trans. Amount	当期      前期       年累計       当期         前期        年累計        件数   金額
+Group	グループ
+ Detail	 明細
+Day Book	日計表
+Printing.......Please wait	印刷中.......お待ちください
+ Number   ---Date--- <------------Customer------------>	 番号     ---日付--- <--------------顧客--------------->
+<---Net-->  <---Vat-->  <--Gross->	<--税抜-->  <-消費税->  <--税込-->
+Goods     Discount   Prompt Pay     Carriage          Net          Vat        Gross	商品      値引       早期入金       運賃              税抜         消費税     税込
+    Totals	    合計
+Statement Production	取引明細書作成
+*Date    [  /  /    ]*                 *	*日付    [  /  /    ]*                 *
+*A/C Nos    [       ]*               ***	*顧客番号   [       ]*               ***
+*Value    [         ]*                 *	*金額     [         ]*                 *
+Notes	注記
+ (1)  -   <Date>  :  Appears on statement	 (1)  -   <日付>  :  明細書に印字する日付
+ (2)  -   <A/C>   :  A/C's to match for printing	 (2)  -   <顧客>  :  印刷対象とする顧客番号
+ (3)  -   <Value> :  Minimum O/S to print	 (3)  -   <金額>  :  印刷する最小未決済額
+Msg Line 1 - [	通信欄 1   - [
+Msg Line 2 - [	通信欄 2   - [
+Statement correctly aligned.... (Y/N) ? - [ ]	明細書の用紙位置は正しいですか (Y/N) ? - [ ]
+SL150 Re-align statement to top of form	SL150 明細書用紙を先頭位置に合わせ直してください
+Unapplied Credit Balance	未充当貸方残高
+Goods As Per - 	商品 - 
+Credit Note Re. Inv - 	貸方票 対象請求書 - 
+Unapplied Credit Allocated	未充当残高を充当
+Payment. Received With Thanks	ご入金ありがとうございました
+Aged Debtors Report	売掛金年齢調べ
+*A/C Nos [       ]                   ***	*顧客番号[       ]                   ***
+*Value  [         ]*                   *	*金額   [         ]*                   *
+ (1)  -  <Date>  :  Appears on listing	 (1)  -  <日付>  :  帳票に印字する日付
+ (2)  -  <A/C>   :  A/c's to match for printing	 (2)  -  <顧客>  :  印刷対象とする顧客番号
+ (3)  -  <Value> :  Minimum o/s to print	 (3)  -  <金額>  :  印刷する最小未決済額
+No Open invoice records present	未決済請求書がありません
+Current Period is 	当期は 
+Customer  Name                           Telephone     Invoice     Date       Current         30         60    90 & Over   Payments	顧客      名称                           電話          請求書      日付       当期            30         60    90 以上     入金
+Terms:	条件:
+Credit Limit:	与信限度:
+Balance:	残高:
+Cr Bal:	貸方残:
+Over:	超過:
+Account Statistics  	顧客統計
+Total       Current         30           60       90 & Over	合計        当期            30           60       90 以上
+Number Of Invoices	請求書件数
+Amount	金額
+% of O/S Invoices	未決済請求書の割合 %
+Average O/S Amount	平均未決済額
+Number       Amount	件数         金額
+Credit Balances	貸方残高
+Late Charges	延滞料
+Number of Live Accounts	有効顧客数
+Number of Active Accounts	取引中顧客数
+% Active	取引中の割合 %
+  Reconciliation Data	  照合データ
+Balance Brought Forward	前期繰越残高
+Plus: Invoices Posted	加算: 転記済請求書
+Less: Credit Notes Posted	減算: 転記済貸方票
+      Payments Posted	      転記済入金
+      Pay Late Chgs Taken	      入金時の延滞料
+      CN Late Chgs Taken	      貸方票の延滞料
+Balance Carried Forward	次期繰越残高
+Out Of Balance	不一致
+Letter Production	督促状作成
+*A/C Nos   [       ]                 ***	*顧客番号  [       ]                 ***
+ (1) - <A/C>   :  A/Cs To Match For Printing	 (1) - <顧客>  :  印刷対象とする顧客番号
+ (2) - <Value> :  Minimum O/S To Print	 (2) - <金額>  :  印刷する最小未決済額
+Low Date    - [  ]	低 日数     - [  ]
+Medium Date - [  ]	中 日数     - [  ]
+High Date   - [  ]	高 日数     - [  ]
+End of Cycle Processing	期末処理
+WARNING: MAKE SURE THAT DATE IS AT END OF CYCLE.IE END OF MONTH	警告: 日付が期末（月末など）であることを確認してください
+Have you made a Backup of ALL DATA FILES? If so; 	全データファイルのバックアップは済みましたか? 済みなら 
+Confirm end of Cycle Processing to be Run (Y/N) - [ ]	期末処理の実行を確認してください (Y/N)         - [ ]
+ok to proceed (Y/N) - [Y]	続行しますか (Y/N)  - [Y]
+Give password [****]	パスワード    [****]
+Do you wish to run Sales Ledger? (Y/N) - [ ]	売掛を処理しますか?        (Y/N) - [ ]
+Do you wish to run Purchase Ledger? (Y/N) - [ ]	買掛を処理しますか?           (Y/N) - [ ]
+Is this the end of a quarter (Y/N) - [ ]	四半期末ですか?        (Y/N) - [ ]
+Phase 1  - Sales	フェーズ 1 - 売掛
+Phase 1  - Purchase	フェーズ 1 - 買掛
+Please wait.	お待ちください
+Please Wait	お待ちください
+End of year; VALUE File reset	年度末; 分析金額ファイルを初期化しました
+XL001 Aborting. Press return   	XL001 中止します。Enter を押下
+XL101 WARNING..... Proofed but NOT posted invoices	XL101 警告..... 検証済みで未転記の請求書があります
+XL102 !!ERROR..... Proofed but NOT posted payments	XL102 !!エラー..... 検証済みで未転記の入金があります
+XL103 !!ERROR.... Sales Analysis NOT run	XL103 !!エラー.... 売上分析が未実行です
+XL104 I'm confused: You appear to have rejected the run, try again	XL104 処理対象の台帳が選択されていません。やり直してください
