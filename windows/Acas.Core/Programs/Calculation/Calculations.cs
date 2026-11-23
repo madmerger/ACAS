@@ -1,6 +1,6 @@
 using System.Globalization;
 
-namespace Acas.Core;
+namespace Acas.Core.Programs.Calculation;
 
 public static class Calculations
 {
@@ -21,12 +21,16 @@ public static class Calculations
     {
         if (kind == "drv09")
             return $"検査数字＝{line[7]}　判定：{(line[9] == 'Y' ? "有効" : "無効")}";
+        if (kind == "drv04")
+        {
+            string day = line.Substring(11, 10).Trim();
+            return day == "0" ? "日付不正（通算日＝0）" :
+                $"日付有効　通算日＝{day}　正規化＝{line[22..].Trim()}";
+        }
         var fields = line.Split('|', 3);
         string result = fields[1].Trim();
         return kind switch
         {
-            "drv04" when result == "0" => "日付不正（通算日＝0）",
-            "drv04" => $"日付有効　通算日＝{result}　正規化＝{fields[2].Trim()}",
             "drvvat" => $"消費税額＝{decimal.Parse(result, Invariant).ToString("0.00", Invariant)}",
             "drvage" => $"経過日数区分＝{int.Parse(result, Invariant)}日",
             "drvavg" => $"平均原価＝{result}",
@@ -68,7 +72,8 @@ public static class Calculations
 
     private static decimal Number(string input, int integral, int fractional, bool signed = false)
     {
-        decimal.TryParse(input.Trim(), NumberStyles.Number, Invariant, out decimal value);
+        decimal value = decimal.Parse(input, NumberStyles.AllowLeadingWhite | NumberStyles.AllowTrailingWhite |
+            NumberStyles.AllowLeadingSign | NumberStyles.AllowDecimalPoint, Invariant);
         decimal modulus = integral switch { 2 => 100m, 6 => 1000000m, 7 => 10000000m, 8 => 100000000m, _ => 1m };
         decimal scale = fractional == 2 ? 100m : 1m;
         decimal magnitude = Math.Truncate(Math.Abs(value) % modulus * scale) / scale;

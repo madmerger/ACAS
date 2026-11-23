@@ -100,9 +100,22 @@ internal static partial class JapaneseAudit
             if (desktop.Confirmation() is { } dialog)
             {
                 Inspect(route, dialog.AsWindow());
-                (dialog.FindFirstDescendant(c => c.ByAutomationId("ConfirmationCancel")) ??
-                    throw new InvalidOperationException("確認画面の取消操作が見つかりません。")).AsButton().Invoke();
+                bool opensReport = actions.LastOrDefault() == "CreateSettingsReport";
+                string buttonId = opensReport ? "ConfirmationConfirm" : "ConfirmationCancel";
+                (dialog.FindFirstDescendant(c => c.ByAutomationId(buttonId)) ??
+                    throw new InvalidOperationException("確認画面の操作が見つかりません。")).AsButton().Invoke();
                 for (int attempt = 0; attempt < 12 && desktop.Confirmation() is not null; attempt++) Thread.Sleep(50);
+                if (opensReport)
+                {
+                    var document = desktop.Find("ReportDocument");
+                    if (!document.Patterns.Text.IsSupported ||
+                        string.IsNullOrWhiteSpace(document.Patterns.Text.Pattern.DocumentRange.GetText(-1)))
+                        gaps.Add($"{route}：確認後の帳票本文を取得できません。");
+                    else
+                        Inspect(route + " / 確認後の帳票", desktop.Window);
+                }
+                else
+                    gaps.Add($"{route}：確認後の画面は未監査です（取消）。");
                 return;
             }
             Inspect(route, desktop.Window);
