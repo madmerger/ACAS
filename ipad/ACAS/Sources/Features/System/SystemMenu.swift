@@ -31,7 +31,7 @@ private struct CompanyForm: View {
             TextField(String(localized: "system.company.name", table: "System"), text: $name)
                 .focused($editingName)
                 .accessibilityIdentifier("system.company.name")
-            Button(String(localized: "action.save", table: "System")) {
+            Button(String(localized: "system.action.save", table: "System")) {
                 saved = false
                 do {
                     try CompanySetup(workspace.context).save(name: name)
@@ -73,7 +73,7 @@ private struct CheckDigitForm: View {
                 .textInputAutocapitalization(.characters)
                 .autocorrectionDisabled()
                 .accessibilityIdentifier("calculation.code")
-            Button(String(localized: "action.calculate", table: "CALC")) {
+            Button(String(localized: "calculation.action.calculate", table: "CALC")) {
                 editingCode = false
                 check = Maps09.checkDigit(code)
                 calculated = true
