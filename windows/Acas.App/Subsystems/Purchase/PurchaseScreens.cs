@@ -93,9 +93,11 @@ internal sealed partial class PurchaseScreens : ISubsystemScreens
         });
     }
 
+    public bool TryClose() => _ledger.FlushPostingFlags();
+
     private Screen CloseLedger()
     {
-        if (!_ledger.FlushPostingFlags()) return Notice(MainTitle, "買掛元帳の終了状態を保存できませんでした。");
+        if (!TryClose()) return Notice(MainTitle, "買掛元帳の終了状態を保存できませんでした。");
         _opened = false;
         return Notice(MainTitle, "買掛元帳を閉じました。");
     }

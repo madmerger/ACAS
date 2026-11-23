@@ -29,10 +29,21 @@ public partial class MainWindow : Window
         TrackTemplateIds(Navigation);
         TrackTemplateIds(ScreenContent);
 
-        foreach (var item in SubsystemScreens.Load(typeof(MainWindow).Assembly, _database)
+        var subsystems = new List<ISubsystemScreens>();
+        foreach (var item in SubsystemScreens.Load(typeof(MainWindow).Assembly, _database, subsystems.Add)
             .Append(new NavigationItem("MenuReports", "帳票", Open: OpenReports)))
             Navigation.Items.Add(CreateMenuItem(item));
         ShowScreen(new InformationScreen("業務メニュー", "左側のメニューから操作を選択してください。"));
+        Closing += (_, e) =>
+        {
+            foreach (var subsystem in subsystems)
+                if (!subsystem.TryClose())
+                {
+                    e.Cancel = true;
+                    MessageBox.Show(this, "元帳の終了状態を保存できませんでした。", "会計管理");
+                    break;
+                }
+        };
     }
 
     private static T Identify<T>(T control, string id, string? name = null) where T : FrameworkElement
