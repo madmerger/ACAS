@@ -157,11 +157,14 @@ final class SalesReachFlows: XCTestCase {
     }
 
     func testSL241() throws {
-        try reach("SL-241", through: ["section.system"], title: "システム設定", verdict: nil) { app in
+        try reach("SL-241", through: ["sales.exit"], title: "メインメニュー") { app in
             for section in ["general", "sales", "purchases", "stock", "system"] {
                 XCTAssertTrue(app.buttons["section." + section].exists)
             }
             XCTAssertFalse(app.buttons["sales.customers"].exists)
+            XCTAssertTrue(app.buttons["system.company"].exists)
+            XCTAssertEqual(app.staticTexts["sales.exit.noBackup"].label,
+                           "バックアップスクリプト（acasbkup.sh）がないため、バックアップは行われませんでした")
         }
     }
 

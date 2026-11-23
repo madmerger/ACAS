@@ -3,6 +3,7 @@ import SwiftUI
 
 struct SalesMenu: View {
     let workspace: Workspace
+    let onExit: () -> Void
     @State private var entered = false
 
     var body: some View {
@@ -104,7 +105,19 @@ struct SalesMenu: View {
                 }
                 .accessibilityIdentifier("sales.customer.turnover")
             }
+            Section {
+                Button(slText("sales.exit.title"), action: onExit)
+                    .accessibilityIdentifier("sales.exit")
+            }
         }
+    }
+}
+
+struct SalesExitNotice: View {
+    var body: some View {
+        Label(slText("sales.exit.noBackup"), systemImage: "exclamationmark.triangle")
+            .padding()
+            .accessibilityIdentifier("sales.exit.noBackup")
     }
 }
 
