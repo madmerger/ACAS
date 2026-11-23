@@ -15,6 +15,7 @@ final class CompanySettingsTests: XCTestCase {
         var settings = setup.settings
         for (key, input, expected) in [("p-c", "p", "P"), ("p-c-level", "r", "R"),
                                        ("stk-period-cur", "q", "Q"), ("stk-period-dat", "y", "Y"),
+                                       ("sl-vat-printed", "y", "Y"), ("sl-vat-printed", "n", "N"),
                                        ("usera", "Business", "Business")] {
             try settings.setText(input, for: key)
             XCTAssertEqual(settings.text(key), expected)
