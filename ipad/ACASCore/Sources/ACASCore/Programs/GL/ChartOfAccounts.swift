@@ -8,6 +8,8 @@ public struct LedgerAccount: Identifiable {
     public let placement: String
     public let level: Int
     public let balance: Int64
+    public let previousBalance: Int64
+    public let quarterBalances: [Int64]
 
     public var id: String { code + branch }
 
@@ -19,6 +21,8 @@ public struct LedgerAccount: Identifiable {
         placement = Cobol.rtrim(record.str("placement"))
         level = Int(record.int("level"))
         balance = record.int("balance")
+        previousBalance = record.int("last")
+        quarterBalances = (1...4).map { record.int("q\($0)") }
     }
 }
 
@@ -28,9 +32,9 @@ public struct ChartOfAccounts {
         case missingHeader, missingAccount, duplicate, nonzeroBalance
     }
 
-    private static let path = "ledgers/acas/ledger.dat"
+    static let path = "ledgers/acas/ledger.dat"
     private static let terminator = "99999999"
-    private static let layout: Layout = {
+    static let layout: Layout = {
         let money = FieldType.comp3(digits: 10, scale: 2, signed: true)
         return Layout("ledger-record", [
             ("code", .n9(digits: 6, scale: 0, signed: false)),
@@ -52,6 +56,11 @@ public struct ChartOfAccounts {
 
     public var accounts: [LedgerAccount] {
         file.allRecords().map(LedgerAccount.init).filter { $0.id != Self.terminator }
+    }
+
+    public func accounts(startingAt code: Int, branch: Int = 0) -> [LedgerAccount] {
+        let key = Cobol.z(code, 6) + Cobol.z(branch, 2)
+        return accounts.filter { $0.id >= key && !$0.code.hasPrefix("9999") }
     }
 
     public func account(code: String, branch: String = "00") -> LedgerAccount? {

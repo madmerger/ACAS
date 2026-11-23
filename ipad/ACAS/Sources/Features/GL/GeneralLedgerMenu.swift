@@ -8,6 +8,7 @@ func ledgerText(_ key: String) -> String {
 struct GeneralLedgerMenu: View {
     let workspace: Workspace
     @State private var opened = false
+    @State private var finalSetupUnavailable = false
 
     var body: some View {
         if opened {
@@ -18,15 +19,39 @@ struct GeneralLedgerMenu: View {
                     .accessibilityIdentifier("gl.accounts")
                 NavigationLink(ledgerText("defaults")) { LedgerDefaultsMenu(workspace: workspace) }
                     .accessibilityIdentifier("gl.defaults")
+                Button(ledgerText("final-setup")) {
+                    finalSetupUnavailable = true
+                    workspace.completed("gl-final-setup-unavailable")
+                }
+                .accessibilityIdentifier("gl.final-setup")
+                if finalSetupUnavailable {
+                    Text("menu.pending").accessibilityIdentifier("gl.final-setup.unavailable")
+                }
                 NavigationLink(ledgerText("batches")) { LedgerBatchMenu(workspace: workspace) }
                     .accessibilityIdentifier("gl.batches")
+                NavigationLink(ledgerText("batch-proof.title")) { LedgerBatchMaintenanceMenu(workspace: workspace) }
+                    .accessibilityIdentifier("gl.batches.maintenance")
                 NavigationLink(ledgerText("batch-status")) { LedgerBatchStatusMenu(workspace: workspace) }
                     .accessibilityIdentifier("gl.batch-status")
+                NavigationLink(ledgerText("posting")) { LedgerPostingForm(workspace: workspace) }
+                    .accessibilityIdentifier("gl.posting")
+                NavigationLink(ledgerText("cycle-close")) { LedgerCycleCloseForm(workspace: workspace) }
+                    .accessibilityIdentifier("gl.cycle-close")
+                NavigationLink(ledgerText("trial-balance")) { TrialBalanceMenu(workspace: workspace) }
+                    .accessibilityIdentifier("gl.trial-balance")
+                NavigationLink(ledgerText("financial-statements")) { FinancialStatementsForm(workspace: workspace) }
+                    .accessibilityIdentifier("gl.financial-statements")
+                NavigationLink(ledgerText("archive-sort.print")) { LedgerArchiveSortForm(workspace: workspace) }
+                    .accessibilityIdentifier("gl.archive-sort")
+                Button(ledgerText("final-print")) {}
+                    .disabled(true)
+                    .accessibilityIdentifier("gl.final-print")
                 NavigationLink("section.system") { SystemMenu(workspace: workspace) }
                     .accessibilityIdentifier("gl.company-settings")
                 Button(ledgerText("close-ledger")) { opened = false }
                     .accessibilityIdentifier("gl.close-ledger")
             }
+            .onAppear { workspace.completed("gl-final-print-unavailable") }
         } else {
             LedgerBusinessDate(workspace: workspace) { opened = true }
         }
@@ -83,6 +108,8 @@ private struct LedgerAccountsMenu: View {
     let workspace: Workspace
     @State private var accounts: [LedgerAccount] = []
     @State private var selected: LedgerAccount?
+    @State private var reportStatus: String?
+    @State private var reportBytes: [UInt8]?
     @State private var lookupCode = ""
     @State private var lookupBranch = ""
     @State private var lookupMissing = false
@@ -121,22 +148,22 @@ private struct LedgerAccountsMenu: View {
                     }
                 }
                 .navigationTitle(ledgerText("account-edit"))
+                .onAppear { workspace.completed("gl-account-edit-menu") }
                 .sheet(item: $selected, onDismiss: reload) { account in
                     NavigationStack { LedgerAccountEditor(workspace: workspace, initial: account) }
                 }
             }
             .accessibilityIdentifier("gl.accounts.edit")
             NavigationLink(ledgerText("account-list")) {
-                Table(accounts) {
-                    TableColumn(ledgerText("account-code"), value: \.code)
-                    TableColumn(ledgerText("account-name"), value: \.name)
-                    TableColumn(ledgerText("account-balance")) { account in
-                        Text(Cobol.rtrim(Pic.edit("-(8)9.99", value: account.balance, scale: 2)))
-                    }
-                }
-                .navigationTitle(ledgerText("account-list"))
+                LedgerAccountInquiry(workspace: workspace)
             }
             .accessibilityIdentifier("gl.accounts.list")
+            Button(ledgerText("account-print"), action: printReport)
+                .accessibilityIdentifier("gl.accounts.print")
+            if let reportStatus {
+                Text(reportStatus).accessibilityIdentifier("gl.accounts.print.result")
+            }
+            if let reportBytes { LedgerReportShare(bytes: reportBytes) }
         }
         .navigationTitle(ledgerText("accounts"))
         .onAppear {
@@ -146,6 +173,18 @@ private struct LedgerAccountsMenu: View {
     }
 
     private func reload() { accounts = ChartOfAccounts(workspace.context).accounts }
+
+    private func printReport() {
+        reportBytes = nil
+        do {
+            try ChartOfAccountsReport(workspace.context).generate()
+            reportBytes = workspace.context.store.readRaw(ChartOfAccountsReport.path)
+            reportStatus = ledgerText("account-printed")
+            workspace.completed("gl-chart-print")
+        } catch {
+            reportStatus = ledgerText("account-print-failed")
+        }
+    }
 
     private var usesBranches: Bool {
         ["P", "B"].contains(CompanySetup(workspace.context).settings.text("p-c"))
@@ -203,12 +242,14 @@ private struct LedgerAccountEditor: View {
                 .accessibilityIdentifier("gl.account.save")
             if initial != nil {
                 Button(ledgerText("account-delete"), role: .destructive) { deleteConfirm = true }
+                    .accessibilityIdentifier("gl.account.delete")
             }
             if let status { Text(status) }
         }
         .navigationTitle(ledgerText(initial == nil ? "account-add" : "account-edit"))
         .confirmationDialog(ledgerText("delete-confirm"), isPresented: $deleteConfirm) {
             Button(ledgerText("account-delete"), role: .destructive) { remove() }
+                .accessibilityIdentifier("gl.account.delete.confirm")
         }
         .onAppear {
             code = initial?.code ?? ""
@@ -230,6 +271,7 @@ private struct LedgerAccountEditor: View {
                 workspace.completed("gl-account-add")
             } else {
                 try chart.amend(code: code, branch: branch, name: name, type: type, placement: placement, level: level)
+                workspace.completed("gl-account-edit")
                 dismiss()
             }
         }
@@ -238,6 +280,7 @@ private struct LedgerAccountEditor: View {
     private func remove() {
         perform {
             try ChartOfAccounts(workspace.context).delete(code: code, branch: branch)
+            workspace.completed("gl-account-delete")
             dismiss()
         }
     }

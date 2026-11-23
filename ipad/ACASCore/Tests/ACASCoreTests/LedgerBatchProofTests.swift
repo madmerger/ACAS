@@ -1,0 +1,59 @@
+import ACASCore
+import XCTest
+
+final class LedgerBatchProofTests: XCTestCase {
+    func testProofRecordsTotalsAndEnablesPostingOnlyForMatchingBatch() throws {
+        let store = try FileStore()
+        let context = BusinessContext(store: store)
+        let setup = CompanySetup(context)
+        var settings = setup.settings
+        try settings.setText("TEST", for: "usera")
+        try settings.setNumber(1, for: "scycle")
+        try setup.save(settings)
+        let chart = ChartOfAccounts(context)
+        try chart.add(code: "300000", name: "BANK", type: 0, placement: "S", level: 1)
+        try chart.add(code: "400000", name: "EXPENSE", type: 0, placement: "S", level: 1)
+        try GeneralLedgerSetup(context).saveDefault(number: 1, account: "300000", transactionCode: "GL", tax: .noTax)
+        let date = DateComponents(year: 2026, month: 11, day: 23)
+        var draft = LedgerBatchDraft(cycle: 1, defaultNumber: 1, direction: .debit, date: date)
+        let memo = "Posting test 123456789012345678!"
+        let line = JournalLine(date: date, account: "400000", amount: 12_345, memo: memo)
+        let batches = LedgerBatches(context)
+        draft.gross = 12_345
+        try batches.add(draft, lines: [line])
+        draft.gross = 1
+        try batches.add(draft, lines: [line])
+        draft = LedgerBatchDraft(cycle: 2, defaultNumber: 1, direction: .debit, date: date)
+        try batches.add(draft, lines: [line])
+        let proof = LedgerBatchProof(context)
+        let posting = LedgerPosting(context)
+
+        let records = store.snapshot().filter { $0.key != CompanySetup.reportPath }
+        let allTransactions = try proof.printAllTransactions()
+        XCTAssertEqual(store.readRaw(CompanySetup.reportPath), allTransactions)
+        XCTAssertEqual(store.snapshot().filter { $0.key != CompanySetup.reportPath }, records)
+        let reportLines = String(decoding: allTransactions, as: UTF8.self).split(separator: "\n")
+        XCTAssertEqual(reportLines.filter { $0.contains("Batch -") }.count, 3)
+        XCTAssertEqual(reportLines.filter { $0.contains("Posting test") }.count, 3)
+        XCTAssertFalse(reportLines.contains { $0.contains("Batch Verified") })
+
+        XCTAssertThrowsError(try posting.postCurrentCycle())
+        let one = try XCTUnwrap(proof.generate(batch: 1).first)
+        XCTAssertTrue(one.verified)
+        XCTAssertEqual(store.readRaw(CompanySetup.reportPath), one.bytes)
+        XCTAssertTrue(String(decoding: one.bytes, as: UTF8.self).contains("* Batch Verified Ok *"))
+        let detail = try XCTUnwrap(one.bytes.split(separator: 10).dropFirst(6).first)
+        XCTAssertEqual(detail.count, 132)
+        XCTAssertEqual(Array(detail.dropFirst(102)), Array(memo.utf8.prefix(30)))
+        let all = try proof.generate()
+        XCTAssertEqual(all.map(\.id), [1, 2])
+        XCTAssertEqual(all.map(\.verified), [true, false])
+        XCTAssertEqual(batches.all.map(\.closed), [true, false, false])
+        XCTAssertThrowsError(try posting.postCurrentCycle())
+        try batches.amendHeader(number: 2, cycle: 1, items: 1, gross: 12_345, tax: 0, description: "訂正")
+        XCTAssertEqual(batches.all[1].description, "訂正")
+        XCTAssertTrue(try XCTUnwrap(proof.generate(batch: 2).first).verified)
+        XCTAssertEqual(try posting.postCurrentCycle().batches, 2)
+        XCTAssertThrowsError(try batches.amendHeader(number: 2, cycle: 1, items: 1, gross: 1, tax: 0, description: ""))
+    }
+}
