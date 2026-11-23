@@ -23,7 +23,8 @@ public sealed partial class PurchaseLedger
         {
             if (!InvoicesPending) return false;
             var system = System();
-            if (system.S("Irs-Instead") == "Y") return false;
+            bool irs = system.S("Irs-Instead") == "Y";
+            bool general = GeneralLedgerEnabled;
             var pending = Invoices().Where(invoice => !invoice.Posted).ToArray();
             if (pending.Length == 0 || pending.Any(invoice => invoice.Type is < 1 or > 3)) return false;
             int quarter = system.I("Current-Quarter");
@@ -34,9 +35,8 @@ public sealed partial class PurchaseLedger
             if (!HasInvalidAnalysisLength && !AccumulatePurchaseAnalysis(pending)) return false;
             foreach (var batch in pending.Chunk(99))
             {
-                var general = GeneralLedgerEnabled;
-                if (general && (nextBatch < 1 || nextBatch > 32767 || nextPosting + batch.Length > 32767)) return false;
-                if (general && !WriteBatch(system, batch, nextBatch, nextPosting)) return false;
+                if (general && (nextBatch < 1 || nextBatch >= 32767 || (!irs && nextPosting + batch.Length > 32767))) return false;
+                if (general && !WriteBatch(system, batch, nextBatch, nextPosting, irs)) return false;
                 foreach (var invoice in batch)
                 {
                     var supplier = PostingSupplier(invoice.Supplier, out bool createSupplier);
@@ -55,15 +55,15 @@ public sealed partial class PurchaseLedger
                 }
                 if (general)
                 {
-                    nextPosting += batch.Length;
+                    if (!irs) nextPosting += batch.Length;
                     nextBatch++;
                 }
             }
 
-            if (GeneralLedgerEnabled)
+            if (general)
             {
                 system.SetN("Next-Batch", nextBatch);
-                system.SetN("Postings", nextPosting);
+                if (!irs) system.SetN("Postings", nextPosting);
             }
             system.SetN("P-Flag-I", 2);
             system.SetN("P-Flag-A", 1);
@@ -166,7 +166,7 @@ public sealed partial class PurchaseLedger
 
     private static decimal OpenItemGross(Rec item) => item.N("net") + item.N("carriage") + item.N("tax") + item.N("carriageTax");
 
-    private bool WriteBatch(Rec system, PurchaseInvoice[] invoices, int batch, int start)
+    private bool WriteBatch(Rec system, PurchaseInvoice[] invoices, int batch, int start, bool irs)
     {
         decimal net = 0, tax = 0;
         for (int i = 0; i < invoices.Length; i++)
@@ -188,7 +188,11 @@ public sealed partial class PurchaseLedger
             posting.SetN("vat-ac", system.N("Vat-Ac"));
             posting.Set("post-vat-side", "DR");
             posting.SetN("vat-amount", sign * (invoice.Tax + invoice.CarriageTax));
-            if (!database.Write(PostingFile, (start + i).ToString("00000000", CultureInfo.InvariantCulture), posting.B)) return false;
+            if (irs)
+            {
+                if (!WriteIrsInvoice(posting)) return false;
+            }
+            else if (!database.Write(PostingFile, (start + i).ToString("00000000", CultureInfo.InvariantCulture), posting.B)) return false;
         }
         var header = Layouts.Batch.New();
         header.SetN("ledger", 2);
@@ -206,5 +210,28 @@ public sealed partial class PurchaseLedger
         header.Set("batch-def-vat", "I");
         header.SetN("batch-start", start);
         return database.Write(BatchFile, "2" + batch.ToString("00000", CultureInfo.InvariantCulture), header.B);
+    }
+
+    private bool WriteIrsInvoice(Rec posting)
+    {
+        var record = IrsPosting.New();
+        record.SetN("batch", posting.N("batch"));
+        record.SetN("number", posting.N("post-number"));
+        record.Set("code", posting.S("post-code"));
+        record.Set("date", posting.S("post-date"));
+        record.SetN("debit", posting.N("post-dr"));
+        record.SetN("credit", posting.N("post-cr"));
+        SetIrsLeadingAmount(record, "amount", posting.N("post-amount"));
+        record.Set("legend", posting.S("post-legend"));
+        record.SetN("taxAccount", 31);
+        record.Set("taxSide", "DR");
+        SetIrsLeadingAmount(record, "taxAmount", posting.N("vat-amount"));
+        return database.Write(IrsPostingFile, record.S("batch") + record.S("number"), record.B);
+    }
+
+    private static void SetIrsLeadingAmount(Rec record, string field, decimal value)
+    {
+        record.SetN(field, Math.Abs(value));
+        if (value < 0) record.B[IrsPosting.F[field].Off] += 0x40;
     }
 }

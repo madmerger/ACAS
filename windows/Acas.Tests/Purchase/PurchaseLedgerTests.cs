@@ -247,6 +247,31 @@ public sealed class PurchaseLedgerTests
     }
 
     [Fact]
+    public void アイアールエス仕入転記は固定長仕訳とバッチだけを作る()
+    {
+        using var db = Fixture("pl-invoice");
+        var ledger = new PurchaseLedger(db);
+        var system = ledger.System();
+        system.Set("Irs-Instead", "Y");
+        system.SetN("BL-Purch-Ac", 12345);
+        system.SetN("P-Creditors", 23456);
+        Assert.True(ledger.SaveSystem(system));
+        int postings = system.I("Postings");
+        int batch = system.I("Next-Batch");
+        int prior = db.Count("ledgers/acas/posting.dat");
+        Assert.Single(ledger.PostInvoices()!);
+        var (key, bytes) = Assert.Single(db.Scan("ledgers/acas/postings2irs.dat"));
+        string expected = $"{batch:00000}00001PL23/11/261234523456000010000" +
+            "1 : ALPHA SUPPLIER".PadRight(32) + "31DR000002000";
+        Assert.Equal(expected[..10], key);
+        Assert.Equal(System.Text.Encoding.ASCII.GetBytes(expected), bytes);
+        Assert.NotNull(db.Read("ledgers/acas/batch.dat", $"2{batch:00000}"));
+        Assert.Equal(batch + 1, ledger.System().I("Next-Batch"));
+        Assert.Equal(postings, ledger.System().I("Postings"));
+        Assert.Equal(prior, db.Count("ledgers/acas/posting.dat"));
+    }
+
+    [Fact]
     public void アイアールエスには専用の固定長支払仕訳を出力する()
     {
         using var db = Fixture("pl-invoice");
