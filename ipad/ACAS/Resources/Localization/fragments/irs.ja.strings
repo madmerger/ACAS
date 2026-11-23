@@ -19,7 +19,7 @@
 "irs.menu_footer" = "F1～F10 = 選択肢 1～A;  Return で確定;  Escape で終了";
 "irs.setup_title" = "システム設定";
 "irs.setup_date" = "日付 - {";
-"irs.setup_password" = "暗証     - {";
+"irs.setup_password" = "暗証      - {";
 "irs.new" = "新規";
 "irs.setup_user" = "利用 - [";
 "irs.setup_vat" = "消費税率  - [";

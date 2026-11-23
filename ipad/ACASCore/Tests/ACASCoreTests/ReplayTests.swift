@@ -105,7 +105,7 @@ final class ReplayTests: XCTestCase {
                     func cols(_ line: String) -> [String] {
                         var out: [String] = [], col = 0
                         for ch in line {
-                            if ch == "[" || ch == "]" { out.append("\(ch)\(col)") }
+                            if "[]{}".contains(ch) { out.append("\(ch)\(col)") }
                             col += CellWidth.of(ch)
                         }
                         return out

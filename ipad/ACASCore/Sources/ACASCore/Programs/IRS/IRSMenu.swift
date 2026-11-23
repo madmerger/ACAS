@@ -185,7 +185,13 @@ enum IRSMenu {
         for at in [638, 663, 852, 952, 1052, 1152, 1252, 1442, 1542, 1724, 2053] { c.display("]", at: at, color: 2) }
         for at in [1027, 1127, 1227] { c.display("[", at: at, color: 2) }
         c.display("- [", at: 1720, color: 2)
-        c.display(String(Array(st.exitToSystem)[2..<12]), at: 1726, color: 2)
+        // レガシーは "to Linux" の 3 桁目以降 (OS 名) を表示する。日本語は「Linux へ」から OS 名を取り出す
+        var osName = String(Array(st.exitToSystem)[2..<12])
+        let trimmed = Cobol.rtrim(st.exitToSystem)
+        if !trimmed.hasPrefix("to "), trimmed.hasSuffix("へ") {
+            osName = " " + Cobol.rtrim(String(trimmed.dropLast()))
+        }
+        c.display(osName, at: 1726, color: 2)
         c.display(s.t("irs.setup_footer"), at: 2301, color: 7, highlight: true)
         let fUser = ScreenField(line: 6, col: 14, size: 24, value: sys.str("suser"), color: 6)
         let fVat = ScreenField(line: 6, col: 59, size: 4, kind: .numeric, pic: "99v99", value: sys.str("vat"), color: 6)
