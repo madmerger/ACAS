@@ -2,6 +2,20 @@ import XCTest
 
 final class PeriodClosingFlows: XCTestCase {
     @MainActor
+    func testPurchaseInvoiceTransfer() throws {
+        let id = "INT-405"
+        let app = try launch(id)
+        for identifier in ["section.purchases", "integration.purchasePosting", "integration.reviewPurchasePosting"] {
+            tap(app, identifier)
+        }
+        tap(app, "integration.confirmPurchasePosting")
+        let result = app.staticTexts["integration.purchaseResult"]
+        XCTAssertTrue(result.waitForExistence(timeout: 5))
+        XCTAssertTrue(result.label.contains("200001"))
+        finish(app, id)
+    }
+
+    @MainActor
     func testSalesPeriodConfirmation() throws {
         try verifyConfirmation("INT-402", section: "section.sales", route: "integration.salesPeriod")
     }
@@ -13,6 +27,16 @@ final class PeriodClosingFlows: XCTestCase {
 
     @MainActor
     private func verifyConfirmation(_ id: String, section: String, route: String) throws {
+        let app = try launch(id)
+        for identifier in [section, route, "integration.confirmBackup"] {
+            tap(app, identifier)
+        }
+        XCTAssertTrue(app.secureTextFields["integration.password"].waitForExistence(timeout: 5))
+        finish(app, id)
+    }
+
+    @MainActor
+    private func launch(_ id: String) throws -> XCUIApplication {
         continueAfterFailure = false
         let url = try XCTUnwrap(Bundle(for: Self.self).url(forResource: id, withExtension: "json", subdirectory: "fixtures"))
         let fixture = try Data(contentsOf: url)
@@ -23,12 +47,18 @@ final class PeriodClosingFlows: XCTestCase {
         app.launch()
         XCTAssertTrue(app.staticTexts[id].waitForExistence(timeout: 10))
 
-        for identifier in [section, route, "integration.confirmBackup"] {
-            let element = app.descendants(matching: .any).matching(identifier: identifier).firstMatch
-            XCTAssertTrue(element.waitForExistence(timeout: 5), identifier)
-            element.tap()
-        }
-        XCTAssertTrue(app.secureTextFields["integration.password"].waitForExistence(timeout: 5))
+        return app
+    }
+
+    @MainActor
+    private func tap(_ app: XCUIApplication, _ id: String) {
+        let element = app.descendants(matching: .any).matching(identifier: id).firstMatch
+        XCTAssertTrue(element.waitForExistence(timeout: 5), id)
+        element.tap()
+    }
+
+    @MainActor
+    private func finish(_ app: XCUIApplication, _ id: String) {
         XCTAssertTrue(app.staticTexts["case.verdict.match"].waitForExistence(timeout: 5))
         let screenshot = XCTAttachment(screenshot: app.screenshot())
         screenshot.name = id

@@ -26,6 +26,14 @@ public struct PurchaseTransfer {
     private let directory = "ledgers/acas/"
     private var store: FileStore { context.store }
 
+    private struct PostedInvoice {
+        let invoice: Invoice
+        let date: Int
+        let supplierCode: [UInt8]
+        let oldBalance: Int64
+        let newBalance: Int64
+    }
+
     public init(_ context: BusinessContext) { self.context = context }
 
     public func postPending() throws -> [String] {
@@ -37,7 +45,7 @@ public struct PurchaseTransfer {
         let quarter = config.int("current-quarter")
         guard (1...4).contains(quarter), config.int("level-1") == 1 else { throw Failure.unconfigured }
         let quarterField = "turnover-q\(quarter)"
-        var invoices: [Invoice] = []
+        var posted: [PostedInvoice] = []
         var headers: [([UInt8], [UInt8])] = []
         var suppliers: [[UInt8]: Record] = [:]
         for (key, raw) in store.all(invoicePath) where key.count == 9 && key.last == 0 {
@@ -54,24 +62,84 @@ public struct PurchaseTransfer {
             let activity = supplier.int("activety")
             let nextActivity = activity + 1
             guard nextActivity > 0, nextActivity <= Int64(Int32.max) else { throw Failure.invalidInvoice }
+            let oldBalance = supplier.int("current") - supplier.int("unapplied")
             let current = supplier.int("current") + net + tax
             supplier.setInt("activety", nextActivity)
-            supplier.setInt("average", (activity * supplier.int("average") + goods) / nextActivity)
+            let priorTotal = Decimal(activity) * Decimal(supplier.int("average"))
+            let wholeTotal = NSDecimalNumber(decimal: priorTotal + Decimal(goods) / 100).int64Value
+            supplier.setInt("average", wholeTotal / nextActivity)
             supplier.setInt("last-inv", invoice.int("date"))
             supplier.setInt(quarterField, supplier.int(quarterField) + goods)
             supplier.setInt("current", max(0, current))
             if current < 0 { supplier.setInt("unapplied", supplier.int("unapplied") - current) }
-            supplier.setInt("status", 1)
+            if supplier.int("status") == 0 { supplier.setInt("status", 1) }
             suppliers[supplierKey] = supplier
-            invoices.append(Invoice(number: Int(invoice.int("invoice")), supplier: Cobol.rtrim(supplier.str("name")), net: net, tax: tax))
+            let entry = Invoice(number: Int(invoice.int("invoice")), supplier: Cobol.rtrim(supplier.str("name")), net: net, tax: tax)
+            posted.append(PostedInvoice(invoice: entry, date: Int(invoice.int("date")), supplierCode: supplierKey,
+                                        oldBalance: oldBalance, newBalance: supplier.int("current") - supplier.int("unapplied")))
             invoice["status"] = "z"
             invoice["update"] = "z"
             headers.append((key, invoice.bytes + raw.dropFirst(invoice.bytes.count)))
         }
-        let batches = try write(invoices, processingDate: context.now())
+        let date = context.now()
+        let batches = try write(posted.map(\.invoice), processingDate: date)
         for (key, bytes) in headers { store.rewrite(invoicePath, key: key, data: bytes) }
         for (key, supplier) in suppliers { store.rewrite(supplierPath, key: key, data: supplier.bytes) }
+        if !posted.isEmpty {
+            try store.writeRaw(directory + "prt-1", postingReport(posted, settings: config, date: date))
+        }
         return batches
+    }
+
+    private func postingReport(_ posted: [PostedInvoice], settings: Record, date: Date) -> [UInt8] {
+        let form = Int(settings.int("date-form"))
+        let pageLines = Int(settings.int("page-lines"))
+        let parts = context.calendar.dateComponents([.year, .month, .day], from: date)
+        let today = Maps04.integerOfDate(year: parts.year ?? 0, month: parts.month ?? 0, day: parts.day ?? 0)
+        func printedDate(_ day: Int) -> String { Maps04.format(Maps04.toDate(day), dateForm: form) }
+        func detailAmount(_ value: Int64) -> String { Pic.edit("z(6)9.99cr", value: value, scale: 2) }
+        func totalAmount(_ value: Int64) -> String { Pic.edit("z(7)9.99cr", value: value, scale: 2) }
+        func total(_ title: String, _ net: Int64, _ tax: Int64) -> [UInt8] {
+            let amounts = totalAmount(net) + totalAmount(tax) + totalAmount(net + tax)
+            return SJIS.encode(String(repeating: " ", count: 11) + Cobol.x("Total  Posted", 14)
+                + Cobol.x(title, 18) + amounts, size: 132)
+        }
+        var lines: [[UInt8]] = []
+        var page = 0
+        var lineCount = 0
+        func headings() {
+            page += 1
+            if page > 1 { lines.append([0x0c]) }
+            lines.append(SJIS.encode(Cobol.x("PL060 (3.01.07)", 54) + Cobol.x("Invoice Posting Report", 70)
+                + "Page " + Pic.edit("zz9", value: Int64(page), scale: 0), size: 132))
+            lines.append(SJIS.encode(settings.str("usera"), size: 122) + SJIS.encode(printedDate(today), size: 10))
+            lines.append([])
+            lines.append(SJIS.encode(" Number     Date    <------------Supplier------------>    Type  "
+                + " Old Balance  New Balance            Net         Vat       Gross", size: 132))
+            lines.append(SJIS.encode("", size: 132))
+            lineCount = 5
+        }
+        headings()
+        var net: Int64 = 0
+        var tax: Int64 = 0
+        for row in posted {
+            let entry = row.invoice
+            net += entry.net
+            tax += entry.tax
+            let supplier = row.supplierCode + [0x20, 0x20]
+            let identity = Pic.edit("z(7)9b", value: Int64(entry.number), scale: 0)
+                + Cobol.x(printedDate(row.date), 11)
+            let amounts = detailAmount(row.oldBalance) + detailAmount(row.newBalance)
+                + String(repeating: " ", count: 7) + detailAmount(entry.net)
+                + detailAmount(entry.tax) + detailAmount(entry.net + entry.tax)
+            let details = SJIS.encode(identity, size: 20) + supplier + SJIS.encode(entry.supplier, size: 25)
+            lines.append(details + SJIS.encode("  " + Cobol.x("Invoice", 9) + amounts, size: 132 - details.count))
+            lineCount += 1
+            if lineCount > pageLines { headings() }
+        }
+        if lineCount > pageLines - 7 { headings() }
+        lines += [[], [], total("Receipts", 0, 0), [], total("Invoices", net, tax), [], total("Credit Notes", 0, 0)]
+        return lines.flatMap { $0 + [0x0a] }
     }
 
     public func write(_ invoices: [Invoice], processingDate: Date,

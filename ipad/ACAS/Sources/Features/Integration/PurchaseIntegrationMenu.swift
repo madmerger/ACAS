@@ -30,6 +30,7 @@ private struct PurchasePostingView: View {
         .navigationTitle(intText("purchase.title"))
         .confirmationDialog(intText("purchase.confirm"), isPresented: $confirming, titleVisibility: .visible) {
             Button(intText("purchase.perform"), action: post)
+                .accessibilityIdentifier("integration.confirmPurchasePosting")
             Button(intText("action.cancel"), role: .cancel) {}
         }
     }
