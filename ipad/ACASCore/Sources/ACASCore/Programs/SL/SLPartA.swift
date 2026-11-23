@@ -5,5 +5,6 @@ enum SLPartA {
     static func register(_ s: Session) {
         s.programs["sales"] = SLASales.run
         s.programs["sl000"] = SLA000.run
+        s.programs["sl070"] = SLA070.run
     }
 }
