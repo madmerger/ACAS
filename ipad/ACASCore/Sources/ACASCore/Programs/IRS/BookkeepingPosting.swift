@@ -19,8 +19,8 @@ extension BookkeepingService {
         let selected = defaults[defaultSlot - 1]
         guard selected.account != 0 else { throw Failure.missingDefault }
         guard !selected.usesTax else { throw Failure.invalidInput }
-        let targetRecord = try accountRecord(account)
-        let defaultRecord = try accountRecord(selected.account)
+        let targetRecord = try postingAccount(account)
+        let defaultRecord = try postingAccount(selected.account)
         let receiving = (side == .debit) == (amount > 0)
         let debit = receiving ? selected.account : account
         let credit = receiving ? account : selected.account
@@ -50,9 +50,12 @@ extension BookkeepingService {
         target.setInt(field, (target.int(field) + abs(amount)) % 10_000_000_000)
         store.rewrite(accountsPath, key: target.raw("key"), data: target.bytes)
 
-        var balance = selected.account == account ? target : defaultRecord
-        balance.setInt("dr", selected.account != account && receiving ? abs(amount) : 0)
-        balance.setInt("cr", selected.account != account && !receiving ? abs(amount) : 0)
+        var balance = defaultRecord
+        let opening = balance.int("dr") - balance.int("cr")
+        let adjustment = selected.account == account ? 0 : (receiving ? abs(amount) : -abs(amount))
+        let closing = opening + adjustment
+        balance.setInt("dr", max(0, closing) % 10_000_000_000)
+        balance.setInt("cr", max(0, -closing) % 10_000_000_000)
         store.rewrite(accountsPath, key: balance.raw("key"), data: balance.bytes)
         system.setInt("next-post", Int64(sequence))
         system.setInt("save-sequ", 0)
@@ -62,21 +65,18 @@ extension BookkeepingService {
     public func recalculate() throws {
         let journal = postings
         guard store.exists(postPath) else { throw Failure.missingPosting }
+        var debits: [[UInt8]: Int64] = [:]
+        var credits: [[UInt8]: Int64] = [:]
         for entry in journal {
-            _ = try accountRecord(entry.debit)
-            _ = try accountRecord(entry.credit)
+            debits[try postingAccount(entry.debit).raw("key"), default: 0] += entry.amount
+            credits[try postingAccount(entry.credit).raw("key"), default: 0] += entry.amount
         }
-        var debits: [Int: Int64] = [:]
-        var credits: [Int: Int64] = [:]
-        for entry in journal {
-            debits[entry.debit, default: 0] += entry.amount
-            credits[entry.credit, default: 0] += entry.amount
-        }
-        for entry in accounts where entry.child == 0 {
-            var record = try accountRecord(entry.code)
-            record.setInt("dr", debits[entry.code, default: 0] % 10_000_000_000)
-            record.setInt("cr", credits[entry.code, default: 0] % 10_000_000_000)
-            store.rewrite(accountsPath, key: record.raw("key"), data: record.bytes)
+        for entry in accounts {
+            var record = try accountRecord(entry.code, entry.child)
+            let key = record.raw("key")
+            record.setInt("dr", debits[key, default: 0] % 10_000_000_000)
+            record.setInt("cr", credits[key, default: 0] % 10_000_000_000)
+            store.rewrite(accountsPath, key: key, data: record.bytes)
         }
     }
 }

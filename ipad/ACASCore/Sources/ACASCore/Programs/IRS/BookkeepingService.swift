@@ -133,6 +133,13 @@ public struct BookkeepingService {
         return Record(BookkeepingRecords.nlLayout, bytes: bytes)
     }
 
+    func postingAccount(_ code: Int) throws -> Record {
+        let row = try accountRecord(code)
+        let resolved = row.str("type") == "S" ? try accountRecord(Int(row.int("pointer")), code) : row
+        guard resolved.str("type") == "O" else { throw Failure.missingAccount }
+        return resolved
+    }
+
     public var accounts: [Account] {
         store.all(accountsPath).compactMap {
             let row = Record(BookkeepingRecords.nlLayout, bytes: $0.data)
