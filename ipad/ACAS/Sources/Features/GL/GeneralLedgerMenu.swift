@@ -8,6 +8,7 @@ func ledgerText(_ key: String) -> String {
 struct GeneralLedgerMenu: View {
     let workspace: Workspace
     @State private var opened = false
+    @State private var finalSetupUnavailable = false
 
     var body: some View {
         if opened {
@@ -18,6 +19,14 @@ struct GeneralLedgerMenu: View {
                     .accessibilityIdentifier("gl.accounts")
                 NavigationLink(ledgerText("defaults")) { LedgerDefaultsMenu(workspace: workspace) }
                     .accessibilityIdentifier("gl.defaults")
+                Button(ledgerText("final-setup")) {
+                    finalSetupUnavailable = true
+                    workspace.completed("gl-final-setup-unavailable")
+                }
+                .accessibilityIdentifier("gl.final-setup")
+                if finalSetupUnavailable {
+                    Text("menu.pending").accessibilityIdentifier("gl.final-setup.unavailable")
+                }
                 NavigationLink(ledgerText("batches")) { LedgerBatchMenu(workspace: workspace) }
                     .accessibilityIdentifier("gl.batches")
                 NavigationLink(ledgerText("batch-proof.title")) { LedgerBatchMaintenanceMenu(workspace: workspace) }
@@ -32,11 +41,15 @@ struct GeneralLedgerMenu: View {
                     .accessibilityIdentifier("gl.trial-balance")
                 NavigationLink(ledgerText("financial-statements")) { FinancialStatementsForm(workspace: workspace) }
                     .accessibilityIdentifier("gl.financial-statements")
+                Button(ledgerText("final-print")) {}
+                    .disabled(true)
+                    .accessibilityIdentifier("gl.final-print")
                 NavigationLink("section.system") { SystemMenu(workspace: workspace) }
                     .accessibilityIdentifier("gl.company-settings")
                 Button(ledgerText("close-ledger")) { opened = false }
                     .accessibilityIdentifier("gl.close-ledger")
             }
+            .onAppear { workspace.completed("gl-final-print-unavailable") }
         } else {
             LedgerBusinessDate(workspace: workspace) { opened = true }
         }
