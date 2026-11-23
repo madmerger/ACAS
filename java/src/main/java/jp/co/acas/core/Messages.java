@@ -114,10 +114,10 @@ public final class Messages {
         return out.append(ja.substring(pj)).toString();
     }
     private static String chunk(String chunk) {
-        if (!HAS_WORD.matcher(chunk).find()) return chunk;
         String lead = chunk.substring(0, chunk.length() - chunk.stripLeading().length());
         String hit = lookup(norm(chunk));
         if (hit != null) return lead + hit;
+        if (!HAS_WORD.matcher(chunk).find()) return chunk;
         String s = chunk; boolean any = false;
         for (String[] p : PHRASES) {
             int i = s.indexOf(p[0]);
