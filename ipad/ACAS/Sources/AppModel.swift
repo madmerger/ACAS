@@ -35,8 +35,7 @@ final class AppModel: ObservableObject {
             guard let i = args.firstIndex(of: flag), i + 1 < args.count else { return nil }
             return args[i + 1]
         }
-        let preferred = Locale.preferredLanguages.first ?? "ja"
-        language = value("-acasLanguage").flatMap(L10n.Language.init(rawValue:)) ?? (preferred.hasPrefix("en") ? .en : .ja)
+        language = AppLanguage.code == "en" ? .en : .ja
         autoCase = value("-acasCase")
         autoSuite = value("-acasSuite")
         let url = Bundle.main.url(forResource: "cases", withExtension: "json", subdirectory: "Cases")
