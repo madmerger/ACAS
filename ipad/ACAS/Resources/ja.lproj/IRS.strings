@@ -121,6 +121,7 @@
 "bookkeeping.trialBalance.output" = "出力方法";
 "bookkeeping.trialBalance.display" = "画面表示";
 "bookkeeping.trialBalance.print" = "印刷";
+"bookkeeping.trialBalance.detailPrintIncludesZero" = "明細の帳票原本には、残高がゼロの科目も含まれます。";
 "bookkeeping.trialBalance.total" = "合計";
 "bookkeeping.recalculate.confirm" = "転記データから元帳を再計算しますか？";
 "bookkeeping.result.accountSaved" = "勘定科目を保存しました。";

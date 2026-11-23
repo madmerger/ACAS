@@ -312,6 +312,10 @@ private struct BookkeepingTrialBalanceForm: View {
             }
             .accessibilityIdentifier("irs.trialBalanceOutput")
             .accessibilityValue(option(printing, "print", "display"))
+            if summary == false, zeroBalances == false, printing == true {
+                Text(irsText("trialBalance.detailPrintIncludesZero"))
+                    .accessibilityIdentifier("irs.trialBalancePrintNote")
+            }
             if printing == false, summary != nil, zeroBalances != nil {
                 Button(irsText("trialBalance.display")) { showingBalance = true }
             }

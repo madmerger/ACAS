@@ -107,6 +107,7 @@ final class BookkeepingFlows: XCTestCase {
             tap(app, "irs.trialBalanceScope")
             tap(app, "明細")
             XCTAssertFalse(app.buttons["irs.exportReport"].exists)
+            XCTAssertTrue(app.staticTexts["irs.trialBalancePrintNote"].exists)
         }
     }
 
