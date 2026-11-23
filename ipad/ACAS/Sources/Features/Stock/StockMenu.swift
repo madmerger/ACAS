@@ -11,37 +11,37 @@ struct StockMenu: View {
 
     var body: some View {
         List {
-            Button("処理日を設定") {
+            Button(stockText("menu.date")) {
                 proposedDate = processingDate ?? stock.today
                 showDate = true
             }
             .accessibilityIdentifier("stock.date")
-            NavigationLink("在庫品目マスター管理") { master }
+            NavigationLink(stockText("menu.master")) { master }
                 .accessibilityIdentifier("stock.master")
-            NavigationLink("入出庫・発注記録") { movements }
+            NavigationLink(stockText("menu.movements")) { movements }
                 .accessibilityIdentifier("stock.movements")
-            NavigationLink("在庫帳票") { reports }
+            NavigationLink(stockText("menu.reports")) { reports }
                 .accessibilityIdentifier("stock.reports")
-            NavigationLink("在庫期間締め") { StockMaintenance(stock: stock, closing: true) }
+            NavigationLink(stockText("menu.closePeriod")) { StockMaintenance(stock: stock, closing: true) }
                 .accessibilityIdentifier("stock.closePeriod")
-            NavigationLink("在庫ファイル圧縮") { StockMaintenance(stock: stock, closing: false) }
+            NavigationLink(stockText("menu.rebuild")) { StockMaintenance(stock: stock, closing: false) }
                 .accessibilityIdentifier("stock.rebuild")
-            NavigationLink("共通設定") { SystemMenu(workspace: workspace) }
+            NavigationLink(stockText("menu.settings")) { SystemMenu(workspace: workspace) }
                 .accessibilityIdentifier("stock.settings")
         }
         .onAppear { if processingDate == nil { proposedDate = stock.today } }
         .sheet(isPresented: $showDate) {
             NavigationStack {
                 Form {
-                    DatePicker("処理日", selection: $proposedDate, displayedComponents: .date)
-                    Button("確定") {
+                    DatePicker(stockText("field.date"), selection: $proposedDate, displayedComponents: .date)
+                    Button(stockText("action.commit")) {
                         processingDate = proposedDate
                         showDate = false
                         workspace.completed("stock.date")
                     }
                     .accessibilityIdentifier("stock.confirmDate")
                 }
-                .navigationTitle("在庫処理日")
+                .navigationTitle(stockText("date.title"))
             }
             .interactiveDismissDisabled(processingDate == nil)
         }
@@ -54,9 +54,9 @@ struct StockMenu: View {
             itemForm(.delete)
             itemForm(.renumber)
             itemForm(.lookup)
-            report("品目帳票", id: "masterReport")
+            report(stockText("report.master"), id: "masterReport")
         }
-        .navigationTitle("在庫品目マスター管理")
+        .navigationTitle(stockText("menu.master"))
     }
 
     private var movements: some View {
@@ -65,20 +65,20 @@ struct StockMenu: View {
             itemForm(.issue)
             itemForm(.barcode)
             itemForm(.order)
-            report("在庫監査帳票", id: "audit")
+            report(stockText("report.audit"), id: "audit")
         }
-        .navigationTitle("入出庫・発注記録")
+        .navigationTitle(stockText("menu.movements"))
     }
 
     private var reports: some View {
         List {
-            report("在庫評価帳票", id: "valuation")
-            report("在庫活動帳票", id: "activity")
-            report("発注点帳票", id: "reorder")
-            report("在庫履歴帳票", id: "history")
-            report("在庫一覧帳票", id: "listing")
+            report(stockText("report.valuation"), id: "valuation")
+            report(stockText("report.activity"), id: "activity")
+            report(stockText("report.reorder"), id: "reorder")
+            report(stockText("report.history"), id: "history")
+            report(stockText("report.listing"), id: "listing")
         }
-        .navigationTitle("在庫帳票")
+        .navigationTitle(stockText("menu.reports"))
     }
 
     private func itemForm(_ operation: StockItemForm.Operation) -> some View {
@@ -105,14 +105,14 @@ private struct StockItemTable: View {
             (filter.isEmpty || row.code.localizedStandardContains(filter) || row.name.localizedStandardContains(filter))
                 && (id != "reorder" || row.held <= row.reorderPoint)
         }) {
-            TableColumn("品目コード", value: \.code)
-            TableColumn("品名", value: \.name)
-            TableColumn("在庫数") { Text($0.held.formatted()) }
-            TableColumn("入庫数") { Text($0.added.formatted()) }
-            TableColumn("出庫数") { Text($0.deducted.formatted()) }
-            TableColumn("在庫評価額") { Text((Decimal($0.value) / 100).formatted()) }
+            TableColumn(stockText("field.code"), value: \.code)
+            TableColumn(stockText("field.name"), value: \.name)
+            TableColumn(stockText("field.held")) { Text($0.held.formatted()) }
+            TableColumn(stockText("field.received")) { Text($0.added.formatted()) }
+            TableColumn(stockText("field.issued")) { Text($0.deducted.formatted()) }
+            TableColumn(stockText("field.value")) { Text((Decimal($0.value) / 100).formatted()) }
         }
-        .searchable(text: $filter, prompt: "品目コード・品名")
+        .searchable(text: $filter, prompt: stockText("search.prompt"))
         .navigationTitle(title)
     }
 }
@@ -129,22 +129,22 @@ private struct StockMaintenance: View {
     var body: some View {
         Form {
             if closing {
-                Toggle("当期間の累計を消去", isOn: $current)
-                Toggle("年度累計を消去", isOn: $yearly)
+                Toggle(stockText("maintenance.current"), isOn: $current)
+                Toggle(stockText("maintenance.annual"), isOn: $yearly)
             } else {
-                Toggle("一時ファイルから復元", isOn: $recovery)
+                Toggle(stockText("rebuild.recover"), isOn: $recovery)
             }
-            Button("実行", role: .destructive) { confirming = true }
+            Button(stockText("action.run"), role: .destructive) { confirming = true }
                 .disabled(closing && !current && !yearly)
             if !message.isEmpty { Text(message) }
         }
-        .navigationTitle(closing ? "在庫期間締め" : "在庫ファイル圧縮")
-        .confirmationDialog("実行しますか？", isPresented: $confirming, titleVisibility: .visible) {
-            Button("実行する", role: .destructive) {
+        .navigationTitle(closing ? stockText("menu.closePeriod") : stockText("menu.rebuild"))
+        .confirmationDialog(stockText("action.identity"), isPresented: $confirming, titleVisibility: .visible) {
+            Button(stockText("action.confirm"), role: .destructive) {
                 do {
                     if closing { try stock.closePeriod(current: current, yearly: yearly) }
                     else { try stock.rebuild(recovery: recovery) }
-                    message = "処理しました。"
+                    message = stockText("maintenance.done")
                 } catch { message = stockError(error) }
             }
         }
@@ -153,10 +153,10 @@ private struct StockMaintenance: View {
 
 func stockError(_ error: Error) -> String {
     switch error as? StockService.Failure {
-    case .missing: "指定した在庫品目がありません。"
-    case .duplicate: "品目コードまたは略号が既に使われています。"
-    case .auditRequired: "在庫期間締めには在庫監査帳票の発行が必要です。"
-    case .missingRecovery: "復元用の一時ファイルがありません。"
-    default: "入力内容を確認してください。"
+    case .missing: stockText("error.missing")
+    case .duplicate: stockText("error.duplicate")
+    case .auditRequired: stockText("error.auditRequired")
+    case .missingRecovery: stockText("error.missingRecovery")
+    default: stockText("error.invalid")
     }
 }

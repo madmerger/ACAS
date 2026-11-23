@@ -7,15 +7,15 @@ struct StockItemForm: View {
 
         var title: String {
             switch self {
-            case .create: "在庫品目登録"
-            case .edit: "在庫品目変更"
-            case .delete: "在庫品目削除"
-            case .renumber: "在庫コード変更"
-            case .lookup: "在庫品目照会"
-            case .receive: "入庫入力"
-            case .issue: "出庫入力"
-            case .barcode: "バーコード入庫"
-            case .order: "在庫発注記録"
+            case .create: stockText("master.create")
+            case .edit: stockText("master.edit")
+            case .delete: stockText("master.delete")
+            case .renumber: stockText("master.renumber")
+            case .lookup: stockText("master.lookup")
+            case .receive: stockText("movement.receive")
+            case .issue: stockText("movement.issue")
+            case .barcode: stockText("movement.barcode")
+            case .order: stockText("movement.order")
             }
         }
     }
@@ -41,7 +41,7 @@ struct StockItemForm: View {
 
     var body: some View {
         Form {
-            TextField(operation == .barcode ? "バーコード" : "品目コード", text: $code)
+            TextField(operation == .barcode ? stockText("field.barcode") : stockText("field.code"), text: $code)
                 .textInputAutocapitalization(.characters)
                 .autocorrectionDisabled()
                 .accessibilityIdentifier("stock.code")
@@ -53,34 +53,34 @@ struct StockItemForm: View {
             case .create:
                 itemFields
             case .edit:
-                Button("品目を読み込む", action: load)
+                Button(stockText("action.load"), action: load)
                 if selected != nil { itemFields }
             case .receive, .issue, .barcode, .order:
-                TextField(operation == .order ? "発注数" : "数量", text: $quantity)
+                TextField(operation == .order ? stockText("field.ordered") : stockText("field.quantity"), text: $quantity)
                     .keyboardType(.numbersAndPunctuation)
                     .accessibilityIdentifier("stock.quantity")
                 if isReceipt {
-                    TextField("仕入単価", text: $price)
+                    TextField(stockText("field.purchasePrice"), text: $price)
                         .keyboardType(.decimalPad)
                         .accessibilityIdentifier("stock.price")
-                    TextField("評価額の上書き（任意）", text: $valueOverride)
+                    TextField(stockText("field.valueOverride"), text: $valueOverride)
                         .keyboardType(.decimalPad)
                 }
                 if operation == .order {
-                    TextField("未入荷数", text: $backOrdered).keyboardType(.numbersAndPunctuation)
-                    optionalDate("発注日", value: $ordered)
-                    optionalDate("納入予定日", value: $due)
+                    TextField(stockText("field.backordered"), text: $backOrdered).keyboardType(.numbersAndPunctuation)
+                    optionalDate(stockText("field.orderedDate"), value: $ordered)
+                    optionalDate(stockText("field.due"), value: $due)
                 }
             case .renumber:
-                TextField("新しい品目コード", text: $replacement)
+                TextField(stockText("field.newCode"), text: $replacement)
             case .delete, .lookup:
                 if selected != nil {
-                    LabeledContent("品名", value: item.name)
-                    LabeledContent("在庫数", value: item.held.formatted())
+                    LabeledContent(stockText("field.name"), value: item.name)
+                    LabeledContent(stockText("field.held"), value: item.held.formatted())
                 }
             }
             if operation != .edit || selected != nil {
-                Button(operation == .lookup ? "照会" : operation == .delete ? "削除" : "確定",
+                Button(operation == .lookup ? stockText("action.lookup") : operation == .delete ? stockText("action.delete") : stockText("action.commit"),
                        role: operation == .delete ? .destructive : nil) {
                     if operation == .delete {
                         load()
@@ -96,23 +96,23 @@ struct StockItemForm: View {
             }
         }
         .navigationTitle(operation.title)
-        .confirmationDialog("この品目を削除しますか？", isPresented: $confirmingDelete, titleVisibility: .visible) {
-            Button("削除する", role: .destructive, action: submit)
+        .confirmationDialog(stockText("delete.confirm"), isPresented: $confirmingDelete, titleVisibility: .visible) {
+            Button(stockText("action.confirmDelete"), role: .destructive, action: submit)
         }
     }
 
     private var itemFields: some View {
         Group {
-            TextField("品目略号", text: $item.abbreviation).accessibilityIdentifier("stock.abbreviation")
-            TextField("品名", text: $item.name).accessibilityIdentifier("stock.name")
-            TextField("在庫数", value: $item.held, format: .number).keyboardType(.numbersAndPunctuation)
-            TextField("単価", value: $item.cost, format: .number.scale(0.0001)).keyboardType(.decimalPad)
-            TextField("発注点", value: $item.reorderPoint, format: .number).keyboardType(.numbersAndPunctuation)
+            TextField(stockText("field.abbreviation"), text: $item.abbreviation).accessibilityIdentifier("stock.abbreviation")
+            TextField(stockText("field.name"), text: $item.name).accessibilityIdentifier("stock.name")
+            TextField(stockText("field.held"), value: $item.held, format: .number).keyboardType(.numbersAndPunctuation)
+            TextField(stockText("field.price"), value: $item.cost, format: .number.scale(0.0001)).keyboardType(.decimalPad)
+            TextField(stockText("field.reorder"), value: $item.reorderPoint, format: .number).keyboardType(.numbersAndPunctuation)
         }
     }
 
     @ViewBuilder private func optionalDate(_ title: String, value: Binding<Date?>) -> some View {
-        Toggle(title + "を指定", isOn: Binding(
+        Toggle(title + stockText("required"), isOn: Binding(
             get: { value.wrappedValue != nil },
             set: { value.wrappedValue = $0 ? date : nil }
         ))
@@ -144,14 +144,14 @@ struct StockItemForm: View {
             case .create, .edit:
                 item.code = code
                 try stock.save(item, editing: operation == .edit ? selected : nil)
-                message = "品目を保存しました。"
+                message = stockText("result.saved")
             case .delete:
                 try stock.remove(code)
                 selected = nil
-                message = "品目を削除しました。"
+                message = stockText("result.deleted")
             case .renumber:
                 try stock.renumber(code, to: replacement)
-                message = "品目コードを変更しました。"
+                message = stockText("result.renumbered")
             case .lookup:
                 load()
             case .receive, .issue, .barcode:
@@ -162,12 +162,12 @@ struct StockItemForm: View {
                 let row = try stock.move(isReceipt ? .receipt : .issue, code: code, quantity: count,
                     price: isReceipt ? money(price) : 0,
                     valueOverride: valueOverride.isEmpty ? nil : money(valueOverride), date: date)
-                message = "在庫数：\(row.held.formatted())"
+                message = String(format: stockText("result.held"), row.held.formatted())
             case .order:
                 guard let count = Int64(quantity), let back = Int64(backOrdered)
                 else { throw StockService.Failure.invalidInput }
                 try stock.order(code, quantity: count, backOrdered: back, ordered: ordered, due: due)
-                message = "発注を記録しました。"
+                message = stockText("result.ordered")
             }
         } catch { message = stockError(error) }
         workspace.completed("stock." + operation.rawValue)

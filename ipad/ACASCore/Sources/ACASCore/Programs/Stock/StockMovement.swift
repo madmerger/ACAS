@@ -15,7 +15,7 @@ extension StockService {
         }
         let receiving = direction == .receipt
         let report = directory + "prt-1"
-        if store.exists(path) { store.writeRaw(report, []) }
+        if store.exists(path) { try store.writeRaw(report, []) }
         var row = try record(code)
         let held = row.int("stock-held")
         let work = row.int("stock-work-in-progress")
@@ -70,15 +70,15 @@ extension StockService {
                 bytes += field
             }
             bytes += Array(Cobol.z(system.int("stk-audit-no"), 5).utf8)
-            store.appendRaw(directory + "staudit.dat", bytes)
+            try store.appendRaw(directory + "staudit.dat", bytes)
             system.setInt("stk-activity-rep-run", 0)
-            settings.write(1, system.bytes)
+            try settings.write(1, system.bytes)
         }
         store.rewrite(path, key: row.raw("stock-key"), data: row.bytes)
         let current = context.calendar.dateComponents([.hour, .minute], from: today)
         let printed = Maps04.format(Maps04.toDate(day(today)), dateForm: format) + " "
             + Cobol.z(current.hour ?? 0, 2) + ":" + Cobol.z(current.minute ?? 0, 2)
-        store.writeRaw(report, Self.movementReport(receiving: receiving, company: system.str("usera"),
+        try store.writeRaw(report, Self.movementReport(receiving: receiving, company: system.str("usera"),
             printed: printed, processing: processing, row: row, quantity: quantity, price: price, change: change,
             dates: dates))
         return Item(row)

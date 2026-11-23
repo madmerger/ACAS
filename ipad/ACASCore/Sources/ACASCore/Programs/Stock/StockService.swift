@@ -156,7 +156,7 @@ public struct StockService {
                                                           digits: 11, signed: false))
                 return row.bytes
             }
-            store.writeRaw(temp, source.flatMap { $0 })
+            try store.writeRaw(temp, source.flatMap { $0 })
         }
         let keys = source.map { Array($0.prefix(13)) }
         guard Set(keys).count == keys.count else { throw Failure.duplicate }
