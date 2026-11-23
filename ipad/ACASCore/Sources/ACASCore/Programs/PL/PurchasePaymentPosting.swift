@@ -198,7 +198,7 @@ extension PurchaseLedger {
         let printer = PurchasePrinter(self)
         reportHeading(printer, id: id, title: title, columns: " Number   ---Date--- Supplier                         Payment      Deduction   Apportioned")
         printer.write(Cobol.x("", 90) + "Folio     Date      Approp.     Balance", after: 1)
-        let invoicesByPayment = Dictionary(grouping: items.filter { $0.int("oi-type") == 2 && $0.int("oi-paid") != 0 }) {
+        let invoicesByPayment = Dictionary(grouping: items.filter { $0.int("oi-type") == 2 && $0.int("oi-cr") != 0 }) {
             $0.int("oi-b-nos") * 1000 + $0.int("oi-b-item")
         }
         for payment in payments {
@@ -210,7 +210,7 @@ extension PurchaseLedger {
                 where Cobol.rtrim(item.str("oi-supplier")) == payment.supplier {
                 let reference = Pic.edit("z(7)9", value: item.int("oi-invoice"), scale: 0) + "  "
                 let date = reportDate(item.int("oi-date"))
-                let appropriation = min(item.int("oi-paid"), payment.allocated)
+                let appropriation = item.int("oi-cr") / 100
                 let amount = appropriation == 0 ? Cobol.x("", 9) : Pic.edit("z(5)9.99", value: appropriation, scale: 2)
                 let balance = PurchaseRecords.cr("z(7)9.99cr", itemGross(item) - item.int("oi-paid"), int: 8)
                 printer.write(Cobol.x("", 90) + reference + date + amount + balance, after: 1)
