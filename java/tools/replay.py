@@ -61,6 +61,12 @@ def snap_diff(before, after):
     return out
 
 
+def norm_report(text):
+    """帳票の正規化。実行環境のディレクトリを印字する行（Path to IRS / Ledgers）の値欄は環境依存のためマスクする。"""
+    lines = norm_screen(text.replace("\f", ""))
+    return [l[:27] + "<PATH>".ljust(43) + l[70:] if l.startswith("          Path to ") else l for l in lines]
+
+
 def is_report(f): return Path(f).name.startswith(("prt-", "final-")) or f.startswith("spool/")
 
 
@@ -119,14 +125,14 @@ def run_case(api, evid, case, verbose=False):
         m = re.search(r"files/ledgers/(.+)$", rp) or re.search(r"files/(spool/.+)$", rp)
         p = evid / rp
         if not m or not p.exists() or p.name == "command.json": continue
-        want = norm_screen(p.read_text(errors="replace").replace("\f", ""))
+        want = norm_report(p.read_text(errors="replace"))
         name = m.group(1)
         if name.startswith("spool/"):
             cands = [f for f in after if f.startswith("spool/") and Path(f).name == Path(name).name and f not in before]
-            got = [norm_screen("\n".join(bytes.fromhex(v).decode("latin1") for v in after[f].values()).replace("\f", "")) for f in cands]
+            got = [norm_report("\n".join(bytes.fromhex(v).decode("latin1") for v in after[f].values())) for f in cands]
             ok = want in got
         else:
-            got = norm_screen("\n".join(bytes.fromhex(v).decode("latin1") for v in after.get(name, {}).values()).replace("\f", ""))
+            got = norm_report("\n".join(bytes.fromhex(v).decode("latin1") for v in after.get(name, {}).values()))
             ok = want == got
             if not ok and len(detail) < 4:
                 detail.append({"report": name, "diff": [l for l in difflib.unified_diff(want, got, "legacy", "java", lineterm="", n=0)][:24]})
