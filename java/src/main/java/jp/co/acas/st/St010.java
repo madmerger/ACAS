@@ -419,7 +419,7 @@ public class St010 extends StProgram {
         if (sys.intv("file-status", 15) != 1) {
             ctx.shared.put("ws-process-func", 1);
             ctx.shared.put("ws-sub-function", 1);
-            call("sl070");
+            call("sl070", (Object) St.FILE_DEFS);
             if (sys.intv("file-status", 15) != 1) {
                 display(L23, 1, "ST112 Analysis File not found, Aborting", 4);
                 stockFile.close(); purchFile.close();
