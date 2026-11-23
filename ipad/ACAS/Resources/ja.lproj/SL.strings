@@ -35,6 +35,8 @@
 "sales.analysis.invalidInput" = "分析コードと勘定科目コードを確認してください";
 "sales.analysis.invalidDescription" = "説明は24バイト以内で入力してください（全角のみなら12文字まで）";
 "sales.analysis.invalidPrintCode" = "印字コードは3バイト以内で入力してください（全角のみなら1文字まで）";
+"sales.analysis.unsupportedDescription" = "説明に保存できない文字があります。別の文字に置き換えてください";
+"sales.analysis.unsupportedPrintCode" = "印字コードに保存できない文字があります。別の文字に置き換えてください";
 "sales.analysis.invalidLayout" = "分析ファイルのレコード形式が一致しません";
 "sales.analysis.duplicate" = "この分析コードは登録済みです";
 "sales.analysis.missingGroup" = "先に集計グループを登録してください";

@@ -254,6 +254,8 @@ private func analysisFailure(_ error: Error) -> String.LocalizationValue {
     case SalesAnalysis.Error.invalidInput: "sales.analysis.invalidInput"
     case SalesAnalysis.Error.invalidDescription: "sales.analysis.invalidDescription"
     case SalesAnalysis.Error.invalidPrintCode: "sales.analysis.invalidPrintCode"
+    case SalesAnalysis.Error.unsupportedDescription: "sales.analysis.unsupportedDescription"
+    case SalesAnalysis.Error.unsupportedPrintCode: "sales.analysis.unsupportedPrintCode"
     case SalesAnalysis.Error.duplicate: "sales.analysis.duplicate"
     case SalesAnalysis.Error.missingGroup: "sales.analysis.missingGroup"
     case SalesAnalysis.Error.groupUsed: "sales.analysis.groupUsed"
