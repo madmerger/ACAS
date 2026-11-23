@@ -45,14 +45,30 @@ struct SalesMenu: View {
                     .accessibilityIdentifier("sales.invoice.menu")
             }
             Section(slText("sales.payment.section")) {
-                NavigationLink(slText("sales.payment.entry")) { SalesPaymentsView(workspace: workspace) }
-                    .accessibilityIdentifier("sales.payment.entry")
-                NavigationLink(slText("sales.payment.amend")) { SalesPaymentAmendView(workspace: workspace) }
-                    .accessibilityIdentifier("sales.payment.amend")
-                NavigationLink(slText("sales.payment.proof")) { SalesPaymentProofView(workspace: workspace) }
-                    .accessibilityIdentifier("sales.payment.proof")
-                NavigationLink(slText("sales.payment.post")) { SalesPaymentPostingView(workspace: workspace) }
-                    .accessibilityIdentifier("sales.payment.post")
+                NavigationLink(slText("sales.payment.entry")) {
+                    SalesPaymentGate(workspace: workspace, operation: .entry, title: "sales.payment.entry") {
+                        SalesPaymentsView(workspace: workspace)
+                    }
+                }
+                .accessibilityIdentifier("sales.payment.entry")
+                NavigationLink(slText("sales.payment.amend")) {
+                    SalesPaymentGate(workspace: workspace, operation: .amend, title: "sales.payment.amend") {
+                        SalesPaymentAmendView(workspace: workspace)
+                    }
+                }
+                .accessibilityIdentifier("sales.payment.amend")
+                NavigationLink(slText("sales.payment.proof")) {
+                    SalesPaymentGate(workspace: workspace, operation: .proof, title: "sales.payment.proof") {
+                        SalesPaymentProofView(workspace: workspace)
+                    }
+                }
+                .accessibilityIdentifier("sales.payment.proof")
+                NavigationLink(slText("sales.payment.post")) {
+                    SalesPaymentGate(workspace: workspace, operation: .post, title: "sales.payment.post") {
+                        SalesPaymentPostingView(workspace: workspace)
+                    }
+                }
+                .accessibilityIdentifier("sales.payment.post")
             }
             Section(slText("sales.analysis.section")) {
                 NavigationLink(slText("sales.analysis.codes")) { SalesAnalysisMenu(workspace: workspace) }

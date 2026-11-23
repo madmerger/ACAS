@@ -5,6 +5,10 @@ final class SalesReachFlows: XCTestCase {
     func testSL002() throws { try customerMenu("SL-002") }
     func testSL004() throws { try salesEntry("SL-004") }
     func testSL005() throws { try salesAmendment("SL-005") }
+    func testSL008() throws { try paymentEntry("SL-008") }
+    func testSL009() throws { try paymentAmend("SL-009") }
+    func testSL010() throws { try paymentProof("SL-010") }
+    func testSL011() throws { try paymentPost("SL-011") }
     func testSL012() throws { try analysisMenu("SL-012") }
     func testSL202() throws { try customerMenu("SL-202") }
     func testSL203() throws { try customer("SL-203", mode: "register", title: "得意先登録") }
@@ -13,6 +17,10 @@ final class SalesReachFlows: XCTestCase {
     func testSL207() throws { try customer("SL-207", mode: "view", title: "得意先表示") }
     func testSL209() throws { try salesEntry("SL-209") }
     func testSL210() throws { try salesAmendment("SL-210") }
+    func testSL213() throws { try paymentEntry("SL-213") }
+    func testSL214() throws { try paymentAmend("SL-214") }
+    func testSL215() throws { try paymentProof("SL-215") }
+    func testSL216() throws { try paymentPost("SL-216") }
     func testSL217() throws { try analysisMenu("SL-217") }
 
     func testSL218() throws {
@@ -63,6 +71,37 @@ final class SalesReachFlows: XCTestCase {
             for operation in ["add", "edit", "print", "printAll", "display"] {
                 XCTAssertTrue(app.buttons["sales.analysis." + operation].exists)
             }
+        }
+    }
+
+    private func paymentEntry(_ id: String) throws {
+        try blockedPayment(id, operation: "entry", title: "入金登録",
+                           error: "売掛明細のファイルがありません", action: "sales.payment.findInvoices")
+    }
+
+    private func paymentAmend(_ id: String) throws {
+        try blockedPayment(id, operation: "amend", title: "入金修正",
+                           error: "対象の入金がありません", action: "sales.payment.reverse")
+    }
+
+    private func paymentProof(_ id: String) throws {
+        try blockedPayment(id, operation: "proof", title: "入金検証帳票",
+                           error: "対象の入金がありません", action: "sales.payment.proof.generate")
+    }
+
+    private func paymentPost(_ id: String) throws {
+        try blockedPayment(id, operation: "post", title: "入金転記",
+                           error: "入金を転記できませんでした。先に入金検証帳票を作成してください",
+                           action: "sales.payment.post.start")
+    }
+
+    private func blockedPayment(_ id: String, operation: String, title: String,
+                                error: String, action: String) throws {
+        try reach(id, through: ["sales.payment." + operation], title: title) { app in
+            let message = app.staticTexts["sales.payment.unavailable"]
+            XCTAssertTrue(message.waitForExistence(timeout: 5))
+            XCTAssertEqual(message.label, error)
+            XCTAssertFalse(app.buttons[action].exists)
         }
     }
 
