@@ -95,6 +95,9 @@ public static class StockVerify
 
     public static List<Result> Run(string ledgerPath, string evidenceRoot, string prefix = "ST-")
     {
+        for (FileSystemInfo? e = new FileInfo(ledgerPath); e != null; e = e is FileInfo f ? f.Directory : ((DirectoryInfo)e).Parent)
+            if (e.Exists && e.Attributes.HasFlag(FileAttributes.ReparsePoint))
+                throw new InvalidOperationException("台帳のパスにリンク（再解析ポイント）が含まれるため読み込みません: " + e.FullName);
         using var doc = JsonDocument.Parse(File.ReadAllText(ledgerPath));
         var results = new List<Result>();
         foreach (var c in doc.RootElement.GetProperty("cases").EnumerateArray())
