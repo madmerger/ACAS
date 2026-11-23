@@ -28,6 +28,15 @@ final class LedgerBatchProofTests: XCTestCase {
         let proof = LedgerBatchProof(context)
         let posting = LedgerPosting(context)
 
+        let records = store.snapshot().filter { $0.key != CompanySetup.reportPath }
+        let allTransactions = try proof.printAllTransactions()
+        XCTAssertEqual(store.readRaw(CompanySetup.reportPath), allTransactions)
+        XCTAssertEqual(store.snapshot().filter { $0.key != CompanySetup.reportPath }, records)
+        let reportLines = String(decoding: allTransactions, as: UTF8.self).split(separator: "\n")
+        XCTAssertEqual(reportLines.filter { $0.contains("Batch -") }.count, 3)
+        XCTAssertEqual(reportLines.filter { $0.contains("Posting test") }.count, 3)
+        XCTAssertFalse(reportLines.contains { $0.contains("Batch Verified") })
+
         XCTAssertThrowsError(try posting.postCurrentCycle())
         let one = try XCTUnwrap(proof.generate(batch: 1).first)
         XCTAssertTrue(one.verified)

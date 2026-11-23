@@ -28,17 +28,13 @@ public struct LedgerBatchProof {
                 }
             }
             guard !selected.isEmpty else { return [] }
-            let postings = try readPostings()
+            let postings = Dictionary(grouping: try readPostings()) { $0.int("batch") }
             let chart = ChartOfAccounts(context)
             return try selected.map { original in
                 var batch = original
                 let id = batch.int("number")
                 let lines = postings[id] ?? []
-                let accounts = lines.map { line in
-                    ["debit", "credit"].map { side in
-                        chart.account(code: line.str(side), branch: line.str(side + "-branch")) != nil
-                    }
-                }
+                let accounts = lines.map { Self.accounts(in: $0, chart: chart) }
                 let net = lines.reduce(Int64(0)) { $0 + $1.int("amount") }
                 let tax = lines.reduce(Int64(0)) { $0 + $1.int("vat-amount") }
                 let valid = !lines.isEmpty && accounts.allSatisfy { $0.allSatisfy { $0 } }
@@ -56,13 +52,41 @@ public struct LedgerBatchProof {
         }
     }
 
-    private func readPostings() throws -> [Int64: [Record]] {
+    public func printAllTransactions() throws -> [UInt8] {
+        try context.store.transaction {
+            let lines = context.store.exists(LedgerBatches.postingPath) ? try readPostings() : []
+            let batches = IndexedFile(context.store, path: LedgerBatches.batchPath,
+                                      layout: LedgerBatches.batchLayout, keyLength: 6)
+            var headers: [Int64: Record] = [:]
+            for line in lines {
+                let number = line.int("batch")
+                if headers[number] == nil {
+                    guard let header = batches.read(key: "1" + Cobol.z(number, 5)) else { throw Error.missingBatch }
+                    headers[number] = header
+                }
+            }
+            let chart = ChartOfAccounts(context)
+            let bytes = render(nil, lines: lines, accounts: lines.map { Self.accounts(in: $0, chart: chart) },
+                               settings: CompanySetup(context).settings, net: 0, tax: 0, valid: false,
+                               verified: false, headers: headers)
+            try context.store.writeRaw(CompanySetup.reportPath, bytes)
+            return bytes
+        }
+    }
+
+    private static func accounts(in line: Record, chart: ChartOfAccounts) -> [Bool] {
+        ["debit", "credit"].map { side in
+            chart.account(code: line.str(side), branch: line.str(side + "-branch")) != nil
+        }
+    }
+
+    private func readPostings() throws -> [Record] {
         let layout = LedgerBatches.postingLayout
         let slot = layout.size + 8
         guard let bytes = context.store.readRaw(LedgerBatches.postingPath), bytes.count.isMultiple(of: slot) else {
             throw Error.invalidPostings
         }
-        var records: [Int64: [Record]] = [:]
+        var records: [Record] = []
         for offset in stride(from: 0, to: bytes.count, by: slot) {
             let length = bytes[offset..<(offset + 8)].enumerated().reduce(UInt64(0)) {
                 $0 | (UInt64($1.element) << (8 * $1.offset))
@@ -70,13 +94,13 @@ public struct LedgerBatchProof {
             if length == 0 { continue }
             guard length == layout.size else { throw Error.invalidPostings }
             let line = Record(layout, bytes: Array(bytes[(offset + 8)..<(offset + slot)]))
-            if line.int("batch") != 0 { records[line.int("batch"), default: []].append(line) }
+            if line.int("batch") != 0 { records.append(line) }
         }
         return records
     }
 
-    private func render(_ batch: Record, lines: [Record], accounts: [[Bool]], settings: CompanySettings,
-                        net: Int64, tax: Int64, valid: Bool, verified: Bool) -> [UInt8] {
+    private func render(_ batch: Record?, lines: [Record], accounts: [[Bool]], settings: CompanySettings,
+                        net: Int64, tax: Int64, valid: Bool, verified: Bool, headers: [Int64: Record] = [:]) -> [UInt8] {
         var bytes: [UInt8] = []
         var page: Int64 = 0
         var count = 0
@@ -90,23 +114,33 @@ public struct LedgerBatchProof {
         func pic(_ form: String, _ value: Int64, scale: Int = 0) -> String {
             Pic.edit(form, value: value, scale: scale)
         }
+        func batchHeading(_ batch: Record) {
+            bytes += [10, 10] + SJIS.encode("Batch - " + pic("z(4)9", batch.int("number")) + Cobol.x("", 8), size: 21)
+                + batch.raw("description")
+                + SJIS.encode(Cobol.x("    Date Entered - ", 20) + date(batch.int("entered")), size: 87)
+            count += 2
+        }
         func headings() {
             page += 1
             write(Cobol.x("gl051 (3.00.04)", 14) + Cobol.x("", 41) + "Transaction Proof Report"
                   + Cobol.x("", 45) + "Page  " + pic("z9", page))
             bytes += [10] + SJIS.encode(settings.text("usera"), size: 32)
                 + SJIS.encode(Cobol.x("", 90) + date(settings.number("run-date")), size: 100)
-            bytes += [10, 10] + SJIS.encode("Batch - " + pic("z(4)9", batch.int("number")) + Cobol.x("", 8), size: 21)
-                + batch.raw("description")
-                + SJIS.encode(Cobol.x("    Date Entered - ", 20) + date(batch.int("entered")), size: 87)
+            count = 6
+            if let batch { batchHeading(batch) }
             write(Cobol.x("Number  Code  ---Date--- --Debit--   --Credit-    Net Amount    VAT Amount  VAT Account  VAT Side   ----------", 110)
                   + "--Narative------------", after: 2)
             write("------  ----              A/C  P/C    A/C  P/C    ----------    ----------    A/C  P/C   --------")
             write("")
-            count = 8
         }
         headings()
+        var previousBatch: Int64?
         for (line, present) in zip(lines, accounts) {
+            let number = line.int("batch")
+            if let header = headers[number], number != previousBatch {
+                batchHeading(header)
+                previousBatch = number
+            }
             let vatAccount = line.int("vat-account"), vatBranch = line.int("vat-branch")
             let leading = pic("z(4)9b(4)", line.int("sequence")) + Cobol.x(line.str("code"), 5)
                 + Cobol.x(line.str("date"), 12)
@@ -126,7 +160,7 @@ public struct LedgerBatchProof {
             }
             if count > pageLines - 6 { headings() }
         }
-        if valid {
+        if valid, let batch {
             if count > pageLines - 12 { headings() }
             let padding = Cobol.x("", 20)
             write(padding + "Batch              ----Net----    ----VAT----", after: 3)
