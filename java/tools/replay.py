@@ -10,7 +10,7 @@
 import argparse, difflib, json, re, sys, urllib.request
 from pathlib import Path
 
-ESC = {"\x1b[H": "HOME", "\x1bOH": "HOME", "\x1b[A": "UP", "\x1b[B": "DOWN", "\x1b[C": "RIGHT", "\x1b[D": "LEFT",
+ESC = {"\x1bOH": "HOME", "\x1b[A": "UP", "\x1b[B": "DOWN", "\x1b[C": "RIGHT", "\x1b[D": "LEFT",
        "\x1bOA": "UP", "\x1bOB": "DOWN", "\x1bOC": "RIGHT", "\x1bOD": "LEFT", "\x1b[F": "END", "\x1bOF": "END",
        "\x1bOP": "F1", "\x1bOQ": "F2", "\x1bOR": "F3", "\x1bOS": "F4", "\x1b[15~": "F5", "\x1b[17~": "F6",
        "\x1b[18~": "F7", "\x1b[19~": "F8", "\x1b[20~": "F9", "\x1b[21~": "F10", "\x1b[5~": "PGUP", "\x1b[6~": "PGDN",
