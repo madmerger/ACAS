@@ -3,11 +3,11 @@
 
   python3 tools/replay.py <証跡dir> [--url http://localhost:18080] [--out out] [-v] CASE_ID|PREFIX ...
 
-サーバーは `--acas.test-api=true --acas.fixed-date=2026-11-23` で起動しておく。
+サーバーは `--acas.test-api=true --acas.fixed-date=2026-11-23` で起動し、サーバーとスクリプトに同じ ACAS_TEST_API_TOKEN を渡す。
 比較対象: 画面テキスト（レガシー原文面, 時刻はマスク）、レコード差分（追加/更新/削除の 16 進）、帳票（prt-*）。
 画面操作そのもの（ブラウザ UI）の確認・録画は tools/ui_replay.py を使う。
 """
-import argparse, difflib, json, re, sys, urllib.request
+import argparse, difflib, json, os, re, sys, urllib.request
 from pathlib import Path
 
 ESC = {"\x1bOH": "HOME", "\x1b[A": "UP", "\x1b[B": "DOWN", "\x1b[C": "RIGHT", "\x1b[D": "LEFT",
@@ -36,9 +36,12 @@ def to_keys(text):
 class Api:
     def __init__(self, url): self.url = url.rstrip("/")
     def call(self, method, path, body=None):
+        headers = {"Content-Type": "application/json"}
+        if path.startswith("/api/test/"):
+            headers["X-ACAS-Test-Token"] = os.environ["ACAS_TEST_API_TOKEN"]
         req = urllib.request.Request(self.url + path, method=method,
                                      data=None if body is None else json.dumps(body).encode(),
-                                     headers={"Content-Type": "application/json"})
+                                     headers=headers)
         with urllib.request.urlopen(req, timeout=120) as r:
             data = r.read()
         return json.loads(data) if data else None
