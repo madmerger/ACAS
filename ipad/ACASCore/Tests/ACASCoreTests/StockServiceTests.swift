@@ -139,6 +139,38 @@ final class StockServiceTests: XCTestCase {
         XCTAssertEqual(store.readRaw("ledgers/acas/staudit.dat"), audit)
     }
 
+    func testMovementAuditStatusIsSavedOnlyOnExit() throws {
+        for direction in [StockService.Direction.receipt, .issue] {
+            let store = try FileStore()
+            let service = StockService(BusinessContext(store: store))
+            var settings = Record(SystemLayout.layout)
+            settings.setInt("stk-audit-used", 1)
+            settings.setRaw("file-statuses", Array(repeating: 0x30, count: 32))
+            try service.settings.write(1, settings.bytes)
+            var item = StockService.Item()
+            item.code = "ITEM001"
+            item.abbreviation = "ITEM"
+            item.name = "品目"
+            item.held = 2
+            try service.save(item)
+
+            try service.saveMovementAuditStatus()
+            XCTAssertEqual(service.settings.read(1), settings.bytes)
+            try service.prepareMovementEntry()
+            _ = try service.move(direction, code: item.code, quantity: 1, date: service.today)
+            XCTAssertEqual(service.settings.read(1), settings.bytes)
+            let audit = try XCTUnwrap(store.readRaw("ledgers/acas/staudit.dat"))
+            XCTAssertEqual(audit.count, 104)
+
+            try service.saveMovementAuditStatus()
+            var statuses = settings.raw("file-statuses")
+            statuses[9] = 0x31
+            settings.setRaw("file-statuses", statuses)
+            XCTAssertEqual(service.settings.read(1), settings.bytes)
+            XCTAssertEqual(store.readRaw("ledgers/acas/staudit.dat"), audit)
+        }
+    }
+
     func testMissingMovementItemPreservesCurrentReportWithoutChangingStock() throws {
         let store = try FileStore()
         let service = StockService(BusinessContext(store: store))

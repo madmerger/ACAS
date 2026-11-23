@@ -4,10 +4,12 @@ import UniformTypeIdentifiers
 
 struct StockMenu: View {
     let workspace: Workspace
+    let saveAuditStatus: () -> Bool
     let closeStock: () -> Void
     @State private var processingDate: Date?
     @State private var proposedDate = Date()
     @State private var showDate = true
+    @State private var showSettings = false
 
     private var stock: StockService { StockService(workspace.context) }
 
@@ -34,13 +36,16 @@ struct StockMenu: View {
                     .onAppear { workspace.completed("stock.rebuild.open") }
             }
             .accessibilityIdentifier("stock.rebuild")
-            NavigationLink(stockText("menu.settings")) {
-                SystemMenu(workspace: workspace)
-                    .onAppear { workspace.completed("stock.settings.open") }
+            Button(stockText("menu.settings")) {
+                if saveAuditStatus() { showSettings = true }
             }
                 .accessibilityIdentifier("stock.settings")
             Button(stockText("action.closeStock"), action: closeStock)
                 .accessibilityIdentifier("stock.closeStock")
+        }
+        .navigationDestination(isPresented: $showSettings) {
+            SystemMenu(workspace: workspace)
+                .onAppear { workspace.completed("stock.settings.open") }
         }
         .onAppear { if processingDate == nil { proposedDate = stock.today } }
         .sheet(isPresented: $showDate) {

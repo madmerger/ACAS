@@ -5,6 +5,19 @@ extension StockService {
 
     private var movementReportPath: String { directory + "prt-1" }
 
+    public func saveMovementAuditStatus() throws {
+        try store.transaction {
+            guard store.exists(directory + "staudit.dat"), let bytes = settings.read(1) else { return }
+            var system = Record(SystemLayout.layout, bytes: bytes)
+            guard system.int("stk-audit-used") == 1 else { return }
+            var statuses = system.raw("file-statuses")
+            guard statuses[9] != 0x31 else { return }
+            statuses[9] = 0x31
+            system.setRaw("file-statuses", statuses)
+            try settings.write(1, system.bytes)
+        }
+    }
+
     public func prepareMovementEntry() throws {
         try store.transaction {
             guard store.exists(path) else { return }
@@ -93,11 +106,10 @@ extension StockService {
             }
             bytes += Array(Cobol.z(system.int("stk-audit-no"), 5).utf8)
             try store.appendRaw(directory + "staudit.dat", bytes)
-            var statuses = system.raw("file-statuses")
-            statuses[9] = 0x31
-            system.setRaw("file-statuses", statuses)
-            system.setInt("stk-activity-rep-run", 0)
-            try settings.write(1, system.bytes)
+            if system.int("stk-activity-rep-run") != 0 {
+                system.setInt("stk-activity-rep-run", 0)
+                try settings.write(1, system.bytes)
+            }
         }
         guard store.rewrite(path, key: row.raw("stock-key"), data: row.bytes) else { throw Failure.missing }
         let current = context.calendar.dateComponents([.hour, .minute], from: today)
