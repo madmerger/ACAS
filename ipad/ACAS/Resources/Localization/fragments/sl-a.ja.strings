@@ -63,19 +63,32 @@
 "sl070.sl009" = "SL009 分析グループが未登録です";
 "sl070.sl010" = "SL010 分析グループは明細コードで使用中です";
 "sl070.sl011" = "SL011 分析コードが未登録です";
-"sl070.pa.vat_control" = "消費税管理";
-"sl070.pa.vat_in_inv" = "仮払消費税 請求/返品";
-"sl070.pa.vat_in_rec" = "仮払消費税 領収";
-"sl070.pa.computer" = "システム管理";
-"sl070.pa.purch_carriage" = "仕入運賃";
-"sl070.pa.purch_late" = "仕入遅延損害金";
-"sl070.pa.sales_carriage" = "売上運賃";
-"sl070.pa.sales_late" = "売上遅延損害金";
-"sl070.pa.vat_out_inv" = "仮受消費税 請求/返品";
-"sl070.pa.vat_out_rec" = "仮受消費税 領収";
-"sl070.pa.default_group" = "既定グループ";
-"sl070.pa.default_purch" = "既定仕入";
-"sl070.pa.default_sales" = "既定売上";
+/* 保存データ: レガシーと同一バイトで書き込むため翻訳しない */
+"sl070.pa.vat_control" = "VAT Control";
+/* 保存データ: レガシーと同一バイトで書き込むため翻訳しない */
+"sl070.pa.vat_in_inv" = "VAT Input Invoices/CN's";
+/* 保存データ: レガシーと同一バイトで書き込むため翻訳しない */
+"sl070.pa.vat_in_rec" = "VAT Input Receipts";
+/* 保存データ: レガシーと同一バイトで書き込むため翻訳しない */
+"sl070.pa.computer" = "Computer Control";
+/* 保存データ: レガシーと同一バイトで書き込むため翻訳しない */
+"sl070.pa.purch_carriage" = "Purchase Carriage Charges";
+/* 保存データ: レガシーと同一バイトで書き込むため翻訳しない */
+"sl070.pa.purch_late" = "Purchase Late Charges";
+/* 保存データ: レガシーと同一バイトで書き込むため翻訳しない */
+"sl070.pa.sales_carriage" = "Sales Carriage Charges";
+/* 保存データ: レガシーと同一バイトで書き込むため翻訳しない */
+"sl070.pa.sales_late" = "Sales Late Charges";
+/* 保存データ: レガシーと同一バイトで書き込むため翻訳しない */
+"sl070.pa.vat_out_inv" = "VAT Output Invoices/CN's";
+/* 保存データ: レガシーと同一バイトで書き込むため翻訳しない */
+"sl070.pa.vat_out_rec" = "VAT Output Receipts";
+/* 保存データ: レガシーと同一バイトで書き込むため翻訳しない */
+"sl070.pa.default_group" = "Default Group";
+/* 保存データ: レガシーと同一バイトで書き込むため翻訳しない */
+"sl070.pa.default_purch" = "Default Purchases";
+/* 保存データ: レガシーと同一バイトで書き込むため翻訳しない */
+"sl070.pa.default_sales" = "Default Sales";
 "report.sl070.title" = "商品分析コード一覧";
 "report.sl070.page" = "頁   ";
 "report.sl070.cols" = "ｺｰﾄﾞ    元帳科目     <--------摘要---------->   略称 ";
@@ -309,7 +322,8 @@
 "sl060.sl134" = "SL134 警告 得意先ファイルにレコードなし";
 "sl060.sl135" = "SL135 得意先ファイル更新エラー";
 "sl060.sl136" = "SL136 未決済明細ファイル3 書込エラー    ";
-"sl060.batch_desc" = "売掛請求書";
+/* 保存データ: レガシーと同一バイトで書き込むため翻訳しない */
+"sl060.batch_desc" = "Sales Ledger Invoices";
 "report.sl060.unknown" = "*** 得意先未登録 ***";
 "report.sl060.invoice" = "請求書";
 "report.sl060.cr_note" = "赤伝";

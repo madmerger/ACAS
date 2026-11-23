@@ -323,7 +323,8 @@
 "pl060.total_posted" = "転記合計";
 "pl060.unapplied_cf" = "未充当赤伝 繰越";
 "pl060.fs_reply" = "fs-reply = ";
-"pl060.batch_description" = "買掛元帳 請求書";
+/* 保存データ: レガシーと同一バイトで書き込むため翻訳しない */
+"pl060.batch_description" = "Purchase Ledger Invoices";
 "pl060.rep_title" = "仕入転記リスト";
 "pl060.rep_page" = "頁   ";
 "pl060.rep_unapplied_credits" = "未充当赤伝";
