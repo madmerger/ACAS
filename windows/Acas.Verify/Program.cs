@@ -17,7 +17,18 @@ if (args.Length != 4)
     return 2;
 }
 
-using var ledger = JsonDocument.Parse(File.ReadAllText(args[0]));
+string ledgerText;
+try
+{
+    ledgerText = EvidenceInput.ReadText(args[0], "シナリオ台帳");
+}
+catch (InvalidDataException ex)
+{
+    Console.OutputEncoding = Encoding.UTF8;
+    Console.Error.WriteLine(ConsoleText(ex.Message));
+    return 2;
+}
+using var ledger = JsonDocument.Parse(ledgerText);
 var expectedIds = Workbook(args[2]);
 var cases = ledger.RootElement.GetProperty("cases").EnumerateArray()
     .Where(c => c.GetProperty("id").GetString()!.StartsWith("SL-", StringComparison.Ordinal)).ToArray();
