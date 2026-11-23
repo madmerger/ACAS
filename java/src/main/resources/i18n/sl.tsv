@@ -432,3 +432,17 @@ Amount Available =	利用可能額 =
 SL003 Hit Return To Continue	SL003 Enter で続行
 SL140 Not Yet Supporting Corrections	SL140 金額の修正には未対応です
 SL141 Amount Approp Or Deduct Amt Not Zero	SL141 充当額または控除額がゼロではありません
+Payment Proof Report	入金検証帳票
+Printing..... Please Wait	印刷中..... お待ちください
+Payment And Journal Proof Report	入金・振替 検証帳票
+  Batch  Tp  Pay Date  <-------------Customer------------->	  ﾊﾞｯﾁ   種  入金日    <--------------顧客---------------->
+  Value    Approp.    Ded'n    <--------Payment Appropriation--------->	  金額     充当額     控除     <-------------入金充当---------------->
+ A/C               Name	 顧客              名称
+Invoice   Date      Approp.     Balance	請求番号  日付      充当額      残高
+Payment	入金
+Journal	振替
+ Totals	 合計
+Payments	入金額
+Appropriations	充当額
+Unapplied Cash	未充当入金
+Deductions Taken	控除適用額
