@@ -112,17 +112,19 @@ public struct SalesLedger {
         record.setInt("sales-status", 1)
         try apply(customer, to: &record, system: system)
 
-        if system.raw("sales-ledger") != [0x59] {
-            var flags = system.raw("file-statuses")
-            flags[11] = 0x31
-            flags[13] = 0x31
-            system.setRaw("file-statuses", flags)
-            system["sales-ledger"] = "Y"
-            try systemFile.write(1, system.bytes)
+        try context.store.withTransaction {
+            if system.raw("sales-ledger") != [0x59] {
+                var flags = system.raw("file-statuses")
+                flags[11] = 0x31
+                flags[13] = 0x31
+                system.setRaw("file-statuses", flags)
+                system["sales-ledger"] = "Y"
+                try systemFile.write(1, system.bytes)
+            }
+            context.store.createIndexed(deliveryFile.path)
+            guard file.write(record) == "00" else { throw Error.duplicateCustomer }
+            try saveDelivery(of: customer, key: key)
         }
-        context.store.createIndexed(deliveryFile.path)
-        guard file.write(record) == "00" else { throw Error.duplicateCustomer }
-        try saveDelivery(of: customer, key: key)
         return self.customer(from: record)
     }
 

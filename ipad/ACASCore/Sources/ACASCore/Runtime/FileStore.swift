@@ -210,9 +210,7 @@ public final class FileStore: @unchecked Sendable {
               let files = root["files"] as? [String: [String: Any]] else {
             throw NSError(domain: "ACAS", code: 1, userInfo: [NSLocalizedDescriptionKey: "seed"])
         }
-        lock.lock(); defer { lock.unlock() }
-        try exec("BEGIN")
-        do {
+        try withTransaction {
             try clearAll()
             for (name, f) in files {
                 if f["type"] as? String == "indexed" {
@@ -228,6 +226,14 @@ public final class FileStore: @unchecked Sendable {
                     try writeRaw(name, Self.bytes(hex: f["hex"] as? String ?? ""))
                 }
             }
+        }
+    }
+
+    public func withTransaction(_ body: () throws -> Void) throws {
+        lock.lock(); defer { lock.unlock() }
+        try exec("BEGIN")
+        do {
+            try body()
             try exec("COMMIT")
         } catch {
             try? exec("ROLLBACK")
