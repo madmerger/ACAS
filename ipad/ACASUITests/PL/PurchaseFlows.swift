@@ -188,6 +188,70 @@ final class PurchaseFlows: XCTestCase {
         XCTAssertFalse(app.staticTexts["pl.period.close.completed"].exists)
     }
 
+    func testSupplierFileReportsWithoutMatchingRecordsCannotBeShared() throws {
+        let app = try launch("PL-413", smokeID: "仕入先ファイル帳票")
+        tap(app, "pl.report.supplier_file", scrolling: true)
+        XCTAssertTrue(app.navigationBars["仕入先ファイル帳票"].waitForExistence(timeout: 5))
+        tap(app, "pl.report.generate", scrolling: true)
+        XCTAssertTrue(app.descendants(matching: .any)["pl.report.share"].firstMatch.waitForExistence(timeout: 5))
+        tap(app, "pl.report.preview")
+        XCTAssertTrue(app.staticTexts["原本の内容"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts.containing(NSPredicate(format: "label CONTAINS %@", "Purchase Ledger Dump")).firstMatch.exists)
+        let preview = XCTAttachment(screenshot: app.screenshot())
+        preview.name = "買掛帳票プレビュー"
+        preview.lifetime = .keepAlways
+        add(preview)
+        tap(app, "pl.report.preview.close")
+        app.swipeDown()
+        enter(app, "pl.report.supplier", "MISS001")
+        dismissKeyboard(app)
+        tap(app, "pl.report.generate", scrolling: true)
+        XCTAssertTrue(app.staticTexts["pl.report.empty"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.descendants(matching: .any)["pl.report.share"].firstMatch.exists)
+        XCTAssertFalse(app.descendants(matching: .any)["pl.report.preview"].firstMatch.exists)
+    }
+
+    func testSupplierReportPreviewSplitsJapaneseTextAcrossPages() throws {
+        let japaneseName = "日本語仕入先"
+        let app = try launch("PL-413", smokeID: "複数ページの仕入先帳票") { fixture in
+            let seed = try XCTUnwrap(Data(base64Encoded: try XCTUnwrap(fixture["seed"] as? String)))
+            var snapshot = try XCTUnwrap(JSONSerialization.jsonObject(with: seed) as? [String: Any])
+            var files = try XCTUnwrap(snapshot["files"] as? [String: Any])
+            let path = "ledgers/acas/purchled.dat"
+            var indexed = try XCTUnwrap(files[path] as? [String: Any])
+            var records = try XCTUnwrap(indexed["records"] as? [[String]])
+            let prototype = try XCTUnwrap(records.first?[1])
+            let name = try XCTUnwrap(japaneseName.data(using: .shiftJIS))
+            let nameField = name.map { String(format: "%02x", $0) }.joined()
+                + String(repeating: "20", count: 30 - name.count)
+            for number in 1...5 {
+                let key = String(format: "ZZZZZ%02d", number).utf8.map { String(format: "%02x", $0) }.joined()
+                let bytes = key + String(prototype.dropFirst(14))
+                records.append([key, number == 5
+                    ? String(bytes.prefix(18)) + nameField + String(bytes.dropFirst(78)) : bytes])
+            }
+            indexed["records"] = records
+            files[path] = indexed
+            snapshot["files"] = files
+            fixture["seed"] = try JSONSerialization.data(withJSONObject: snapshot).base64EncodedString()
+        }
+        tap(app, "pl.report.supplier_file", scrolling: true)
+        tap(app, "pl.report.generate", scrolling: true)
+        tap(app, "pl.report.preview", scrolling: true)
+        let preview = app.scrollViews["pl.report.preview.lines"]
+        let name = preview.staticTexts.containing(NSPredicate(format: "label CONTAINS %@", japaneseName)).firstMatch
+        for _ in 0..<5 where !name.exists || !name.isHittable { preview.swipeUp() }
+        XCTAssertTrue(name.exists && name.isHittable)
+        XCTAssertTrue(name.label.contains("Purch-Name"))
+        let page = preview.staticTexts.matching(identifier: "pl.report.preview.page")
+            .matching(NSPredicate(format: "label == %@", "2"))
+        XCTAssertTrue(page.allElementsBoundByIndex.contains(where: \.isHittable))
+        let attachment = XCTAttachment(screenshot: app.screenshot())
+        attachment.name = "仕入先帳票の2ページ目・日本語名"
+        attachment.lifetime = .keepAlways
+        add(attachment)
+    }
+
     func testEmptyPaymentProofCannotGenerateReport() throws {
         let app = try launch("PL-413", smokeID: "空の支払検証")
         tap(app, "pl.payment.proof", scrolling: true)
@@ -196,7 +260,8 @@ final class PurchaseFlows: XCTestCase {
         XCTAssertFalse(button.isEnabled)
     }
 
-    private func launch(_ id: String, smokeID: String? = nil) throws -> XCUIApplication {
+    private func launch(_ id: String, smokeID: String? = nil,
+                        configure: (inout [String: Any]) throws -> Void = { _ in }) throws -> XCUIApplication {
         continueAfterFailure = false
         let url = try XCTUnwrap(
             Bundle(for: Self.self).url(forResource: id, withExtension: "json", subdirectory: "fixtures"),
@@ -212,6 +277,7 @@ final class PurchaseFlows: XCTestCase {
             fixture["id"] = smokeID
             fixture["title"] = "実UIの動作確認（同一性比較なし）"
             fixture["workflow"] = "pl.smoke"
+            try configure(&fixture)
             data = try JSONSerialization.data(withJSONObject: fixture)
         }
         let app = XCUIApplication()
