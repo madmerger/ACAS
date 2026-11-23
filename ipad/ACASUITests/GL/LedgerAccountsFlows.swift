@@ -22,6 +22,11 @@ final class LedgerAccountsFlows: XCTestCase {
     }
 
     @MainActor
+    func testGL029() throws {
+        try checkRejected("GL-029", message: "決算書の配置コードを半角英字１文字で入力してください")
+    }
+
+    @MainActor
     func testGL038() throws {
         try checkRejected("GL-038", message: "対応する見出し科目がありません")
     }
@@ -82,6 +87,7 @@ final class LedgerAccountsFlows: XCTestCase {
         for step in ["section.general", "gl.confirm-date", "gl.accounts", "gl.accounts.add"] { tap(app, step) }
         try fill(app, "gl.account.code", values["account"])
         if let name = values["name"] as? String { try fill(app, "gl.account.name", name) }
+        if let placement = values["placement"] as? String { try fill(app, "gl.account.placement", placement) }
         tap(app, "gl.account.save")
         return app
     }

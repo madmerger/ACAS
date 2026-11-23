@@ -44,6 +44,7 @@ WORKFLOWS = {
     "GL-025": ("gl-account-error-reservedCode", "予約済みの科目コードを拒否する"),
     "GL-026": ("gl-account-error-invalidPrefix", "売掛元帳用の科目コードを拒否する"),
     "GL-027": ("gl-account-error-invalidPrefix", "買掛元帳用の科目コードを拒否する"),
+    "GL-029": ("gl-account-error-invalidPlacement", "無効な決算書配置コードを拒否する"),
     "GL-033": ("gl-chart-print", "勘定科目一覧を出力"),
     "GL-034": ("gl-trial-balance-detail", "詳細試算表を出力"),
     "GL-036": ("gl-business-date-invalid", "存在しない処理日を拒否する"),
