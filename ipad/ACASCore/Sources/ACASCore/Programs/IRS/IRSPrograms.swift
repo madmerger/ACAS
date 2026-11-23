@@ -12,6 +12,7 @@ public enum IRSPrograms {
         s.programs["irs055"] = IRS055.run
         s.programs["irs060"] = IRS060.run
         s.programs["irs065"] = IRS065.run
+        s.programs["irs070"] = IRS070.run
         s.programs["irsubp"] = IRSubP.run
     }
 }

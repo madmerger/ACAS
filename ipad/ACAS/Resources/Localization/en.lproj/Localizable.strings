@@ -366,6 +366,31 @@
 "report.irs060.gross_ratio" = "Gross Profit % to Sales";
 "report.irs060.net_ratio" = "Net Profit % to Sales";
 "report.irs060.balance_forward" = "Balance Forward";
+/* irs070.cbl — 転記の訂正 */
+"irs070.title" = "Posting Correction";
+"irs070.number" = "Number   :  [     ]";
+"irs070.return_to_quit" = "(Return to quit)";
+"irs070.code" = "Code     :  [  ]";
+"irs070.date" = "Date     :  [        ]";
+"irs070.debit" = "Debit    :  [     ]";
+"irs070.credit" = "Credit   :  [     ]";
+"irs070.net" = "Net      :  [          ]";
+"irs070.narrative" = "Narative :  [";
+"irs070.vat_type" = "VAT Type :  [  ]";
+"irs070.vat_type_help" = "(31-Input/32-Output)";
+"irs070.vat_side" = "VAT Side :  [  ]";
+"irs070.vat" = "VAT      :  [          ]";
+"irs070.delete_help" = "Enter code of <**> to delete";
+"irs070.exit_help" = "Enter number of zero to exit";
+"irs070.not_exist" = "Posting does not exist!";
+"irs070.reversing" = "Reversing posting. please wait";
+"irs070.correct_transaction" = "Correct the transaction       ";
+"irs070.delete_here" = "** here will delete transaction";
+"irs070.error" = "Error";
+"irs070.inconsistent" = "Inconsistent";
+"irs070.renumber" = "Renumber the postings (Y/N) - [ ]";
+"irs070.sorting" = "Sorting please wait.";
+"irs070.not_numeric" = "Amount not numeric. Re-Enter";
 /* ---- sys.en.strings ---- */
 /* ACAS.cbl — システムメニュー (英語 = レガシー原文) */
 "sys.sy006" = "SY006 Program Arguments limited to two and you have specified ";
