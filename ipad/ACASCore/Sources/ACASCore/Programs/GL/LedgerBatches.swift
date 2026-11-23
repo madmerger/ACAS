@@ -66,7 +66,8 @@ public struct LedgerBatch: Identifiable {
 
 public struct LedgerBatches {
     public enum Error: Swift.Error {
-        case missingCompany, cycle, missingDefault, missingTaxAccount, date, items, amount, account, text, capacity, storage
+        case missingCompany, cycle, cycleTooEarly, cycleTooLate, missingDefault, missingTaxAccount, date
+        case items, amount, account, text, capacity, storage
     }
 
     private static let batchPath = "ledgers/acas/batch.dat"
@@ -127,7 +128,8 @@ public struct LedgerBatches {
         guard let bytes = system.read(1) else { throw Error.missingCompany }
         var settings = Record(SystemLayout.layout, bytes: bytes)
         let cycle = Int(settings.int("scycle"))
-        guard (cycle...cycle + 1).contains(draft.cycle) else { throw Error.cycle }
+        if draft.cycle < cycle { throw Error.cycleTooEarly }
+        if draft.cycle > cycle + 1 { throw Error.cycleTooLate }
         let chart = ChartOfAccounts(context)
         let branchEnabled = ["P", "B"].contains(settings.str("p-c"))
         let defaultBranch = branchEnabled ? draft.defaultBranch : "00"
