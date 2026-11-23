@@ -121,8 +121,8 @@ final class SalesCustomersFlows: XCTestCase {
     @MainActor
     private func reportConditions(_ id: String, operation: String, title: String) throws {
         let app = try launchCase(id)
-        let report = app.descendants(matching: .any)["sales.customer." + operation].firstMatch
-        if !report.isHittable {
+        let report = app.descendants(matching: .any).matching(identifier: "sales.customer." + operation).firstMatch
+        for _ in 0..<3 where !report.isHittable {
             let start = app.coordinate(withNormalizedOffset: CGVector(dx: 0.80, dy: 0.80))
             let end = app.coordinate(withNormalizedOffset: CGVector(dx: 0.80, dy: 0.34))
             start.press(forDuration: 0.05, thenDragTo: end)
