@@ -221,8 +221,17 @@ public partial class MainWindow : Window
             try
             {
                 var document = Document();
-                document.PageWidth = dialog.PrintableAreaWidth;
-                document.PageHeight = dialog.PrintableAreaHeight;
+                var capabilities = dialog.PrintQueue.GetPrintCapabilities(dialog.PrintTicket);
+                var imageable = capabilities.PageImageableArea;
+                var left = imageable?.OriginWidth ?? 0;
+                var top = imageable?.OriginHeight ?? 0;
+                var width = imageable?.ExtentWidth ?? dialog.PrintableAreaWidth;
+                var height = imageable?.ExtentHeight ?? dialog.PrintableAreaHeight;
+                document.PageWidth = Math.Max(left + width, capabilities.OrientedPageMediaWidth ?? 0);
+                document.PageHeight = Math.Max(top + height, capabilities.OrientedPageMediaHeight ?? 0);
+                document.PagePadding = new Thickness(left, top, document.PageWidth - left - width,
+                    document.PageHeight - top - height);
+                document.ColumnWidth = width;
                 dialog.PrintDocument(((IDocumentPaginatorSource)document).DocumentPaginator, report.Title);
             }
             catch (System.Printing.PrintSystemException)
