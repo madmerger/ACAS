@@ -21,10 +21,7 @@ public struct SalesAnalysis {
     }
 
     public static let exportPath = SalesProofReport.exportPath
-    static let layout = Layout("analysis-record", [
-        ("code", .x(3)), ("account", .n9(digits: 6, scale: 0, signed: false)),
-        ("description", .x(24)), ("print", .x(3)),
-    ])
+    static let layout = SalesAnalysisFiles.layout
     private let context: BusinessContext
     private var files: SalesInvoices { SalesInvoices(context) }
     private var store: FileStore { context.store }
@@ -36,26 +33,14 @@ public struct SalesAnalysis {
     public func prepare() throws {
         try store.withTransaction {
             var system = try files.settings()
-            var flags = system.raw("file-statuses")
-            guard flags[14] != 0x31 else { return }
-            guard flags[14] == 0x30 || flags[14] == 0x20 else { throw Error.invalidLayout }
-            if !store.exists(values.path) { flags[12] = 0x31 }
-            analysis.openOutput()
-            guard store.exists(analysis.path), store.all(analysis.path).isEmpty else { throw Error.writeFailed }
-            for (code, description, printCode) in Self.defaults {
-                var row = Record(Self.layout)
-                row["code"] = code
-                row["description"] = description
-                row["print"] = printCode
-                if values.read(key: code) == nil {
-                    var value = Record(SalesPostingRecords.value)
-                    value.bytes.replaceSubrange(0..<Self.layout.size, with: row.bytes)
-                    guard values.write(value) == "00" else { throw Error.writeFailed }
-                }
-                guard analysis.write(row) == "00" else { throw Error.writeFailed }
+            guard system.raw("file-statuses")[14] != 0x31 else { return }
+            do {
+                try SalesAnalysisFiles.initialize(store, system: &system)
+            } catch SalesPosting.Error.invalidAnalysisLayout {
+                throw Error.invalidLayout
+            } catch SalesPosting.Error.writeFailed {
+                throw Error.writeFailed
             }
-            flags[14] = 0x31
-            system.setRaw("file-statuses", flags)
             try files.systemFile.write(1, system.bytes)
         }
     }
@@ -239,14 +224,4 @@ public struct SalesAnalysis {
         value == 0 ? Cobol.x("", width) : Pic.edit(picture, value: value, scale: scale)
     }
 
-    private static let defaults = [
-        ("Sv ", "VAT Control", ""), ("Pv ", "VAT Control", ""),
-        ("Pvi", "VAT Input Invoices/CN's", ""), ("Pvj", "VAT Input Receipts", ""),
-        ("Sz ", "Computer Control", ""), ("Pz ", "Computer Control", ""),
-        ("Pza", "Purchase Carriage Charges", "P&P"), ("Pzb", "Purchase Late Charges", "LCG"),
-        ("Szc", "Sales Carriage Charges", "P&P"), ("Szd", "Sales Late Charges", "LCG"),
-        ("Svo", "VAT Output Invoices/CN's", ""), ("Svp", "VAT Output Receipts", ""),
-        ("Pa ", "Default Group", ""), ("Pa1", "Default Purchases", ""),
-        ("Sa ", "Default Group", ""), ("Sa1", "Default Sales", ""),
-    ]
 }
