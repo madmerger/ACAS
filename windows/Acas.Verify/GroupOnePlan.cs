@@ -60,7 +60,7 @@ public sealed record GroupOnePlan(string LegacyScreen, IReadOnlyList<ScreenActio
                 foreach (var action in Account(accounts[index..(index + count)])) yield return action;
                 index += count;
             }
-            foreach (int index in new[] { 39, 42 })
+            foreach (var (index, correctedAddress) in new[] { (39, 54), (42, 57) })
             {
                 string[] customer = Input(index + 1);
                 yield return Tree("SalesNavigation");
@@ -70,8 +70,8 @@ public sealed record GroupOnePlan(string LegacyScreen, IReadOnlyList<ScreenActio
                 yield return Menu("SalesCustomerCreate");
                 yield return Text("SalesNewCustomerCode", Input(index)[0]);
                 yield return Text("SalesCustomerName", customer[0]);
-                yield return Text("SalesCustomerAddress1", customer[1]);
-                yield return Text("SalesCustomerAddress2", customer[2]);
+                yield return Text("SalesCustomerAddress1", Input(correctedAddress)[1]);
+                if (index == 39) yield return Text("SalesCustomerAddress2", customer[2]);
                 if (customer.Length > 12)
                 {
                     yield return Text("SalesCustomerPhone", customer[8]);
@@ -81,7 +81,7 @@ public sealed record GroupOnePlan(string LegacyScreen, IReadOnlyList<ScreenActio
                 }
                 yield return Submit;
                 yield return Confirm;
-                yield return Check("ScreenTitle|得意先");
+                yield return Check("SalesCustomerDetail|" + customer[0]);
             }
             yield return Tree("PurchaseNavigation");
             yield return DateText("PurchaseProcessingDate", Input(22)[0]);
