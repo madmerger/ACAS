@@ -421,10 +421,7 @@ public class Pl020 extends PlBase {
             cursor = entry.getKey();
             del.load(entry.getValue());
             long number = del.longv("del-inv-nos");
-            if (number == 0) continue;
-            key.setNum("ih-invoice", number);
-            key.setNum("ih-test", 0);
-            if (invoiceFile.read(key).equals("00")) continue;
+            if (number == 0 || !folioAvailable(key, number)) continue;
             selectedDeletedFolio = cursor;
             ih.setNum("ih-invoice", number);
             display(3, 45, "Using Deleted Folio Numbers");
@@ -432,11 +429,19 @@ public class Pl020 extends PlBase {
         }
         show(3, 45, pad("", 29));
         long nextInvoice = sys.longv("next-invoice");
-        key.setNum("ih-invoice", nextInvoice);
-        key.setNum("ih-test", 0);
-        if (nextInvoice > 0 && !invoiceFile.read(key).equals("00")) {
+        if (nextInvoice > 0 && folioAvailable(key, nextInvoice)) {
             ih.setNum("ih-invoice", nextInvoice);
         }
+    }
+
+    /** ヘッダーがなくても旧明細が残っている番号は使わない。 */
+    private boolean folioAvailable(Rec key, long number) {
+        key.setNum("ih-invoice", number);
+        key.setNum("ih-test", 0);
+        String status = invoiceFile.start(key, ">=");
+        if (status.equals("23")) return true;
+        return status.equals("00") && invoiceFile.readNext(key).equals("00")
+                && key.longv("ih-invoice") != number;
     }
 
     protected void crNote() {
