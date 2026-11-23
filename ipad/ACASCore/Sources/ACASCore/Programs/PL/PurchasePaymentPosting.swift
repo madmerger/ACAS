@@ -165,7 +165,7 @@ extension PurchaseLedger {
         return payments
     }
 
-    private func recordPaymentDeductions(count: Int64, amount: Int64) throws {
+    func recordPaymentDeductions(count: Int64, amount: Int64) throws {
         guard amount != 0 else { return }
         let path = base + "value.dat"
         for code in ["Pzb", "Pz "] {
@@ -182,7 +182,7 @@ extension PurchaseLedger {
         }
     }
 
-    private func writePaymentEntry(_ entry: Record, rrn: Int, irs: Bool) throws {
+    func writePaymentEntry(_ entry: Record, rrn: Int, irs: Bool) throws {
         if irs {
             var row = Array(entry.bytes.prefix(20))
             row += Array(Cobol.z(entry.int("post-dr") % 100_000, 5).utf8) + Array(Cobol.z(entry.int("post-cr") % 100_000, 5).utf8)

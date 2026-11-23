@@ -164,6 +164,21 @@ final class PurchaseFlows: XCTestCase {
             .waitForExistence(timeout: 5))
     }
 
+    func testChequeScheduleRejectsMissingAgeAndGeneratesReport() throws {
+        let app = try launch("PL-413", smokeID: "小切手の支払予定")
+        tap(app, "pl.cheques", scrolling: true)
+        tap(app, "pl.cheques.generate")
+        enter(app, "pl.cheques.age", "", replacing: true)
+        dismissKeyboard(app)
+        tap(app, "pl.cheques.run")
+        XCTAssertTrue(app.alerts.staticTexts["経過日数は0〜99の整数で入力してください。"].waitForExistence(timeout: 5))
+        app.alerts.buttons["閉じる"].tap()
+        enter(app, "pl.cheques.age", "0", replacing: true)
+        dismissKeyboard(app)
+        tap(app, "pl.cheques.run")
+        XCTAssertTrue(app.buttons["pl.cheques.share"].waitForExistence(timeout: 5))
+    }
+
     func testEmptyPaymentProofCannotGenerateReport() throws {
         let app = try launch("PL-413", smokeID: "空の支払検証")
         tap(app, "pl.payment.proof", scrolling: true)
