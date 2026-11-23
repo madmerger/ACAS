@@ -2,6 +2,37 @@ import XCTest
 @testable import ACASCore
 
 final class SalesCustomerReportTests: XCTestCase {
+    func testUnappliedSalesReportUsesProcessingDateInHeading() throws {
+        let store = try FileStore()
+        let context = BusinessContext(store: store)
+        var system = Record(SystemLayout.layout)
+        system.setInt("run-date", Int64(Maps04.integerOfDate(year: 2024, month: 9, day: 18)))
+        var statuses = system.raw("file-statuses")
+        statuses[15] = 0x31
+        system.setRaw("file-statuses", statuses)
+        try RelativeFile(store, path: "ledgers/acas/system.dat", recordSize: 1024).write(1, system.bytes)
+        store.createIndexed("ledgers/acas/invoice.dat")
+
+        _ = try SalesProofReport.generate(in: context)
+        let report = try XCTUnwrap(store.readRaw(SalesProofReport.exportPath))
+        XCTAssertTrue(String(decoding: report, as: UTF8.self).contains("18/09/2024"))
+    }
+
+    func testUnconfiguredPageLengthUsesLegacyDefault() throws {
+        let store = try FileStore()
+        let service = SalesCustomerReport(BusinessContext(store: store))
+        let system = Record(SystemLayout.layout)
+        try RelativeFile(store, path: "ledgers/acas/system.dat", recordSize: 1024).write(1, system.bytes)
+        for index in 10..<20 {
+            var customer = Record(SalesProofRecords.salesLayout)
+            customer["sales-key"] = "CUST0\(index)"
+            XCTAssertEqual(SalesProofRecords.salesFile(store).write(customer), "00")
+        }
+
+        XCTAssertEqual(try service.generate(.init()).count, 10)
+        XCTAssertFalse(try XCTUnwrap(store.readRaw(SalesCustomerReport.exportPath)).contains(0x0c))
+    }
+
     func testFiltersAndPrintsInKeyOrderWithLegacyColumns() throws {
         let store = try FileStore()
         let context = BusinessContext(store: store, timeZone: .gmt)
