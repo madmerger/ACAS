@@ -184,12 +184,11 @@ private struct LedgerAccountsMenu: View {
 
     private func lookup() {
         let branch = usesBranches && !lookupBranch.trimmingCharacters(in: .whitespaces).isEmpty ? lookupBranch : "00"
+        amendScreenVisited = true
         selected = ChartOfAccounts(workspace.context).account(code: lookupCode, branch: branch)
         lookupMissing = selected == nil
         if lookupMissing {
             workspace.completed("gl-account-edit-missing")
-        } else {
-            amendScreenVisited = true
         }
     }
 }

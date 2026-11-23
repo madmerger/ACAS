@@ -28,11 +28,35 @@ final class LedgerAccountsFlows: XCTestCase {
 
     @MainActor
     func testGL032() throws {
+        let app = try searchMissingAccount()
+        captureMatch(app, "GL-032")
+    }
+
+    @MainActor
+    func testRegisterDetailAfterMissingAccountLookup() throws {
+        let app = try searchMissingAccount()
+        app.navigationBars.buttons.firstMatch.tap()
+        tap(app, "gl.accounts.add")
+        try fill(app, "gl.account.code", "300004")
+        try fill(app, "gl.account.name", "追加明細")
+        tap(app, "gl.account.save")
+        XCTAssertTrue(app.staticTexts["勘定科目を保存しました"].waitForExistence(timeout: 5))
+    }
+
+    @MainActor
+    private func searchMissingAccount() throws -> XCUIApplication {
+        let url = try XCTUnwrap(Bundle(for: Self.self).url(forResource: "GL-032", withExtension: "json",
+                                                          subdirectory: "fixtures"))
+        let object = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(contentsOf: url)) as? [String: Any])
+        let input = try XCTUnwrap(object["input"] as? [String: Any])
         let app = try openEditList("GL-032")
-        try fill(app, "gl.accounts.lookup.code", "800008")
+        try fill(app, "gl.accounts.lookup.code", input["account"])
+        if app.textFields["gl.accounts.lookup.branch"].exists {
+            try fill(app, "gl.accounts.lookup.branch", input["branch"])
+        }
         tap(app, "gl.accounts.lookup.submit")
         XCTAssertEqual(app.staticTexts["gl.accounts.lookup.missing"].label, "勘定科目が存在しません")
-        captureMatch(app, "GL-032")
+        return app
     }
 
     @MainActor

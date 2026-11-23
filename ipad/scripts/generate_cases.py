@@ -2,6 +2,7 @@
 import argparse
 import base64
 import json
+import re
 import subprocess
 from pathlib import Path
 
@@ -144,6 +145,14 @@ def analysis_changes(evidence, run):
     return changes
 
 
+def recorded_field(evidence, run, pattern):
+    for screen in sorted(evidence_path(evidence, run).glob("*-screen.txt")):
+        match = re.search(pattern, evidence_path(evidence, screen).read_text(encoding="utf-8"))
+        if match:
+            return match.groups()
+    raise ValueError(f"画面証跡に対象項目がありません: {run}")
+
+
 def fixture(evidence, case):
     legacy = case["legacy_result"]
     targets = legacy.get("comparison_targets", {})
@@ -179,6 +188,12 @@ def fixture(evidence, case):
                       name=fields[2] if len(fields) > 2 else None)
         if len(fields) > 4:
             values["placement"] = fields[4]
+    if workflow == "gl-account-edit-missing":
+        code, branch = recorded_field(evidence, run, r"([0-9]{6})/([0-9]{2}) Does not exist!")
+        values.update(account=code, branch=branch)
+    if workflow == "gl-business-date":
+        day, month, year = recorded_field(evidence, run, r"Enter todays date as dd/mm/yyyy - \[([0-9]{2})/([0-9]{2})/([0-9]{4})\]")
+        values["businessDate"] = dict(year=int(year), month=int(month), day=int(day))
     if workflow in ("gl-defaults-save", "gl-defaults-missing-account"):
         number, account, *rest = text_inputs[3].rstrip("\r").split("\r")
         values.update(entry=int(number), account=account.replace(".", ""), transactionCode=rest[0] if rest else None)

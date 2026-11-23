@@ -45,13 +45,28 @@ final class LedgerBusinessDateFlows: XCTestCase {
 
     @MainActor
     private func checkDateMenu(_ id: String, reopen: Bool = false) throws {
+        let expected: [String: Int]
+        if reopen {
+            expected = [:]
+        } else {
+            let url = try XCTUnwrap(Bundle(for: Self.self).url(forResource: id, withExtension: "json",
+                                                              subdirectory: "fixtures"))
+            let object = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(contentsOf: url)) as? [String: Any])
+            let input = try XCTUnwrap(object["input"] as? [String: Any])
+            expected = try XCTUnwrap(input["businessDate"] as? [String: Int])
+        }
         let app = try openLedger(id)
-        let fields = ["year", "month", "day"].map { app.textFields["gl.date." + $0] }
-        let initial = try fields.map { field in
+        let parts = ["year", "month", "day"]
+        let fields = parts.map { app.textFields["gl.date." + $0] }
+        let initial = try zip(parts, fields).map { part, field in
             let populated = XCTNSPredicateExpectation(
                 predicate: NSPredicate(format: "value MATCHES %@", "[0-9]+"), object: field)
             XCTAssertEqual(XCTWaiter.wait(for: [populated], timeout: 5), .completed)
-            return try XCTUnwrap(field.value as? String)
+            let value = try XCTUnwrap(field.value as? String)
+            if !reopen {
+                XCTAssertEqual(Int(value), try XCTUnwrap(expected[part]), "\(id): \(part)")
+            }
+            return value
         }
         if reopen {
             XCTAssertFalse(app.staticTexts["case.verdict.match"].exists)
