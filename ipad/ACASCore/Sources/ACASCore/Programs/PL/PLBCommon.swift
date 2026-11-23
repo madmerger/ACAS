@@ -143,6 +143,40 @@ enum PLB {
         func prefix(_ n: Int) -> String { String(c[0..<n]) }
     }
 
+    /// STRING ... INTO target WITH POINTER y (y は 1 起点。あふれた分は捨て、範囲外の y では何も入れない)
+    static func string(_ target: inout Buf, _ y: inout Int, _ parts: String...) {
+        for p in parts {
+            for ch in p {
+                if y < 1 || y > target.c.count { return }
+                target.c[y - 1] = ch
+                y += 1
+            }
+        }
+    }
+
+    /// 仕入先マスタ帳票の選択画面 (pl160 / pl170 / pl190 の display-03 と同じ並び) の入力値
+    final class Selection {
+        var custIn = Cobol.x("", 6), statusIn = " "
+        var creditIn: Int64 = 0, creditOp = " "
+        var invoiceIn: Int64 = 0, invoiceOp = " "
+        var averageIn: Int64 = 0, averageOp = " "
+        var overdueIn: Int64 = 0, overdueOp = " "
+        var enterDateIn = Cobol.x("", 10), enterDateOp = " "
+        var customerIn = Cobol.x("", 7)
+        var wsEnterDate: Int64 = 0
+    }
+
+    /// test-num: L (<) / G (>) / E (=) / 空白 (常に真)
+    static func testNum(_ op: String, _ test1: Int64, _ test2: Int64) -> Bool {
+        switch op.uppercased() {
+        case " ": return true
+        case "L": return test2 < test1
+        case "G": return test2 > test1
+        case "E": return test2 == test1
+        default: return false
+        }
+    }
+
     /// 数値編集 (BLANK WHEN ZERO)
     static func bwz(_ pic: String, _ v: Int64, scale: Int = 0) -> String {
         let e = Pic.edit(pic, value: v, scale: scale)
