@@ -64,7 +64,7 @@ class RunHistoryTests(unittest.TestCase):
 
     def test_direct_difference_applies_only_to_its_attempt(self):
         target = "run/files/ledgers/acas/prt-1"
-        case = {"id": "PL-222", "legacy_result": {"comparison_targets": {"report_files": [target]}}}
+        case = {"id": "PL-018", "legacy_result": {"comparison_targets": {"report_files": [target]}}}
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             expected = root / target
@@ -74,7 +74,7 @@ class RunHistoryTests(unittest.TestCase):
                     ("first", b"b", "不一致"), ("last", b"a", "一致"), ("missing", None, "一致")):
                 run = root / name
                 if report is not None:
-                    actual = run / "reports/PL-222/prt-1"
+                    actual = run / "reports/PL-018/prt-1"
                     actual.parent.mkdir(parents=True)
                     actual.write_bytes(report)
                 result, reports = compare_attempt(case, root, {"run": run, "verdict": "一致", "reason": ""})
@@ -82,6 +82,9 @@ class RunHistoryTests(unittest.TestCase):
                 self.assertEqual(bool(result["reason"]), verdict == "不一致")
                 if report is None:
                     self.assertIn("直接照合用の出力なし", reports[0][1])
+            attempt = {"run": root / "first", "verdict": "一致", "reason": "条件画面到達：帳票未作成"}
+            result, reports = compare_attempt(case, root, attempt)
+            self.assertEqual(observed_summary(case, result, reports), "帳票 1 B を生成、原本 1 B")
 
     def test_summary_distinguishes_screen_reached_from_legacy_not_executed(self):
         case = {"id": "PL-003", "title": "Purchase Ledger Enquiry — 画面表示"}

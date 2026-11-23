@@ -118,7 +118,7 @@ def observed_summary(case, current, reports):
         return "移行版の操作・照合を確定できず"
     if verdict == "一致" and case_id in MATCHED_ACTIONS:
         return MATCHED_ACTIONS[case_id]
-    if reason.startswith("条件画面到達：帳票未作成"):
+    if verdict == "一致" and reason.startswith("条件画面到達：帳票未作成"):
         return "帳票条件画面に到達、帳票未作成（原本 0 B）"
     if verdict == "対象外":
         program = re.fullmatch(r"到達先ヘッダに無い: (\w+)", reason)
