@@ -164,6 +164,11 @@ final class PurchaseLedgerTests: XCTestCase {
         XCTAssertFalse(beforeAnalysis.isEmpty)
         try ledger.closePeriod(confirmUnpostedInvoices: true, password: "", endQuarter: false)
 
+        let reopened = PurchaseLedger(ledger.context)
+        _ = try reopened.purchaseDayBook()
+        XCTAssertEqual(reopened.closedPurchaseDayBook, dayBook)
+        XCTAssertEqual(reopened.lastPurchaseAnalysisReport, analysis)
+
         let afterSupplier = try XCTUnwrap(ledger.supplierRecord(supplier))
         XCTAssertEqual(afterSupplier.int("purch-current"), 0)
         XCTAssertEqual(afterSupplier.int("purch-last"), 0)
