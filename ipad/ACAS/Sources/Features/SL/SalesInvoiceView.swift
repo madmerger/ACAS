@@ -478,7 +478,16 @@ struct SalesInvoiceList: View {
                 }
             }
         }
-        .onAppear(perform: reload)
+        .task {
+            if action == .print {
+                do { try service.openBatchPrint() }
+                catch {
+                    result = SalesInvoiceMessage.text(for: error)
+                    return
+                }
+            }
+            reload()
+        }
         .navigationTitle(action.title)
         .confirmationDialog(slText("sales.invoice.deletePrompt"), isPresented: $confirmingDeletion, titleVisibility: .visible) {
             Button(slText("sales.customer.confirmDelete"), role: .destructive, action: delete)
@@ -493,7 +502,8 @@ struct SalesInvoiceList: View {
     private func reload() {
         entries = service.invoices()
         if action == .print {
-            report = workspace.context.store.readRaw(SalesInvoices.printPath).map(SalesReportDocument.init)
+            let bytes = workspace.context.store.readRaw(SalesInvoices.printPath)
+            report = bytes.flatMap { $0.isEmpty ? nil : SalesReportDocument(bytes: $0) }
             workspace.completed("sales-invoice-print-view")
         } else {
             workspace.completed(action == .edit ? "sales-invoice-edit-list-view" : "sales-invoice-delete-list-view")
