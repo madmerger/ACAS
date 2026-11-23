@@ -94,7 +94,8 @@ public sealed class IntegrationScreens : ISubsystemScreens
                 var fields = new List<Field> { new PasswordField("IntegrationClosingPassword", "暗証番号", 4) };
                 if (options.HasSales && options.HasPurchases)
                     fields.Add(new ChoiceField("IntegrationClosingLedgers", "処理する元帳",
-                        [new("B", "売掛と買掛"), new("S", "売掛のみ"), new("P", "買掛のみ")], "B"));
+                        [new("B", "売掛と買掛"), new("S", "売掛のみ"), new("P", "買掛のみ")],
+                        ledger == TransferLedger.Sales ? "S" : "P"));
                 if (options.HasUnpostedInvoices)
                     fields.Add(new ChoiceField("IntegrationClosingUnposted", "請求書が未転記でも処理する",
                         [new("N", "いいえ"), new("Y", "はい")], "N"));
