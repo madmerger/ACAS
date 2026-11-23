@@ -23,8 +23,6 @@ public sealed partial class PurchaseLedger
         .Group(9, (layout, i) => layout.BLong("folio" + i).BChar("period" + i)
             .C3("amount" + i, 7, 2).C3("deduction" + i, 3, 2).X("reference" + i, 10));
 
-    public bool PaymentScheduleFileAvailable => database.Exists(PaymentFile);
-
     public IReadOnlyList<ScheduledPurchasePayment>? ScheduledPayments()
     {
         var rows = database.Scan(PaymentFile);
