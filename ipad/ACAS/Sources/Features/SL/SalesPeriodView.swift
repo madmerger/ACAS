@@ -78,6 +78,7 @@ struct SalesPeriodCloseView: View {
             }
         }
         .navigationTitle(slText("sales.period.title"))
+        .task { workspace.completed("sales-period-view") }
         .onChange(of: backedUp) { _, backedUp in
             if backedUp {
                 do {
