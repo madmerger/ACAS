@@ -50,9 +50,13 @@ public final class CobFile {
     public String open(Mode m, boolean optional) {
         if (open) return status = "41";
         boolean ex = store.exists(name);
+        // レガシーのデータファイルが FD と属性不一致で開けない状態（FILE STATUS 39）の再現。
+        // 証跡ベースラインの analysis.dat が該当し、印ファイル <name>.cobc39 で表す。OPEN OUTPUT で作り直すと解消する。
+        String conflict = name + ".cobc39";
+        if (m != Mode.OUTPUT && ex && store.exists(conflict)) return status = "39";
         status = "00";
         switch (m) {
-            case OUTPUT -> store.create(name);
+            case OUTPUT -> { store.create(name); if (store.exists(conflict)) store.deleteFile(conflict); }
             case INPUT -> { if (!ex) return status = optional ? "05" : "35"; }
             default -> { if (!ex) { if (!optional) return status = "35"; store.create(name); status = "05"; } }
         }

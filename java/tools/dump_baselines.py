@@ -102,7 +102,9 @@ def main():
                         recs = {}
                         for m in re.finditer(rb"[SP][a-z ][a-z0-9 ][0-9]{6}[\x20-\x7e]{27}", p.read_bytes()):
                             recs[m.group()[:3].hex()] = m.group().hex()
-                        data[rel] = dict(sorted(recs.items())); continue
+                        data[rel] = dict(sorted(recs.items()))
+                        data[rel + ".cobc39"] = {}   # CobFile.open が 39 を返す印（レガシーと同じく開けない）
+                        continue
                     if out.returncode: raise SystemExit(f"{rel}: {out.stderr}")
                     out = out.stdout
                     data[rel] = dict(line.split("|") for line in out.splitlines() if "|" in line)

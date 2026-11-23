@@ -9,6 +9,7 @@ import jp.co.acas.core.Program;
 import jp.co.acas.core.Rec;
 import jp.co.acas.sys.SystemFile;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /** PL 買掛プログラム共通の補助（システムレコード・日付変換・maps99 エラー表示など）。 */
@@ -63,6 +64,65 @@ abstract class PlBase extends Program {
     protected CobFile deliveryFile(Rec r) { return CobFile.indexed(ctx.store, ctx.path("delivery.dat"), r, "deliv-key"); }
     protected static Rec purchRec() { return fdRec(Layout.of("copybooks/fdpl.cob", "Purch-Record")); }
     protected static Rec delivRec() { return fdRec(Layout.of("copybooks/fddel.cob", "delivery-record")); }
+
+    protected static Rec oiRec() { return Layout.of("purchase/wsoi.cob", "oi-header").newRec(); }
+    /** open-item-file-5（openitm5.dat、キー = 仕入先 7 桁 + 請求書番号 binary-long）。oi-header をそのまま読み書きする。 */
+    protected CobFile oi5File() { return CobFile.indexed(ctx.store, ctx.path("openitm5.dat"), 0, 11); }
+    /** invoice-file（pinvoice.dat、キー = 請求書番号 9(8) + 行番号 binary-char）。 */
+    protected CobFile invoiceFile() { return CobFile.indexed(ctx.store, ctx.path("pinvoice.dat"), 0, 9); }
+    protected static Rec invHeaderRec() { return fdRec(Layout.of("purchase/fdpinv2.cob", "invoice-header")); }
+    protected static Rec invLineRec() { return fdRec(Layout.of("purchase/fdpinv2.cob", "invoice-line")); }
+
+    /** analysis-file（analysis.dat、キー = pa-code 3 桁）。レコード領域は初期状態 LOW-VALUE。 */
+    protected CobFile analysisFile(Rec r) { return CobFile.indexed(ctx.store, ctx.path("analysis.dat"), r, "pa-code"); }
+    protected static Rec analRec() {
+        Rec r = Layout.of("copybooks/fdanal.cob", "analysis-record").newRec();
+        java.util.Arrays.fill(r.bytes(), (byte) 0);
+        return r;
+    }
+
+    /** グループ項目（9(n) + "." + v99）の金額 ACCEPT ... UPDATE。 */
+    protected BigDecimal acceptMoney(int line, int col, int pounds, BigDecimal cur) {
+        long c = cur.movePointRight(2).longValue();
+        String shown = Num.z9(c / 100, pounds) + "." + Num.z9(c % 100, 2);
+        show(line, col, shown);
+        String in = pad(acceptUpdate(line, col, pounds + 3, shown), pounds + 3);
+        long pd = numOf(in.substring(0, pounds)), pc = numOf(in.substring(pounds + 1));
+        return BigDecimal.valueOf(pd * 100 + pc, 2);
+    }
+
+    /** 英数字 → 数字項目への MOVE 相当（数字以外は無視）。 */
+    protected static long numOf(String s) {
+        String d = s.replaceAll("[^0-9]", "");
+        return d.isEmpty() ? 0 : Long.parseLong(d);
+    }
+
+    /** PIC 9(n) の ACCEPT ... UPDATE（現在値を表示）。 */
+    protected long acceptNum(int line, int col, int digits, long cur) {
+        return numOf(acceptUpdate(line, col, digits, Num.z9(cur, digits)));
+    }
+
+    /** UNSTRING ... DELIMITED BY delim を繰り返したときの各片（最後の要素は残り全体）。 */
+    protected static String[] pieces(String src, String delim, int n) {
+        String[] out = new String[n + 1];
+        int p = 0;
+        for (int i = 0; i < n; i++) {
+            if (p > src.length()) { out[i] = ""; continue; }
+            int q = src.indexOf(delim, p);
+            if (q < 0) { out[i] = src.substring(p); p = src.length() + 1; }
+            else { out[i] = src.substring(p, q); p = q + delim.length(); }
+        }
+        out[n] = p > src.length() ? "" : src.substring(p);
+        return out;
+    }
+
+    /** call "SYSTEM" using Print-Report（縦置き版）。 */
+    protected void spoolPrt1Portrait() {
+        ctx.spool("prt-1", "lpr -r -o 'orientation-requested=3 page-left=36 page-top=24 page-right=24 "
+                + "sides=two-sided-long-edge cpi=12 lpi=8' -P " + sys.str("print-spool-name").trim() + " prt-1");
+    }
+
+    protected static BigDecimal bd(String s) { return new BigDecimal(s); }
 
     /** FD レコード領域: FILLER は初期状態（LOW-VALUE）のまま残る。 */
     protected static Rec fdRec(Layout l) {
