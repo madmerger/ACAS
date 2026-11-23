@@ -13,6 +13,18 @@ public enum LedgerDefaultTax: String, CaseIterable {
     case output = "O"
 }
 
+public struct TemporaryLedgerDefault {
+    public let account: String
+    public let code: String
+    public let tax: LedgerDefaultTax
+
+    public init(account: String, code: String, tax: LedgerDefaultTax) {
+        self.account = account
+        self.code = code
+        self.tax = tax
+    }
+}
+
 public struct GeneralLedgerSetup {
     public enum Error: Swift.Error { case missingCompany, invalidDate, invalidDefault, invalidPassword }
 
@@ -70,15 +82,22 @@ public struct GeneralLedgerSetup {
 
     @discardableResult
     public func saveDefault(number: Int, account: String, transactionCode: String, tax: LedgerDefaultTax) throws -> Bool {
+        guard (1...32).contains(number) else { throw Error.invalidDefault }
+        return try writeDefault(number: number, account: account, transactionCode: transactionCode, tax: tax)
+    }
+
+    func writeDefault(number: Int, account: String, transactionCode: String, tax: LedgerDefaultTax,
+                      branch: String = "00", requireAccount: Bool = false) throws -> Bool {
         guard let before = system.read(2) else { throw Error.missingCompany }
-        guard (1...32).contains(number), account.utf8.count == 6, account.utf8.allSatisfy({ (48...57).contains($0) }),
+        guard account.utf8.count == 6, account.utf8.allSatisfy({ (48...57).contains($0) }),
               let code = Int64(account),
               !transactionCode.unicodeScalars.contains(where: CharacterSet.controlCharacters.contains),
               Cobol.rtrim(SJIS.decode(SJIS.encode(transactionCode, size: 2)[...])) == Cobol.rtrim(transactionCode)
         else { throw Error.invalidDefault }
         var record = Record(Self.layout, bytes: before)
         record.setInt("account\(number)", code)
-        let exists = ChartOfAccounts(context).account(code: account) != nil
+        let exists = ChartOfAccounts(context).account(code: account, branch: branch) != nil
+        if requireAccount && !exists { throw Error.invalidDefault }
         if exists {
             record["code\(number)"] = transactionCode
             record["tax\(number)"] = tax.rawValue

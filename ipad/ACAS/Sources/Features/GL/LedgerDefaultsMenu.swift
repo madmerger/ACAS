@@ -26,11 +26,13 @@ private struct LedgerDefaultsSetup: View {
 
     var body: some View {
         Form {
-            Section(ledgerText("defaults-setup.prompt")) {
+            Section {
                 Button(ledgerText("defaults-setup.keep")) { editing = true }
                     .accessibilityIdentifier("gl.defaults.setup.keep")
                 Button(ledgerText("defaults-setup.reset"), role: .destructive) { confirmReset = true }
                     .accessibilityIdentifier("gl.defaults.setup.reset")
+            } header: {
+                Text(ledgerText("defaults-setup.prompt"))
             } footer: {
                 Text(ledgerText("defaults-setup.warning"))
                     .accessibilityIdentifier("gl.defaults.setup.warning")

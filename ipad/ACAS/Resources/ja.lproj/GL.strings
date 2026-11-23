@@ -61,6 +61,10 @@
 "gl.batch-error.cycle" = "現在または次の会計サイクルを指定してください";
 "gl.batch-error.cycleTooEarly" = "GL108：指定した会計サイクルは現在より前です";
 "gl.batch-error.cycleTooLate" = "GL109：指定できるのは次の会計サイクルまでです";
+"gl.batch-temp-default" = "33：一時既定勘定";
+"gl.batch-temp-account" = "相手勘定コード";
+"gl.batch-temp-code" = "一時既定の取引コード";
+"gl.batch-exit-default" = "既定勘定の選択を終了";
 "gl.batch-error.missingDefault" = "登録済みの既定勘定を選択してください";
 "gl.batch-error.date" = "日付が正しくありません";
 "gl.batch-error.items" = "明細を１件以上入力し、件数は９９以下にしてください";
